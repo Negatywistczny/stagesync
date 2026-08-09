@@ -24,9 +24,7 @@ export type ScoreBarToSongBarOptions = {
   nearSongBar?: number;
 };
 
-export const DEFAULT_SCORE_ANCHORS = [
-  { logicBar: 3, scoreBar: 1 },
-] as const;
+export const DEFAULT_SCORE_ANCHORS = [{ logicBar: 3, scoreBar: 1 }] as const;
 
 function readLogicBar(anchor: ScoreBarAnchorLike): number {
   const raw = anchor.logicBar ?? anchor.songBar ?? anchor.transportBar;

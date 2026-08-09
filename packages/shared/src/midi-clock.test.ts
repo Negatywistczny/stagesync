@@ -45,9 +45,17 @@ describe("midi-clock", () => {
   });
 
   it.each([
-    { label: "non-positive ppq", fn: () => ticksPerMidiClock(0), re: /multiple/ },
+    {
+      label: "non-positive ppq",
+      fn: () => ticksPerMidiClock(0),
+      re: /multiple/,
+    },
     { label: "negative ppq", fn: () => ticksPerMidiClock(-24), re: /multiple/ },
-    { label: "non-integer ppq", fn: () => ticksPerMidiClock(24.5), re: /multiple/ },
+    {
+      label: "non-integer ppq",
+      fn: () => ticksPerMidiClock(24.5),
+      re: /multiple/,
+    },
   ] as const)("ticksPerMidiClock rejects $label", ({ fn, re }) => {
     expect(fn).toThrow(re);
   });
@@ -56,9 +64,14 @@ describe("midi-clock", () => {
     { ticks: Number.NaN },
     { ticks: Number.POSITIVE_INFINITY },
     { ticks: Number.NEGATIVE_INFINITY },
-  ] as const)("ticksToMidiClockIndex rejects non-finite ticks ($ticks)", ({ ticks }) => {
-    expect(() => ticksToMidiClockIndex(ticks)).toThrow(/ticks must be finite/);
-  });
+  ] as const)(
+    "ticksToMidiClockIndex rejects non-finite ticks ($ticks)",
+    ({ ticks }) => {
+      expect(() => ticksToMidiClockIndex(ticks)).toThrow(
+        /ticks must be finite/,
+      );
+    },
+  );
 
   it.each([
     { clockIndex: 1.5 },
@@ -100,7 +113,9 @@ describe("midi-clock", () => {
     { bpm: Number.NaN },
     { bpm: Number.POSITIVE_INFINITY },
   ] as const)("midiClockIntervalMs rejects bpm=$bpm", ({ bpm }) => {
-    expect(() => midiClockIntervalMs(bpm)).toThrow(/bpm must be a finite number > 0/);
+    expect(() => midiClockIntervalMs(bpm)).toThrow(
+      /bpm must be a finite number > 0/,
+    );
   });
 
   it.each([

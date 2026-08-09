@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  fetchAndroidLatestManifest,
-  isSemverNewer,
-} from "./androidLatest.js";
+import { fetchAndroidLatestManifest, isSemverNewer } from "./androidLatest.js";
 
 describe("isSemverNewer", () => {
   it("detects patch bumps", () => {

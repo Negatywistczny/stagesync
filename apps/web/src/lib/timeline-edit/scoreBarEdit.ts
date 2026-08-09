@@ -136,15 +136,15 @@ export function updateScoreAnchor(
   };
 }
 
-export function deleteScoreAnchor(
-  project: Project,
-  anchorId: string,
-): Project {
+export function deleteScoreAnchor(project: Project, anchorId: string): Project {
   const anchors = scoreAnchors(project).filter((a) => a.id !== anchorId);
   return { ...project, scoreBarMap: { anchors } };
 }
 
-export function anchorBarWidthTicks(project: Project, logicBar: number): number {
+export function anchorBarWidthTicks(
+  project: Project,
+  logicBar: number,
+): number {
   const start = ticksFromLogicBar(project, logicBar);
   const meter = resolveMeterAt(project, start);
   return ticksPerBar(meter, project.ppq);

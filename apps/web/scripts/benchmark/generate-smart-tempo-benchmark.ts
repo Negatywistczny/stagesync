@@ -67,15 +67,13 @@ function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
   );
   fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
   try {
-    execSync(
-      `afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`,
-      { stdio: "ignore" },
-    );
+    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   } catch {
-    execSync(
-      `ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`,
-      { stdio: "ignore" },
-    );
+    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   }
   const buf = fs.readFileSync(tmpWav);
   try {
@@ -183,11 +181,16 @@ async function main() {
     let minBeatDiff = Infinity;
     for (let i = 0; i < beatMs.length; i++) {
       const diff = Math.abs(beatMs[i]! - anchorMs);
-      if (diff < minBeatDiff) { minBeatDiff = diff; anchorIdx = i; }
+      if (diff < minBeatDiff) {
+        minBeatDiff = diff;
+        anchorIdx = i;
+      }
     }
 
     const silenceOffset = beatMs[anchorIdx]! - anchorMs;
-    console.log(`[BENCHMARK] ${baseName}: beatMs.length = ${beatMs.length}, anchorBar = ${anchorBar}, anchorMs = ${anchorMs.toFixed(1)}, anchorIdx = ${anchorIdx}, anchorBeatMs = ${beatMs[anchorIdx]!.toFixed(1)}, silenceOffset = ${silenceOffset.toFixed(1)}ms`);
+    console.log(
+      `[BENCHMARK] ${baseName}: beatMs.length = ${beatMs.length}, anchorBar = ${anchorBar}, anchorMs = ${anchorMs.toFixed(1)}, anchorIdx = ${anchorIdx}, anchorBeatMs = ${beatMs[anchorIdx]!.toFixed(1)}, silenceOffset = ${silenceOffset.toFixed(1)}ms`,
+    );
 
     // Compute local BPM from 4-beat IBI around a given beat index
     function estBpmAtBeatIdx(idx: number): number {

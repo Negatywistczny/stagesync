@@ -11,10 +11,7 @@ import {
   type TempoEvent,
 } from "./schema.js";
 import { DEFAULT_PPQ, ticksPerBar, type TimeSignature } from "./time.js";
-import {
-  secondsToTicks,
-  ticksToSeconds,
-} from "./tempo-map.js";
+import { secondsToTicks, ticksToSeconds } from "./tempo-map.js";
 import {
   applySeedMetronomeFallback,
   runMultiPassTempoSolver,
@@ -1024,8 +1021,7 @@ export function quantizeChordOnsets(
   const start = Math.min(sectionStart, sectionEnd);
   const end = Math.max(sectionStart, sectionEnd);
   const lastLegal = Math.max(start, end - 1);
-  const snap =
-    mode === "bar" ? quantizeTicksToBar : quantizeTicksToBarOrHalf;
+  const snap = mode === "bar" ? quantizeTicksToBar : quantizeTicksToBarOrHalf;
   return onsets.map((raw) => {
     let t = snap(raw, barTicks);
     if (t < start) t = start;
@@ -1239,7 +1235,10 @@ export function buildPristineSectionGrid(
   const barTicks = Math.max(1, input.barTicks);
   const winStart = input.containerStart;
   const winEnd = input.containerEnd;
-  const bpc = Math.max(1, Math.trunc(input.barsPerChord ?? DEFAULT_BARS_PER_CHORD));
+  const bpc = Math.max(
+    1,
+    Math.trunc(input.barsPerChord ?? DEFAULT_BARS_PER_CHORD),
+  );
   const cellTicks = bpc * barTicks;
   const prefix = input.idPrefix ?? "bridge";
   let seq = input.seqStart ?? 0;
@@ -1247,8 +1246,7 @@ export function buildPristineSectionGrid(
   let approximate = false;
   let usedWordAlign = false;
 
-  const paired: { startTicks: number; symbol: string; isRest?: boolean }[] =
-    [];
+  const paired: { startTicks: number; symbol: string; isRest?: boolean }[] = [];
 
   if (input.pipeBarCount > 0 && input.pipeEvents.length > 0) {
     for (const ev of input.pipeEvents) {
@@ -1282,7 +1280,9 @@ export function buildPristineSectionGrid(
       }
     }
   } else {
-    const list = input.chords.slice().sort((a, b) => a.orderInSection - b.orderInSection);
+    const list = input.chords
+      .slice()
+      .sort((a, b) => a.orderInSection - b.orderInSection);
     const sectionPhrases = phraseIndicesInSectionWindow(
       input.usSyllables,
       winStart,
@@ -1366,7 +1366,9 @@ export function buildPristineSectionGrid(
           sameWordNext || (scopeEnd != null && scopeEnd <= scopeStart)
             ? []
             : syllablesInChordScope(
-                phraseSyllables.length > 0 ? phraseSyllables : input.usSyllables,
+                phraseSyllables.length > 0
+                  ? phraseSyllables
+                  : input.usSyllables,
                 scopeStart,
                 scopeEnd != null && scopeEnd > scopeStart ? scopeEnd : null,
               );
@@ -1395,9 +1397,7 @@ export function buildPristineSectionGrid(
       let q: number[];
       if (allGrid) {
         q = quantizeChordOnsets(
-          filled.map((_, i) =>
-            chordLineGridOnset(winStart, i, barTicks, bpc),
-          ),
+          filled.map((_, i) => chordLineGridOnset(winStart, i, barTicks, bpc)),
           winStart,
           winEnd,
           barTicks,
@@ -1457,9 +1457,7 @@ export function buildPristineSectionGrid(
     if (last && startTicks < last.startTicks) continue;
     if (last && startTicks === last.startTicks && !last.isRest) {
       // Push to next Beat 1 (vocal) or half-bar (pipe) — never 1-tick.
-      const push = fromPipe
-        ? Math.max(1, Math.floor(barTicks / 2))
-        : barTicks;
+      const push = fromPipe ? Math.max(1, Math.floor(barTicks / 2)) : barTicks;
       startTicks = last.startTicks + push;
       if (startTicks >= winEnd) continue;
       unique.push({ startTicks, symbol: p.symbol, isRest: false });
@@ -1516,7 +1514,15 @@ function ticksToWallMs(
   floor: number,
 ): number {
   const local = Math.max(0, ticks - floor);
-  return ticksToSeconds(local, [{ startTicks: 0, bpm: placeBpm }], placeBpm, meter, ppq) * 1000;
+  return (
+    ticksToSeconds(
+      local,
+      [{ startTicks: 0, bpm: placeBpm }],
+      placeBpm,
+      meter,
+      ppq,
+    ) * 1000
+  );
 }
 
 /** Remap a tick from constant place BPM onto the solver TempoMap. */
@@ -1531,9 +1537,7 @@ function remapTickAlongSolverMap(
 ): number {
   const ms = ticksToWallMs(ticks, placeBpm, meter, ppq, floor);
   try {
-    return (
-      secondsToTicks(ms / 1000, tempoMap, seedBpm, meter, ppq) + floor
-    );
+    return secondsToTicks(ms / 1000, tempoMap, seedBpm, meter, ppq) + floor;
   } catch {
     return ticks;
   }
@@ -1586,10 +1590,7 @@ export function normalizeTekstBlockTimings<T extends TekstBlock>(
   if (blocks.length === 0) return [];
   const out = blocks
     .slice()
-    .sort(
-      (a, b) =>
-        a.startTicks - b.startTicks || a.id.localeCompare(b.id),
-    )
+    .sort((a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id))
     .map((b) => ({ ...b, lengthTicks: Math.max(1, b.lengthTicks) }));
 
   if (out[0]!.startTicks < clipStartTicks) {
@@ -1721,7 +1722,9 @@ export function structuralBarOffsetsForChordLines(
     const g = groups[gi]!;
     const span = Math.max(
       g.orders.length,
-      barsPerLine?.[gi] != null ? Math.max(1, Math.trunc(barsPerLine[gi]!)) : g.orders.length,
+      barsPerLine?.[gi] != null
+        ? Math.max(1, Math.trunc(barsPerLine[gi]!))
+        : g.orders.length,
     );
     for (let k = 0; k < g.orders.length; k++) {
       // Spread multi-chord lines across the phrase window; single chord at N_start.
@@ -1973,10 +1976,10 @@ export function bridgeUsUgImport(
   // Legacy solver sizing may use US metro fallback. Smart Tempo never sizes
   // Forma from `#BPM` — word links + audio seed only (see layout after map).
   const formaSizingBpm = useAudioSmartTempo
-    ? pipeSeed ??
+    ? (pipeSeed ??
       (options.audioAnalysis!.estimatedBpm > 0
         ? options.audioAnalysis!.estimatedBpm
-        : 120)
+        : 120))
     : applySeedMetronomeFallback(
         pipeSeed ?? placeBpm,
         us.ultrastarMetronomeBpm,
@@ -2001,10 +2004,7 @@ export function bridgeUsUgImport(
   for (let si = 0; si < ugSections.length; si++) {
     const sec = ugSections[si]!;
     const vr = solverSections[si]!.vocalMsRange;
-    const ugBarsHint =
-      sec.pipeBarCount > 0
-        ? sec.pipeBarCount
-        : null;
+    const ugBarsHint = sec.pipeBarCount > 0 ? sec.pipeBarCount : null;
     if (vr) {
       anchors.push({
         ms: vr.startMs,
@@ -2197,9 +2197,7 @@ export function bridgeUsUgImport(
         const scoped =
           scopeStart != null
             ? syllablesInChordScope(
-                phraseSyllables.length > 0
-                  ? phraseSyllables
-                  : usSyllablesEarly,
+                phraseSyllables.length > 0 ? phraseSyllables : usSyllablesEarly,
                 scopeStart,
                 sameWordNext
                   ? null
@@ -2644,7 +2642,9 @@ export function bridgeUsUgImport(
             usedApprox = true;
             const slot = paired.length;
             const span = Math.max(1, win.endTicks - win.startTicks);
-            t = win.startTicks + Math.floor((slot * span) / Math.max(1, list.length));
+            t =
+              win.startTicks +
+              Math.floor((slot * span) / Math.max(1, list.length));
           }
           paired.push({ startTicks: t, symbol: c.symbol });
         }
@@ -2717,8 +2717,7 @@ export function bridgeUsUgImport(
       }
     }
     sectionPreview[si]!.chordCount = akordClips.filter(
-      (c) =>
-        c.startTicks >= win.startTicks && c.startTicks < win.endTicks,
+      (c) => c.startTicks >= win.startTicks && c.startTicks < win.endTicks,
     ).length;
   }
 
@@ -2773,17 +2772,11 @@ function chordsBySectionEarly(
   return ugChords.filter((c) => c.sectionIndex === si);
 }
 
-function sameWordPrev(
-  chords: readonly UgBridgeChord[],
-  ci: number,
-): boolean {
+function sameWordPrev(chords: readonly UgBridgeChord[], ci: number): boolean {
   if (ci <= 0) return false;
   const cur = chords[ci]!;
   const prev = chords[ci - 1]!;
-  return (
-    cur.ugWordIndex != null &&
-    prev.ugWordIndex === cur.ugWordIndex
-  );
+  return cur.ugWordIndex != null && prev.ugWordIndex === cur.ugWordIndex;
 }
 
 /**
@@ -2920,7 +2913,13 @@ export function applyUsUgBridgeToProject(
                 }))
               : bridged.tempoMap.length > 0
                 ? bridged.tempoMap
-                : [{ id: "bridge-tempo-0", startTicks: 0, bpm: bridged.seedBpm }],
+                : [
+                    {
+                      id: "bridge-tempo-0",
+                      startTicks: 0,
+                      bpm: bridged.seedBpm,
+                    },
+                  ],
         }
       : {}),
   };
@@ -2955,9 +2954,7 @@ export function annotateTekstSourceSections(
   formaMusic: FormaClip[],
   barTicks: number = ticksPerBar({ numerator: 4, denominator: 4 }, DEFAULT_PPQ),
 ): TekstClip[] {
-  const sections = [...formaMusic].sort(
-    (a, b) => a.startTicks - b.startTicks,
-  );
+  const sections = [...formaMusic].sort((a, b) => a.startTicks - b.startTicks);
   return tekstClips.map((clip) => {
     let name: string | undefined;
     for (let i = 0; i < sections.length; i++) {

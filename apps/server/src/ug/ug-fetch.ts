@@ -19,8 +19,7 @@ export function isValidUgTabUrl(url: string): boolean {
 
 export function extractTabId(url: string): number | null {
   const match =
-    String(url).match(/-chords-(\d+)/i) ||
-    String(url).match(/-(\d+)(?:\?|$)/);
+    String(url).match(/-chords-(\d+)/i) || String(url).match(/-(\d+)(?:\?|$)/);
   return match ? Number.parseInt(match[1]!, 10) : null;
 }
 
@@ -184,8 +183,7 @@ async function fetchUgHtml(
     headers: {
       "user-agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-      accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "accept-language": "en-US,en;q=0.9,pl;q=0.8",
     },
     redirect: "follow",
@@ -266,7 +264,9 @@ function mapSearchHit(row: UgSearchHit): UgSearchRow {
 }
 
 function rankSearchHits(hits: UgSearchHit[]): UgSearchHit[] {
-  const chords = hits.filter((entry) => /chord/i.test(String(entry.type || "")));
+  const chords = hits.filter((entry) =>
+    /chord/i.test(String(entry.type || "")),
+  );
   const pool = chords.length ? chords : hits;
   return [...pool].sort((a, b) => (b.votes || 0) - (a.votes || 0));
 }

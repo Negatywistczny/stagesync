@@ -69,7 +69,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
 
   const anchorRef = useRef(toTransportAnchor(defaultTransportState()));
   const tempoMapsRef = useRef<TempoMapProject | null>(null);
-  const loopRef = useRef(transportLoopForSoftClock(defaultTransportState().loop));
+  const loopRef = useRef(
+    transportLoopForSoftClock(defaultTransportState().loop),
+  );
   const receiptMsRef = useRef(0);
   const lastServerTimeMsRef = useRef(-Infinity);
   const playingRef = useRef(false);
@@ -236,9 +238,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
               : undefined;
           // Only surface malformed ticks; ignore unknown / non-tick frames.
           if (type === "transport_tick") {
-            setError(
-              formatTransportError(parsed.error, "Nieprawidłowy tick"),
-            );
+            setError(formatTransportError(parsed.error, "Nieprawidłowy tick"));
           }
           return;
         }
@@ -393,7 +393,9 @@ export function TransportProvider({ children }: { children: ReactNode }) {
   );
 
   const runCommand = useCallback(
-    async (fn: () => Promise<{ state: TransportState; serverTimeMs: number }>) => {
+    async (
+      fn: () => Promise<{ state: TransportState; serverTimeMs: number }>,
+    ) => {
       if (commandPendingRef.current) return;
       commandPendingRef.current = true;
       setCommandPending(true);

@@ -3,7 +3,11 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { analyzeAudioTempoAsync } from "../../src/lib/audio/audioTempoAnalysis.js";
-import { runAudioDrivenSmartTempo, ticksToMsAlongTempoMap, type TempoMapProject } from "@stagesync/shared";
+import {
+  runAudioDrivenSmartTempo,
+  ticksToMsAlongTempoMap,
+  type TempoMapProject,
+} from "@stagesync/shared";
 
 const FIXTURES_DIR = path.resolve(
   __dirname,
@@ -15,7 +19,11 @@ const FIXTURES_DIR = path.resolve(
 // ---------------------------------------------------------------------------
 function hasDecoderAndFixtures(): boolean {
   if (!fs.existsSync(FIXTURES_DIR)) return false;
-  const hasAudio = fs.readdirSync(FIXTURES_DIR).some((f) => f.endsWith(".mp3") || f.endsWith(".wav") || f.endsWith(".m4a"));
+  const hasAudio = fs
+    .readdirSync(FIXTURES_DIR)
+    .some(
+      (f) => f.endsWith(".mp3") || f.endsWith(".wav") || f.endsWith(".m4a"),
+    );
   if (!hasAudio) return false;
   for (const cmd of ["afconvert", "ffmpeg"]) {
     try {
@@ -115,15 +123,13 @@ export function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
   );
   fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
   try {
-    execSync(
-      `afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`,
-      { stdio: "ignore" },
-    );
+    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   } catch {
-    execSync(
-      `ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`,
-      { stdio: "ignore" },
-    );
+    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   }
   const buf = fs.readFileSync(tmpWav);
   try {
@@ -212,7 +218,8 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
         fullTrackGrid: true,
       });
 
-      const firstMusicalOnsetMs = analysis.beatMs[0] ?? analysis.onsetsMs[0] ?? 0;
+      const firstMusicalOnsetMs =
+        analysis.beatMs[0] ?? analysis.onsetsMs[0] ?? 0;
       const shiftMs = (points[0]?.timecodeMs ?? 0) - firstMusicalOnsetMs;
 
       const smartRes = runAudioDrivenSmartTempo({
@@ -249,7 +256,10 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
 
         // Barrier assertion: Bar 1 Downbeat (t0) deviation must be <= 15ms
         if (refPt.bar === 1 && refPt.beat === 1) {
-          expect(errorMs, `Beat 1 (t0) timestamp drift (${errorMs} ms) exceeds 15ms barrier threshold`).toBeLessThanOrEqual(15);
+          expect(
+            errorMs,
+            `Beat 1 (t0) timestamp drift (${errorMs} ms) exceeds 15ms barrier threshold`,
+          ).toBeLessThanOrEqual(15);
         }
 
         if (errorMs <= 60) {
@@ -262,7 +272,8 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
       }
 
       errorsMsList.sort((a, b) => a - b);
-      const medianErrorMs = errorsMsList[Math.floor(errorsMsList.length / 2)] ?? 0;
+      const medianErrorMs =
+        errorsMsList[Math.floor(errorsMsList.length / 2)] ?? 0;
 
       const n = points.length;
       trackSummaries.push({

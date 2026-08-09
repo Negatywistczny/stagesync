@@ -8,11 +8,7 @@ import type { AudioLaneId } from "./timelineTracks.js";
 import { audioLaneId, isAudioLaneId } from "./timelineTracks.js";
 
 export type ClipSelectionLane =
-  | "forma"
-  | "tekst"
-  | "akordy"
-  | "cue"
-  | AudioLaneId;
+  "forma" | "tekst" | "akordy" | "cue" | AudioLaneId;
 
 export function isAudioSelectionLane(
   lane: ClipSelectionLane | null | undefined,
@@ -151,10 +147,7 @@ export function toggleSelected(
           : nextItems[nextItems.length - 1]!.id;
     return setSelection(nextItems, primary);
   }
-  return setSelection(
-    [...current.items, { id: clipId, lane }],
-    clipId,
-  );
+  return setSelection([...current.items, { id: clipId, lane }], clipId);
 }
 
 /**
@@ -184,9 +177,7 @@ export function selectRangeTo(
   if (i0 < 0 || i1 < 0) return selectSingle(clipId, lane);
   const lo = Math.min(i0, i1);
   const hi = Math.max(i0, i1);
-  const rangeItems = ordered
-    .slice(lo, hi + 1)
-    .map((c) => ({ id: c.id, lane }));
+  const rangeItems = ordered.slice(lo, hi + 1).map((c) => ({ id: c.id, lane }));
   // Keep other-lane selections; replace this lane's range membership.
   const other = current.items.filter((i) => i.lane !== lane);
   return setSelection([...other, ...rangeItems], clipId);

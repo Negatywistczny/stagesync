@@ -2,7 +2,13 @@
  * Shared Solo / Mute / Fader (+ pan in Mixer) for dock + vertical channel strip.
  */
 
-import { useId, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
+import {
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import { Button, SegmentedControl } from "@stagesync/ui";
 import {
   resolveTrackColor,
@@ -12,13 +18,13 @@ import {
   type TrackIcon,
 } from "@stagesync/shared";
 import { IconTrack } from "../../icons.js";
-import type { ChannelStripCallbacks, ChannelStripState } from "./channelStripTypes.js";
+import type {
+  ChannelStripCallbacks,
+  ChannelStripState,
+} from "./channelStripTypes.js";
 import { DualDbReadout } from "./DualDbReadout.js";
 import { MiddleTruncateLabel } from "./MiddleTruncateLabel.js";
-import {
-  OutputSelector,
-  parseOutputDest,
-} from "./OutputSelector.js";
+import { OutputSelector, parseOutputDest } from "./OutputSelector.js";
 import { PanKnob } from "./PanKnob.js";
 import { meterPaintKey } from "./meterPaint.js";
 import { PeakMeter } from "./PeakMeter.js";
@@ -126,11 +132,13 @@ export function ChannelStripControls({
       selected={strip.soloed}
       className={[
         soloClassName,
-        strip.soloed ? soloActiveClassName ?? styles.tapBtnSolo : "",
+        strip.soloed ? (soloActiveClassName ?? styles.tapBtnSolo) : "",
       ]
         .filter(Boolean)
         .join(" ")}
-      title={strip.soloed ? `Wyłącz solo: ${strip.name}` : `Solo: ${strip.name}`}
+      title={
+        strip.soloed ? `Wyłącz solo: ${strip.name}` : `Solo: ${strip.name}`
+      }
       aria-label={
         strip.soloed ? `Wyłącz solo: ${strip.name}` : `Solo: ${strip.name}`
       }
@@ -150,7 +158,7 @@ export function ChannelStripControls({
       selected={strip.muted}
       className={[
         muteClassName,
-        strip.muted ? muteActiveClassName ?? styles.tapBtnMute : "",
+        strip.muted ? (muteActiveClassName ?? styles.tapBtnMute) : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -259,11 +267,7 @@ export function ChannelStripControls({
         ]
           .filter(Boolean)
           .join(" ")}
-        style={
-          isBus
-            ? undefined
-            : { ["--tl-track-color" as string]: color }
-        }
+        style={isBus ? undefined : { ["--tl-track-color" as string]: color }}
         onClick={callbacks.onSelect}
         onContextMenu={callbacks.onContextMenu}
       >
@@ -305,7 +309,10 @@ export function ChannelStripControls({
           holdAriaLabel={`Peak Hold ${strip.name} — kliknij aby wyzerować`}
         />
 
-        <div className={styles.faderMeterRow} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={styles.faderMeterRow}
+          onClick={(e) => e.stopPropagation()}
+        >
           <VerticalFader
             gainDb={gainDb}
             onGainChange={callbacks.onGainChange}

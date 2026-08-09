@@ -14,7 +14,12 @@ export const DEFAULT_DEV_PREVIEW_CONFIG: DevPreviewConfig = {
   session: false,
 };
 
-const SURFACE_VALUES = new Set<DevSurface>(["web", "tauri", "console", "performer"]);
+const SURFACE_VALUES = new Set<DevSurface>([
+  "web",
+  "tauri",
+  "console",
+  "performer",
+]);
 const ROUTE_VALUES = new Set<DevRoute>(["admin", "timeline", "client"]);
 
 function parseBooleanParam(raw: string | null): boolean {

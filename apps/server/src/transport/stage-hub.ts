@@ -97,7 +97,10 @@ export function createStageHub() {
     },
 
     broadcast(
-      partial: Omit<StageCueMessage, "sentAtMs" | "ttlMs" | "id" | "expiresAt"> & {
+      partial: Omit<
+        StageCueMessage,
+        "sentAtMs" | "ttlMs" | "id" | "expiresAt"
+      > & {
         id?: string;
         ttlMs?: number;
         sentAtMs?: number;

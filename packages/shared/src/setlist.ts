@@ -138,8 +138,7 @@ export function pruneSetlistToLibrary(
   library: Library,
 ): Omit<Setlist, "version"> {
   const known = new Set(library.projects.map((p) => p.id));
-  const source =
-    setlist.items ?? itemsFromProjectIds(setlist.projectIds ?? []);
+  const source = setlist.items ?? itemsFromProjectIds(setlist.projectIds ?? []);
   const items: SetlistItem[] = [];
   for (const item of source) {
     if (item.type === "break") {

@@ -64,17 +64,11 @@ export function AudioSettingsTab({
         <dl className={styles.infoList}>
           <div className={styles.infoRow}>
             <dt>Sample Rate</dt>
-            <dd>
-              {sampleRate != null
-                ? `${Math.round(sampleRate)} Hz`
-                : "—"}
-            </dd>
+            <dd>{sampleRate != null ? `${Math.round(sampleRate)} Hz` : "—"}</dd>
           </div>
           <div className={styles.infoRow}>
             <dt>Kanały wyjścia</dt>
-            <dd>
-              {maxChannelCount != null ? `${maxChannelCount}` : "—"}
-            </dd>
+            <dd>{maxChannelCount != null ? `${maxChannelCount}` : "—"}</dd>
           </div>
           <div className={styles.infoRow}>
             <dt>Latencja sieci</dt>
@@ -95,7 +89,9 @@ export function AudioSettingsTab({
               step={1}
               value={latencyCompMs}
               aria-label="Kompensacja latencji wyjścia"
-              onValueChange={(v) => onLatencyCompMsChange(clampLatencyCompensationMs(v))}
+              onValueChange={(v) =>
+                onLatencyCompMsChange(clampLatencyCompensationMs(v))
+              }
             />
             <input
               className={styles.number}
@@ -106,7 +102,9 @@ export function AudioSettingsTab({
               value={latencyCompMs}
               aria-label="Kompensacja latencji (ms)"
               onChange={(e) =>
-                onLatencyCompMsChange(clampLatencyCompensationMs(Number(e.target.value)))
+                onLatencyCompMsChange(
+                  clampLatencyCompensationMs(Number(e.target.value)),
+                )
               }
             />
           </div>

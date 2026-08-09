@@ -4,18 +4,12 @@ export const BEAT_MAPPER_ZOOM_MAX = 32;
 export const BEAT_MAPPER_DEFAULT_VIEW_WINDOW_MS = 30_000;
 
 export function clampBeatMapperZoom(z: number): number {
-  return Math.max(
-    BEAT_MAPPER_ZOOM_MIN,
-    Math.min(BEAT_MAPPER_ZOOM_MAX, z),
-  );
+  return Math.max(BEAT_MAPPER_ZOOM_MIN, Math.min(BEAT_MAPPER_ZOOM_MAX, z));
 }
 
 export function defaultBeatMapperZoom(durationMs: number): number {
   if (!(durationMs > 0)) return BEAT_MAPPER_ZOOM_MIN;
-  const targetWindow = Math.min(
-    BEAT_MAPPER_DEFAULT_VIEW_WINDOW_MS,
-    durationMs,
-  );
+  const targetWindow = Math.min(BEAT_MAPPER_DEFAULT_VIEW_WINDOW_MS, durationMs);
   if (targetWindow <= 0) return BEAT_MAPPER_ZOOM_MIN;
   return clampBeatMapperZoom(durationMs / targetWindow);
 }
@@ -39,7 +33,5 @@ export function isBeatMapperHorizontalWheel(input: {
   deltaX: number;
   deltaY: number;
 }): boolean {
-  return (
-    input.shiftKey || Math.abs(input.deltaX) > Math.abs(input.deltaY)
-  );
+  return input.shiftKey || Math.abs(input.deltaX) > Math.abs(input.deltaY);
 }

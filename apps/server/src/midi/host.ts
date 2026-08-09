@@ -93,7 +93,9 @@ export function createMidiHost(
         fromFile = loadMidiHostConfigFile(options.configFile);
       } catch (err) {
         const raw = err instanceof Error ? err.message : String(err);
-        console.error(`[midi] invalid config file ${options.configFile}: ${raw}`);
+        console.error(
+          `[midi] invalid config file ${options.configFile}: ${raw}`,
+        );
       }
     }
     return resolveBootMidiConfig(fromFile);
@@ -372,8 +374,7 @@ export function createMidiHost(
 
     setConfig(patch: Partial<MidiHostConfig>): MidiHostConfig {
       config = {
-        inputId:
-          patch.inputId !== undefined ? patch.inputId : config.inputId,
+        inputId: patch.inputId !== undefined ? patch.inputId : config.inputId,
         outputId:
           patch.outputId !== undefined ? patch.outputId : config.outputId,
         clockOutEnabled:

@@ -49,9 +49,7 @@ export function truncateMiddle(
 }
 
 /** Canvas `measureText` bound to a CSS font string (browser only). */
-export function createCanvasTextMeasurer(
-  font: string,
-): (s: string) => number {
+export function createCanvasTextMeasurer(font: string): (s: string) => number {
   if (typeof document === "undefined") {
     return (s) => s.length;
   }

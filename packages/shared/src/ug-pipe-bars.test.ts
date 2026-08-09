@@ -104,7 +104,7 @@ describe("quantize / sectionStartFromVocalTicks", () => {
 
   it("maps pickups forward to the next barline", () => {
     // bar 17 beat 3 → Verse at bar 18
-    const pickup = 16 * BAR + (BAR / 2); // 17.3.0 in 1-based = bar index 16, beat 3
+    const pickup = 16 * BAR + BAR / 2; // 17.3.0 in 1-based = bar index 16, beat 3
     expect(sectionStartFromVocalTicks(pickup, BAR)).toBe(17 * BAR);
     expect(sectionStartFromVocalTicks(17 * BAR, BAR)).toBe(17 * BAR);
     expect(sectionStartFromVocalTicks(17 * BAR + 50, BAR)).toBe(17 * BAR);

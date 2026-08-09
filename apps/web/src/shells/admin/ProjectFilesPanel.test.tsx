@@ -68,9 +68,7 @@ describe("ProjectFilesPanel empty, list, and delete aria", () => {
       expect(screen.getByLabelText("Pliki projektu")).toBeTruthy();
     });
     expect(screen.getByText("kick.wav")).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Import plików" }),
-    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Import plików" })).toBeTruthy();
   });
 
   it("hides Import in section header when hideImport", async () => {

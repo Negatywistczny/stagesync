@@ -110,10 +110,7 @@ function msFromZeroToTick(toTicks: number, project: TempoMapProject): number {
   if (anchor.tick === toTicks) return anchor.ms;
   const bpm = resolveTempoAt(project, anchor.tick);
   const meter = resolveMeterAt(project, anchor.tick);
-  return (
-    anchor.ms +
-    ticksToMs(toTicks - anchor.tick, bpm, meter, project.ppq)
-  );
+  return anchor.ms + ticksToMs(toTicks - anchor.tick, bpm, meter, project.ppq);
 }
 
 function ticksToMsAlongDenseMap(
@@ -183,10 +180,7 @@ export function ticksToMsAlongTempoMap(
     throw new RangeError("ticks must be finite");
   }
   if (fromTicks === toTicks) return 0;
-  if (
-    project.tempoMap.length > 24 ||
-    project.meterMap.length > 8
-  ) {
+  if (project.tempoMap.length > 24 || project.meterMap.length > 8) {
     return ticksToMsAlongDenseMap(fromTicks, toTicks, project);
   }
   const sign = toTicks >= fromTicks ? 1 : -1;

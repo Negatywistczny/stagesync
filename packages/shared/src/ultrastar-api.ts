@@ -79,12 +79,16 @@ export const UltrastarAccountTestResponseSchema = z.object({
 export type UltrastarFetchBody = z.infer<typeof UltrastarFetchBodySchema>;
 export type UltrastarSearchBody = z.infer<typeof UltrastarSearchBodySchema>;
 export type UltrastarSongMetadata = z.infer<typeof UltrastarSongMetadataSchema>;
-export type UltrastarFetchResponse = z.infer<typeof UltrastarFetchResponseSchema>;
+export type UltrastarFetchResponse = z.infer<
+  typeof UltrastarFetchResponseSchema
+>;
 export type UltrastarSearchHit = z.infer<typeof UltrastarSearchHitSchema>;
 export type UltrastarSearchResponse = z.infer<
   typeof UltrastarSearchResponseSchema
 >;
-export type UltrastarAccountStatus = z.infer<typeof UltrastarAccountStatusSchema>;
+export type UltrastarAccountStatus = z.infer<
+  typeof UltrastarAccountStatusSchema
+>;
 export type UltrastarAccountPutBody = z.infer<
   typeof UltrastarAccountPutBodySchema
 >;

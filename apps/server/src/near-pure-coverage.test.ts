@@ -21,9 +21,9 @@ describe("network-info edges", () => {
     expect(isLoopbackJoinUrl("http://127.0.0.1:4000")).toBe(true);
     expect(isLoopbackJoinUrl("http://[::1]:4000")).toBe(true);
     expect(isLoopbackJoinUrl("http://::1:4000")).toBe(true);
-    expect(pickPrimaryJoinUrl(["http://localhost:1", "http://10.0.0.2:1"])).toBe(
-      "http://10.0.0.2:1",
-    );
+    expect(
+      pickPrimaryJoinUrl(["http://localhost:1", "http://10.0.0.2:1"]),
+    ).toBe("http://10.0.0.2:1");
     expect(pickPrimaryJoinUrl([])).toBeNull();
     const info = buildNetworkInfo(4000);
     expect(info.port).toBe(4000);
@@ -51,7 +51,9 @@ describe("network-info edges", () => {
 describe("live-desk first-write failure", () => {
   const dirs: string[] = [];
   afterEach(async () => {
-    await Promise.all(dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })));
+    await Promise.all(
+      dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })),
+    );
   });
 
   it("ignores failure when seed write cannot create parent", async () => {
@@ -60,7 +62,9 @@ describe("live-desk first-write failure", () => {
     // parent path is a file → mkdir/write fails inside ensureLoaded catch
     const blocker = join(dir, "blocked");
     await writeFile(blocker, "x");
-    const store = createLiveDeskStore(join(blocker, "nested", "live-desk.json"));
+    const store = createLiveDeskStore(
+      join(blocker, "nested", "live-desk.json"),
+    );
     const settings = await store.get();
     expect(settings.transpositionSemitones).toBe(0);
   });
@@ -75,7 +79,10 @@ describe("auto-advance stops when no next song", () => {
     );
     const end = projectEndTicks(project);
     let now = 0;
-    const transport = createTransportEngine({ now: () => now, tickIntervalMs: 5 });
+    const transport = createTransportEngine({
+      now: () => now,
+      tickIntervalMs: 5,
+    });
     const stop = vi.spyOn(transport, "stop");
     const stores = {
       getProject: vi.fn().mockResolvedValue(project),

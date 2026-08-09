@@ -3,10 +3,7 @@
  * Action strings match `stagesync:desktop-menu` / DesktopMenuBridge handlers.
  */
 
-import {
-  DOCS_INSTALL_URL,
-  DOCS_ISSUES_URL,
-} from "./docsLinks.js";
+import { DOCS_INSTALL_URL, DOCS_ISSUES_URL } from "./docsLinks.js";
 
 export type DesktopMenuItemKind = "action" | "separator" | "submenu";
 
@@ -35,9 +32,7 @@ export type DesktopMenuSubmenuItem = {
 };
 
 export type DesktopMenuLeaf =
-  | DesktopMenuActionItem
-  | DesktopMenuSeparatorItem
-  | DesktopMenuSubmenuItem;
+  DesktopMenuActionItem | DesktopMenuSeparatorItem | DesktopMenuSubmenuItem;
 
 export type DesktopMenuTopLevel = {
   id: string;

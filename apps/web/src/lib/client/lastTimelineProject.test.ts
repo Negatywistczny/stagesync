@@ -78,14 +78,14 @@ describe("lastTimelineProject", () => {
       },
     });
     expect(getLastTimelineProjectId()).toBeNull();
-    expect(() => setLastTimelineProjectId("00000000-0000-4000-8000-000000000001")).not.toThrow();
+    expect(() =>
+      setLastTimelineProjectId("00000000-0000-4000-8000-000000000001"),
+    ).not.toThrow();
     expect(getRecentTimelineProjects()).toEqual([]);
     // Returns in-memory list even when persist throws
     expect(
       pushRecentTimelineProject("00000000-0000-4000-8000-000000000001", "A"),
-    ).toEqual([
-      { id: "00000000-0000-4000-8000-000000000001", name: "A" },
-    ]);
+    ).toEqual([{ id: "00000000-0000-4000-8000-000000000001", name: "A" }]);
   });
 
   it("clears invalid last id and skips bad recent JSON entries", () => {
@@ -116,5 +116,4 @@ describe("lastTimelineProject", () => {
     const recent = getRecentTimelineProjects();
     expect(recent.some((r) => r.id.endsWith("0003"))).toBe(true);
   });
-
 });

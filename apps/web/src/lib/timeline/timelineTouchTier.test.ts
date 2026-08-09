@@ -36,7 +36,9 @@ describe("timelineTouchTier", () => {
       detectTimelineTier(matchesAtViewport(640), { allowMobilePlayer: true }),
     ).toBe("mobile");
     expect(
-      detectTimelineTier(matchesAtViewport(641, 1000), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(641, 1000), {
+        allowMobilePlayer: true,
+      }),
     ).toBe("desktop");
     expect(
       detectTimelineTier(matchesAtWidth(768), { allowMobilePlayer: true }),
@@ -52,8 +54,7 @@ describe("timelineTouchTier", () => {
   it("detects mobile before coarse", () => {
     expect(
       detectTimelineTier(
-        (q) =>
-          q.includes("max-width: 640") || q.includes("pointer: coarse"),
+        (q) => q.includes("max-width: 640") || q.includes("pointer: coarse"),
         {
           allowMobilePlayer: true,
         },
@@ -71,8 +72,7 @@ describe("timelineTouchTier", () => {
     ).toBe("desktop");
     expect(
       detectTimelineTier(
-        (q) =>
-          q.includes("max-width: 640") || q.includes("pointer: coarse"),
+        (q) => q.includes("max-width: 640") || q.includes("pointer: coarse"),
         { allowMobilePlayer: false },
       ),
     ).toBe("tablet");
@@ -84,15 +84,15 @@ describe("timelineTouchTier", () => {
   });
 
   it("detects tablet on coarse when not mobile", () => {
-    expect(
-      detectTimelineTier((q) => q.includes("pointer: coarse")),
-    ).toBe("tablet");
+    expect(detectTimelineTier((q) => q.includes("pointer: coarse"))).toBe(
+      "tablet",
+    );
   });
 
   it("does not treat width ≤1024 alone as tablet", () => {
-    expect(
-      detectTimelineTier((q) => q.includes("max-width: 1024")),
-    ).toBe("desktop");
+    expect(detectTimelineTier((q) => q.includes("max-width: 1024"))).toBe(
+      "desktop",
+    );
   });
 
   it("defaults to desktop", () => {
@@ -121,19 +121,27 @@ describe("timelineTouchTier", () => {
 
   it("641–768px fine-pointer viewport stays desktop edit, not tablet nudge", () => {
     expect(
-      detectTimelineTier(matchesAtViewport(700, 1000), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(700, 1000), {
+        allowMobilePlayer: true,
+      }),
     ).toBe("desktop");
   });
 
   it("detects mobile in landscape low-height viewports (up to 960x500)", () => {
     expect(
-      detectTimelineTier(matchesAtViewport(960, 500), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(960, 500), {
+        allowMobilePlayer: true,
+      }),
     ).toBe("mobile");
     expect(
-      detectTimelineTier(matchesAtViewport(961, 500), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(961, 500), {
+        allowMobilePlayer: true,
+      }),
     ).toBe("desktop");
     expect(
-      detectTimelineTier(matchesAtViewport(960, 501), { allowMobilePlayer: true }),
+      detectTimelineTier(matchesAtViewport(960, 501), {
+        allowMobilePlayer: true,
+      }),
     ).toBe("desktop");
   });
 
@@ -144,5 +152,4 @@ describe("timelineTouchTier", () => {
     expect(detectTimelineTier()).toBe("desktop");
     globalThis.window = prev;
   });
-
 });

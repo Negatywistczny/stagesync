@@ -4,12 +4,7 @@
  * UltraStar / UG timings are passive events snapped to the audio grid.
  */
 
-import type {
-  AudioClip,
-  Project,
-  ProjectAsset,
-  TempoEvent,
-} from "./schema.js";
+import type { AudioClip, Project, ProjectAsset, TempoEvent } from "./schema.js";
 import { BPM_MAX } from "./schema.js";
 import {
   DEFAULT_PPQ,
@@ -434,7 +429,8 @@ export function extendBeatGridToDuration(
   bpm: number,
   maxBeats: number = SMART_TEMPO_MAX_BEATS,
 ): number[] {
-  if (!(durationMs > 0) || !(bpm > 0)) return beatMs.length > 0 ? [...beatMs] : [];
+  if (!(durationMs > 0) || !(bpm > 0))
+    return beatMs.length > 0 ? [...beatMs] : [];
   const period =
     beatMs.length >= 2
       ? (beatMs[beatMs.length - 1]! - beatMs[0]!) / (beatMs.length - 1)
@@ -877,9 +873,10 @@ export function sparsifyTempoNodesFromBeatGrid(
     .slice()
     .sort((a, b) => a.targetTick - b.targetTick || a.wallMs - b.wallMs);
 
-  const minAllowedBpm = seed > 0 ? seed * 0.90 : 40;
-  const maxAllowedBpm = seed > 0 ? seed * 1.10 : 300;
-  const clampBpm = (val: number) => (val > 0 ? Math.min(maxAllowedBpm, Math.max(minAllowedBpm, val)) : seed);
+  const minAllowedBpm = seed > 0 ? seed * 0.9 : 40;
+  const maxAllowedBpm = seed > 0 ? seed * 1.1 : 300;
+  const clampBpm = (val: number) =>
+    val > 0 ? Math.min(maxAllowedBpm, Math.max(minAllowedBpm, val)) : seed;
 
   const firstBpm =
     sorted.length > 1
@@ -912,7 +909,8 @@ export function sparsifyTempoNodesFromBeatGrid(
     const perBeat = localTicksPerBeat(meter, ppq);
     const relTicks = Math.abs(n.targetTick - originTick);
     const modBar = relTicks % barTicks;
-    const isBarStart = modBar <= perBeat * 0.5 || barTicks - modBar <= perBeat * 0.5;
+    const isBarStart =
+      modBar <= perBeat * 0.5 || barTicks - modBar <= perBeat * 0.5;
     if (!isBarStart) continue;
 
     const last = out[out.length - 1]!;
@@ -1019,12 +1017,8 @@ export function tempoNodesFromBeatGrid(
     }));
     nodes = dedupeTempoNodesByWallMs(nodes);
 
-
-
     // Keep pre-roll audio nodes down to wallMs=0 (targetTick=0).
-    nodes = nodes.filter(
-      (n) => n.wallMs >= -1 && n.targetTick >= -1,
-    );
+    nodes = nodes.filter((n) => n.wallMs >= -1 && n.targetTick >= -1);
     if (nodes.length === 0) {
       nodes = [{ wallMs: offset, targetTick: floorTicks }];
     } else {
@@ -1106,7 +1100,8 @@ export function tempoNodesAtBarBoundaries(
   const start = firstBeatIdx >= 0 ? firstBeatIdx : 0;
   for (let i = start; i < dense.length; i += beatsPerBar) {
     if (out.length >= SMART_TEMPO_MAX_UI_NODES) break;
-    if (out.length > 0 && out[out.length - 1]!.wallMs === dense[i]!.wallMs) continue;
+    if (out.length > 0 && out[out.length - 1]!.wallMs === dense[i]!.wallMs)
+      continue;
     out.push({ ...dense[i]! });
   }
   const last = dense[dense.length - 1];
@@ -1378,8 +1373,7 @@ export function layoutFormaFromAlignedWords(
             : beat1Ticks[si]! + barTicks;
         // Snap end up to a barline so Forma lengths stay integer bars.
         const rem = rawEnd % barTicks;
-        endTicksExclusive[si] =
-          rem === 0 ? rawEnd : rawEnd - rem + barTicks;
+        endTicksExclusive[si] = rem === 0 ? rawEnd : rawEnd - rem + barTicks;
       }
     }
   }
@@ -1494,7 +1488,12 @@ export function layoutFormaFromAlignedWords(
  * bar counts but must not author TempoMap kinks (Drift Gate).
  */
 export function filterAnchorsForSmartTempo<
-  T extends { kind: string; ms: number; targetTick?: number; barOffset?: number },
+  T extends {
+    kind: string;
+    ms: number;
+    targetTick?: number;
+    barOffset?: number;
+  },
 >(anchors: readonly T[]): T[] {
   return anchors.filter(
     (a) =>
@@ -1564,10 +1563,7 @@ export function tempoMapFromTempoNodes(
     TEMPO_MAP_MIN_BPM,
     seedBpm > 0 ? seedBpm * 0.65 : TEMPO_MAP_MIN_BPM,
   );
-  const bandHi = Math.min(
-    BPM_MAX,
-    seedBpm > 0 ? seedBpm * 1.45 : BPM_MAX,
-  );
+  const bandHi = Math.min(BPM_MAX, seedBpm > 0 ? seedBpm * 1.45 : BPM_MAX);
   const capped = raw.map((ev) => ({
     startTicks: ev.startTicks,
     bpm: Math.min(bandHi, Math.max(bandLo, ev.bpm)),
@@ -1673,7 +1669,8 @@ export function placeUsUgBackingAudioClip(
     : undefined;
   if (!track) {
     track = project.audioTracks.find(
-      (t) => t.id === US_UG_BACKING_TRACK_ID || t.name === US_UG_BACKING_TRACK_NAME,
+      (t) =>
+        t.id === US_UG_BACKING_TRACK_ID || t.name === US_UG_BACKING_TRACK_NAME,
     );
   }
   if (!track && project.audioTracks.length > 0) {

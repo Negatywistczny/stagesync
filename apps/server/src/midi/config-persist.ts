@@ -3,14 +3,19 @@
  * Zod on the file edge — fail fast on corrupt shapes when loading for apply.
  */
 
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import {
-  MidiHostConfigSchema,
-  type MidiHostConfig,
-} from "@stagesync/shared";
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname } from "node:path";
+import { MidiHostConfigSchema, type MidiHostConfig } from "@stagesync/shared";
 
-export function loadMidiHostConfigFile(filePath: string): MidiHostConfig | null {
+export function loadMidiHostConfigFile(
+  filePath: string,
+): MidiHostConfig | null {
   if (!existsSync(filePath)) return null;
   const raw = JSON.parse(readFileSync(filePath, "utf8")) as unknown;
   return MidiHostConfigSchema.parse(raw);

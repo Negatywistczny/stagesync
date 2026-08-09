@@ -221,7 +221,10 @@ export function ensureInstallationGuide(): void {
 export function openInstallationGuide(tab: InstallGuideTab): void {
   ensureInstallationGuide();
   if (!dialog) return;
-  lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  lastFocus =
+    document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
   setActiveTab(tab);
   document.body.classList.add("has-modal");
   if (!dialog.open) dialog.showModal();

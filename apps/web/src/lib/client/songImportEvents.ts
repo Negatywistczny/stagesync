@@ -8,14 +8,10 @@ export type SongImportEventDetail = {
 };
 
 export function openSongImport(detail: SongImportEventDetail = {}): void {
-  window.dispatchEvent(
-    new CustomEvent(SONG_IMPORT_EVENT, { detail }),
-  );
+  window.dispatchEvent(new CustomEvent(SONG_IMPORT_EVENT, { detail }));
 }
 
-export function parseSongImportDetail(
-  ev: Event,
-): SongImportEventDetail | null {
+export function parseSongImportDetail(ev: Event): SongImportEventDetail | null {
   if (!(ev instanceof CustomEvent)) return null;
   const d = ev.detail;
   if (d == null || typeof d !== "object") return {};

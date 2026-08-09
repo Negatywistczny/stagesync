@@ -72,7 +72,9 @@ describe("memoryPressure", () => {
     expect(snap.causes[0]).toMatch(/sterta JS/);
     expect(formatMemoryPressureSummary(snap)).toMatch(/warn reason=poll/);
     expect(formatMemoryPressureSummary(snap)).toMatch(/audio-buffer-cache=/);
-    expect(userFacingMemoryPressureMessage(snap)).toMatch(/Wysokie użycie pamięci/);
+    expect(userFacingMemoryPressureMessage(snap)).toMatch(
+      /Wysokie użycie pamięci/,
+    );
     expect(userFacingMemoryPressureMessage(snap)).toMatch(/Cache PCM/);
   });
 
@@ -80,7 +82,9 @@ describe("memoryPressure", () => {
     stubHeap(HEAP_CRITICAL_BYTES + 1);
     const snap = collectMemorySnapshot("poll");
     expect(snap.level).toBe("critical");
-    expect(userFacingMemoryPressureMessage(snap)).toMatch(/Krytyczne użycie pamięci/);
+    expect(userFacingMemoryPressureMessage(snap)).toMatch(
+      /Krytyczne użycie pamięci/,
+    );
   });
 
   it("falls back to owned-buffer thresholds without performance.memory", () => {

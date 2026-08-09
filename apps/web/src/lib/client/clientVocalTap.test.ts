@@ -16,11 +16,7 @@ describe("clientVocalTap", () => {
   });
 
   it("queues non-empty tekst clips on/after content floor", () => {
-    const base = createProjectV6Seed(
-      "p",
-      "S",
-      "2026-07-23T00:00:00.000Z",
-    );
+    const base = createProjectV6Seed("p", "S", "2026-07-23T00:00:00.000Z");
     const project = {
       ...base,
       tekst: {
@@ -57,11 +53,7 @@ describe("clientVocalTap", () => {
   });
 
   it("applyVocalTap moves clip start and shifts blocks", () => {
-    const base = createProjectV6Seed(
-      "p",
-      "S",
-      "2026-07-23T00:00:00.000Z",
-    );
+    const base = createProjectV6Seed("p", "S", "2026-07-23T00:00:00.000Z");
     const project = {
       ...base,
       tekst: {

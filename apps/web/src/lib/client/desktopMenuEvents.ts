@@ -69,9 +69,7 @@ const KNOWN: ReadonlySet<string> = new Set([
   "diagnostics-export",
 ]);
 
-export function isDesktopMenuAction(
-  value: string,
-): value is DesktopMenuAction {
+export function isDesktopMenuAction(value: string): value is DesktopMenuAction {
   return KNOWN.has(value);
 }
 

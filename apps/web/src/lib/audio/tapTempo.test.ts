@@ -1,10 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createProjectV5Seed } from "@stagesync/shared";
-import {
-  applyTapBpm,
-  createTapTempoState,
-  recordTap,
-} from "./tapTempo.js";
+import { applyTapBpm, createTapTempoState, recordTap } from "./tapTempo.js";
 
 describe("tapTempo", () => {
   it("needs two taps before emitting BPM", () => {
@@ -16,24 +12,14 @@ describe("tapTempo", () => {
 
   it("ignores non-finite now and clamps BPM range", () => {
     expect(recordTap(createTapTempoState(), Number.NaN).bpm).toBeNull();
-    const slow = recordTap(
-      recordTap(createTapTempoState(), 0).state,
-      10_000,
-    );
+    const slow = recordTap(recordTap(createTapTempoState(), 0).state, 10_000);
     expect(slow.bpm).toBe(20);
-    const fast = recordTap(
-      recordTap(createTapTempoState(), 0).state,
-      50,
-    );
+    const fast = recordTap(recordTap(createTapTempoState(), 0).state, 50);
     expect(fast.bpm).toBe(400);
   });
 
   it("applyTapBpm updates existing event or inserts sorted", () => {
-    const project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-23T00:00:00.000Z",
-    );
+    const project = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
     const updated = applyTapBpm(project, 0, 100);
     expect(updated.tempoMap).toHaveLength(1);
     expect(updated.tempoMap[0]!.bpm).toBe(100);
@@ -61,7 +47,7 @@ describe("tapTempo", () => {
     };
     // Branch: events.length===1 && Math.abs(events[0].startTicks - atTicks) < 1
     expect(applyTapBpm(near, 0, 88).tempoMap[0]?.bpm).toBe(88);
-    // Use Object to force startTicks that abs-diff < 1 with atTicks=0 when event at 0.5? 
+    // Use Object to force startTicks that abs-diff < 1 with atTicks=0 when event at 0.5?
     // applyTapBpm uses === for existing first; then abs < 1 branch.
     const fractional = {
       ...project,
@@ -71,5 +57,4 @@ describe("tapTempo", () => {
     expect(updated.tempoMap).toHaveLength(1);
     expect(updated.tempoMap[0]!.bpm).toBe(77);
   });
-
 });

@@ -18,7 +18,9 @@ export interface DesktopUpdateInfo {
 }
 
 type TauriGlobal = {
-  core?: { invoke?: (cmd: string, args?: Record<string, unknown>) => Promise<unknown> };
+  core?: {
+    invoke?: (cmd: string, args?: Record<string, unknown>) => Promise<unknown>;
+  };
   window?: {
     getCurrentWindow?: () => {
       toggleMaximize?: () => Promise<void>;
@@ -43,14 +45,18 @@ function tauriGlobal(): TauriGlobal | undefined {
   if (typeof window === "undefined") return undefined;
   const w = window as unknown as Record<string, unknown>;
   const tauri = w["__TAURI__"];
-  return tauri && typeof tauri === "object" ? (tauri as TauriGlobal) : undefined;
+  return tauri && typeof tauri === "object"
+    ? (tauri as TauriGlobal)
+    : undefined;
 }
 
 function tauriInternals(): TauriInternals | undefined {
   if (typeof window === "undefined") return undefined;
   const w = window as unknown as Record<string, unknown>;
   const internals = w["__TAURI_INTERNALS__"];
-  return internals && typeof internals === "object" ? (internals as TauriInternals) : undefined;
+  return internals && typeof internals === "object"
+    ? (internals as TauriInternals)
+    : undefined;
 }
 
 /**
@@ -70,7 +76,8 @@ function sidecarDesktopShell(): boolean {
   // Tauri WebView loads http://127.0.0.1:4000 without __TAURI__; cached index.html may omit the inject script.
   const loc = window.location;
   if (loc) {
-    const localHost = loc.hostname === "127.0.0.1" || loc.hostname === "localhost";
+    const localHost =
+      loc.hostname === "127.0.0.1" || loc.hostname === "localhost";
     if (localHost && loc.port === "4000") return true;
   }
   return false;
@@ -104,7 +111,11 @@ export function isDesktopShell(): boolean {
   if (typeof window === "undefined") return false;
   const devSurface = getActiveDevSurface();
   if (devSurface === "tauri") return true;
-  if (devSurface === "console" || devSurface === "performer" || devSurface === "web") {
+  if (
+    devSurface === "console" ||
+    devSurface === "performer" ||
+    devSurface === "web"
+  ) {
     return false;
   }
   if (sidecarDesktopShell()) return true;
@@ -168,7 +179,10 @@ export function canUseDesktopUpdater(): boolean {
   return isDesktopShell() && tauriInvokeAvailable();
 }
 
-function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+function tauriInvoke<T>(
+  cmd: string,
+  args?: Record<string, unknown>,
+): Promise<T> {
   const fromGlobal = tauriGlobal()?.core?.invoke;
   const invoke = fromGlobal ?? tauriInternals()?.invoke;
   if (!invoke) {
@@ -332,8 +346,13 @@ async function toggleNativeWindowViaPlugin(): Promise<void> {
     return;
   }
 
-  const isFs = await tauriInvoke<boolean>("plugin:window|is_fullscreen", { label });
-  await tauriInvoke<void>("plugin:window|set_fullscreen", { label, value: !isFs });
+  const isFs = await tauriInvoke<boolean>("plugin:window|is_fullscreen", {
+    label,
+  });
+  await tauriInvoke<void>("plugin:window|set_fullscreen", {
+    label,
+    value: !isFs,
+  });
 }
 
 /**
@@ -371,7 +390,9 @@ export async function toggleAppFullscreen(): Promise<void> {
 }
 
 /** Sync last Timeline project id to the native menu (desktop only). */
-export function syncNavTimelineProjectId(projectId: string | null): Promise<void> {
+export function syncNavTimelineProjectId(
+  projectId: string | null,
+): Promise<void> {
   if (!isDesktopShell()) return Promise.resolve();
   return tauriInvoke<void>("set_nav_timeline_project_id", {
     projectId,
@@ -398,7 +419,10 @@ export function syncEditHistoryState(
   canUndo: boolean,
   canRedo: boolean,
 ): Promise<void> {
-  if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.dispatchEvent === "function"
+  ) {
     window.dispatchEvent(
       new CustomEvent(EDIT_HISTORY_EVENT, {
         detail: { canUndo, canRedo } satisfies EditHistoryDetail,
@@ -443,10 +467,7 @@ export function prepareHostRestart(): Promise<void> {
   return tauriInvoke<void>("prepare_host_restart", {}).catch(() => {});
 }
 
-export type DesktopNotificationPermission =
-  | "granted"
-  | "denied"
-  | "default";
+export type DesktopNotificationPermission = "granted" | "denied" | "default";
 
 /**
  * Desktop toast permission via tauri-plugin-notification.
@@ -460,7 +481,8 @@ export async function requestDesktopNotificationPermission(): Promise<DesktopNot
       "plugin:notification|request_permission",
     );
     if (state === "granted" || state === "denied") return state;
-    if (state === "prompt" || state === "prompt-with-rationale") return "default";
+    if (state === "prompt" || state === "prompt-with-rationale")
+      return "default";
     return "granted";
   } catch {
     // Plugin missing / ACL — desktop consent is the StageSync toggle.
@@ -500,7 +522,9 @@ export function returnToLauncher(): Promise<void> {
     assignReturnToLauncherHref();
     return Promise.resolve();
   }
-  return Promise.reject(new Error("Powrót do Launchera niedostępny w tej sesji"));
+  return Promise.reject(
+    new Error("Powrót do Launchera niedostępny w tej sesji"),
+  );
 }
 
 function assignReturnToLauncherHref(): void {

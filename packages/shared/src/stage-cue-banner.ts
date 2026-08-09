@@ -136,8 +136,7 @@ export function resolveStageCueBanner(opts: {
   }
 
   const sessionSource =
-    opts.sessionCues ??
-    (opts.sessionCue != null ? [opts.sessionCue] : []);
+    opts.sessionCues ?? (opts.sessionCue != null ? [opts.sessionCue] : []);
   const sessionItems: Ranked[] = [];
   for (const session of sessionSource) {
     if (!roleMatches(opts.activeRoles, session.roles)) continue;
@@ -162,10 +161,7 @@ export function resolveStageCueBanner(opts: {
 
   const next =
     pickBest(
-      [
-        ...songUpcoming.filter((c) => c.priority === "alert"),
-        ...songUpcoming,
-      ],
+      [...songUpcoming.filter((c) => c.priority === "alert"), ...songUpcoming],
       now?.id,
     ) ?? null;
 

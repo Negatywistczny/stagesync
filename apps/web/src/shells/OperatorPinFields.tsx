@@ -93,7 +93,11 @@ export function OperatorPinFields() {
           {error}
         </p>
       ) : null}
-      <Button variant="primary" type="submit" disabled={pending || !draft.trim()}>
+      <Button
+        variant="primary"
+        type="submit"
+        disabled={pending || !draft.trim()}
+      >
         {pending ? "Sprawdzanie…" : "Odblokuj edycję"}
       </Button>
     </form>

@@ -96,14 +96,7 @@ describe("UltraStar melisma ~", () => {
       "tion",
     ]);
     expect(
-      ultrastarLineTextFromRawLyrics([
-        "Con",
-        "ver",
-        "sa",
-        "~",
-        "~",
-        "tion ",
-      ]),
+      ultrastarLineTextFromRawLyrics(["Con", "ver", "sa", "~", "~", "tion "]),
     ).toBe("Conversation");
   });
 
@@ -205,12 +198,14 @@ E
     expect(r.melody.clips[0]!.pitchMidi).toBe(60);
     expect(r.melody.clips[1]!.pitchMidi).toBe(62);
 
-    expect(ProjectSchema.parse({
-      ...createProjectSeed("p1", "x", "2026-08-02T12:00:00.000Z"),
-      tekst: r.tekst,
-      melody: r.melody,
-      defaultBpm: r.metronomeBpm,
-    }).formatVersion).toBe(6);
+    expect(
+      ProjectSchema.parse({
+        ...createProjectSeed("p1", "x", "2026-08-02T12:00:00.000Z"),
+        tekst: r.tekst,
+        melody: r.melody,
+        defaultBpm: r.metronomeBpm,
+      }).formatVersion,
+    ).toBe(6);
   });
 
   it("does not glue words when trailing spaces mark boundaries", () => {
@@ -281,7 +276,9 @@ E
     expect(r.tekst.clips).toHaveLength(3);
     expect(r.tekst.clips[0]!.startTicks).toBe(gapTicks);
     expect(r.tekst.clips[1]!.startTicks).toBe(gapTicks + Math.round(64 * tpUb));
-    expect(r.tekst.clips[2]!.startTicks).toBe(gapTicks + Math.round(256 * tpUb));
+    expect(r.tekst.clips[2]!.startTicks).toBe(
+      gapTicks + Math.round(256 * tpUb),
+    );
 
     // Inter-phrase tick gaps must track absolute beat deltas (64, 192) — not ×4.
     expect(r.tekst.clips[1]!.startTicks - r.tekst.clips[0]!.startTicks).toBe(
@@ -292,11 +289,21 @@ E
     );
 
     // Wall-clock vs USDX formula (issue: 10 beats @ BPM 120 → 1.25s).
-    const wall2 = ticksToMs(r.tekst.clips[1]!.startTicks, metro, METER, DEFAULT_PPQ);
+    const wall2 = ticksToMs(
+      r.tekst.clips[1]!.startTicks,
+      metro,
+      METER,
+      DEFAULT_PPQ,
+    );
     const usdx2 = 1000 + (64 * 60_000) / (400 * 4);
     expect(Math.abs(wall2 - usdx2)).toBeLessThan(1);
 
-    const wall3 = ticksToMs(r.tekst.clips[2]!.startTicks, metro, METER, DEFAULT_PPQ);
+    const wall3 = ticksToMs(
+      r.tekst.clips[2]!.startTicks,
+      metro,
+      METER,
+      DEFAULT_PPQ,
+    );
     const usdx3 = 1000 + (256 * 60_000) / (400 * 4);
     expect(Math.abs(wall3 - usdx3)).toBeLessThan(1);
   });

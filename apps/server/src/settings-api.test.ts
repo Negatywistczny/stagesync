@@ -17,8 +17,15 @@ async function scratchHomedirOrTmp(prefix: string): Promise<string> {
   try {
     return await mkdtemp(homeBase);
   } catch (e) {
-    if (e && typeof e === "object" && "code" in e && (e as { code?: string }).code === "EPERM") {
-      return await mkdtemp(join(resolveTestScratchRoot(), prefix.replace(/^\./, "")));
+    if (
+      e &&
+      typeof e === "object" &&
+      "code" in e &&
+      (e as { code?: string }).code === "EPERM"
+    ) {
+      return await mkdtemp(
+        join(resolveTestScratchRoot(), prefix.replace(/^\./, "")),
+      );
     }
     throw e;
   }
@@ -28,10 +35,14 @@ describe("GET/PUT /api/system/settings + browse", () => {
   const dirs: string[] = [];
   afterEach(async () => {
     vi.unstubAllEnvs();
-    await Promise.all(dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })));
+    await Promise.all(
+      dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })),
+    );
   });
 
-  async function listen(dataDir: string): Promise<{ server: Server; baseUrl: string }> {
+  async function listen(
+    dataDir: string,
+  ): Promise<{ server: Server; baseUrl: string }> {
     const { app } = createApp({ dataDir });
     const server = await new Promise<Server>((resolve) => {
       const s = app.listen(0, "127.0.0.1", () => resolve(s));
@@ -47,7 +58,10 @@ describe("GET/PUT /api/system/settings + browse", () => {
     try {
       const res = await fetch(`${baseUrl}/api/system/settings`);
       expect(res.status).toBe(200);
-      const body = (await res.json()) as { values: Record<string, unknown>; schema: Record<string, { label: string }> };
+      const body = (await res.json()) as {
+        values: Record<string, unknown>;
+        schema: Record<string, { label: string }>;
+      };
       expect(body.schema.PORT?.label).toMatch(/Port/i);
       expect(body.values).toHaveProperty("PORT");
     } finally {
@@ -79,7 +93,9 @@ describe("GET/PUT /api/system/settings + browse", () => {
     dirs.push(dataDir);
     const { server, baseUrl } = await listen(dataDir);
     try {
-      const res = await fetch(`${baseUrl}/api/system/browse?mode=dir&path=${encodeURIComponent(dataDir)}`);
+      const res = await fetch(
+        `${baseUrl}/api/system/browse?mode=dir&path=${encodeURIComponent(dataDir)}`,
+      );
       expect(res.status).toBe(200);
       const body = (await res.json()) as { canSelectCurrent: boolean };
       expect(body.canSelectCurrent).toBe(true);
@@ -207,9 +223,7 @@ describe("GET/PUT /api/system/settings + browse", () => {
     const zipPath = join(dataDir, "pack.zip");
     await writeFile(
       zipPath,
-      buildStoreZip([
-        { name: "c.json", data: Buffer.from("C", "utf8") },
-      ]),
+      buildStoreZip([{ name: "c.json", data: Buffer.from("C", "utf8") }]),
     );
     const { server, baseUrl } = await listen(dataDir);
     try {

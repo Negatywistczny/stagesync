@@ -66,9 +66,9 @@ describe("detectLibraryImportFormat", () => {
   });
 
   it("prefers projects over songs when both present", () => {
-    expect(
-      detectLibraryImportFormat({ projects: [{}], songs: [{}] }),
-    ).toEqual({ format: "v5-pack" });
+    expect(detectLibraryImportFormat({ projects: [{}], songs: [{}] })).toEqual({
+      format: "v5-pack",
+    });
   });
 
   it("returns unknown with Polish reason", () => {

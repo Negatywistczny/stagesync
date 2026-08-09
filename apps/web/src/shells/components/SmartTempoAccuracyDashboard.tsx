@@ -40,7 +40,11 @@ export type TrackBenchmarkDataset = {
   medianErrorMs: number;
   p95ErrorMs: number;
   dawGrade?: { exactPct: number; closePct: number; failPct: number };
-  stageGrade?: { perfectPct: number; acceptablePct: number; unusablePct: number };
+  stageGrade?: {
+    perfectPct: number;
+    acceptablePct: number;
+    unusablePct: number;
+  };
   bars: BarDataPoint[];
 };
 
@@ -58,20 +62,29 @@ export type BenchmarkHistoryEntry = {
     medianMs: number;
     p95Ms: number;
     dawGrade?: { exactPct: number; closePct: number; failPct: number };
-    stageGrade?: { perfectPct: number; acceptablePct: number; unusablePct: number };
+    stageGrade?: {
+      perfectPct: number;
+      acceptablePct: number;
+      unusablePct: number;
+    };
   };
   perSong?: Record<
     string,
     {
       exactPct: number;
       meanMs: number;
-      stageGrade?: { perfectPct: number; acceptablePct: number; unusablePct: number };
+      stageGrade?: {
+        perfectPct: number;
+        acceptablePct: number;
+        unusablePct: number;
+      };
     }
   >;
 };
 
 const DEFAULT_DATASET = benchmarkDataRaw as unknown as TrackBenchmarkDataset[];
-const DEFAULT_HISTORY = benchmarkHistoryRaw as unknown as BenchmarkHistoryEntry[];
+const DEFAULT_HISTORY =
+  benchmarkHistoryRaw as unknown as BenchmarkHistoryEntry[];
 
 export type SmartTempoAccuracyDashboardProps = {
   /** Optional custom dataset to display instead of the default benchmark tracks. */
@@ -86,13 +99,55 @@ export type SmartTempoAccuracyDashboardProps = {
 
 // Non-linear bin definitions — bin boundaries align with tier thresholds
 const HISTOGRAM_BINS = [
-  { label: "0–15ms", min: 0, max: 15.05, dawTier: "exact", stageTier: "stage-perfect" },
-  { label: "15–30ms", min: 15.05, max: 30, dawTier: "exact", stageTier: "stage-acceptable" },
-  { label: "30–60ms", min: 30, max: 60.05, dawTier: "exact", stageTier: "stage-unusable" },
-  { label: "60–90ms", min: 60.05, max: 90, dawTier: "close", stageTier: "stage-unusable" },
-  { label: "90–125ms", min: 90, max: 125.05, dawTier: "close", stageTier: "stage-unusable" },
-  { label: "125–250ms", min: 125.05, max: 250, dawTier: "fail", stageTier: "stage-unusable" },
-  { label: ">250ms", min: 250, max: Infinity, dawTier: "fail", stageTier: "stage-unusable" },
+  {
+    label: "0–15ms",
+    min: 0,
+    max: 15.05,
+    dawTier: "exact",
+    stageTier: "stage-perfect",
+  },
+  {
+    label: "15–30ms",
+    min: 15.05,
+    max: 30,
+    dawTier: "exact",
+    stageTier: "stage-acceptable",
+  },
+  {
+    label: "30–60ms",
+    min: 30,
+    max: 60.05,
+    dawTier: "exact",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: "60–90ms",
+    min: 60.05,
+    max: 90,
+    dawTier: "close",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: "90–125ms",
+    min: 90,
+    max: 125.05,
+    dawTier: "close",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: "125–250ms",
+    min: 125.05,
+    max: 250,
+    dawTier: "fail",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: ">250ms",
+    min: 250,
+    max: Infinity,
+    dawTier: "fail",
+    stageTier: "stage-unusable",
+  },
 ] as const;
 
 export function SmartTempoAccuracyDashboard({
@@ -108,7 +163,9 @@ export function SmartTempoAccuracyDashboard({
   const [gradeMode, setGradeMode] = useState<"daw" | "stage">("daw");
   const [showHistoryOverlay, setShowHistoryOverlay] = useState<boolean>(false);
   const [hoveredPoint, setHoveredPoint] = useState<BarDataPoint | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
 
   // Active dataset filtering
   const activeBars = useMemo(() => {
@@ -145,12 +202,16 @@ export function SmartTempoAccuracyDashboard({
 
     // DAW Grade
     const exactCount = activeBars.filter((b) => b.errorMs <= 60).length;
-    const closeCount = activeBars.filter((b) => b.errorMs > 60 && b.errorMs <= 125).length;
+    const closeCount = activeBars.filter(
+      (b) => b.errorMs > 60 && b.errorMs <= 125,
+    ).length;
     const failCount = activeBars.filter((b) => b.errorMs > 125).length;
 
     // Stage-Ready Grade
     const stagePerfectCount = activeBars.filter((b) => b.errorMs <= 15).length;
-    const stageAcceptableCount = activeBars.filter((b) => b.errorMs > 15 && b.errorMs <= 35).length;
+    const stageAcceptableCount = activeBars.filter(
+      (b) => b.errorMs > 15 && b.errorMs <= 35,
+    ).length;
     const stageUnusableCount = activeBars.filter((b) => b.errorMs > 35).length;
 
     const errorsSorted = activeBars.map((b) => b.errorMs).sort((a, b) => a - b);
@@ -172,7 +233,8 @@ export function SmartTempoAccuracyDashboard({
       stageAcceptableCount,
       stageUnusableCount,
       stagePerfectPct: Math.round((stagePerfectCount / total) * 1000) / 10,
-      stageAcceptablePct: Math.round((stageAcceptableCount / total) * 1000) / 10,
+      stageAcceptablePct:
+        Math.round((stageAcceptableCount / total) * 1000) / 10,
       stageUnusablePct: Math.round((stageUnusableCount / total) * 1000) / 10,
 
       avgErrorMs: Math.round((sumErr / total) * 10) / 10,
@@ -191,12 +253,16 @@ export function SmartTempoAccuracyDashboard({
   const deltas = useMemo(() => {
     if (!compareRun) return null;
 
-    let baseExactPct = compareRun.summary.dawGrade?.exactPct ?? compareRun.summary.exactPct;
-    const baseClosePct = compareRun.summary.dawGrade?.closePct ?? compareRun.summary.closePct;
-    const baseFailPct = compareRun.summary.dawGrade?.failPct ?? compareRun.summary.failPct;
+    let baseExactPct =
+      compareRun.summary.dawGrade?.exactPct ?? compareRun.summary.exactPct;
+    const baseClosePct =
+      compareRun.summary.dawGrade?.closePct ?? compareRun.summary.closePct;
+    const baseFailPct =
+      compareRun.summary.dawGrade?.failPct ?? compareRun.summary.failPct;
 
     let basePerfectPct = compareRun.summary.stageGrade?.perfectPct ?? 15.0;
-    let baseAcceptablePct = compareRun.summary.stageGrade?.acceptablePct ?? 25.0;
+    let baseAcceptablePct =
+      compareRun.summary.stageGrade?.acceptablePct ?? 25.0;
     let baseUnusablePct = compareRun.summary.stageGrade?.unusablePct ?? 60.0;
 
     let baseMeanMs = compareRun.summary.meanMs;
@@ -220,9 +286,12 @@ export function SmartTempoAccuracyDashboard({
     const closeDelta = Math.round((stats.closePct - baseClosePct) * 10) / 10;
     const failDelta = Math.round((stats.failPct - baseFailPct) * 10) / 10;
 
-    const perfectDelta = Math.round((stats.stagePerfectPct - basePerfectPct) * 10) / 10;
-    const acceptableDelta = Math.round((stats.stageAcceptablePct - baseAcceptablePct) * 10) / 10;
-    const unusableDelta = Math.round((stats.stageUnusablePct - baseUnusablePct) * 10) / 10;
+    const perfectDelta =
+      Math.round((stats.stagePerfectPct - basePerfectPct) * 10) / 10;
+    const acceptableDelta =
+      Math.round((stats.stageAcceptablePct - baseAcceptablePct) * 10) / 10;
+    const unusableDelta =
+      Math.round((stats.stageUnusablePct - baseUnusablePct) * 10) / 10;
 
     const meanDelta = Math.round((stats.avgErrorMs - baseMeanMs) * 10) / 10;
 
@@ -292,7 +361,15 @@ export function SmartTempoAccuracyDashboard({
   // Tempo Range and Curve Calculation for Section D (Tempo Contour & Convergence Plot)
   const tempoChartData = useMemo(() => {
     if (activeBars.length === 0) {
-      return { minBpm: 100, maxBpm: 140, bpmRange: 40, refPath: "", estPath: "", segments: [], points: [] };
+      return {
+        minBpm: 100,
+        maxBpm: 140,
+        bpmRange: 40,
+        refPath: "",
+        estPath: "",
+        segments: [],
+        points: [],
+      };
     }
 
     const allBpms = activeBars.flatMap((b) => [b.refBpm, b.estBpm]);
@@ -324,7 +401,8 @@ export function SmartTempoAccuracyDashboard({
       .map((bar, i) => {
         const x = getX(bar.timeSec);
         const y = getY(bar.refBpm);
-        const isStartOfTrack = i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
+        const isStartOfTrack =
+          i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
         return `${isStartOfTrack ? "M" : "L"} ${x.toFixed(1)},${y.toFixed(1)}`;
       })
       .join(" ");
@@ -334,7 +412,8 @@ export function SmartTempoAccuracyDashboard({
       .map((bar, i) => {
         const x = getX(bar.timeSec);
         const y = getY(bar.estBpm);
-        const isStartOfTrack = i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
+        const isStartOfTrack =
+          i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
         return `${isStartOfTrack ? "M" : "L"} ${x.toFixed(1)},${y.toFixed(1)}`;
       })
       .join(" ");
@@ -404,13 +483,18 @@ export function SmartTempoAccuracyDashboard({
               <span className={styles.badgeHeader}>Logic Pro SSOT</span>
             </h2>
             <p className={styles.subtitle}>
-              Porównanie odchyleń siatki Smart Tempo z Logic Pro. Ocena dwupoziomowa: Studio DAW vs Estradowa Live.
+              Porównanie odchyleń siatki Smart Tempo z Logic Pro. Ocena
+              dwupoziomowa: Studio DAW vs Estradowa Live.
             </p>
           </div>
 
           <div className={styles.headerControlsRight}>
             {/* Dual-Tier Metric Grade Mode Switch */}
-            <div className={styles.gradeModeToggle} role="tablist" aria-label="Tryb oceny metryk">
+            <div
+              className={styles.gradeModeToggle}
+              role="tablist"
+              aria-label="Tryb oceny metryk"
+            >
               <button
                 type="button"
                 className={`${styles.gradeModeBtn} ${
@@ -445,7 +529,8 @@ export function SmartTempoAccuracyDashboard({
                 {history.map((h, i) => (
                   <option key={h.id} value={h.id}>
                     {i === 0 ? "⚡ Wersja Bazowa: " : "📜 "}
-                    {h.note.length > 30 ? `${h.note.slice(0, 30)}…` : h.note} ({h.gitCommit} · Exact {h.summary.exactPct}%)
+                    {h.note.length > 30 ? `${h.note.slice(0, 30)}…` : h.note} (
+                    {h.gitCommit} · Exact {h.summary.exactPct}%)
                   </option>
                 ))}
               </select>
@@ -455,13 +540,18 @@ export function SmartTempoAccuracyDashboard({
 
         {/* Row 2: Track Selector Pills Bar */}
         <div className={styles.headerRow2}>
-          <div className={styles.trackSelector} role="tablist" aria-label="Wybór utworu">
+          <div
+            className={styles.trackSelector}
+            role="tablist"
+            aria-label="Wybór utworu"
+          >
             <button
               type="button"
               className={`${styles.trackBtn} ${selectedTrackId === "all" ? styles.trackBtnActive : ""}`}
               onClick={() => setSelectedTrackId("all")}
             >
-              Wszystkie ({DEFAULT_DATASET.reduce((sum, t) => sum + t.barsCount, 0)} miar)
+              Wszystkie (
+              {DEFAULT_DATASET.reduce((sum, t) => sum + t.barsCount, 0)} miar)
             </button>
             {dataset.map((t) => (
               <button
@@ -485,7 +575,9 @@ export function SmartTempoAccuracyDashboard({
             <div className={`${styles.kpiCard} ${styles.kpiCardExact}`}>
               <div className={styles.kpiHeader}>
                 <span className={styles.kpiLabel}>🟢 Dokładne (≤ 60 ms)</span>
-                <span className={`${styles.kpiBadge} ${styles.badgeExact}`}>DAW Grade</span>
+                <span className={`${styles.kpiBadge} ${styles.badgeExact}`}>
+                  DAW Grade
+                </span>
               </div>
               <div className={styles.kpiValueRow}>
                 <span className={styles.kpiValue}>{stats.exactPct}%</span>
@@ -500,30 +592,47 @@ export function SmartTempoAccuracyDashboard({
                     }`}
                     title={`Δ vs baseline ${deltas.baseExactPct}%`}
                   >
-                    {deltas.exactDelta > 0 ? `+${deltas.exactDelta}% 🟢` : deltas.exactDelta < 0 ? `${deltas.exactDelta}% 🔴` : `0%`}
+                    {deltas.exactDelta > 0
+                      ? `+${deltas.exactDelta}% 🟢`
+                      : deltas.exactDelta < 0
+                        ? `${deltas.exactDelta}% 🔴`
+                        : `0%`}
                   </span>
                 )}
               </div>
               <div className={styles.kpiMeta}>
-                {stats.exactCount} z {stats.total} miar (≤ 1/32 nuty przy 120 BPM)
+                {stats.exactCount} z {stats.total} miar (≤ 1/32 nuty przy 120
+                BPM)
               </div>
             </div>
 
             {/* DAW Close KPI */}
             <div className={`${styles.kpiCard} ${styles.kpiCardClose}`}>
               <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>🟡 Tolerancja (60–125 ms)</span>
-                <span className={`${styles.kpiBadge} ${styles.badgeClose}`}>Rubato</span>
+                <span className={styles.kpiLabel}>
+                  🟡 Tolerancja (60–125 ms)
+                </span>
+                <span className={`${styles.kpiBadge} ${styles.badgeClose}`}>
+                  Rubato
+                </span>
               </div>
               <div className={styles.kpiValueRow}>
                 <span className={styles.kpiValue}>{stats.closePct}%</span>
                 {deltas && (
                   <span
                     className={`${styles.deltaBadge} ${
-                      deltas.closeDelta < 0 ? styles.deltaGood : deltas.closeDelta > 0 ? styles.deltaBad : styles.deltaNeutral
+                      deltas.closeDelta < 0
+                        ? styles.deltaGood
+                        : deltas.closeDelta > 0
+                          ? styles.deltaBad
+                          : styles.deltaNeutral
                     }`}
                   >
-                    {deltas.closeDelta > 0 ? `+${deltas.closeDelta}%` : deltas.closeDelta < 0 ? `${deltas.closeDelta}%` : `0%`}
+                    {deltas.closeDelta > 0
+                      ? `+${deltas.closeDelta}%`
+                      : deltas.closeDelta < 0
+                        ? `${deltas.closeDelta}%`
+                        : `0%`}
                   </span>
                 )}
               </div>
@@ -552,7 +661,11 @@ export function SmartTempoAccuracyDashboard({
                           : styles.deltaNeutral
                     }`}
                   >
-                    {deltas.failDelta > 0 ? `+${deltas.failDelta}% 🔴` : deltas.failDelta < 0 ? `${deltas.failDelta}% 🟢` : `0%`}
+                    {deltas.failDelta > 0
+                      ? `+${deltas.failDelta}% 🔴`
+                      : deltas.failDelta < 0
+                        ? `${deltas.failDelta}% 🟢`
+                        : `0%`}
                   </span>
                 )}
               </div>
@@ -566,11 +679,17 @@ export function SmartTempoAccuracyDashboard({
             {/* Stage Perfect KPI */}
             <div className={`${styles.kpiCard} ${styles.kpiCardExact}`}>
               <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>🟢 Stage Perfect (≤ 15 ms)</span>
-                <span className={`${styles.kpiBadge} ${styles.badgeExact}`}>IEM Safe</span>
+                <span className={styles.kpiLabel}>
+                  🟢 Stage Perfect (≤ 15 ms)
+                </span>
+                <span className={`${styles.kpiBadge} ${styles.badgeExact}`}>
+                  IEM Safe
+                </span>
               </div>
               <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats.stagePerfectPct}%</span>
+                <span className={styles.kpiValue}>
+                  {stats.stagePerfectPct}%
+                </span>
                 {deltas && (
                   <span
                     className={`${styles.deltaBadge} ${
@@ -582,23 +701,34 @@ export function SmartTempoAccuracyDashboard({
                     }`}
                     title={`Δ vs baseline ${deltas.basePerfectPct}%`}
                   >
-                    {deltas.perfectDelta > 0 ? `+${deltas.perfectDelta}% 🟢` : deltas.perfectDelta < 0 ? `${deltas.perfectDelta}% 🔴` : `0%`}
+                    {deltas.perfectDelta > 0
+                      ? `+${deltas.perfectDelta}% 🟢`
+                      : deltas.perfectDelta < 0
+                        ? `${deltas.perfectDelta}% 🔴`
+                        : `0%`}
                   </span>
                 )}
               </div>
               <div className={styles.kpiMeta}>
-                {stats.stagePerfectCount} z {stats.total} miar (Zero IEM flam / Konzert-ready)
+                {stats.stagePerfectCount} z {stats.total} miar (Zero IEM flam /
+                Konzert-ready)
               </div>
             </div>
 
             {/* Stage Acceptable KPI */}
             <div className={`${styles.kpiCard} ${styles.kpiCardClose}`}>
               <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>🟡 Stage Acceptable (15–35 ms)</span>
-                <span className={`${styles.kpiBadge} ${styles.badgeClose}`}>DMX Safe</span>
+                <span className={styles.kpiLabel}>
+                  🟡 Stage Acceptable (15–35 ms)
+                </span>
+                <span className={`${styles.kpiBadge} ${styles.badgeClose}`}>
+                  DMX Safe
+                </span>
               </div>
               <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats.stageAcceptablePct}%</span>
+                <span className={styles.kpiValue}>
+                  {stats.stageAcceptablePct}%
+                </span>
                 {deltas && (
                   <span
                     className={`${styles.deltaBadge} ${
@@ -609,23 +739,34 @@ export function SmartTempoAccuracyDashboard({
                           : styles.deltaNeutral
                     }`}
                   >
-                    {deltas.acceptableDelta > 0 ? `+${deltas.acceptableDelta}%` : deltas.acceptableDelta < 0 ? `${deltas.acceptableDelta}%` : `0%`}
+                    {deltas.acceptableDelta > 0
+                      ? `+${deltas.acceptableDelta}%`
+                      : deltas.acceptableDelta < 0
+                        ? `${deltas.acceptableDelta}%`
+                        : `0%`}
                   </span>
                 )}
               </div>
               <div className={styles.kpiMeta}>
-                {stats.stageAcceptableCount} miar z mikro-rubato bezpiecznym dla sekcji i świateł
+                {stats.stageAcceptableCount} miar z mikro-rubato bezpiecznym dla
+                sekcji i świateł
               </div>
             </div>
 
             {/* Stage Unusable KPI */}
             <div className={`${styles.kpiCard} ${styles.kpiCardFail}`}>
               <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>🔴 Stage Unusable (&gt; 35 ms)</span>
-                <span className={`${styles.kpiBadge} ${styles.badgeFail}`}>Live Risk</span>
+                <span className={styles.kpiLabel}>
+                  🔴 Stage Unusable (&gt; 35 ms)
+                </span>
+                <span className={`${styles.kpiBadge} ${styles.badgeFail}`}>
+                  Live Risk
+                </span>
               </div>
               <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats.stageUnusablePct}%</span>
+                <span className={styles.kpiValue}>
+                  {stats.stageUnusablePct}%
+                </span>
                 {deltas && (
                   <span
                     className={`${styles.deltaBadge} ${
@@ -636,12 +777,17 @@ export function SmartTempoAccuracyDashboard({
                           : styles.deltaNeutral
                     }`}
                   >
-                    {deltas.unusableDelta > 0 ? `+${deltas.unusableDelta}% 🔴` : deltas.unusableDelta < 0 ? `${deltas.unusableDelta}% 🟢` : `0%`}
+                    {deltas.unusableDelta > 0
+                      ? `+${deltas.unusableDelta}% 🔴`
+                      : deltas.unusableDelta < 0
+                        ? `${deltas.unusableDelta}% 🟢`
+                        : `0%`}
                   </span>
                 )}
               </div>
               <div className={styles.kpiMeta}>
-                {stats.stageUnusableCount} miar grożących rozjazdem uderzeń na żywo
+                {stats.stageUnusableCount} miar grożących rozjazdem uderzeń na
+                żywo
               </div>
             </div>
           </>
@@ -651,7 +797,9 @@ export function SmartTempoAccuracyDashboard({
         <div className={`${styles.kpiCard} ${styles.kpiCardStats}`}>
           <div className={styles.kpiHeader}>
             <span className={styles.kpiLabel}>📈 Statystyki Błędu</span>
-            <span className={`${styles.kpiBadge} ${styles.badgeStats}`}>Mean / p50 / p95</span>
+            <span className={`${styles.kpiBadge} ${styles.badgeStats}`}>
+              Mean / p50 / p95
+            </span>
           </div>
           <div className={styles.kpiValueRow}>
             <span className={styles.kpiValue}>{stats.avgErrorMs} ms</span>
@@ -666,7 +814,11 @@ export function SmartTempoAccuracyDashboard({
                 }`}
                 title={`Δ vs baseline ${deltas.baseMeanMs} ms`}
               >
-                {deltas.meanDelta < 0 ? `${deltas.meanDelta} ms 🟢` : deltas.meanDelta > 0 ? `+${deltas.meanDelta} ms 🔴` : `0 ms`}
+                {deltas.meanDelta < 0
+                  ? `${deltas.meanDelta} ms 🟢`
+                  : deltas.meanDelta > 0
+                    ? `+${deltas.meanDelta} ms 🔴`
+                    : `0 ms`}
               </span>
             )}
           </div>
@@ -682,7 +834,8 @@ export function SmartTempoAccuracyDashboard({
         <div className={styles.chartCard}>
           <div>
             <h3 className={styles.chartTitle}>
-              A. Histogram Błędów w Nieliniowych Przedziałach ({gradeMode === "daw" ? "DAW Grade" : "Stage-Ready Grade"})
+              A. Histogram Błędów w Nieliniowych Przedziałach (
+              {gradeMode === "daw" ? "DAW Grade" : "Stage-Ready Grade"})
             </h3>
             <p className={styles.chartDesc}>
               {gradeMode === "daw"
@@ -697,11 +850,13 @@ export function SmartTempoAccuracyDashboard({
                 const maxPct = Math.max(...histogramData.map((b) => b.pct), 1);
                 const heightPct = Math.max(8, (bin.pct / maxPct) * 100);
 
-                const activeTier = gradeMode === "daw" ? bin.dawTier : bin.stageTier;
+                const activeTier =
+                  gradeMode === "daw" ? bin.dawTier : bin.stageTier;
                 const fillClass =
                   activeTier === "exact" || activeTier === "stage-perfect"
                     ? styles.barFillExact
-                    : activeTier === "close" || activeTier === "stage-acceptable"
+                    : activeTier === "close" ||
+                        activeTier === "stage-acceptable"
                       ? styles.barFillClose
                       : styles.barFillFail;
 
@@ -724,11 +879,15 @@ export function SmartTempoAccuracyDashboard({
               {gradeMode === "daw" ? (
                 <>
                   <div className={styles.legendItem}>
-                    <span className={`${styles.legendDot} ${styles.dotExact}`} />
+                    <span
+                      className={`${styles.legendDot} ${styles.dotExact}`}
+                    />
                     🟢 Dokładne (≤ 60 ms)
                   </div>
                   <div className={styles.legendItem}>
-                    <span className={`${styles.legendDot} ${styles.dotClose}`} />
+                    <span
+                      className={`${styles.legendDot} ${styles.dotClose}`}
+                    />
                     🟡 Tolerancja (60–125 ms)
                   </div>
                   <div className={styles.legendItem}>
@@ -739,11 +898,15 @@ export function SmartTempoAccuracyDashboard({
               ) : (
                 <>
                   <div className={styles.legendItem}>
-                    <span className={`${styles.legendDot} ${styles.dotExact}`} />
+                    <span
+                      className={`${styles.legendDot} ${styles.dotExact}`}
+                    />
                     🟢 Stage Perfect (≤ 15 ms)
                   </div>
                   <div className={styles.legendItem}>
-                    <span className={`${styles.legendDot} ${styles.dotClose}`} />
+                    <span
+                      className={`${styles.legendDot} ${styles.dotClose}`}
+                    />
                     🟡 Stage Acceptable (15–35 ms)
                   </div>
                   <div className={styles.legendItem}>
@@ -768,7 +931,11 @@ export function SmartTempoAccuracyDashboard({
           </div>
 
           <div className={styles.svgChartWrap}>
-            <svg viewBox="0 0 400 180" className={styles.svgChart} preserveAspectRatio="none">
+            <svg
+              viewBox="0 0 400 180"
+              className={styles.svgChart}
+              preserveAspectRatio="none"
+            >
               <defs>
                 <linearGradient id="cdfGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#10B981" stopOpacity="0.5" />
@@ -777,9 +944,30 @@ export function SmartTempoAccuracyDashboard({
               </defs>
 
               {/* Grid Lines */}
-              <line x1="0" y1="45" x2="400" y2="45" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-              <line x1="0" y1="90" x2="400" y2="90" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-              <line x1="0" y1="135" x2="400" y2="135" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+              <line
+                x1="0"
+                y1="45"
+                x2="400"
+                y2="45"
+                stroke="rgba(255,255,255,0.06)"
+                strokeDasharray="3 3"
+              />
+              <line
+                x1="0"
+                y1="90"
+                x2="400"
+                y2="90"
+                stroke="rgba(255,255,255,0.06)"
+                strokeDasharray="3 3"
+              />
+              <line
+                x1="0"
+                y1="135"
+                x2="400"
+                y2="135"
+                stroke="rgba(255,255,255,0.06)"
+                strokeDasharray="3 3"
+              />
 
               {/* Reference Lines with Top Staggered Non-Overlapping Labels */}
               {/* 15ms Reference Line (Stage Perfect) */}
@@ -791,7 +979,12 @@ export function SmartTempoAccuracyDashboard({
                 className={styles.refLine}
                 stroke="#8B5CF6"
               />
-              <text x={(15 / 180) * 400 + 4} y="14" className={styles.refText} fill="#C4B5FD">
+              <text
+                x={(15 / 180) * 400 + 4}
+                y="14"
+                className={styles.refText}
+                fill="#C4B5FD"
+              >
                 15ms ({stats.stagePerfectPct}%)
               </text>
 
@@ -804,8 +997,15 @@ export function SmartTempoAccuracyDashboard({
                 className={styles.refLine}
                 stroke="#F59E0B"
               />
-              <text x={(35 / 180) * 400 + 4} y="28" className={styles.refText} fill="#FCD34D">
-                35ms ({(stats.stagePerfectPct + stats.stageAcceptablePct).toFixed(1)}%)
+              <text
+                x={(35 / 180) * 400 + 4}
+                y="28"
+                className={styles.refText}
+                fill="#FCD34D"
+              >
+                35ms (
+                {(stats.stagePerfectPct + stats.stageAcceptablePct).toFixed(1)}
+                %)
               </text>
 
               {/* 60ms Reference Line (DAW Exact) */}
@@ -816,7 +1016,12 @@ export function SmartTempoAccuracyDashboard({
                 y2="180"
                 className={`${styles.refLine} ${styles.refLineExact}`}
               />
-              <text x={(60 / 180) * 400 + 4} y="14" className={styles.refText} fill="#6EE7B7">
+              <text
+                x={(60 / 180) * 400 + 4}
+                y="14"
+                className={styles.refText}
+                fill="#6EE7B7"
+              >
                 60ms ({stats.exactPct}%)
               </text>
 
@@ -828,7 +1033,12 @@ export function SmartTempoAccuracyDashboard({
                 y2="180"
                 className={`${styles.refLine} ${styles.refLineClose}`}
               />
-              <text x={(125 / 180) * 400 + 4} y="28" className={styles.refText} fill="#FCD34D">
+              <text
+                x={(125 / 180) * 400 + 4}
+                y="28"
+                className={styles.refText}
+                fill="#FCD34D"
+              >
                 125ms ({(stats.exactPct + stats.closePct).toFixed(1)}%)
               </text>
 
@@ -839,10 +1049,18 @@ export function SmartTempoAccuracyDashboard({
 
             <div className={styles.thresholdLegend}>
               <span className={styles.legendItem}>
-                Progi skumulowane: ≤15 ms: <strong>{stats.stagePerfectPct}%</strong>
-                {" · "}≤35 ms: <strong>{(stats.stagePerfectPct + stats.stageAcceptablePct).toFixed(1)}%</strong>
+                Progi skumulowane: ≤15 ms:{" "}
+                <strong>{stats.stagePerfectPct}%</strong>
+                {" · "}≤35 ms:{" "}
+                <strong>
+                  {(stats.stagePerfectPct + stats.stageAcceptablePct).toFixed(
+                    1,
+                  )}
+                  %
+                </strong>
                 {" · "}≤60 ms: <strong>{stats.exactPct}%</strong>
-                {" · "}≤125 ms: <strong>{(stats.exactPct + stats.closePct).toFixed(1)}%</strong>
+                {" · "}≤125 ms:{" "}
+                <strong>{(stats.exactPct + stats.closePct).toFixed(1)}%</strong>
               </span>
             </div>
           </div>
@@ -856,7 +1074,9 @@ export function SmartTempoAccuracyDashboard({
                 C. Wykres Przebiegu Odchyleń w Czasie (Timeline Drift Plot)
               </h3>
               <p className={styles.chartDesc}>
-                Odchylenie fazowe każdego taktu w czasie utworu (sekundy) z pasmami tolerancji ({gradeMode === "daw" ? "DAW Grade" : "Stage-Ready Grade"})
+                Odchylenie fazowe każdego taktu w czasie utworu (sekundy) z
+                pasmami tolerancji (
+                {gradeMode === "daw" ? "DAW Grade" : "Stage-Ready Grade"})
               </p>
             </div>
 
@@ -876,51 +1096,167 @@ export function SmartTempoAccuracyDashboard({
           </div>
 
           <div className={styles.svgChartWrap} style={{ height: "240px" }}>
-            <svg viewBox="0 0 800 220" className={styles.svgChart} preserveAspectRatio="none">
+            <svg
+              viewBox="0 0 800 220"
+              className={styles.svgChart}
+              preserveAspectRatio="none"
+            >
               {/* Background Color Bands dynamically switching between DAW vs Stage-Ready Mode */}
               {gradeMode === "daw" ? (
                 <>
                   {/* Green Zone: 0 to 60 ms */}
-                  <rect x="0" y="146.6" width="800" height="73.4" fill="rgba(16, 185, 129, 0.08)" />
+                  <rect
+                    x="0"
+                    y="146.6"
+                    width="800"
+                    height="73.4"
+                    fill="rgba(16, 185, 129, 0.08)"
+                  />
                   {/* Yellow Zone: 60 to 125 ms */}
-                  <rect x="0" y="67.2" width="800" height="79.4" fill="rgba(245, 158, 11, 0.08)" />
+                  <rect
+                    x="0"
+                    y="67.2"
+                    width="800"
+                    height="79.4"
+                    fill="rgba(245, 158, 11, 0.08)"
+                  />
                   {/* Red Zone: > 125 ms */}
-                  <rect x="0" y="0" width="800" height="67.2" fill="rgba(239, 68, 68, 0.08)" />
+                  <rect
+                    x="0"
+                    y="0"
+                    width="800"
+                    height="67.2"
+                    fill="rgba(239, 68, 68, 0.08)"
+                  />
 
-                  <line x1="0" y1="146.6" x2="800" y2="146.6" stroke="rgba(16, 185, 129, 0.3)" strokeDasharray="4 4" />
-                  <line x1="0" y1="67.2" x2="800" y2="67.2" stroke="rgba(245, 158, 11, 0.3)" strokeDasharray="4 4" />
+                  <line
+                    x1="0"
+                    y1="146.6"
+                    x2="800"
+                    y2="146.6"
+                    stroke="rgba(16, 185, 129, 0.3)"
+                    strokeDasharray="4 4"
+                  />
+                  <line
+                    x1="0"
+                    y1="67.2"
+                    x2="800"
+                    y2="67.2"
+                    stroke="rgba(245, 158, 11, 0.3)"
+                    strokeDasharray="4 4"
+                  />
 
                   {/* Clean labels placed at the right edge outside data points */}
-                  <text x="790" y="140" textAnchor="end" fill="#34D399" fontSize="10" fontWeight="600" opacity="0.65">
+                  <text
+                    x="790"
+                    y="140"
+                    textAnchor="end"
+                    fill="#34D399"
+                    fontSize="10"
+                    fontWeight="600"
+                    opacity="0.65"
+                  >
                     🟢 DAW EXACT (≤ 60 ms)
                   </text>
-                  <text x="790" y="62" textAnchor="end" fill="#FBBF24" fontSize="10" fontWeight="600" opacity="0.65">
+                  <text
+                    x="790"
+                    y="62"
+                    textAnchor="end"
+                    fill="#FBBF24"
+                    fontSize="10"
+                    fontWeight="600"
+                    opacity="0.65"
+                  >
                     🟡 DAW CLOSE (60–125 ms)
                   </text>
-                  <text x="790" y="16" textAnchor="end" fill="#F87171" fontSize="10" fontWeight="600" opacity="0.65">
+                  <text
+                    x="790"
+                    y="16"
+                    textAnchor="end"
+                    fill="#F87171"
+                    fontSize="10"
+                    fontWeight="600"
+                    opacity="0.65"
+                  >
                     🔴 DAW FAIL (&gt; 125 ms)
                   </text>
                 </>
               ) : (
                 <>
                   {/* Green Zone: 0 to 15 ms */}
-                  <rect x="0" y="201.7" width="800" height="18.3" fill="rgba(16, 185, 129, 0.12)" />
+                  <rect
+                    x="0"
+                    y="201.7"
+                    width="800"
+                    height="18.3"
+                    fill="rgba(16, 185, 129, 0.12)"
+                  />
                   {/* Yellow Zone: 15 to 35 ms */}
-                  <rect x="0" y="181.1" width="800" height="20.6" fill="rgba(245, 158, 11, 0.12)" />
+                  <rect
+                    x="0"
+                    y="181.1"
+                    width="800"
+                    height="20.6"
+                    fill="rgba(245, 158, 11, 0.12)"
+                  />
                   {/* Red Zone: > 35 ms */}
-                  <rect x="0" y="0" width="800" height="181.1" fill="rgba(239, 68, 68, 0.08)" />
+                  <rect
+                    x="0"
+                    y="0"
+                    width="800"
+                    height="181.1"
+                    fill="rgba(239, 68, 68, 0.08)"
+                  />
 
-                  <line x1="0" y1="201.7" x2="800" y2="201.7" stroke="rgba(16, 185, 129, 0.4)" strokeDasharray="4 4" />
-                  <line x1="0" y1="181.1" x2="800" y2="181.1" stroke="rgba(245, 158, 11, 0.4)" strokeDasharray="4 4" />
+                  <line
+                    x1="0"
+                    y1="201.7"
+                    x2="800"
+                    y2="201.7"
+                    stroke="rgba(16, 185, 129, 0.4)"
+                    strokeDasharray="4 4"
+                  />
+                  <line
+                    x1="0"
+                    y1="181.1"
+                    x2="800"
+                    y2="181.1"
+                    stroke="rgba(245, 158, 11, 0.4)"
+                    strokeDasharray="4 4"
+                  />
 
                   {/* Clean labels placed at the right edge outside data points */}
-                  <text x="790" y="198" textAnchor="end" fill="#34D399" fontSize="10" fontWeight="600" opacity="0.65">
+                  <text
+                    x="790"
+                    y="198"
+                    textAnchor="end"
+                    fill="#34D399"
+                    fontSize="10"
+                    fontWeight="600"
+                    opacity="0.65"
+                  >
                     🟢 STAGE PERFECT (≤ 15 ms)
                   </text>
-                  <text x="790" y="177" textAnchor="end" fill="#FBBF24" fontSize="10" fontWeight="600" opacity="0.65">
+                  <text
+                    x="790"
+                    y="177"
+                    textAnchor="end"
+                    fill="#FBBF24"
+                    fontSize="10"
+                    fontWeight="600"
+                    opacity="0.65"
+                  >
                     🟡 STAGE ACCEPTABLE (15–35 ms)
                   </text>
-                  <text x="790" y="16" textAnchor="end" fill="#F87171" fontSize="10" fontWeight="600" opacity="0.65">
+                  <text
+                    x="790"
+                    y="16"
+                    textAnchor="end"
+                    fill="#F87171"
+                    fontSize="10"
+                    fontWeight="600"
+                    opacity="0.65"
+                  >
                     🔴 STAGE UNUSABLE (&gt; 35 ms)
                   </text>
                 </>
@@ -931,13 +1267,25 @@ export function SmartTempoAccuracyDashboard({
                 <path
                   d={activeBars
                     .map((bar, i) => {
-                      const maxTime = Math.max(...activeBars.map((b) => b.timeSec), 1);
+                      const maxTime = Math.max(
+                        ...activeBars.map((b) => b.timeSec),
+                        1,
+                      );
                       const x = (bar.timeSec / maxTime) * 780 + 10;
                       const maxErr = 180;
                       const baseMean = compareRun.summary.meanMs;
-                      const simErr = Math.min(maxErr, Math.max(5, bar.errorMs * (baseMean / Math.max(1, stats.avgErrorMs))));
+                      const simErr = Math.min(
+                        maxErr,
+                        Math.max(
+                          5,
+                          bar.errorMs *
+                            (baseMean / Math.max(1, stats.avgErrorMs)),
+                        ),
+                      );
                       const y = 220 - (simErr / maxErr) * 200;
-                      const isStartOfTrack = i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
+                      const isStartOfTrack =
+                        i === 0 ||
+                        bar.trackName !== activeBars[i - 1]?.trackName;
                       return `${isStartOfTrack ? "M" : "L"} ${x.toFixed(1)},${y.toFixed(1)}`;
                     })
                     .join(" ")}
@@ -950,12 +1298,17 @@ export function SmartTempoAccuracyDashboard({
                 <path
                   d={activeBars
                     .map((bar, i) => {
-                      const maxTime = Math.max(...activeBars.map((b) => b.timeSec), 1);
+                      const maxTime = Math.max(
+                        ...activeBars.map((b) => b.timeSec),
+                        1,
+                      );
                       const x = (bar.timeSec / maxTime) * 780 + 10;
                       const maxErr = 180;
                       const clampedErr = Math.min(maxErr, bar.errorMs);
                       const y = 220 - (clampedErr / maxErr) * 200;
-                      const isStartOfTrack = i === 0 || bar.trackName !== activeBars[i - 1]?.trackName;
+                      const isStartOfTrack =
+                        i === 0 ||
+                        bar.trackName !== activeBars[i - 1]?.trackName;
                       return `${isStartOfTrack ? "M" : "L"} ${x.toFixed(1)},${y.toFixed(1)}`;
                     })
                     .join(" ")}
@@ -965,20 +1318,30 @@ export function SmartTempoAccuracyDashboard({
 
               {/* Current Run Discrete Small Dots (radius 1.5px) */}
               {activeBars.map((bar, idx) => {
-                const maxTime = Math.max(...activeBars.map((b) => b.timeSec), 1);
+                const maxTime = Math.max(
+                  ...activeBars.map((b) => b.timeSec),
+                  1,
+                );
                 const x = (bar.timeSec / maxTime) * 780 + 10;
                 const maxErr = 180;
                 const clampedErr = Math.min(maxErr, bar.errorMs);
                 const y = 220 - (clampedErr / maxErr) * 200;
 
-                const activeTier = gradeMode === "daw"
-                  ? bar.tier
-                  : (bar.stageTier ?? (bar.errorMs <= 15 ? "stage-perfect" : bar.errorMs <= 35 ? "stage-acceptable" : "stage-unusable"));
+                const activeTier =
+                  gradeMode === "daw"
+                    ? bar.tier
+                    : (bar.stageTier ??
+                      (bar.errorMs <= 15
+                        ? "stage-perfect"
+                        : bar.errorMs <= 35
+                          ? "stage-acceptable"
+                          : "stage-unusable"));
 
                 const pointClass =
                   activeTier === "exact" || activeTier === "stage-perfect"
                     ? styles.driftPointExact
-                    : activeTier === "close" || activeTier === "stage-acceptable"
+                    : activeTier === "close" ||
+                        activeTier === "stage-acceptable"
                       ? styles.driftPointClose
                       : styles.driftPointFail;
 
@@ -991,8 +1354,13 @@ export function SmartTempoAccuracyDashboard({
                     className={`${styles.driftPoint} ${pointClass}`}
                     onMouseEnter={(e) => {
                       setHoveredPoint(bar);
-                      const rect = (e.target as SVGElement).getBoundingClientRect();
-                      setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
+                      const rect = (
+                        e.target as SVGElement
+                      ).getBoundingClientRect();
+                      setTooltipPos({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top,
+                      });
                     }}
                     onMouseLeave={() => {
                       setHoveredPoint(null);
@@ -1010,10 +1378,13 @@ export function SmartTempoAccuracyDashboard({
           <div className={styles.chartTitleRow}>
             <div>
               <h3 className={styles.chartTitle}>
-                D. Wykres Przebiegu Tempa w Czasie (Tempo Contour & Convergence Plot)
+                D. Wykres Przebiegu Tempa w Czasie (Tempo Contour & Convergence
+                Plot)
               </h3>
               <p className={styles.chartDesc}>
-                Wartość tempa (BPM) w czasie utworu: linia Smart Tempo (wyliczona) vs Logic Pro SSOT (referencja) z oznaczonym poziomem zbieżności
+                Wartość tempa (BPM) w czasie utworu: linia Smart Tempo
+                (wyliczona) vs Logic Pro SSOT (referencja) z oznaczonym poziomem
+                zbieżności
               </p>
             </div>
 
@@ -1038,15 +1409,36 @@ export function SmartTempoAccuracyDashboard({
           </div>
 
           <div className={styles.svgChartWrap} style={{ height: "240px" }}>
-            <svg viewBox="0 0 800 220" className={styles.svgChart} preserveAspectRatio="none">
+            <svg
+              viewBox="0 0 800 220"
+              className={styles.svgChart}
+              preserveAspectRatio="none"
+            >
               {/* Y-Axis Grid Lines & Tick Labels */}
               {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
-                const bpmVal = (tempoChartData.maxBpm - ratio * tempoChartData.bpmRange).toFixed(1);
+                const bpmVal = (
+                  tempoChartData.maxBpm -
+                  ratio * tempoChartData.bpmRange
+                ).toFixed(1);
                 const y = 10 + ratio * 180;
                 return (
                   <g key={idx}>
-                    <line x1="0" y1={y} x2="800" y2={y} stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-                    <text x="790" y={y - 4} textAnchor="end" fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="500">
+                    <line
+                      x1="0"
+                      y1={y}
+                      x2="800"
+                      y2={y}
+                      stroke="rgba(255,255,255,0.06)"
+                      strokeDasharray="3 3"
+                    />
+                    <text
+                      x="790"
+                      y={y - 4}
+                      textAnchor="end"
+                      fill="rgba(255,255,255,0.4)"
+                      fontSize="10"
+                      fontWeight="500"
+                    >
                       {bpmVal} BPM
                     </text>
                   </g>
@@ -1054,11 +1446,19 @@ export function SmartTempoAccuracyDashboard({
               })}
 
               {/* Line 1: Logic Pro SSOT Reference Path (Dashed) */}
-              <path d={tempoChartData.refPath} className={styles.refTempoPath} />
+              <path
+                d={tempoChartData.refPath}
+                className={styles.refTempoPath}
+              />
 
               {/* Line 2: Smart Tempo Estimated Path Segments (Colored by Convergence) */}
               {tempoChartData.segments.map((seg, idx) => {
-                const strokeColor = seg.tier === "high" ? "#34D399" : seg.tier === "med" ? "#FBBF24" : "#F87171";
+                const strokeColor =
+                  seg.tier === "high"
+                    ? "#34D399"
+                    : seg.tier === "med"
+                      ? "#FBBF24"
+                      : "#F87171";
                 return (
                   <line
                     key={idx}
@@ -1091,8 +1491,13 @@ export function SmartTempoAccuracyDashboard({
                     className={`${styles.driftPoint} ${pointClass}`}
                     onMouseEnter={(e) => {
                       setHoveredPoint(pt.bar);
-                      const rect = (e.target as SVGElement).getBoundingClientRect();
-                      setTooltipPos({ x: rect.left + rect.width / 2, y: rect.top });
+                      const rect = (
+                        e.target as SVGElement
+                      ).getBoundingClientRect();
+                      setTooltipPos({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top,
+                      });
                     }}
                     onMouseLeave={() => {
                       setHoveredPoint(null);
@@ -1113,7 +1518,8 @@ export function SmartTempoAccuracyDashboard({
           style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
         >
           <div className={styles.tooltipTitle}>
-            {hoveredPoint.trackName} — Takt #{hoveredPoint.bar} ({hoveredPoint.timeSec}s)
+            {hoveredPoint.trackName} — Takt #{hoveredPoint.bar} (
+            {hoveredPoint.timeSec}s)
           </div>
           <div className={styles.tooltipRow}>
             <span>Odchylenie:</span>
@@ -1131,7 +1537,8 @@ export function SmartTempoAccuracyDashboard({
                       : "#F87171",
               }}
             >
-              Δ {Math.abs(hoveredPoint.estBpm - hoveredPoint.refBpm).toFixed(2)} BPM
+              Δ {Math.abs(hoveredPoint.estBpm - hoveredPoint.refBpm).toFixed(2)}{" "}
+              BPM
             </span>
           </div>
           <div className={styles.tooltipRow}>

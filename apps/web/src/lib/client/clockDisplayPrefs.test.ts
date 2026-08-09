@@ -102,5 +102,4 @@ describe("clockDisplayPrefs", () => {
     expect(getStoredClockDisplayFormat()).toBe("bbt");
     expect(() => setStoredClockDisplayFormat("time")).not.toThrow();
   });
-
 });

@@ -92,7 +92,6 @@ export function IconScissors(p: IconProps) {
   return withIcon(Scissors, p);
 }
 
-
 export function IconJoin(p: IconProps) {
   return withIcon(Combine, p);
 }
@@ -247,7 +246,6 @@ export function IconIndicator(p: IconProps) {
   return withIcon(CircleDot, p);
 }
 
-
 const TRACK_ICON_MAP: Record<TrackIcon, ComponentType<LucideProps>> = {
   mic: Mic,
   vocal: MicVocal,
@@ -267,9 +265,6 @@ const TRACK_ICON_MAP: Record<TrackIcon, ComponentType<LucideProps>> = {
 };
 
 /** Closed track.icon enum → Lucide glyph (Mixer badge + dock). */
-export function IconTrack({
-  icon,
-  ...p
-}: IconProps & { icon: TrackIcon }) {
+export function IconTrack({ icon, ...p }: IconProps & { icon: TrackIcon }) {
   return withIcon(TRACK_ICON_MAP[icon], p);
 }

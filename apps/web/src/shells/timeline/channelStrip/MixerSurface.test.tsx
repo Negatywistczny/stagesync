@@ -166,9 +166,9 @@ describe("MixerSurface", () => {
     expect(screen.queryByRole("region", { name: "Wyjścia HW" })).toBeNull();
     expect(screen.getByRole("button", { name: "Dodaj Ścieżkę" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Dodaj Bus" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Dodaj Ścieżkę" }).textContent).toBe(
-      "+ Dodaj",
-    );
+    expect(
+      screen.getByRole("button", { name: "Dodaj Ścieżkę" }).textContent,
+    ).toBe("+ Dodaj");
     expect(screen.getByRole("button", { name: "Dodaj Bus" }).textContent).toBe(
       "+ Dodaj",
     );
@@ -218,16 +218,24 @@ describe("MixerSurface", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ukryj strefę Audio" }));
     expect(screen.queryByTitle("Track A")).toBeNull();
     expect(screen.queryByRole("button", { name: "Dodaj Ścieżkę" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Pokaż strefę Audio" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Pokaż strefę Audio" }),
+    ).toBeTruthy();
     expect(screen.getByRole("region", { name: "Ścieżki audio" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Ukryj strefę Busy" }));
     expect(screen.queryByTitle("Bus 1")).toBeNull();
-    expect(screen.getByRole("button", { name: "Pokaż strefę Busy" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Pokaż strefę Busy" }),
+    ).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Ukryj strefę Master" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ukryj strefę Master" }),
+    );
     expect(screen.queryByRole("group", { name: "Stereo Out" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Pokaż strefę Master" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Pokaż strefę Master" }),
+    ).toBeTruthy();
 
     const stored = JSON.parse(
       localStorage.getItem(MIXER_ZONE_VISIBILITY_KEY) ?? "{}",
@@ -250,7 +258,9 @@ describe("MixerSurface", () => {
     );
     renderMixer();
     expect(screen.queryByTitle("Track A")).toBeNull();
-    expect(screen.getByRole("button", { name: "Pokaż strefę Audio" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Pokaż strefę Audio" }),
+    ).toBeTruthy();
     expect(screen.getByTitle("Bus 1")).toBeTruthy();
   });
 
@@ -261,12 +271,18 @@ describe("MixerSurface", () => {
 
     expect(screen.getByRole("region", { name: "Wyjścia HW" })).toBeTruthy();
     expect(screen.queryByText(/Brak patchy HW/)).toBeNull();
-    expect(screen.getByRole("button", { name: "Dodaj wyjście HW" }).textContent).toBe(
-      "+ Dodaj",
+    expect(
+      screen.getByRole("button", { name: "Dodaj wyjście HW" }).textContent,
+    ).toBe("+ Dodaj");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ukryj strefę HW Out" }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Ukryj strefę HW Out" }));
-    expect(screen.queryByRole("button", { name: "Dodaj wyjście HW" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Pokaż strefę HW Out" })).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Dodaj wyjście HW" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Pokaż strefę HW Out" }),
+    ).toBeTruthy();
     expect(screen.getByRole("region", { name: "Wyjścia HW" })).toBeTruthy();
   });
 

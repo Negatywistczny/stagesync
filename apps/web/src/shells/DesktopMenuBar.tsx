@@ -311,11 +311,7 @@ function MenuList({
         {items.map((item) => {
           if (item.kind === "separator") {
             return (
-              <li
-                key={item.id}
-                role="separator"
-                className={styles.separator}
-              />
+              <li key={item.id} role="separator" className={styles.separator} />
             );
           }
           const idx = actionable.findIndex((a) => a.item.id === item.id);
@@ -391,13 +387,20 @@ function MenuList({
               // One nested level only in model usage today.
               return (
                 <li key={item.id} role="none">
-                  <button type="button" role="menuitem" className={styles.item} disabled>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={styles.item}
+                    disabled
+                  >
                     <span>{item.label}</span>
                   </button>
                 </li>
               );
             }
-            const nIdx = nestedActionable.findIndex((a) => a.item.id === item.id);
+            const nIdx = nestedActionable.findIndex(
+              (a) => a.item.id === item.id,
+            );
             const isActive = nIdx === nestedActiveIndex;
             return (
               <li key={item.id} role="none">
@@ -433,9 +436,7 @@ function MenuList({
  * FixedFlyout (portaled) still receives the same handler owner.
  */
 function emitMenuKey(ev: KeyboardEvent): void {
-  window.dispatchEvent(
-    new CustomEvent("stagesync:menu-key", { detail: ev }),
-  );
+  window.dispatchEvent(new CustomEvent("stagesync:menu-key", { detail: ev }));
 }
 
 function CompactMenuRoot({
@@ -559,7 +560,9 @@ function CompactMenuRoot({
         type="button"
         role="menuitem"
         className={
-          open ? `${styles.topButton} ${styles.topButtonOpen}` : styles.topButton
+          open
+            ? `${styles.topButton} ${styles.topButtonOpen}`
+            : styles.topButton
         }
         aria-haspopup="true"
         aria-expanded={open}

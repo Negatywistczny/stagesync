@@ -27,7 +27,10 @@ import {
 } from "@lib/shell-operator/libraryApi.js";
 import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
 import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
-import { postSystemRestart, postSystemShutdown } from "@lib/shell-operator/setlistApi.js";
+import {
+  postSystemRestart,
+  postSystemShutdown,
+} from "@lib/shell-operator/setlistApi.js";
 import {
   canReturnToLauncher,
   prepareHostRestart,
@@ -64,9 +67,7 @@ import {
   IconRestart,
   IconSettings,
 } from "./icons.js";
-import {
-  connectionStatusLabel,
-} from "./ConnectionIndicator.js";
+import { connectionStatusLabel } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellWordmark } from "./ShellWordmark.js";
@@ -90,7 +91,6 @@ function errMessage(err: unknown): string {
   return "Operacja nie powiodła się";
 }
 
-
 const ADMIN_LAST_SECTION_KEY = "stagesync:admin:last-section-v1";
 
 function readStoredAdminSection(): AdminSectionId {
@@ -113,7 +113,9 @@ export function AdminShell() {
   const [library, setLibrary] = useState<Library | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [section, setSection] = useState<AdminSectionId>(() => readStoredAdminSection());
+  const [section, setSection] = useState<AdminSectionId>(() =>
+    readStoredAdminSection(),
+  );
   const [menuCheckUpdate, setMenuCheckUpdate] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
@@ -542,17 +544,23 @@ export function AdminShell() {
             onCreate={onCreate}
             onCreateTemplate={() =>
               void runMutation(async () => {
-                const p = await createProject(`Wzór ${new Date().toLocaleTimeString("pl")}`, {
-                  isTemplate: true,
-                });
+                const p = await createProject(
+                  `Wzór ${new Date().toLocaleTimeString("pl")}`,
+                  {
+                    isTemplate: true,
+                  },
+                );
                 await refreshLibrary(p.id);
               })
             }
             onCreateFromTemplate={(templateId) =>
               void runMutation(async () => {
-                const p = await createProject(`Utwór ${new Date().toLocaleTimeString("pl")}`, {
-                  fromTemplateId: templateId,
-                });
+                const p = await createProject(
+                  `Utwór ${new Date().toLocaleTimeString("pl")}`,
+                  {
+                    fromTemplateId: templateId,
+                  },
+                );
                 await refreshLibrary(p.id);
               })
             }
@@ -628,7 +636,7 @@ export function AdminShell() {
             onAutoCheckUpdateConsumed={() => setMenuCheckUpdate(false)}
           />
         ) : null}
-        {section === "dev" ? (import.meta.env.DEV ? <DevView /> : null) : null}
+        {section === "dev" ? import.meta.env.DEV ? <DevView /> : null : null}
       </main>
 
       <footer className={styles.status} aria-label="Status koncertu">
@@ -649,9 +657,7 @@ export function AdminShell() {
         </div>
         <div className={styles.statusGroup}>
           <span className={styles.statusLab}>Sekcja</span>
-          <span className={styles.statusVal}>
-            {activeSection?.name ?? "—"}
-          </span>
+          <span className={styles.statusVal}>{activeSection?.name ?? "—"}</span>
         </div>
         <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
           <span className={styles.statusLab}>Pozycja</span>
@@ -696,9 +702,7 @@ export function AdminShell() {
           }}
         >
           <SongImportWizard
-            applyLabel={
-              selectedId ? "Importuj do utworu" : "Utwórz nowy utwór"
-            }
+            applyLabel={selectedId ? "Importuj do utworu" : "Utwórz nowy utwór"}
             disabled={commandPending}
             applying={commandPending}
             projectId={selectedId ?? undefined}
@@ -713,7 +717,13 @@ export function AdminShell() {
                 : undefined
             }
             onCancel={() => setImportModalOpen(false)}
-            onApplyUg={async ({ text, barsPerLine, sectionBars, runWand, metadata }) => {
+            onApplyUg={async ({
+              text,
+              barsPerLine,
+              sectionBars,
+              runWand,
+              metadata,
+            }) => {
               setCommandPending(true);
               try {
                 if (selectedId) {
@@ -927,7 +937,11 @@ export function AdminShell() {
       <ShellConfirmDialog
         open={deleteConfirmOpen}
         title="Usuń utwór"
-        message={selected ? `Usunąć „${selected.name}”? Tej operacji nie można cofnąć.` : ""}
+        message={
+          selected
+            ? `Usunąć „${selected.name}”? Tej operacji nie można cofnąć.`
+            : ""
+        }
         confirmLabel="Usuń"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirmOpen(false)}

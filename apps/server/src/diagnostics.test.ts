@@ -151,7 +151,9 @@ describe("file-logger + diagnostics zip (#351)", () => {
   });
 
   it("parseZipArchive rejects short buffers and absolute Unix paths", () => {
-    expect(() => parseZipArchive(Buffer.from("PK"))).toThrow(/za krótkie|EOCD/i);
+    expect(() => parseZipArchive(Buffer.from("PK"))).toThrow(
+      /za krótkie|EOCD/i,
+    );
     const abs = buildStoreZip([
       { name: "/etc/passwd", data: Buffer.from("x", "utf8") },
     ]);
@@ -159,10 +161,13 @@ describe("file-logger + diagnostics zip (#351)", () => {
   });
 
   it("parseZipArchive rejects archives over entry cap", () => {
-    const entries = Array.from({ length: ZIP_PARSE_MAX_ENTRIES + 1 }, (_, i) => ({
-      name: `f${i}.txt`,
-      data: Buffer.from("x", "utf8"),
-    }));
+    const entries = Array.from(
+      { length: ZIP_PARSE_MAX_ENTRIES + 1 },
+      (_, i) => ({
+        name: `f${i}.txt`,
+        data: Buffer.from("x", "utf8"),
+      }),
+    );
     const zip = buildStoreZip(entries);
     expect(() => parseZipArchive(zip)).toThrow(/zbyt wiele wpisów/);
   });

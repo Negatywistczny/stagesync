@@ -19,7 +19,9 @@ export type FormatDiscoveryMetaInput = {
 };
 
 /** Normalize version for UI meta — dots, optional v prefix stripped then re-added by caller. */
-export function normalizeDiscoveryVersion(raw: string | null | undefined): string | null {
+export function normalizeDiscoveryVersion(
+  raw: string | null | undefined,
+): string | null {
   if (raw == null) return null;
   let v = raw.trim().replace(/^v/i, "");
   if (!v) return null;

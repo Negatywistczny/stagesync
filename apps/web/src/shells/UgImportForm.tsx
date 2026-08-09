@@ -119,7 +119,7 @@ export function UgImportForm({
       setSearchMessage(
         data.results.length
           ? null
-          : data.message ?? "Brak wyników na Ultimate Guitar.",
+          : (data.message ?? "Brak wyników na Ultimate Guitar."),
       );
     } catch (err) {
       setSearchHits([]);
@@ -219,7 +219,11 @@ export function UgImportForm({
         </p>
       ) : null}
       {searchHits.length > 0 ? (
-        <ul className={styles.results} role="listbox" aria-label="Wyniki Ultimate Guitar">
+        <ul
+          className={styles.results}
+          role="listbox"
+          aria-label="Wyniki Ultimate Guitar"
+        >
           {searchHits.map((hit, i) => {
             const label = [hit.title, hit.artist].filter(Boolean).join(" — ");
             const disabledHit = !hit.url || busy;
@@ -323,7 +327,9 @@ export function UgImportForm({
           disabled={busy}
           onChange={(e) => {
             const n = Number.parseInt(e.target.value, 10);
-            setBarsPerLine(Number.isFinite(n) ? Math.min(16, Math.max(1, n)) : 1);
+            setBarsPerLine(
+              Number.isFinite(n) ? Math.min(16, Math.max(1, n)) : 1,
+            );
           }}
         />
       </label>
@@ -384,7 +390,11 @@ export function UgImportForm({
         </div>
       ) : null}
       <div className={styles.actions}>
-        <Button variant="ghost" disabled={applying || fetching || searching} onClick={onCancel}>
+        <Button
+          variant="ghost"
+          disabled={applying || fetching || searching}
+          onClick={onCancel}
+        >
           Anuluj
         </Button>
         <Button
@@ -422,9 +432,7 @@ export function UgImportForm({
                   metadata,
                 });
               } catch (err) {
-                setApplyError(
-                  err instanceof Error ? err.message : String(err),
-                );
+                setApplyError(err instanceof Error ? err.message : String(err));
               }
             })();
           }}

@@ -59,7 +59,10 @@ describe("libraryApi", () => {
     await expect(fetchLibrary()).resolves.toEqual(library);
     expect(fetchMock).toHaveBeenCalledWith("/api/library");
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errRes(500, { error: "down" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(errRes(500, { error: "down" })),
+    );
     await expect(fetchLibrary()).rejects.toThrow("down");
 
     vi.stubGlobal(
@@ -86,11 +89,12 @@ describe("libraryApi", () => {
       id: project.id,
       name: "Demo",
     });
-    expect(fetchMock).toHaveBeenCalledWith(
-      `/api/projects/${project.id}`,
-    );
+    expect(fetchMock).toHaveBeenCalledWith(`/api/projects/${project.id}`);
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errRes(404, { error: "gone" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(errRes(404, { error: "gone" })),
+    );
     await expect(fetchProject(project.id)).rejects.toThrow("gone");
   });
 
@@ -114,7 +118,10 @@ describe("libraryApi", () => {
     await expect(createProject("   ")).rejects.toThrow();
     expect(fetchMock).toHaveBeenCalledOnce();
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errRes(400, { error: "bad" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(errRes(400, { error: "bad" })),
+    );
     await expect(createProject("X")).rejects.toThrow("bad");
   });
 
@@ -144,7 +151,10 @@ describe("libraryApi", () => {
       projectIds: [project.id],
     });
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errRes(500, { error: "nope" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(errRes(500, { error: "nope" })),
+    );
     await expect(exportLibraryPack()).rejects.toThrow("nope");
   });
 
@@ -183,7 +193,10 @@ describe("libraryApi", () => {
       warnings: [],
     });
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errRes(400, { error: "bad pack" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(errRes(400, { error: "bad pack" })),
+    );
     await expect(importLibraryPack({})).rejects.toThrow("bad pack");
   });
 
@@ -204,7 +217,10 @@ describe("libraryApi", () => {
     expect(init.method).toBe("PUT");
     expect(JSON.parse(String(init.body))).not.toHaveProperty("id");
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errRes(409, { error: "conflict" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(errRes(409, { error: "conflict" })),
+    );
     await expect(putProject(project.id, project)).rejects.toThrow("conflict");
   });
 
@@ -236,7 +252,10 @@ describe("libraryApi", () => {
       "Brak identyfikatora projektu",
     );
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errRes(403, { error: "denied" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(errRes(403, { error: "denied" })),
+    );
     await expect(deleteProject(project.id)).rejects.toThrow("denied");
   });
 });

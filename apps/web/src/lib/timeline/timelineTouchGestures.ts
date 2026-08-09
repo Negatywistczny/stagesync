@@ -25,11 +25,7 @@ export function pinchAnchorViewportX(
   return (a.clientX + b.clientX) / 2 - scrollRectLeft;
 }
 
-export function clampZoomH(
-  value: number,
-  min: number,
-  max: number,
-): number {
+export function clampZoomH(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, Math.round(value)));
 }
 

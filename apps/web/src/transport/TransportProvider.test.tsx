@@ -197,13 +197,11 @@ describe("TransportProvider", () => {
     pauseTransport.mockReset().mockResolvedValue(snap({ playing: false }));
     stopTransport.mockReset().mockResolvedValue(snap({ positionTicks: 0 }));
     seekTransport.mockReset().mockResolvedValue(snap({ positionTicks: 960 }));
-    setTransportLoop
-      .mockReset()
-      .mockResolvedValue(
-        snap({
-          loop: { enabled: true, startTicks: 0, endTicks: 480 },
-        }),
-      );
+    setTransportLoop.mockReset().mockResolvedValue(
+      snap({
+        loop: { enabled: true, startTicks: 0, endTicks: 480 },
+      }),
+    );
     fetchLiveDesk.mockReset().mockResolvedValue({
       transpositionSemitones: 2,
       syncLeadMs: 100,
@@ -492,9 +490,7 @@ describe("TransportProvider", () => {
         );
       });
       await act(async () => {
-        ws.triggerMessage(
-          tickPayload({ positionTicks: 1, serverTimeMs: 40 }),
-        );
+        ws.triggerMessage(tickPayload({ positionTicks: 1, serverTimeMs: 40 }));
       });
 
       expect(result.current.state.positionTicks).toBe(1000);
@@ -857,4 +853,3 @@ describe("TransportProvider", () => {
     });
   });
 });
-

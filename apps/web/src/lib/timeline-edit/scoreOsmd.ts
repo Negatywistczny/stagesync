@@ -140,9 +140,7 @@ function getMeasureCursor(osmd: OpenSheetMusicDisplay): Cursor | undefined {
 }
 
 /** OSMD exposes both `Iterator` (getter) and `iterator` (field). */
-function getCursorIterator(
-  cursor: Cursor,
-):
+function getCursorIterator(cursor: Cursor):
   | {
       CurrentMeasureIndex?: number;
       EndReached?: boolean;
@@ -304,7 +302,11 @@ export function listScoreParts(osmd: OpenSheetMusicDisplay): ScorePartInfo[] {
     ).trim();
     return {
       id: scoreInstrumentId(
-        instr as { IdString?: string; Name?: string; PartAbbreviation?: string },
+        instr as {
+          IdString?: string;
+          Name?: string;
+          PartAbbreviation?: string;
+        },
         index,
       ),
       label: name || `Partia ${index + 1}`,
@@ -462,4 +464,3 @@ export function saveScoreOctave(projectId: string, octave: ScoreOctave): void {
     /* ignore */
   }
 }
-

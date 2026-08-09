@@ -108,9 +108,7 @@ describe("clickLevelLinear", () => {
     expect(
       clickLevelLinear(false, { ...fullPrefs, masterGainDb: -6 }),
     ).toBeCloseTo(BASE_BEAT_GAIN * 0.501, 2);
-    expect(
-      clickLevelLinear(true, { ...fullPrefs, masterGainDb: -60 }),
-    ).toBe(0);
+    expect(clickLevelLinear(true, { ...fullPrefs, masterGainDb: -60 })).toBe(0);
   });
 });
 
@@ -171,10 +169,18 @@ describe("metronome", () => {
     expect(advanceMetronomeClicks(base, 0, ctx)).toBe(2);
     expect(oscillators).toHaveLength(0);
     expect(
-      advanceMetronomeClicks({ ...base, enabled: false }, 0, mockAudioContext().ctx),
+      advanceMetronomeClicks(
+        { ...base, enabled: false },
+        0,
+        mockAudioContext().ctx,
+      ),
     ).toBe(0);
     expect(
-      advanceMetronomeClicks({ ...base, playing: false }, 0, mockAudioContext().ctx),
+      advanceMetronomeClicks(
+        { ...base, playing: false },
+        0,
+        mockAudioContext().ctx,
+      ),
     ).toBe(0);
   });
 
@@ -345,7 +351,11 @@ describe("metronome", () => {
     const scheduledCount = oscillators.length;
 
     // Frame 2: displayTicks still in beat 0 (15 ticks), lastScheduledBeat=5
-    const frame2 = advanceMetronomeClicks({ ...input, displayTicks: 15 }, frame1, ctx);
+    const frame2 = advanceMetronomeClicks(
+      { ...input, displayTicks: 15 },
+      frame1,
+      ctx,
+    );
     expect(frame2).toBe(5);
     expect(oscillators.length).toBe(scheduledCount); // STILL equal! No duplicate oscillator created!
   });

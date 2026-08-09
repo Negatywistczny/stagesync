@@ -57,8 +57,9 @@ describe("pushNotifications (#810)", () => {
   });
 
   it("detects android-performer from StageSyncNative bridge", () => {
-    (window as { StageSyncNative?: { shellKind: () => string } }).StageSyncNative =
-      { shellKind: () => "performer" };
+    (
+      window as { StageSyncNative?: { shellKind: () => string } }
+    ).StageSyncNative = { shellKind: () => "performer" };
     expect(detectPushPlatform()).toBe("android-performer");
   });
 

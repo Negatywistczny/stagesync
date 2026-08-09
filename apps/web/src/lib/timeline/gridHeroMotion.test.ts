@@ -216,7 +216,9 @@ describe("gridHeroMotion", () => {
     rafCbs.shift()?.(0);
     rafCbs.shift()?.(0);
 
-    vi.advanceTimersByTime(HERO_CHORD_FLY_MS + 16 + HERO_CHORD_NEXT_DELAY_MS + 1);
+    vi.advanceTimersByTime(
+      HERO_CHORD_FLY_MS + 16 + HERO_CHORD_NEXT_DELAY_MS + 1,
+    );
     expect(heroName.textContent).toBe("C");
 
     cancel();

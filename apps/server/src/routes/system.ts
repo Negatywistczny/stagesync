@@ -25,14 +25,8 @@ import {
   writeManagedSettings,
 } from "../env-settings.js";
 import { refreshMdnsAdvertise } from "../mdns-registry.js";
-import {
-  isOperatorPinRequired,
-  verifyOperatorPin,
-} from "../operator-pin.js";
-import {
-  promoteToMaster,
-  safetyNetStatus,
-} from "../safety-net.js";
+import { isOperatorPinRequired, verifyOperatorPin } from "../operator-pin.js";
+import { promoteToMaster, safetyNetStatus } from "../safety-net.js";
 import {
   listBrowseDirectory,
   resolveBrowseStartPath,
@@ -58,17 +52,12 @@ export type SystemRouterDeps = {
 
 const GITHUB_REPO = "Negatywistczny/stagesync";
 
-
 function clientIp(req: Request): string {
   return req.socket.remoteAddress ?? "";
 }
 
 function isLoopbackAddress(ip: string): boolean {
-  return (
-    ip === "127.0.0.1" ||
-    ip === "::1" ||
-    ip === "::ffff:127.0.0.1"
-  );
+  return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
 }
 
 /** Restart/shutdown: loopback OK; remote needs ALLOW_REMOTE or HOST_TOKEN. */
@@ -206,7 +195,10 @@ export async function fetchLatestReleaseVersion(
 
     const data = (await res.json()) as unknown;
     if (!Array.isArray(data)) {
-      return { latest: null, error: "GitHub Releases API: nieoczekiwana odpowiedź" };
+      return {
+        latest: null,
+        error: "GitHub Releases API: nieoczekiwana odpowiedź",
+      };
     }
 
     const published = (data as GitHubReleaseListItem[])
@@ -236,7 +228,10 @@ export async function fetchLatestReleaseVersion(
     }
     return { latest: tag, error: null };
   } catch {
-    return { latest: null, error: "GitHub Releases API nieosiągalne (sieć / timeout)" };
+    return {
+      latest: null,
+      error: "GitHub Releases API nieosiągalne (sieć / timeout)",
+    };
   }
 }
 
@@ -253,8 +248,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
   });
 
   router.post("/operator-auth", (req, res) => {
-    const pin =
-      typeof req.body?.pin === "string" ? req.body.pin : "";
+    const pin = typeof req.body?.pin === "string" ? req.body.pin : "";
     if (!isOperatorPinRequired()) {
       res.json({ ok: true, required: false });
       return;
@@ -378,7 +372,8 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       const { values, envExists } = writeManagedSettings(body.data.values);
       const restartKeys = listRestartRequiredKeys(before, values);
       if (
-        before.STAGESYNC_HOST_DISPLAY_NAME !== values.STAGESYNC_HOST_DISPLAY_NAME
+        before.STAGESYNC_HOST_DISPLAY_NAME !==
+        values.STAGESYNC_HOST_DISPLAY_NAME
       ) {
         refreshMdnsAdvertise();
       }
@@ -574,7 +569,9 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
   router.post("/apply-update", async (req, res) => {
     const body = ApplyUpdateBodySchema.safeParse(req.body);
     if (!body.success) {
-      res.status(400).json({ ok: false, error: "Invalid body", details: body.error.issues });
+      res
+        .status(400)
+        .json({ ok: false, error: "Invalid body", details: body.error.issues });
       return;
     }
 
@@ -614,10 +611,13 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       // Respond before the container restarts (Watchtower may kill us).
       res.json({ ok: true, action: "host-update-triggered" });
     } catch (err) {
-      const msg = (
-        err instanceof Error ? err.message : String(err)
-      ).slice(0, 500);
-      res.status(502).json({ ok: false, error: `Watchtower unreachable: ${msg}` });
+      const msg = (err instanceof Error ? err.message : String(err)).slice(
+        0,
+        500,
+      );
+      res
+        .status(502)
+        .json({ ok: false, error: `Watchtower unreachable: ${msg}` });
     }
   });
 
@@ -631,7 +631,9 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       return;
     }
     if (lifecycle.isShuttingDown()) {
-      res.status(409).json({ ok: false, error: "Shutdown already in progress" });
+      res
+        .status(409)
+        .json({ ok: false, error: "Shutdown already in progress" });
       return;
     }
     res.json({ ok: true, action: "restart" });
@@ -651,7 +653,9 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       return;
     }
     if (lifecycle.isShuttingDown()) {
-      res.status(409).json({ ok: false, error: "Shutdown already in progress" });
+      res
+        .status(409)
+        .json({ ok: false, error: "Shutdown already in progress" });
       return;
     }
     const underPm2 = isRunningUnderPm2();
@@ -684,8 +688,13 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
           const data = readFileSync(join(logsDir, name));
           // Cap individual log files in the bundle (avoid huge downloads).
           const capped =
-            data.length > 2 * 1024 * 1024 ? data.subarray(data.length - 2 * 1024 * 1024) : data;
-          entries.push({ name: `logs/${basename(name)}`, data: Buffer.from(capped) });
+            data.length > 2 * 1024 * 1024
+              ? data.subarray(data.length - 2 * 1024 * 1024)
+              : data;
+          entries.push({
+            name: `logs/${basename(name)}`,
+            data: Buffer.from(capped),
+          });
           logNames.push(name);
         } catch {
           /* skip unreadable */

@@ -43,11 +43,21 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       "Timed Lyrics w syncie z transportem, podświetlanie sylab w Karaoke, bezpośredni import UltraStar (wklejenie, pliki .txt, USDB) oraz hybrydowy import US+UG z podglądem tempa i sekcji.",
     highlights: [
       { icon: "mic-2", label: "Timed Lyrics & Karaoke sylaba po sylabie" },
-      { icon: "download", label: "Import UltraStar (wklejenie, .txt, pobieranie USDB)" },
-      { icon: "music", label: "Import US+UG — tekst, akordy i Forma na jednej osi" },
-      { icon: "sliders", label: "Smart Tempo z analizą audio i precyzyjną siatką" },
+      {
+        icon: "download",
+        label: "Import UltraStar (wklejenie, .txt, pobieranie USDB)",
+      },
+      {
+        icon: "music",
+        label: "Import US+UG — tekst, akordy i Forma na jednej osi",
+      },
+      {
+        icon: "sliders",
+        label: "Smart Tempo z analizą audio i precyzyjną siatką",
+      },
     ],
-    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.4.0",
+    releaseUrl:
+      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.4.0",
   },
   {
     line: "5.3",
@@ -60,15 +70,22 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       "Multi-out w Mixerze, widoczność stref Audio/Busy/HW Out/Master oraz nowe motywy w Wyglądzie — plus dopracowania menu OS i preferencji audio.",
     highlights: [
       { icon: "sliders-horizontal", label: "Mixer multi-out (HW Out patchy)" },
-      { icon: "sliders", label: "Widoczność stref: Audio / Busy / HW Out / Master" },
+      {
+        icon: "sliders",
+        label: "Widoczność stref: Audio / Busy / HW Out / Master",
+      },
       {
         icon: "file-text",
         label:
           "Motywy w Wyglądzie: Booth Amber, Daylight, Midnight Cyan, Matrix Green, Neon Ember",
       },
-      { icon: "laptop", label: "Preferencje audio: liczba kanałów wyjścia WebAudio" },
+      {
+        icon: "laptop",
+        label: "Preferencje audio: liczba kanałów wyjścia WebAudio",
+      },
     ],
-    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.3.0",
+    releaseUrl:
+      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.3.0",
   },
   {
     line: "5.2",
@@ -85,7 +102,8 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       { icon: "music", label: "Sampler Cue oraz Mixer bus→bus" },
       { icon: "download", label: "Jawne aktualizacje APK i interfejsu" },
     ],
-    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.2.0",
+    releaseUrl:
+      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.2.0",
   },
   {
     line: "5.1",
@@ -102,7 +120,8 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       { icon: "list-music", label: "Narzędzia Timeline pod live-show" },
       { icon: "wifi", label: "Wykrywanie StageSync w sieci" },
     ],
-    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.0",
+    releaseUrl:
+      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.0",
   },
   {
     line: "5.0",
@@ -119,7 +138,8 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       { icon: "music", label: "Audio z fade, loop i płynnym transportem" },
       { icon: "laptop", label: "Desktop na Windows i Mac" },
     ],
-    releaseUrl: "https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0",
+    releaseUrl:
+      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0",
   },
   {
     line: "4",

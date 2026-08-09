@@ -28,9 +28,7 @@ const TAB_URL =
   "https://tabs.ultimate-guitar.com/tab/gloria-gaynor/i-will-survive-chords-180013";
 
 function encodeUgPayload(payload: unknown): string {
-  return JSON.stringify(payload)
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;");
+  return JSON.stringify(payload).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
 function ugTabHtml(payload: unknown, reverseAttrs = false): string {
@@ -71,7 +69,9 @@ describe("ug-fetch helpers", () => {
   });
 
   it("extractDataContentJson reads reverse attribute order", () => {
-    const payload = { store: { page: { data: { tab: { song_name: "Rev" } } } } };
+    const payload = {
+      store: { page: { data: { tab: { song_name: "Rev" } } } },
+    };
     const raw = extractDataContentJson(ugTabHtml(payload, true));
     expect(getPageData(raw)?.tab?.song_name).toBe("Rev");
   });
@@ -92,7 +92,12 @@ describe("ug-fetch helpers", () => {
   it("normalizeUgMetadata maps tuning object and tempo", () => {
     const meta = normalizeUgMetadata(
       {
-        tab: { song_name: "Song", artist_name: "Artist", type: "Chords", id: 9 },
+        tab: {
+          song_name: "Song",
+          artist_name: "Artist",
+          type: "Chords",
+          id: 9,
+        },
         tab_view: {
           meta: {
             tonality: "C",
@@ -226,11 +231,12 @@ describe("ug-fetch async", () => {
   it("fetchUgTab returns chords tab from js-store HTML", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () =>
-        new Response(jsStoreHtml(fixture), {
-          status: 200,
-          headers: { "content-type": "text/html" },
-        }),
+      vi.fn(
+        async () =>
+          new Response(jsStoreHtml(fixture), {
+            status: 200,
+            headers: { "content-type": "text/html" },
+          }),
       ),
     );
     const result = await fetchUgTab(TAB_URL);
@@ -241,10 +247,11 @@ describe("ug-fetch async", () => {
   it("fetchUgTab maps 403 and Cloudflare to blocked message", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () =>
-        new Response("Just a moment... cf-browser-verification", {
-          status: 200,
-        }),
+      vi.fn(
+        async () =>
+          new Response("Just a moment... cf-browser-verification", {
+            status: 200,
+          }),
       ),
     );
     await expect(fetchUgTab(TAB_URL)).rejects.toThrow(/zablokował/i);
@@ -259,7 +266,10 @@ describe("ug-fetch async", () => {
   it("fetchUgTab maps not-found and missing payload", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response("Oops! We can't find this page", { status: 200 })),
+      vi.fn(
+        async () =>
+          new Response("Oops! We can't find this page", { status: 200 }),
+      ),
     );
     await expect(fetchUgTab(TAB_URL)).rejects.toThrow(/Nie znaleziono/i);
 
@@ -293,13 +303,16 @@ describe("ug-fetch async", () => {
   it("fetchUgTab rejects invalid JSON structure and non-chords tab", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () =>
-        new Response(jsStoreHtml({ store: { page: { data: null } } }), {
-          status: 200,
-        }),
+      vi.fn(
+        async () =>
+          new Response(jsStoreHtml({ store: { page: { data: null } } }), {
+            status: 200,
+          }),
       ),
     );
-    await expect(fetchUgTab(TAB_URL)).rejects.toThrow(/Nieprawidłowa struktura/i);
+    await expect(fetchUgTab(TAB_URL)).rejects.toThrow(
+      /Nieprawidłowa struktura/i,
+    );
 
     const proTab = {
       store: {
@@ -315,7 +328,9 @@ describe("ug-fetch async", () => {
       "fetch",
       vi.fn(async () => new Response(jsStoreHtml(proTab), { status: 200 })),
     );
-    await expect(fetchUgTab(TAB_URL)).rejects.toThrow(/tylko zakładki typu Chords/i);
+    await expect(fetchUgTab(TAB_URL)).rejects.toThrow(
+      /tylko zakładki typu Chords/i,
+    );
   });
 
   it("searchUgChords returns [] for empty query", async () => {
@@ -346,7 +361,9 @@ describe("ug-fetch async", () => {
     };
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(jsStoreHtml(searchPayload), { status: 200 })),
+      vi.fn(
+        async () => new Response(jsStoreHtml(searchPayload), { status: 200 }),
+      ),
     );
     const rows = await searchUgChords("survive", "foo");
     expect(rows).toHaveLength(1);
@@ -357,8 +374,11 @@ describe("ug-fetch async", () => {
   it("searchUgChords handles Cloudflare, timeout, and empty HTML", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () =>
-        new Response("Just a moment... cf-browser-verification", { status: 200 }),
+      vi.fn(
+        async () =>
+          new Response("Just a moment... cf-browser-verification", {
+            status: 200,
+          }),
       ),
     );
     await expect(searchUgChords("x")).rejects.toThrow(/zablokował/i);
@@ -371,7 +391,9 @@ describe("ug-fetch async", () => {
         throw err;
       }),
     );
-    await expect(searchUgChords("x")).rejects.toThrow(/limit czasu wyszukiwania/i);
+    await expect(searchUgChords("x")).rejects.toThrow(
+      /limit czasu wyszukiwania/i,
+    );
 
     vi.stubGlobal(
       "fetch",
@@ -414,8 +436,8 @@ describe("ug-fetch async", () => {
       "https://tabs.ultimate-guitar.com/tab/gloria-gaynor/i-will-survive-chords-999999";
     const result = await fetchUgTab(missingUrl);
     expect(result.metadata.title).toBe("I Will Survive");
-    expect(fetchMock.mock.calls.some((c) => String(c[0]).includes("search.php"))).toBe(
-      true,
-    );
+    expect(
+      fetchMock.mock.calls.some((c) => String(c[0]).includes("search.php")),
+    ).toBe(true);
   });
 });

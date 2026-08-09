@@ -18,10 +18,7 @@ describe("ticksToMsAlongTempoMap", () => {
     p.defaultBpm = 120;
     p.tempoMap = [{ id: "t0", startTicks: 0, bpm: 120 }];
     const ms = ticksToMsAlongTempoMap(0, 1920, p);
-    expect(ms).toBeCloseTo(
-      ticksToMs(1920, 120, p.defaultMeter, p.ppq),
-      5,
-    );
+    expect(ms).toBeCloseTo(ticksToMs(1920, 120, p.defaultMeter, p.ppq), 5);
   });
 
   it("slows after a mid-span tempo drop", () => {
@@ -70,7 +67,12 @@ describe("ticksToMsAlongTempoMap", () => {
       { id: "m1", startTicks: 1920, numerator: 3, denominator: 4 },
     ];
     const first = ticksToMs(1920, 120, { numerator: 4, denominator: 4 }, p.ppq);
-    const second = ticksToMs(1920, 120, { numerator: 3, denominator: 4 }, p.ppq);
+    const second = ticksToMs(
+      1920,
+      120,
+      { numerator: 3, denominator: 4 },
+      p.ppq,
+    );
     expect(ticksToMsAlongTempoMap(0, 3840, p)).toBeCloseTo(first + second, 5);
   });
 });
@@ -148,9 +150,7 @@ describe("AlongMap helpers + advanceTicksAlongTempoMap", () => {
     // 1s @ 120 → 1920 ticks; next 1s @ 60 → +960 ticks → 2880
     const halfFastMs = ticksToMs(1920, 120, p.defaultMeter, p.ppq);
     const halfSlowMs = ticksToMs(960, 60, p.defaultMeter, p.ppq);
-    expect(
-      advanceTicksAlongTempoMap(0, halfFastMs + halfSlowMs, p),
-    ).toBe(2880);
+    expect(advanceTicksAlongTempoMap(0, halfFastMs + halfSlowMs, p)).toBe(2880);
     // Constant-BPM engine would wrongly stay at 120 for the whole 1.5s.
     const flatWrong = elapsedToTicks(
       halfFastMs + halfSlowMs,

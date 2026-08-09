@@ -70,9 +70,8 @@ describe("requestDevPreviewScreenshot", () => {
 
     const promise = requestDevPreviewScreenshot(iframe, 375, 667);
 
-    const requestCall = (
-      childWindow.postMessage as ReturnType<typeof vi.fn>
-    ).mock.calls[0];
+    const requestCall = (childWindow.postMessage as ReturnType<typeof vi.fn>)
+      .mock.calls[0];
     expect(requestCall?.[0]).toMatchObject({
       type: DEV_PREVIEW_SCREENSHOT_REQUEST,
       width: 375,

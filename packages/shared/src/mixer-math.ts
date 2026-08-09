@@ -48,19 +48,31 @@ export const FADER_TAPER_UNITY_T = 0.75;
  * Canonical taper anchors: t ∈ [0,1] (0 = bottom, 1 = top) ↔ dB.
  * Highest mouse resolution near −10…+6 dB.
  */
-const FADER_ANCHORS: ReadonlyArray<{ readonly t: number; readonly db: number }> =
-  [
-    { t: 0, db: Number.NEGATIVE_INFINITY },
-    { t: 0.08, db: -48 },
-    { t: 0.25, db: -24 },
-    { t: 0.5, db: -10 },
-    { t: 0.75, db: 0 },
-    { t: 1, db: FADER_TAPER_DB_MAX },
-  ];
+const FADER_ANCHORS: ReadonlyArray<{
+  readonly t: number;
+  readonly db: number;
+}> = [
+  { t: 0, db: Number.NEGATIVE_INFINITY },
+  { t: 0.08, db: -48 },
+  { t: 0.25, db: -24 },
+  { t: 0.5, db: -10 },
+  { t: 0.75, db: 0 },
+  { t: 1, db: FADER_TAPER_DB_MAX },
+];
 
 /** Tick marks at taper heights (UI labels). */
 export const FADER_TICK_DBS: readonly number[] = [
-  6, 3, 0, -3, -6, -10, -15, -20, -30, -40, Number.NEGATIVE_INFINITY,
+  6,
+  3,
+  0,
+  -3,
+  -6,
+  -10,
+  -15,
+  -20,
+  -30,
+  -40,
+  Number.NEGATIVE_INFINITY,
 ];
 
 export type MeterPeakBand = "safe" | "warn" | "clip";

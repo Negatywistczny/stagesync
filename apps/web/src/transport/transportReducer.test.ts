@@ -69,12 +69,12 @@ describe("transportReducer", () => {
   });
 
   it("transportWsUrl maps http(s) → ws(s)", () => {
-    expect(
-      transportWsUrl({ protocol: "http:", host: "localhost:3000" }),
-    ).toBe("ws://localhost:3000/ws/transport");
-    expect(
-      transportWsUrl({ protocol: "https:", host: "stage.example" }),
-    ).toBe("wss://stage.example/ws/transport");
+    expect(transportWsUrl({ protocol: "http:", host: "localhost:3000" })).toBe(
+      "ws://localhost:3000/ws/transport",
+    );
+    expect(transportWsUrl({ protocol: "https:", host: "stage.example" })).toBe(
+      "wss://stage.example/ws/transport",
+    );
   });
 
   it("upsertStageCue inserts or replaces by id", () => {

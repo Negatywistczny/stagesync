@@ -115,17 +115,12 @@ export function HwOutStrip({
           db={meterDb}
           dbR={isStereo ? (meterDbR ?? -60) : undefined}
           paintKeyL={meterPaintKey("hw", id, "l")}
-          paintKeyR={
-            isStereo ? meterPaintKey("hw", id, "r") : undefined
-          }
+          paintKeyR={isStereo ? meterPaintKey("hw", id, "r") : undefined}
           aria-label={`Miernik ${name}`}
         />
       </div>
 
-      <div
-        className={styles.mixerTools}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={styles.mixerTools} onClick={(e) => e.stopPropagation()}>
         <Button
           type="button"
           variant="ghost"

@@ -1,9 +1,4 @@
-import {
-  createReadStream,
-  existsSync,
-  readFileSync,
-  statSync,
-} from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Express, Request, Response } from "express";
 import {
@@ -106,10 +101,16 @@ export function loadUiMeta(staticDir: string | null | undefined): UiMeta {
         uiHashPerformer?: unknown;
         uiHashConsole?: unknown;
       };
-      if (typeof raw.uiHashPerformer === "string" && raw.uiHashPerformer.length > 0) {
+      if (
+        typeof raw.uiHashPerformer === "string" &&
+        raw.uiHashPerformer.length > 0
+      ) {
         uiHashPerformer = raw.uiHashPerformer;
       }
-      if (typeof raw.uiHashConsole === "string" && raw.uiHashConsole.length > 0) {
+      if (
+        typeof raw.uiHashConsole === "string" &&
+        raw.uiHashConsole.length > 0
+      ) {
         uiHashConsole = raw.uiHashConsole;
       }
     } catch (err) {
@@ -161,10 +162,7 @@ function serveUiBundle(
   }
 
   res.setHeader("Content-Type", "application/zip");
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename="${filename}"`,
-  );
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
   res.setHeader("Content-Length", String(size));
   res.setHeader("Cache-Control", "no-store");
 

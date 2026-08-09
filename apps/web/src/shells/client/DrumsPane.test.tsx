@@ -16,12 +16,7 @@ afterEach(() => {
 
 describe("DrumsPane empty and aria", () => {
   it("announces waiting when forma context is unavailable", () => {
-    render(
-      <DrumsPane
-        project={null as unknown as Project}
-        displayTicks={0}
-      />,
-    );
+    render(<DrumsPane project={null as unknown as Project} displayTicks={0} />);
     expect(screen.getByRole("status").textContent).toMatch(
       /Oczekiwanie na utwór/,
     );
@@ -35,9 +30,7 @@ describe("DrumsPane empty and aria", () => {
     );
     render(<DrumsPane project={project} displayTicks={100} />);
     expect(screen.getByLabelText("Forma utworu")).toBeTruthy();
-    expect(
-      screen.getByLabelText(/Metronom — beat \d+ \/ \d+/),
-    ).toBeTruthy();
+    expect(screen.getByLabelText(/Metronom — beat \d+ \/ \d+/)).toBeTruthy();
   });
 
   it("renders editable note field when notesEdit is on", () => {
@@ -61,8 +54,6 @@ describe("DrumsPane empty and aria", () => {
         onNoteChange={onNoteChange}
       />,
     );
-    expect(
-      screen.getByLabelText("Notatka aktywnej sekcji"),
-    ).toBeTruthy();
+    expect(screen.getByLabelText("Notatka aktywnej sekcji")).toBeTruthy();
   });
 });

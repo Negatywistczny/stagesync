@@ -260,7 +260,9 @@ describe("runAudioDrivenSmartTempo", () => {
   it("Adapt seed follows audio analysis, not pipe/GAP fallbackBpm", () => {
     // Analysis + IBI at ~112.69; editorial fallback 120 must NOT overwrite Adapt.
     const period = 60_000 / 112.69;
-    const beatMs = Array.from({ length: 160 }, (_, i) => Math.round(i * period));
+    const beatMs = Array.from({ length: 160 }, (_, i) =>
+      Math.round(i * period),
+    );
     const result = runAudioDrivenSmartTempo({
       analysis: {
         onsetsMs: beatMs,
@@ -429,9 +431,7 @@ describe("runAudioDrivenSmartTempo", () => {
     expect(result.beatMs[beatOneIdx]!).toBeCloseTo(offsetMs, -2);
     expect(result.seedBpm).toBeCloseTo(120, 0);
     // Content-epoch: Beat 1 (#GAP) → tick 0 on the continuous map
-    expect(
-      secondsToTicks(0, result.tempoMap, 120, METER, DEFAULT_PPQ),
-    ).toBe(0);
+    expect(secondsToTicks(0, result.tempoMap, 120, METER, DEFAULT_PPQ)).toBe(0);
     const gapNode = result.tempoNodes.find((n) => n.wallMs === offsetMs);
     expect(gapNode?.targetTick ?? result.tempoNodes[0]?.targetTick).toBe(0);
   });
@@ -704,7 +704,14 @@ describe("medianBpmFromBeatMs / sparsifyTempoNodesFromBeatGrid", () => {
       }
     }
     const cleaned = sanitizeBeatGridIbis(beatMs, bpm);
-    const dense = tempoNodesFromBeatGrid(cleaned, 0, bpm, 0, METER, DEFAULT_PPQ);
+    const dense = tempoNodesFromBeatGrid(
+      cleaned,
+      0,
+      bpm,
+      0,
+      METER,
+      DEFAULT_PPQ,
+    );
     const sparse = sparsifyTempoNodesFromBeatGrid(dense, {
       seedBpm: bpm,
       meter: METER,
@@ -853,7 +860,9 @@ describe("tempoMapFromTempoNodes", () => {
 
 describe("audioDurationOverflowWarning", () => {
   it("warns when map exceeds audio", () => {
-    expect(audioDurationOverflowWarning(90_000, 60_000)).toMatch(/długości audio/);
+    expect(audioDurationOverflowWarning(90_000, 60_000)).toMatch(
+      /długości audio/,
+    );
     expect(audioDurationOverflowWarning(30_000, 60_000)).toBeNull();
   });
 });

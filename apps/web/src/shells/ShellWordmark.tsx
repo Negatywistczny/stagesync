@@ -49,11 +49,7 @@ export function ShellWordmark({
 
   return (
     <div
-      className={[
-        styles.identity,
-        iconOnly ? styles.iconOnly : "",
-        className,
-      ]
+      className={[styles.identity, iconOnly ? styles.iconOnly : "", className]
         .filter(Boolean)
         .join(" ")}
     >

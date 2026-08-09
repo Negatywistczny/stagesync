@@ -16,8 +16,8 @@ import styles from "./MemoryPressureBanner.module.css";
  * Details always go to the console under `[stagesync-mem]` for the next investigation.
  */
 export function MemoryPressureBanner() {
-  const [snapshot, setSnapshot] = useState<MemoryPressureSnapshot | null>(
-    () => getLastElevatedMemoryPressure(),
+  const [snapshot, setSnapshot] = useState<MemoryPressureSnapshot | null>(() =>
+    getLastElevatedMemoryPressure(),
   );
   const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
@@ -48,7 +48,9 @@ export function MemoryPressureBanner() {
 
   return (
     <div
-      className={critical ? `${styles.banner} ${styles.critical}` : styles.banner}
+      className={
+        critical ? `${styles.banner} ${styles.critical}` : styles.banner
+      }
       role="alert"
     >
       <p className={styles.text}>{userFacingMemoryPressureMessage(snapshot)}</p>

@@ -7,7 +7,8 @@ import {
 } from "./timelineKeyboardShortcuts.js";
 
 function base(
-  overrides: Partial<TimelineShortcutInput> & Pick<TimelineShortcutInput, "key">,
+  overrides: Partial<TimelineShortcutInput> &
+    Pick<TimelineShortcutInput, "key">,
 ): TimelineShortcutInput {
   return {
     code: overrides.code ?? overrides.key,
@@ -47,9 +48,9 @@ describe("resolveTimelineShortcut", () => {
       "toggle-inspector",
     );
     expect(resolveTimelineShortcut(base({ key: "?" }))).toBe("help-open");
-    expect(
-      resolveTimelineShortcut(base({ key: "/", shift: true })),
-    ).toBe("help-open");
+    expect(resolveTimelineShortcut(base({ key: "/", shift: true }))).toBe(
+      "help-open",
+    );
   });
 
   it("maps transport Space / Shift+Space / Enter / Home / C / K / U / Z", () => {
@@ -142,21 +143,21 @@ describe("resolveTimelineShortcut", () => {
     expect(resolveTimelineShortcut(base({ key: "ArrowLeft" }))).toBe(
       "locator-left",
     );
-    expect(
-      resolveTimelineShortcut(base({ key: "ArrowLeft", alt: true })),
-    ).toBe("nudge-clip-left");
+    expect(resolveTimelineShortcut(base({ key: "ArrowLeft", alt: true }))).toBe(
+      "nudge-clip-left",
+    );
     expect(
       resolveTimelineShortcut(base({ key: "ArrowRight", alt: true })),
     ).toBe("nudge-clip-right");
   });
 
   it("maps zoom chords without bare tool letters", () => {
-    expect(
-      resolveTimelineShortcut(base({ key: "ArrowLeft", mod: true })),
-    ).toBe("zoom-h-out");
-    expect(
-      resolveTimelineShortcut(base({ key: "ArrowUp", mod: true })),
-    ).toBe("zoom-v-in");
+    expect(resolveTimelineShortcut(base({ key: "ArrowLeft", mod: true }))).toBe(
+      "zoom-h-out",
+    );
+    expect(resolveTimelineShortcut(base({ key: "ArrowUp", mod: true }))).toBe(
+      "zoom-v-in",
+    );
     expect(resolveTimelineShortcut(base({ key: "p" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "a" }))).toBeNull();
   });
@@ -166,9 +167,7 @@ describe("resolveTimelineShortcut", () => {
       resolveTimelineShortcut(base({ key: "1", wandMenuOpen: true })),
     ).toBe("wand-tekst");
     expect(
-      resolveTimelineShortcut(
-        base({ key: "ArrowUp", tapToolActive: true }),
-      ),
+      resolveTimelineShortcut(base({ key: "ArrowUp", tapToolActive: true })),
     ).toBe("tap-line-prev");
   });
 });

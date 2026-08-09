@@ -15,10 +15,7 @@ import {
   CombinedUsUgImportForm,
   type UsUgApplyPayload,
 } from "../CombinedUsUgImportForm.js";
-import {
-  UgImportForm,
-  type UgImportApplyPayload,
-} from "../UgImportForm.js";
+import { UgImportForm, type UgImportApplyPayload } from "../UgImportForm.js";
 import { UltrastarImportForm } from "../UltrastarImportForm.js";
 import styles from "./SongImportWizard.module.css";
 
@@ -103,10 +100,7 @@ export function SongImportWizard({
         <div className={styles.chips} role="group" aria-label="Źródła importu">
           <button
             type="button"
-            className={[
-              styles.chip,
-              sources.ultrastar ? styles.chipOn : "",
-            ]
+            className={[styles.chip, sources.ultrastar ? styles.chipOn : ""]
               .filter(Boolean)
               .join(" ")}
             aria-pressed={sources.ultrastar}

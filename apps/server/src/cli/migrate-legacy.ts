@@ -296,7 +296,9 @@ async function main(): Promise<void> {
     "utf8",
   );
 
-  console.log(`Wrote ${result.projects.length} project(s) under ${projectsDir}`);
+  console.log(
+    `Wrote ${result.projects.length} project(s) under ${projectsDir}`,
+  );
   console.log(`Updated ${libraryFile}`);
   console.log(`Updated ${setlistFile}`);
 }

@@ -31,9 +31,9 @@ describe("snap-grid", () => {
     ];
     const mid5 = bar4 * 2 + 1200; // within first 5/8 bar (2400 ticks)
     expect(snapTicksToBarStartAlongMeterMap(mid5, M4, map, PPQ)).toBe(bar4 * 2);
-    expect(
-      snapTicksToBarStartAlongMeterMap(mid5 + 1, M4, map, PPQ),
-    ).toBe(bar4 * 2 + 2400);
+    expect(snapTicksToBarStartAlongMeterMap(mid5 + 1, M4, map, PPQ)).toBe(
+      bar4 * 2 + 2400,
+    );
   });
 
   it("snapTicksToBeatGrid quantizes to local beat in 4/4", () => {
@@ -103,14 +103,16 @@ describe("snap-grid", () => {
   });
 
   it("quantizeTicks off returns input", () => {
-    expect(
-      quantizeTicks(123, "off", { meter: M4, ppq: PPQ }),
-    ).toBe(123);
+    expect(quantizeTicks(123, "off", { meter: M4, ppq: PPQ })).toBe(123);
   });
 
   it("quantizeTicks subdivision mode", () => {
     expect(
-      quantizeTicks(500, { kind: "subdivision", parts: 4 }, { meter: M4, ppq: PPQ }),
+      quantizeTicks(
+        500,
+        { kind: "subdivision", parts: 4 },
+        { meter: M4, ppq: PPQ },
+      ),
     ).toBe(480);
   });
 
@@ -122,10 +124,7 @@ describe("snap-grid", () => {
     expect(() => snapTicksToSubdivision(1.5, 4, PPQ)).toThrow(RangeError);
   });
 
-  it.each([
-    { ticks: Number.NaN },
-    { ticks: 1.5 },
-  ] as const)(
+  it.each([{ ticks: Number.NaN }, { ticks: 1.5 }] as const)(
     "AlongMeterMap helpers reject non-int ticks ($ticks)",
     ({ ticks }) => {
       expect(() =>
@@ -140,9 +139,12 @@ describe("snap-grid", () => {
   it.each([
     { parts: 3 as 2 | 4 | 8 | 16, re: /parts must be 2, 4, 8, or 16/ },
     { parts: 32 as 2 | 4 | 8 | 16, re: /parts must be 2, 4, 8, or 16/ },
-  ] as const)("snapTicksToSubdivision rejects parts=$parts", ({ parts, re }) => {
-    expect(() => snapTicksToSubdivision(0, parts, PPQ)).toThrow(re);
-  });
+  ] as const)(
+    "snapTicksToSubdivision rejects parts=$parts",
+    ({ parts, re }) => {
+      expect(() => snapTicksToSubdivision(0, parts, PPQ)).toThrow(re);
+    },
+  );
 
   it("snapTicksToSubdivision rejects PPQ not divisible by parts", () => {
     expect(() => snapTicksToSubdivision(0, 8, 100)).toThrow(
@@ -150,14 +152,14 @@ describe("snap-grid", () => {
     );
   });
 
-  it.each([
-    { ticks: Number.NaN },
-    { ticks: 10.5 },
-  ] as const)("quantizeTicks rejects non-int ticks ($ticks)", ({ ticks }) => {
-    expect(() => quantizeTicks(ticks, "bar", { meter: M4, ppq: PPQ })).toThrow(
-      /ticks must be a finite integer/,
-    );
-  });
+  it.each([{ ticks: Number.NaN }, { ticks: 10.5 }] as const)(
+    "quantizeTicks rejects non-int ticks ($ticks)",
+    ({ ticks }) => {
+      expect(() =>
+        quantizeTicks(ticks, "bar", { meter: M4, ppq: PPQ }),
+      ).toThrow(/ticks must be a finite integer/);
+    },
+  );
 
   it("AlongMeterMap helpers use constant meter in pre-roll", () => {
     expect(snapTicksToBarStartAlongMeterMap(-100, M4, [], PPQ)).toBe(
@@ -186,9 +188,7 @@ describe("snap-grid", () => {
   });
 
   it("quantizeTicks beat mode without meterMap uses constant grid", () => {
-    expect(
-      quantizeTicks(500, "beat", { meter: M4, ppq: PPQ }),
-    ).toBe(960);
+    expect(quantizeTicks(500, "beat", { meter: M4, ppq: PPQ })).toBe(960);
   });
 
   it("AlongMeterMap helpers accept exact barline ticks", () => {

@@ -3,11 +3,7 @@ import { createProjectV5Seed } from "@stagesync/shared";
 import { barsInTickRange, buildBarCellsForClip } from "./clientBarCells.js";
 
 describe("clientBarCells", () => {
-  const project = createProjectV5Seed(
-    "p",
-    "S",
-    "2026-07-23T00:00:00.000Z",
-  );
+  const project = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
 
   it("barsInTickRange returns empty for non-positive span", () => {
     expect(barsInTickRange(project, 100, 100)).toEqual([]);

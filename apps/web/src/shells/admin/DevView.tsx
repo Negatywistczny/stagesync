@@ -61,8 +61,18 @@ function buildDefaultDevPreviewUrls(): DevShortcutItem[] {
     path: (typeof DEV_PREVIEW_ROUTES)[number];
     icon: LucideIcon;
   }[] = [
-    { label: "Admin (web)", surface: "web", path: "/admin", icon: LayoutDashboard },
-    { label: "Client (web)", surface: "web", path: "/client", icon: MonitorPlay },
+    {
+      label: "Admin (web)",
+      surface: "web",
+      path: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      label: "Client (web)",
+      surface: "web",
+      path: "/client",
+      icon: MonitorPlay,
+    },
     { label: "Timeline (web)", surface: "web", path: "/timeline", icon: Gauge },
     {
       label: "Performer (Android preview)",
@@ -76,7 +86,12 @@ function buildDefaultDevPreviewUrls(): DevShortcutItem[] {
       path: "/admin",
       icon: Tv2,
     },
-    { label: "Tauri desktop", surface: "tauri", path: "/admin", icon: MonitorSmartphone },
+    {
+      label: "Tauri desktop",
+      surface: "tauri",
+      path: "/admin",
+      icon: MonitorSmartphone,
+    },
   ];
   return combos.map((c) => ({
     label: c.label,

@@ -12,7 +12,9 @@ afterEach(() => {
 describe("TimelineHelp", () => {
   it("names filter, tablist, and close control", () => {
     render(<TimelineHelp onClose={() => {}} />);
-    expect(screen.getByRole("searchbox", { name: "Filtruj pomoc" })).toBeTruthy();
+    expect(
+      screen.getByRole("searchbox", { name: "Filtruj pomoc" }),
+    ).toBeTruthy();
     expect(
       screen.getByRole("tablist", { name: "Sekcje pomocy Timeline" }),
     ).toBeTruthy();
@@ -32,9 +34,9 @@ describe("TimelineHelp", () => {
     render(<TimelineHelp onClose={() => {}} />);
     fireEvent.click(screen.getByRole("tab", { name: "Narzędzia i ścieżki" }));
     expect(
-      screen.getByRole("tab", { name: "Narzędzia i ścieżki" }).getAttribute(
-        "aria-selected",
-      ),
+      screen
+        .getByRole("tab", { name: "Narzędzia i ścieżki" })
+        .getAttribute("aria-selected"),
     ).toBe("true");
     expect(screen.getByRole("tabpanel")).toBeTruthy();
   });

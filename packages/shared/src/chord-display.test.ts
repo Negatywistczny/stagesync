@@ -135,12 +135,12 @@ describe("formatChordParts literalQuality", () => {
       root: "E",
       sup: "dim7",
     });
-    expect(
-      formatChordParts("Am7(b5)", { literalQuality: true }),
-    ).toMatchObject({
-      root: "A",
-      sup: "m7(♭5)",
-    });
+    expect(formatChordParts("Am7(b5)", { literalQuality: true })).toMatchObject(
+      {
+        root: "A",
+        sup: "m7(♭5)",
+      },
+    );
   });
 });
 
@@ -189,9 +189,7 @@ describe("formatHybridPolishB / formatMusicalAccidentals", () => {
     expect(formatHybridPolishB("")).toBe("");
     expect(formatHybridPolishB("Bmaj7")).toBe("Hmaj7");
     expect(formatHybridPolishB("B#")).toBe("H#");
-    expect(formatChordForDisplay("Bmaj7", { hybridPolishB: true })).toBe(
-      "HΔ7",
-    );
+    expect(formatChordForDisplay("Bmaj7", { hybridPolishB: true })).toBe("HΔ7");
   });
 
   it("formatMusicalAccidentals on notes and numbers (#11 → ♯11)", () => {

@@ -16,8 +16,7 @@ import {
 export type LibraryImportFormat = "v5-pack" | "legacy-database";
 
 export type DetectLibraryImportResult =
-  | { format: LibraryImportFormat }
-  | { format: "unknown"; reason: string };
+  { format: LibraryImportFormat } | { format: "unknown"; reason: string };
 
 export type NormalizeLibraryImportResult = {
   format: LibraryImportFormat;
@@ -28,10 +27,13 @@ export type NormalizeLibraryImportResult = {
 
 /** PK\x03\x04 / PK\x05\x06 / PK\x07\x08 — ZIP local/central/empty. */
 export function looksLikeZipBytes(bytes: ArrayBuffer | Uint8Array): boolean {
-  const u8 =
-    bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   if (u8.length < 4) return false;
-  return u8[0] === 0x50 && u8[1] === 0x4b && (u8[2] === 0x03 || u8[2] === 0x05 || u8[2] === 0x07);
+  return (
+    u8[0] === 0x50 &&
+    u8[1] === 0x4b &&
+    (u8[2] === 0x03 || u8[2] === 0x05 || u8[2] === 0x07)
+  );
 }
 
 export const ZIP_IMPORT_UNSUPPORTED_PL =
@@ -85,7 +87,9 @@ export function normalizeLibraryImport(
   if (detected.format === "v5-pack") {
     const projects = (raw as { projects: unknown[] }).projects;
     if (projects.length === 0) {
-      throw new Error("Pakiet v5 nie zawiera żadnych projektów (projects[] puste).");
+      throw new Error(
+        "Pakiet v5 nie zawiera żadnych projektów (projects[] puste).",
+      );
     }
     if (projects.length > 1024) {
       throw new Error("Pakiet v5 zawiera zbyt wiele projektów (max 1024).");

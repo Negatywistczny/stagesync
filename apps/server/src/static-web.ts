@@ -42,7 +42,10 @@ export function resolveDevUiOrigin(): string | null {
 
   // Docker / sidecar / prod: static bundle path is always configured explicitly.
   if (process.env.STAGESYNC_STATIC_DIR?.trim()) return null;
-  if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "test") {
+  if (
+    process.env.NODE_ENV === "production" ||
+    process.env.NODE_ENV === "test"
+  ) {
     return null;
   }
 

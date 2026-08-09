@@ -8,7 +8,10 @@ import { describe, expect, it } from "vitest";
 
 describe("ServerSettingsModal styles", () => {
   const css = readFileSync(
-    join(dirname(fileURLToPath(import.meta.url)), "ServerSettingsModal.module.css"),
+    join(
+      dirname(fileURLToPath(import.meta.url)),
+      "ServerSettingsModal.module.css",
+    ),
     "utf8",
   );
 
@@ -17,7 +20,9 @@ describe("ServerSettingsModal styles", () => {
     expect(tabsBlock).toContain("flex-wrap: nowrap");
     expect(tabsBlock).toContain("overflow-x: auto");
     expect(tabsBlock).toMatch(/flex:\s*0\s+0\s+auto|flex-shrink:\s*0/);
-    expect(css).toMatch(/\.tabs :global\(\.ss-btn\)\s*\{[^}]*white-space:\s*nowrap/);
+    expect(css).toMatch(
+      /\.tabs :global\(\.ss-btn\)\s*\{[^}]*white-space:\s*nowrap/,
+    );
   });
 
   it("reserves gutter so scrollbars do not overlap inputs on phone", () => {
@@ -43,8 +48,9 @@ describe("ServerSettingsModal styles", () => {
 
   it("keeps a fixed desktop panel size across preference tabs", () => {
     const desktopPanel =
-      css.match(/@media\s*\(min-width:\s*769px\)\s*\{[\s\S]*?\.panel\s*\{([^}]*)\}/)?.[1] ??
-      "";
+      css.match(
+        /@media\s*\(min-width:\s*769px\)\s*\{[\s\S]*?\.panel\s*\{([^}]*)\}/,
+      )?.[1] ?? "";
     expect(desktopPanel).toContain("min-width: min(48rem, 100%)");
     expect(desktopPanel).toContain("height: min(85dvh, 44rem)");
     expect(desktopPanel).toContain("min-height: min(85dvh, 44rem)");

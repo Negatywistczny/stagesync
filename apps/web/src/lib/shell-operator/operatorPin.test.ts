@@ -39,9 +39,7 @@ describe("operatorPin", () => {
 
   it("mergeApiHeaders keeps content-type and adds PIN", () => {
     setStoredOperatorPin("99");
-    expect(
-      mergeApiHeaders({ "content-type": "application/json" }),
-    ).toEqual({
+    expect(mergeApiHeaders({ "content-type": "application/json" })).toEqual({
       [OPERATOR_PIN_HEADER]: "99",
       "content-type": "application/json",
     });
@@ -55,7 +53,10 @@ describe("operatorPin", () => {
       accept: "application/json",
     });
     expect(
-      mergeApiHeaders([["X-Custom", "1"], ["X-Other", "2"]]),
+      mergeApiHeaders([
+        ["X-Custom", "1"],
+        ["X-Other", "2"],
+      ]),
     ).toEqual({
       [OPERATOR_PIN_HEADER]: "42",
       "X-Custom": "1",

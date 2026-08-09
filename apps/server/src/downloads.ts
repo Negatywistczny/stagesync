@@ -80,7 +80,10 @@ export function resolveApkFilePath(dataDir: string, kind: ApkKind): string {
   }
 
   return fromEnv
-    ? join(isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv), filename)
+    ? join(
+        isAbsolute(fromEnv) ? fromEnv : resolve(REPO_ROOT, fromEnv),
+        filename,
+      )
     : join(dataDir, "downloads", filename);
 }
 
@@ -90,8 +93,8 @@ function sendMissingApk(res: Response, filename: string): void {
     .type("text/plain; charset=utf-8")
     .send(
       `StageSync: brak pliku ${filename} na hoście.\n` +
-      `Artefakt nie leży w bundlu produktu ani w data/downloads. ` +
-      `Pobierz z GitHub Releases albo zbuduj APK lokalnie (patrz docs/guides/MOBILE.md).\n`,
+        `Artefakt nie leży w bundlu produktu ani w data/downloads. ` +
+        `Pobierz z GitHub Releases albo zbuduj APK lokalnie (patrz docs/guides/MOBILE.md).\n`,
     );
 }
 

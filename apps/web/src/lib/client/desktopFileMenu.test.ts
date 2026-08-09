@@ -42,7 +42,11 @@ describe("desktopFileMenu", () => {
   });
 
   it("createSongWithContent creates, merges, puts with OCC, pushes recent", async () => {
-    const shell = createProjectV6Seed("new", "Shell", "2026-02-01T00:00:00.000Z");
+    const shell = createProjectV6Seed(
+      "new",
+      "Shell",
+      "2026-02-01T00:00:00.000Z",
+    );
     shell.midiProgramId = 11;
     vi.mocked(libraryApi.createProject).mockResolvedValue(shell);
     vi.mocked(libraryApi.putProject).mockImplementation(async (id, body) => ({
@@ -72,7 +76,11 @@ describe("desktopFileMenu", () => {
   });
 
   it("saveProjectAs clones with optimistic updatedAt and new midiProgramId", async () => {
-    const source = createProjectV5Seed("src", "Old", "2026-01-01T00:00:00.000Z");
+    const source = createProjectV5Seed(
+      "src",
+      "Old",
+      "2026-01-01T00:00:00.000Z",
+    );
     source.midiProgramId = 7;
     const shell = createProjectV5Seed("new", "New", "2026-02-01T00:00:00.000Z");
     shell.midiProgramId = 9;
@@ -119,7 +127,10 @@ describe("desktopFileMenu", () => {
     const big = new File([new Uint8Array(17 * 1024 * 1024)], "big.json");
     await expect(importLibraryFile(big)).rejects.toThrow(/za duży/i);
 
-    const zip = new File([new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0])], "x.json");
+    const zip = new File(
+      [new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0])],
+      "x.json",
+    );
     await expect(importLibraryFile(zip)).rejects.toThrow(/ZIP/i);
 
     const bad = new File(["not-json"], "x.json");

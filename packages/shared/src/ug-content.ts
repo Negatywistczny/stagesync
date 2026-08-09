@@ -124,25 +124,25 @@ const NAMED_ENTITIES: Record<string, string> = {
 };
 
 function decodeHtmlEntitiesOnce(text: string): string {
-  return text.replace(
-    /&(#x?[0-9a-f]+|[a-z]+);/gi,
-    (match, body: string) => {
-      if (body[0] === "#") {
-        const hex = body[1] === "x" || body[1] === "X";
-        const n = Number.parseInt(hex ? body.slice(2) : body.slice(1), hex ? 16 : 10);
-        if (Number.isFinite(n) && n > 0) {
-          try {
-            return String.fromCodePoint(n);
-          } catch {
-            return match;
-          }
+  return text.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, body: string) => {
+    if (body[0] === "#") {
+      const hex = body[1] === "x" || body[1] === "X";
+      const n = Number.parseInt(
+        hex ? body.slice(2) : body.slice(1),
+        hex ? 16 : 10,
+      );
+      if (Number.isFinite(n) && n > 0) {
+        try {
+          return String.fromCodePoint(n);
+        } catch {
+          return match;
         }
-        return match;
       }
-      const named = NAMED_ENTITIES[body] ?? NAMED_ENTITIES[body.toLowerCase()];
-      return named ?? match;
-    },
-  );
+      return match;
+    }
+    const named = NAMED_ENTITIES[body] ?? NAMED_ENTITIES[body.toLowerCase()];
+    return named ?? match;
+  });
 }
 
 /**
@@ -184,7 +184,8 @@ export function isUgAuthorNoteLine(line: string): boolean {
     return true;
   }
   // Paired markdown emphasis: *note* / **note** / _note_
-  if (/^(?:\*\*|__|\*|_)[^*_]{0,200}(?:\*\*|__|\*|_)$/.test(trimmed)) return true;
+  if (/^(?:\*\*|__|\*|_)[^*_]{0,200}(?:\*\*|__|\*|_)$/.test(trimmed))
+    return true;
   // UG tip / performance notes: "*you can play E7 instead of E..."
   if (/^\*+$/.test(trimmed) || /^\*[^*]/.test(trimmed)) return true;
   return false;

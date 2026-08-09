@@ -1,12 +1,5 @@
-import {
-  useEffect,
-  useRef,
-  type CSSProperties,
-} from "react";
-import {
-  formatSectionNameForDisplay,
-  type Project,
-} from "@stagesync/shared";
+import { useEffect, useRef, type CSSProperties } from "react";
+import { formatSectionNameForDisplay, type Project } from "@stagesync/shared";
 import { buildFormaLiveContext } from "@lib/client/clientForma.js";
 import styles from "../ClientShell.module.css";
 
@@ -58,10 +51,7 @@ export function DrumsPane({
 
   return (
     <div
-      className={[
-        styles.drumsView,
-        notesEdit ? styles.drumsEditMode : "",
-      ]
+      className={[styles.drumsView, notesEdit ? styles.drumsEditMode : ""]
         .filter(Boolean)
         .join(" ")}
     >
@@ -187,9 +177,7 @@ export function DrumsPane({
                     );
                   })}
                 </div>
-                {notesEdit &&
-                seg.kind === "section" &&
-                onNoteChange ? (
+                {notesEdit && seg.kind === "section" && onNoteChange ? (
                   <textarea
                     className={`${styles.drumsNoteInput} ${styles.drumsFormSegNoteInput}`}
                     rows={2}

@@ -30,14 +30,16 @@ describe("ScorePane empty states", () => {
         hasActiveProjectId={false}
       />,
     );
-    expect(screen.getByRole("status").textContent).toMatch(/Oczekiwanie na utwór/);
+    expect(screen.getByRole("status").textContent).toMatch(
+      /Oczekiwanie na utwór/,
+    );
   });
 
   it("announces loading while project is null", () => {
-    render(
-      <ScorePane {...common} project={null} loading hasActiveProjectId />,
+    render(<ScorePane {...common} project={null} loading hasActiveProjectId />);
+    expect(screen.getByRole("status").textContent).toMatch(
+      /Wczytywanie utworu/,
     );
-    expect(screen.getByRole("status").textContent).toMatch(/Wczytywanie utworu/);
   });
 
   it("announces load failure when project missing after load", () => {
@@ -69,6 +71,8 @@ describe("ScorePane empty states", () => {
         hasActiveProjectId
       />,
     );
-    expect(screen.getByRole("status").textContent).toMatch(/Brak pliku MusicXML/);
+    expect(screen.getByRole("status").textContent).toMatch(
+      /Brak pliku MusicXML/,
+    );
   });
 });

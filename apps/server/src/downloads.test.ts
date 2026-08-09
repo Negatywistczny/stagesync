@@ -18,7 +18,11 @@ async function listenApp(dataDir: string): Promise<{
   server: Server;
   baseUrl: string;
 }> {
-  const { app } = createApp({ dataDir, staticDir: null, disableFileLogs: true });
+  const { app } = createApp({
+    dataDir,
+    staticDir: null,
+    disableFileLogs: true,
+  });
   const server = await new Promise<Server>((resolve) => {
     const s = app.listen(0, "127.0.0.1", () => resolve(s));
   });
@@ -73,7 +77,10 @@ describe("APK downloads", () => {
     delete process.env.STAGESYNC_APK_BUNDLE_DIR;
   }
 
-  async function withIsolatedSeed(): Promise<{ seedDir: string; bundleDir: string }> {
+  async function withIsolatedSeed(): Promise<{
+    seedDir: string;
+    bundleDir: string;
+  }> {
     productRoot = await mkdtemp(join(tmpdir(), "ss-apk-product-"));
     const seedDir = join(productRoot, "seed");
     const bundleDir = join(productRoot, "downloads");

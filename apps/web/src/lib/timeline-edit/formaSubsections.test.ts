@@ -32,13 +32,7 @@ describe("formaSubsections", () => {
 
   it("moveSubsectionBoundary drag right adds 4-bar fills on left span", () => {
     // 8-bar clip with mid boundary at 4 bars; drag to 6 bars
-    const next = moveSubsectionBoundary(
-      [CHUNK4],
-      8 * BAR,
-      1,
-      6 * BAR,
-      CHUNK4,
-    );
+    const next = moveSubsectionBoundary([CHUNK4], 8 * BAR, 1, 6 * BAR, CHUNK4);
     expect(next).toEqual([CHUNK4, 6 * BAR]);
   });
 
@@ -56,13 +50,7 @@ describe("formaSubsections", () => {
 
   it("moveSubsectionBoundary drag left fills from right", () => {
     // 8-bar clip, boundary at 4 bars; drag left to 2 bars → fill remaining right span
-    const next = moveSubsectionBoundary(
-      [CHUNK4],
-      8 * BAR,
-      1,
-      2 * BAR,
-      CHUNK4,
-    );
+    const next = moveSubsectionBoundary([CHUNK4], 8 * BAR, 1, 2 * BAR, CHUNK4);
     expect(next).not.toBeNull();
     expect(next).toContain(2 * BAR);
     expect(next!.some((t) => t > 2 * BAR)).toBe(true);
@@ -74,5 +62,4 @@ describe("formaSubsections", () => {
     expect(next).not.toBeNull();
     expect(next!.length).toBeLessThanOrEqual(64);
   });
-
 });

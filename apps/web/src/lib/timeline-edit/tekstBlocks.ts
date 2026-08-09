@@ -23,7 +23,10 @@ export function shiftTekstBlocks(
 }
 
 /** Move clip start; apply same Δ to all blocks. */
-export function moveTekstClipStart(clip: TekstClip, newStartTicks: number): TekstClip {
+export function moveTekstClipStart(
+  clip: TekstClip,
+  newStartTicks: number,
+): TekstClip {
   const startTicks = Math.trunc(newStartTicks);
   const delta = startTicks - clip.startTicks;
   if (delta === 0) return clip;
@@ -72,7 +75,9 @@ export function syncSoleTekstBlock(
     startTicks: clip.startTicks,
     lengthTicks: clip.lengthTicks,
     text: clip.text,
-    ...(clip.sourceSection != null ? { sourceSection: clip.sourceSection } : {}),
+    ...(clip.sourceSection != null
+      ? { sourceSection: clip.sourceSection }
+      : {}),
   };
   const prev = clip.blocks?.[0];
   if (prev) {
@@ -158,14 +163,14 @@ export function joinTekstClips(left: TekstClip, right: TekstClip): TekstClip {
 }
 
 /** New line clip with one whole-line block. */
-export function newTekstClipWithBlocks(
-  clip: TekstClipLine,
-): TekstClip {
+export function newTekstClipWithBlocks(clip: TekstClipLine): TekstClip {
   return withWholeLineTekstBlocks(clip);
 }
 
 /** Ensure at least one block (defensive). */
-export function ensureTekstBlocks(clip: TekstClipLine & { blocks?: TekstBlock[] }): TekstClip {
+export function ensureTekstBlocks(
+  clip: TekstClipLine & { blocks?: TekstBlock[] },
+): TekstClip {
   if (clip.blocks && clip.blocks.length >= 1) {
     return clip as TekstClip;
   }

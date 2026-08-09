@@ -62,7 +62,10 @@ export function createFileLogger(
 /** Mirror console.log/warn/error/info/debug into the file (not the RAM buffer). */
 export function installConsoleFileMirror(fileLogger: FileLogger): () => void {
   const levels = ["log", "info", "warn", "error", "debug"] as const;
-  const originals = new Map<(typeof levels)[number], (...args: unknown[]) => void>();
+  const originals = new Map<
+    (typeof levels)[number],
+    (...args: unknown[]) => void
+  >();
 
   for (const level of levels) {
     const orig = console[level].bind(console);

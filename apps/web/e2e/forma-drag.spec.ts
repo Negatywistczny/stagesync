@@ -10,7 +10,10 @@ async function createSeededProject(page: Page): Promise<string> {
     data: { name: "E2E Forma Smoke" },
   });
   expect(res.ok(), `create project HTTP ${res.status()}`).toBeTruthy();
-  const body = (await res.json()) as { id: string; forma?: { clips: unknown[] } };
+  const body = (await res.json()) as {
+    id: string;
+    forma?: { clips: unknown[] };
+  };
   expect(body.id).toBeTruthy();
   return body.id;
 }

@@ -5,10 +5,7 @@
  * Snap is UI edit policy only ([ADR 0007](../../docs/adr/0007-snap-grid.md)).
  */
 
-import {
-  resolveMeterAtTicks,
-  type MeterMapEvent,
-} from "./meter-map-bbt.js";
+import { resolveMeterAtTicks, type MeterMapEvent } from "./meter-map-bbt.js";
 import {
   DEFAULT_PPQ,
   localTicksPerBeat,
@@ -20,10 +17,7 @@ import {
 export type SnapSubdivisionParts = 2 | 4 | 8 | 16;
 
 export type SnapMode =
-  | "off"
-  | "bar"
-  | "beat"
-  | { kind: "subdivision"; parts: SnapSubdivisionParts };
+  "off" | "bar" | "beat" | { kind: "subdivision"; parts: SnapSubdivisionParts };
 
 export type SnapContext = {
   meter: TimeSignature;

@@ -119,7 +119,9 @@ export function toLiteralStorage(input: string): string {
   }
 
   const letter = westernPitchHead(match[1] ?? "");
-  const acc = asciiAccidentals(match[2] ?? "").replace(/♯/g, "#").replace(/♭/g, "b");
+  const acc = asciiAccidentals(match[2] ?? "")
+    .replace(/♯/g, "#")
+    .replace(/♭/g, "b");
   const quality = normalizeQuality(match[3] ?? "");
 
   let out = `${letter}${acc}${quality}`;
@@ -132,8 +134,9 @@ export function toLiteralStorage(input: string): string {
 
 /** Polish hybrid naming: B → H, but Bb stays Bb. */
 export function formatHybridPolishB(text: string): string {
-  return String(text ?? "").replace(/(^|\/)B(?!b)/g, (_, prefix: string) =>
-    `${prefix}H`,
+  return String(text ?? "").replace(
+    /(^|\/)B(?!b)/g,
+    (_, prefix: string) => `${prefix}H`,
   );
 }
 
@@ -208,9 +211,7 @@ export function formatChordParts(
   const { main, bass: bassRaw } = splitRealBass(storage);
   const { root: rootAscii, quality } = parseRootQuality(main);
 
-  const supRaw = options.literalQuality
-    ? quality
-    : qualityToSymbolic(quality);
+  const supRaw = options.literalQuality ? quality : qualityToSymbolic(quality);
 
   const root = decorateChordPart(rootAscii, options);
   const sup = decorateChordPart(supRaw, options);

@@ -39,9 +39,7 @@ describe("ticksToBbtAlongMeterMap", () => {
     });
     // One local 5/8 beat into that bar
     const localBeat = (DEFAULT_PPQ * 4) / 8;
-    expect(
-      ticksToBbtAlongMeterMap(bar4 * 2 + localBeat, TS_4_4, map),
-    ).toEqual({
+    expect(ticksToBbtAlongMeterMap(bar4 * 2 + localBeat, TS_4_4, map)).toEqual({
       bar: 2,
       beat: 2,
       tick: 0,
@@ -74,13 +72,14 @@ describe("ticksToBbtAlongMeterMap", () => {
     { ticks: Number.NaN },
     { ticks: 1.5 },
     { ticks: Number.POSITIVE_INFINITY },
-  ] as const)("ticksToBbtAlongMeterMap rejects non-int ticks ($ticks)", ({
-    ticks,
-  }) => {
-    expect(() => ticksToBbtAlongMeterMap(ticks, TS_4_4, [])).toThrow(
-      /ticks must be a finite integer/,
-    );
-  });
+  ] as const)(
+    "ticksToBbtAlongMeterMap rejects non-int ticks ($ticks)",
+    ({ ticks }) => {
+      expect(() => ticksToBbtAlongMeterMap(ticks, TS_4_4, [])).toThrow(
+        /ticks must be a finite integer/,
+      );
+    },
+  );
 
   it.each([
     { bar: Number.NaN, beat: 1, tick: 0 },

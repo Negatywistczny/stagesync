@@ -3,10 +3,7 @@
  * Pure where possible; no draftProject mutation ([ADR 0008] §8).
  */
 
-import {
-  DEFAULT_SNAP_MODE,
-  type SnapMode,
-} from "@stagesync/shared";
+import { DEFAULT_SNAP_MODE, type SnapMode } from "@stagesync/shared";
 import type { AudioLaneId } from "./timelineTracks.js";
 
 /** Edge hit zone width in CSS px (Logic-style trim handles). */
@@ -46,7 +43,9 @@ export function snapModeFromStorageKey(raw: string | null): SnapMode | null {
 
 export function loadSessionSnapModeFromStorage(): SnapMode {
   try {
-    const parsed = snapModeFromStorageKey(localStorage.getItem(SNAP_STORAGE_KEY));
+    const parsed = snapModeFromStorageKey(
+      localStorage.getItem(SNAP_STORAGE_KEY),
+    );
     if (parsed) {
       sessionSnapMode = parsed;
       return parsed;
@@ -82,7 +81,10 @@ export function resolvePencilRangeTicks(
   },
 ): { startTicks: number; lengthTicks: number; isClick: boolean } {
   const barTicks = Math.max(1, Math.floor(options.barTicks));
-  const thresholdPx = Math.max(0, options.thresholdPx ?? PENCIL_DRAG_THRESHOLD_PX);
+  const thresholdPx = Math.max(
+    0,
+    options.thresholdPx ?? PENCIL_DRAG_THRESHOLD_PX,
+  );
   const floor = Math.max(0, options.floorTicks ?? 0);
   if (
     !Number.isFinite(downTicks) ||
@@ -287,12 +289,7 @@ export type FormaGestureKind =
   | "countdown-length"
   | "subsection-boundary";
 
-export type GestureLane =
-  | "forma"
-  | "tekst"
-  | "akordy"
-  | "cue"
-  | AudioLaneId;
+export type GestureLane = "forma" | "tekst" | "akordy" | "cue" | AudioLaneId;
 
 export type FormaGestureSession = {
   kind: FormaGestureKind;

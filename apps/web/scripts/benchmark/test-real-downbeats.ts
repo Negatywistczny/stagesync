@@ -5,7 +5,7 @@ import { analyzeAudioTempoAsync } from "../../src/lib/audio/audioTempoAnalysis.j
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
-  "apps/web/test/fixtures/smart-tempo-train-data"
+  "apps/web/test/fixtures/smart-tempo-train-data",
 );
 
 function parseTimecodeToMs(tc: string): number {
@@ -30,7 +30,10 @@ function parseRtf(rtfPath: string) {
   const points: { bar: number; bpm: number; timecodeMs: number }[] = [];
   for (const line of lines) {
     const cleanLine = line.replace(/\\$/g, "").trim();
-    const parts = cleanLine.split("\t").map((p) => p.trim()).filter(Boolean);
+    const parts = cleanLine
+      .split("\t")
+      .map((p) => p.trim())
+      .filter(Boolean);
     if (parts.length >= 2) {
       const firstCol = parts[0]!;
       const barMatch = firstCol.match(/^(\d+)/);
@@ -51,15 +54,26 @@ function parseRtf(rtfPath: string) {
 
 function loadAudio(mp3Path: string) {
   const tmpWav = path.join(process.cwd(), "node_modules/.cache/temp_dbg.wav");
-  try { execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, { stdio: "ignore" }); }
-  catch { execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, { stdio: "ignore" }); }
+  try {
+    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
+      stdio: "ignore",
+    });
+  } catch {
+    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
+      stdio: "ignore",
+    });
+  }
   const buf = fs.readFileSync(tmpWav);
   try {
     fs.unlinkSync(tmpWav);
   } catch (err) {
     void err;
   }
-  const floatData = new Float32Array(buf.buffer, buf.byteOffset + 44, Math.floor((buf.byteLength - 44) / 4));
+  const floatData = new Float32Array(
+    buf.buffer,
+    buf.byteOffset + 44,
+    Math.floor((buf.byteLength - 44) / 4),
+  );
   return {
     length: floatData.length,
     duration: floatData.length / 44100,
@@ -81,18 +95,26 @@ async function main() {
 
   for (const rtfFile of rtfFiles) {
     const baseName = rtfFile.replace(/\.rtf$/, "");
-    const mp3File = files.find((f) => f.endsWith(".mp3") && f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)));
+    const mp3File = files.find(
+      (f) =>
+        f.endsWith(".mp3") &&
+        f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)),
+    );
     if (!mp3File) continue;
 
     const points = parseRtf(path.join(FIXTURES_DIR, rtfFile));
     const audioBuf = loadAudio(path.join(FIXTURES_DIR, mp3File));
 
-    const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, { maxAnalysisSec: 300, fullTrackGrid: true });
+    const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, {
+      maxAnalysisSec: 300,
+      fullTrackGrid: true,
+    });
 
     // Align initial downbeat of StageSync beatMs to first reference bar in RTF
     const firstRef = points.find((p) => p.timecodeMs > 0) ?? points[0]!;
     const firstRefBarIdx = (firstRef.bar - 1) * 4;
-    const estFirstMs = analysis.beatMs[firstRefBarIdx] ?? analysis.beatMs[0] ?? 0;
+    const estFirstMs =
+      analysis.beatMs[firstRefBarIdx] ?? analysis.beatMs[0] ?? 0;
     const downbeatShift = firstRef.timecodeMs - estFirstMs;
 
     const alignedBeats = analysis.beatMs.map((b: number) => b + downbeatShift);
@@ -103,7 +125,8 @@ async function main() {
     for (const refPt of points) {
       totalBars++;
       const barBeatIdx = (refPt.bar - 1) * 4;
-      const estMs = alignedBeats[barBeatIdx] ?? (alignedBeats[alignedBeats.length - 1] ?? 0);
+      const estMs =
+        alignedBeats[barBeatIdx] ?? alignedBeats[alignedBeats.length - 1] ?? 0;
       const err = Math.abs(estMs - refPt.timecodeMs);
 
       sumErr += err;
@@ -119,14 +142,22 @@ async function main() {
       }
     }
 
-    console.log(`🎵 ${baseName}: Exact <= 60ms = ${songExact}/${points.length} (${((songExact / points.length) * 100).toFixed(1)}%), Mean Err = ${(songErrSum / points.length).toFixed(1)} ms`);
+    console.log(
+      `🎵 ${baseName}: Exact <= 60ms = ${songExact}/${points.length} (${((songExact / points.length) * 100).toFixed(1)}%), Mean Err = ${(songErrSum / points.length).toFixed(1)} ms`,
+    );
   }
 
   console.log(`\n==========================================`);
   console.log(`TOTAL BARS: ${totalBars}`);
-  console.log(`🟢 Exact <= 60ms: ${exact60Count}/${totalBars} (${((exact60Count / totalBars) * 100).toFixed(1)}%)`);
-  console.log(`🟡 Close 60-125ms: ${close125Count}/${totalBars} (${((close125Count / totalBars) * 100).toFixed(1)}%)`);
-  console.log(`🔴 Fail > 125ms: ${failCount}/${totalBars} (${((failCount / totalBars) * 100).toFixed(1)}%)`);
+  console.log(
+    `🟢 Exact <= 60ms: ${exact60Count}/${totalBars} (${((exact60Count / totalBars) * 100).toFixed(1)}%)`,
+  );
+  console.log(
+    `🟡 Close 60-125ms: ${close125Count}/${totalBars} (${((close125Count / totalBars) * 100).toFixed(1)}%)`,
+  );
+  console.log(
+    `🔴 Fail > 125ms: ${failCount}/${totalBars} (${((failCount / totalBars) * 100).toFixed(1)}%)`,
+  );
   console.log(`📈 Mean Error: ${(sumErr / totalBars).toFixed(1)} ms`);
 }
 

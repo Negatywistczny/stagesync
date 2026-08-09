@@ -2,10 +2,7 @@
  * Dual meter readout: Set dB (fader) | Peak Hold (click to clear).
  */
 
-import {
-  formatPeakHoldDb,
-  type PeakHoldState,
-} from "@stagesync/shared";
+import { formatPeakHoldDb, type PeakHoldState } from "@stagesync/shared";
 import styles from "./ChannelStripControls.module.css";
 
 export type DualDbReadoutProps = {

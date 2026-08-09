@@ -33,19 +33,17 @@ describe("mixer routing", () => {
     expect(
       resolveTrackOutputDest({ kind: "bus", busId: "bus-a" }, ids),
     ).toEqual({ kind: "bus", busId: "bus-a" });
-    expect(
-      resolveTrackOutputDest({ kind: "bus", busId: "gone" }, ids),
-    ).toEqual(MASTER_OUTPUT);
+    expect(resolveTrackOutputDest({ kind: "bus", busId: "gone" }, ids)).toEqual(
+      MASTER_OUTPUT,
+    );
     expect(
       resolveTrackOutputDest({ kind: "bus", busId: "bus-a" }, new Set(ids)),
     ).toEqual({ kind: "bus", busId: "bus-a" });
     expect(resolveTrackOutputDest(null, ids)).toEqual(MASTER_OUTPUT);
     expect(
-      resolveTrackOutputDest(
-        { kind: "hw_out", hwOutputId: "hw1" },
-        ids,
-        ["hw1"],
-      ),
+      resolveTrackOutputDest({ kind: "hw_out", hwOutputId: "hw1" }, ids, [
+        "hw1",
+      ]),
     ).toEqual({ kind: "hw_out", hwOutputId: "hw1" });
     expect(
       resolveTrackOutputDest({ kind: "hw_out", hwOutputId: "hw1" }, ids),
@@ -206,9 +204,9 @@ describe("mixer routing", () => {
   });
 
   it("isTrackRoutedToBus", () => {
-    expect(
-      isTrackRoutedToBus({ kind: "bus", busId: "b1" }, "b1", ["b1"]),
-    ).toBe(true);
+    expect(isTrackRoutedToBus({ kind: "bus", busId: "b1" }, "b1", ["b1"])).toBe(
+      true,
+    );
     expect(isTrackRoutedToBus({ kind: "master" }, "b1", ["b1"])).toBe(false);
   });
 

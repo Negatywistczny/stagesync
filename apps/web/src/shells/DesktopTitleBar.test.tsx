@@ -27,8 +27,8 @@ describe("DesktopTitleBar", () => {
     expect(html).toContain(">Plik<");
     expect(html).toContain(">Edycja<");
     expect(html).toContain(">StageSync<");
-    expect(html).toContain("aria-label=\"Minimalizuj\"");
-    expect(html).toContain("aria-label=\"Maksymalizuj\"");
-    expect(html).toContain("aria-label=\"Zamknij\"");
+    expect(html).toContain('aria-label="Minimalizuj"');
+    expect(html).toContain('aria-label="Maksymalizuj"');
+    expect(html).toContain('aria-label="Zamknij"');
   });
 });

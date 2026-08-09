@@ -17,9 +17,7 @@ export type InputProps = {
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "className">;
 
 export function Input({ className = "", ref, ...rest }: InputProps) {
-  return (
-    <input ref={ref} className={join("ss-input", className)} {...rest} />
-  );
+  return <input ref={ref} className={join("ss-input", className)} {...rest} />;
 }
 
 export type SelectProps = {

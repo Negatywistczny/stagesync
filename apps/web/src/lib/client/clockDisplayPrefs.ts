@@ -16,7 +16,9 @@ export const CLOCK_DISPLAY_CHANGED_EVENT = "stagesync:clock-display-changed";
 
 export type ClockDisplayFormat = "bbt" | "time";
 
-export function isClockDisplayFormat(value: unknown): value is ClockDisplayFormat {
+export function isClockDisplayFormat(
+  value: unknown,
+): value is ClockDisplayFormat {
   return value === "bbt" || value === "time";
 }
 

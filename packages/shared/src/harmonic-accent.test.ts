@@ -126,9 +126,10 @@ describe("syllablesInChordScope", () => {
     expect(findHarmonicAccentSyllable(p0)?.text).toBe("talk");
     expect(findHarmonicAccentSyllable(p1)?.text).toBe("through");
     // Scope limited to phrase 0 must never return „through”
-    expect(
-      syllablesInChordScope(p0, 0, null).map((s) => s.text),
-    ).toEqual(["I", "talk"]);
+    expect(syllablesInChordScope(p0, 0, null).map((s) => s.text)).toEqual([
+      "I",
+      "talk",
+    ]);
     expect(
       findHarmonicAccentSyllable(syllablesInChordScope(p0, 0, null))?.text,
     ).toBe("talk");

@@ -9,8 +9,7 @@ import { DEVICE_DISPLAY_NAME_STORAGE_KEY } from "./src/lib/client/deviceNamePref
  * CI can override via STAGESYNC_DATA_DIR.
  */
 const dataDir =
-  process.env.STAGESYNC_DATA_DIR ??
-  join(tmpdir(), `ss-e2e-${process.pid}`);
+  process.env.STAGESYNC_DATA_DIR ?? join(tmpdir(), `ss-e2e-${process.pid}`);
 
 for (const sub of ["library", "projects", "logs"] as const) {
   mkdirSync(join(dataDir, sub), { recursive: true });
@@ -25,9 +24,7 @@ const e2eStorageState = {
   origins: [
     {
       origin: webOrigin,
-      localStorage: [
-        { name: DEVICE_DISPLAY_NAME_STORAGE_KEY, value: "E2E" },
-      ],
+      localStorage: [{ name: DEVICE_DISPLAY_NAME_STORAGE_KEY, value: "E2E" }],
     },
   ],
 };

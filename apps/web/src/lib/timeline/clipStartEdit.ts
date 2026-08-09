@@ -51,12 +51,13 @@ export function moveClipStartKeepLength<
   beat: number,
 ): T[] {
   const startTicks = ticksFromDisplayBarBeat(project, displayBar, beat);
-  return clips.map((c) =>
-    c.id === clipId ? { ...c, startTicks } : c,
-  );
+  return clips.map((c) => (c.id === clipId ? { ...c, startTicks } : c));
 }
 
-export function formatStartBarBeat(project: Project, startTicks: number): string {
+export function formatStartBarBeat(
+  project: Project,
+  startTicks: number,
+): string {
   const { bar, beat } = clipStartBarBeat(project, startTicks);
   return `${bar}.${beat}`;
 }

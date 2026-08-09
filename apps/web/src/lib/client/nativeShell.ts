@@ -31,7 +31,10 @@ declare global {
 }
 
 function lookLikeNativeBridge(value: unknown): value is StageSyncNativeBridge {
-  if (value == null || (typeof value !== "object" && typeof value !== "function")) {
+  if (
+    value == null ||
+    (typeof value !== "object" && typeof value !== "function")
+  ) {
     return false;
   }
   const bridge = value as StageSyncNativeBridge;
@@ -88,9 +91,7 @@ export function isImmersiveClientSurface(): boolean {
     matchesMedia("(display-mode: standalone)") ||
     matchesMedia("(display-mode: fullscreen)") ||
     matchesMedia("(display-mode: minimal-ui)") ||
-    Boolean(
-      (navigator as Navigator & { standalone?: boolean }).standalone,
-    );
+    Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
 
   const mobileSurface =
     matchesMedia(MQ_MOBILE) || matchesMedia("(pointer: coarse)");

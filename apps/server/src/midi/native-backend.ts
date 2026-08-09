@@ -41,10 +41,7 @@ function portId(direction: "input" | "output", name: string): string {
   return `${direction}:${name}`;
 }
 
-function parsePortId(
-  id: string,
-  expected: "input" | "output",
-): string | null {
+function parsePortId(id: string, expected: "input" | "output"): string | null {
   const prefix = `${expected}:`;
   if (!id.startsWith(prefix)) return null;
   return id.slice(prefix.length);

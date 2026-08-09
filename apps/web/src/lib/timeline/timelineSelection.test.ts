@@ -89,9 +89,9 @@ describe("timelineSelection", () => {
       { id: "c", lane: "forma" },
     ]);
     expect(ranged.primaryId).toBe("c");
-    expect(selectRangeTo(selectSingle("a", "forma"), "c", "tekst", lane)).toEqual(
-      selectSingle("c", "tekst"),
-    );
+    expect(
+      selectRangeTo(selectSingle("a", "forma"), "c", "tekst", lane),
+    ).toEqual(selectSingle("c", "tekst"));
   });
 
   it("selectionSameLane + resolveMoveIds (same-lane subset)", () => {
@@ -174,11 +174,7 @@ describe("timelineSelection", () => {
     sel = toggleAudioTrackSelected(sel, "a");
     expect(sel.ids).toEqual(["c"]);
     expect(sel.primaryId).toBe("c");
-    const ranged = selectAudioTrackRange(
-      selectAudioTrack("b"),
-      "d",
-      ordered,
-    );
+    const ranged = selectAudioTrackRange(selectAudioTrack("b"), "d", ordered);
     expect(ranged.ids).toEqual(["b", "c", "d"]);
     expect(ranged.primaryId).toBe("d");
     expect(selectAudioTrackRange(clearTrackSelection(), "c", ordered)).toEqual(
@@ -194,9 +190,9 @@ describe("timelineSelection", () => {
 
   it("applySoloButtonClick: exclusive / global / multi", () => {
     const all = ["a", "b", "c"];
-    expect(
-      applySoloButtonClick([], "b", all, ["b"], { altKey: true }),
-    ).toEqual(["b"]);
+    expect(applySoloButtonClick([], "b", all, ["b"], { altKey: true })).toEqual(
+      ["b"],
+    );
     expect(
       applySoloButtonClick(["b"], "b", all, ["b"], { altKey: true }),
     ).toEqual([]);
@@ -209,9 +205,11 @@ describe("timelineSelection", () => {
     expect(
       applySoloButtonClick(all, "a", all, ["a"], { ctrlKey: true }),
     ).toEqual([]);
-    expect(
-      applySoloButtonClick([], "b", all, ["a", "b", "c"], {}),
-    ).toEqual(["a", "b", "c"]);
+    expect(applySoloButtonClick([], "b", all, ["a", "b", "c"], {})).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
     expect(
       applySoloButtonClick(["a", "b", "c"], "b", all, ["a", "b"], {}),
     ).toEqual(["c"]);
@@ -226,9 +224,10 @@ describe("timelineSelection", () => {
     expect(
       resolveMuteButtonClick("a", true, all, ["a"], { ctrlKey: true }),
     ).toEqual({ trackIds: all, muted: false });
-    expect(
-      resolveMuteButtonClick("b", false, all, ["a", "b"], {}),
-    ).toEqual({ trackIds: ["a", "b"], muted: true });
+    expect(resolveMuteButtonClick("b", false, all, ["a", "b"], {})).toEqual({
+      trackIds: ["a", "b"],
+      muted: true,
+    });
     expect(resolveMuteButtonClick("c", true, all, ["a"], {})).toEqual({
       trackIds: ["c"],
       muted: false,
@@ -257,7 +256,6 @@ describe("timelineSelection", () => {
     const single = selectSingle("c1", "forma");
     expect(primaryLane(single)).toBe("forma");
   });
-
 
   it("primaryLane falls back when primaryId missing from items", () => {
     const sel = {
@@ -348,12 +346,14 @@ describe("timelineSelection", () => {
     expect(all.items.map((i) => i.id)).toEqual(["s1", "t1", "k1", "u1", "a1"]);
     expect(all.items.some((i) => i.id === "cd1")).toBe(false);
     expect(all.primaryId).toBe("a1");
-    expect(selectAllProjectClips({
-      forma: { clips: [] },
-      tekst: { clips: [] },
-      akordy: { clips: [] },
-      cue: { clips: [] },
-      audioClips: [],
-    })).toEqual(clearSelection());
+    expect(
+      selectAllProjectClips({
+        forma: { clips: [] },
+        tekst: { clips: [] },
+        akordy: { clips: [] },
+        cue: { clips: [] },
+        audioClips: [],
+      }),
+    ).toEqual(clearSelection());
   });
 });

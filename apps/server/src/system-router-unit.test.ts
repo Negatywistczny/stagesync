@@ -16,9 +16,7 @@ describe("createSystemRouter unit edges", () => {
     server = undefined;
   });
 
-  async function listen(
-    router: express.Router,
-  ): Promise<{ baseUrl: string }> {
+  async function listen(router: express.Router): Promise<{ baseUrl: string }> {
     const app = express();
     app.use(express.json());
     app.use("/api/system", router);
@@ -90,7 +88,8 @@ describe("createSystemRouter unit edges", () => {
     } finally {
       if (prev === undefined) delete process.env.STAGESYNC_DISABLE_MDNS;
       else process.env.STAGESYNC_DISABLE_MDNS = prev;
-      if (prevPlatform === undefined) delete process.env.STAGESYNC_MDNS_PLATFORM;
+      if (prevPlatform === undefined)
+        delete process.env.STAGESYNC_MDNS_PLATFORM;
       else process.env.STAGESYNC_MDNS_PLATFORM = prevPlatform;
     }
 

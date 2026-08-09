@@ -29,18 +29,11 @@ import type { AudioClip } from "./schema.js";
 const TS_4_4 = { numerator: 4, denominator: 4 };
 const CTX = { bpm: 120, meter: TS_4_4, ppq: DEFAULT_PPQ };
 
-
 describe("audioClipEndTicks", () => {
   it("returns exclusive end as start + length", () => {
-    expect(
-      audioClipEndTicks({ startTicks: 0, lengthTicks: 480 }),
-    ).toBe(480);
-    expect(
-      audioClipEndTicks({ startTicks: 100, lengthTicks: 50 }),
-    ).toBe(150);
-    expect(
-      audioClipEndTicks({ startTicks: -240, lengthTicks: 240 }),
-    ).toBe(0);
+    expect(audioClipEndTicks({ startTicks: 0, lengthTicks: 480 })).toBe(480);
+    expect(audioClipEndTicks({ startTicks: 100, lengthTicks: 50 })).toBe(150);
+    expect(audioClipEndTicks({ startTicks: -240, lengthTicks: 240 })).toBe(0);
   });
 });
 
@@ -327,7 +320,9 @@ describe("map-aware offset / remaining", () => {
 
 describe("lengthTicksFromAssetWindow / maxAudioLengthTicks null paths", () => {
   it("returns null when duration unknown", () => {
-    expect(lengthTicksFromAssetWindow({}, { durationMs: undefined }, CTX)).toBeNull();
+    expect(
+      lengthTicksFromAssetWindow({}, { durationMs: undefined }, CTX),
+    ).toBeNull();
     expect(lengthTicksFromAssetWindow({}, { durationMs: 0 }, CTX)).toBeNull();
     expect(maxAudioLengthTicks({}, null, CTX)).toBeNull();
     expect(maxAudioLengthTicks({}, { durationMs: 0 }, CTX)).toBeNull();
@@ -365,11 +360,7 @@ describe("clampAudioClipToAsset trim overflow", () => {
   });
 
   it("passes through when duration unknown", () => {
-    const next = clampAudioClipToAsset(
-      { ...base, lengthTicks: 50 },
-      null,
-      CTX,
-    );
+    const next = clampAudioClipToAsset({ ...base, lengthTicks: 50 }, null, CTX);
     expect(next.lengthTicks).toBe(50);
   });
 });

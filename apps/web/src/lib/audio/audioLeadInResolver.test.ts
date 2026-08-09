@@ -8,17 +8,37 @@ describe("audioLeadInResolver", () => {
   it("returns exactly 0 ms for lossless formats (WAV, AIFF, FLAC)", () => {
     const mockChannel = new Float32Array(44100);
     // Even if there is silence, WAV must return 0ms to preserve studio alignment
-    expect(resolveAudioLeadInDelayMs({ channelData: mockChannel, sampleRate: 44100 }, { formatHint: "wav" })).toBe(0);
-    expect(resolveAudioLeadInDelayMs({ channelData: mockChannel, sampleRate: 44100 }, { formatHint: "aiff" })).toBe(0);
-    expect(resolveAudioLeadInDelayMs({ channelData: mockChannel, sampleRate: 44100 }, { formatHint: "flac" })).toBe(0);
-    expect(resolveAudioLeadInDelayMs({ channelData: mockChannel, sampleRate: 44100 }, { formatHint: "audio/wav" })).toBe(0);
+    expect(
+      resolveAudioLeadInDelayMs(
+        { channelData: mockChannel, sampleRate: 44100 },
+        { formatHint: "wav" },
+      ),
+    ).toBe(0);
+    expect(
+      resolveAudioLeadInDelayMs(
+        { channelData: mockChannel, sampleRate: 44100 },
+        { formatHint: "aiff" },
+      ),
+    ).toBe(0);
+    expect(
+      resolveAudioLeadInDelayMs(
+        { channelData: mockChannel, sampleRate: 44100 },
+        { formatHint: "flac" },
+      ),
+    ).toBe(0);
+    expect(
+      resolveAudioLeadInDelayMs(
+        { channelData: mockChannel, sampleRate: 44100 },
+        { formatHint: "audio/wav" },
+      ),
+    ).toBe(0);
   });
 
   it("returns ~47.9 ms (2112 samples) default priming delay for AAC / M4A containers", () => {
     const mockChannel = new Float32Array(44100);
     const delay = resolveAudioLeadInDelayMs(
       { channelData: mockChannel, sampleRate: 44100 },
-      { formatHint: "m4a" }
+      { formatHint: "m4a" },
     );
     // 2112 / 44100 * 1000 = 47.89 ms -> rounded 47.9 ms
     expect(delay).toBe(47.9);

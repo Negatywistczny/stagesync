@@ -69,7 +69,11 @@ export function DevPreviewApp() {
 
   useEffect(() => {
     const onMessage = (ev: MessageEvent) => {
-      if (ev.data && ev.data.type === "stagesync-dev-preview-navigate" && ev.data.path) {
+      if (
+        ev.data &&
+        ev.data.type === "stagesync-dev-preview-navigate" &&
+        ev.data.path
+      ) {
         router.navigate(ev.data.path);
       }
     };

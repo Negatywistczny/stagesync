@@ -16,7 +16,10 @@ import {
   type TekstClip,
 } from "@stagesync/shared";
 import { contentFloorTicks, snapEditTicks } from "./formaCanvas.js";
-import type { FormaGesturePreview, FormaGestureSession } from "@lib/timeline/timelineGesture.js";
+import type {
+  FormaGesturePreview,
+  FormaGestureSession,
+} from "@lib/timeline/timelineGesture.js";
 import {
   PENCIL_DRAG_THRESHOLD_PX,
   resolvePencilRangeTicks,
@@ -60,11 +63,7 @@ export function defaultPencilLabel(lane: ContentLaneId): string {
   return "Cue";
 }
 
-function labelOf(
-  project: Project,
-  lane: ContentLaneId,
-  id: string,
-): string {
+function labelOf(project: Project, lane: ContentLaneId, id: string): string {
   if (lane === "tekst") {
     return project.tekst.clips.find((c) => c.id === id)?.text || "…";
   }
@@ -117,8 +116,7 @@ function mapFormaBack(
     const clips: TekstClip[] = formaClips
       .filter((c) => c.kind === "section")
       .map((c) => {
-        const prev =
-          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
+        const prev = byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return remapTekstClipGeometry(prev, {
           id: c.id,
           startTicks: c.startTicks,
@@ -133,8 +131,7 @@ function mapFormaBack(
     const clips = formaClips
       .filter((c) => c.kind === "section")
       .map((c) => {
-        const prev =
-          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
+        const prev = byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return {
           id: c.id,
           startTicks: c.startTicks,
@@ -148,8 +145,7 @@ function mapFormaBack(
   const clips = formaClips
     .filter((c) => c.kind === "section")
     .map((c) => {
-      const prev =
-        byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
+      const prev = byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
       return {
         id: c.id,
         startTicks: c.startTicks,
@@ -235,9 +231,14 @@ export function commitMoveContentClip(
 ): Project {
   const floor = contentFloorTicks(project.forma.clips);
   const snapped = Math.max(floor, snapEditTicks(project, newStartTicks, mode));
-  const clips = moveClipNoOverlap(contentAsForma(project, lane), clipId, snapped, {
-    contentFloorTicks: floor,
-  });
+  const clips = moveClipNoOverlap(
+    contentAsForma(project, lane),
+    clipId,
+    snapped,
+    {
+      contentFloorTicks: floor,
+    },
+  );
   return mapFormaBack(project, lane, clips);
 }
 
@@ -346,8 +347,7 @@ export function commitPencilContentSpan(
             text: "",
           });
         }
-        const prev =
-          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
+        const prev = byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return remapTekstClipGeometry(prev, {
           id: c.id,
           startTicks: c.startTicks,
@@ -370,8 +370,7 @@ export function commitPencilContentSpan(
             symbol: "C",
           };
         }
-        const prev =
-          byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
+        const prev = byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
         return {
           id: c.id,
           startTicks: c.startTicks,
@@ -393,8 +392,7 @@ export function commitPencilContentSpan(
           label: "Cue",
         };
       }
-      const prev =
-        byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
+      const prev = byId.get(c.id) ?? byId.get(resolveSplitParentId(c.id));
       return {
         id: c.id,
         startTicks: c.startTicks,

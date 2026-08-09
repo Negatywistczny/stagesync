@@ -109,8 +109,7 @@ function abutProject(): Project {
 }
 
 function baseSession(
-  overrides: Partial<FormaGestureSession> &
-    Pick<FormaGestureSession, "kind">,
+  overrides: Partial<FormaGestureSession> & Pick<FormaGestureSession, "kind">,
 ): FormaGestureSession {
   return {
     clipId: "clip-1",
@@ -171,9 +170,7 @@ describe("audioLaneEdit", () => {
     ).toBe(p);
 
     // delta 0
-    expect(
-      commitMoveAudioClips(p, trackId, ["a", "b"], "a", 0, "off"),
-    ).toBe(p);
+    expect(commitMoveAudioClips(p, trackId, ["a", "b"], "a", 0, "off")).toBe(p);
 
     const moved = commitMoveAudioClips(
       p,
@@ -208,9 +205,9 @@ describe("audioLaneEdit", () => {
     );
     expect(startResized.audioClips[0]!.startTicks).toBeGreaterThan(0);
 
-    expect(
-      commitResizeAudioClip(p, trackId, "nope", "end", mid, "off"),
-    ).toBe(p);
+    expect(commitResizeAudioClip(p, trackId, "nope", "end", mid, "off")).toBe(
+      p,
+    );
 
     // floor clamp: countdown ends after clip start; resize-end keeps start < floor
     const highFloor: Project = {
@@ -353,8 +350,12 @@ describe("audioLaneEdit", () => {
     };
     const applied = applyAbutCrossfadeForClip(p, "left", 80);
     expect(applied).not.toBe(p);
-    expect(applied.audioClips.find((c) => c.id === "left")!.fadeOutMs).toBeGreaterThan(0);
-    expect(applied.audioClips.find((c) => c.id === "right")!.fadeInMs).toBeGreaterThan(0);
+    expect(
+      applied.audioClips.find((c) => c.id === "left")!.fadeOutMs,
+    ).toBeGreaterThan(0);
+    expect(
+      applied.audioClips.find((c) => c.id === "right")!.fadeInMs,
+    ).toBeGreaterThan(0);
     expect(applied.audioClips.find((c) => c.id === "other-clip")).toEqual(
       p.audioClips.find((c) => c.id === "other-clip"),
     );
@@ -416,7 +417,9 @@ describe("audioLaneEdit", () => {
     expect(next.audioClips[0]!.lengthTicks).toBe(
       elapsedToTicks(2000, 120, p.defaultMeter, p.ppq),
     );
-    expect(next.audioClips.find((c) => c.id === "other")!.lengthTicks).toBe(100);
+    expect(next.audioClips.find((c) => c.id === "other")!.lengthTicks).toBe(
+      100,
+    );
 
     // Mono file on a track with unset channelMode → stamp mono
     const unset = {
@@ -513,9 +516,13 @@ describe("audioLaneEdit", () => {
       kind: "bus",
       busId: a.busId,
     });
-    expect(cycled.audioBusses!.find((x) => x.id === b.busId)!.output).toBeUndefined();
+    expect(
+      cycled.audioBusses!.find((x) => x.id === b.busId)!.output,
+    ).toBeUndefined();
     p = removeAudioBus(p, b.busId);
-    expect(p.audioBusses!.find((x) => x.id === a.busId)!.output).toBeUndefined();
+    expect(
+      p.audioBusses!.find((x) => x.id === a.busId)!.output,
+    ).toBeUndefined();
   });
 
   it("setAudioBusOutput rejects A→B→C→A cycle", () => {
@@ -847,7 +854,11 @@ describe("audioLaneEdit", () => {
 
     const fadeIn = previewAudioFromSession(
       p,
-      baseSession({ kind: "fade-in", originClipStart: 0, originClipLength: len }),
+      baseSession({
+        kind: "fade-in",
+        originClipStart: 0,
+        originClipLength: len,
+      }),
       Math.floor(len / 4),
       false,
       false,
@@ -1002,7 +1013,9 @@ describe("split / join / mute / gain tools", () => {
     const p = projectWithAudio();
     const muted = toggleAudioClipMute(p, "clip-1");
     expect(muted.audioClips[0]!.muted).toBe(true);
-    expect(toggleAudioClipMute(muted, "clip-1").audioClips[0]!.muted).toBeFalsy();
+    expect(
+      toggleAudioClipMute(muted, "clip-1").audioClips[0]!.muted,
+    ).toBeFalsy();
     expect(gainDbFromPointerDelta(0, 100, 80)).toBeCloseTo(
       20 * GAIN_TOOL_DB_PER_PX,
     );
@@ -1030,12 +1043,7 @@ describe("split / join / mute / gain tools", () => {
     };
     const clip = p.audioClips[0]!;
     const along = ticksToMsAlongTempoMap(clip.startTicks, mid, p);
-    const flat = ticksToMs(
-      mid - clip.startTicks,
-      117.5,
-      p.defaultMeter,
-      p.ppq,
-    );
+    const flat = ticksToMs(mid - clip.startTicks, 117.5, p.defaultMeter, p.ppq);
     expect(Math.abs(along - flat)).toBeGreaterThan(1);
     const split = splitAudioClipAt(p, clip.id, mid);
     expect(split.audioClips).toHaveLength(2);
@@ -1090,9 +1098,7 @@ describe("split / join / mute / gain tools", () => {
       "off",
     );
     expect(next.audioClips.some((c) => c.id === "grow")).toBe(true);
-    expect(next.audioClips.some((c) => c.id.startsWith("neighbor"))).toBe(
-      true,
-    );
+    expect(next.audioClips.some((c) => c.id.startsWith("neighbor"))).toBe(true);
   });
 
   it("BUG-05: multi-move includes primary even when omitted from moveIds", () => {
@@ -1131,14 +1137,7 @@ describe("split / join / mute / gain tools", () => {
     const preview = previewAudioFromSession(p, session, 0, false, false, 60);
     expect(preview.kind).toBe("gain");
     expect(preview.gainDb).toBeCloseTo(40 * GAIN_TOOL_DB_PER_PX);
-    const next = commitAudioGesture(
-      p,
-      lane,
-      session,
-      preview,
-      false,
-      false,
-    );
+    const next = commitAudioGesture(p, lane, session, preview, false, false);
     expect(next.audioClips[0]!.gainDb).toBeCloseTo(40 * GAIN_TOOL_DB_PER_PX);
   });
 
@@ -1167,9 +1166,13 @@ describe("split / join / mute / gain tools", () => {
     expect(p.audioBusses!.find((b) => b.id === busId)!.muted).toBeUndefined();
 
     p = setAudioBusChannelMode(p, busId, "mono");
-    expect(p.audioBusses!.find((b) => b.id === busId)!.channelMode).toBe("mono");
+    expect(p.audioBusses!.find((b) => b.id === busId)!.channelMode).toBe(
+      "mono",
+    );
     p = setAudioBusChannelMode(p, busId, "stereo");
-    expect(p.audioBusses!.find((b) => b.id === busId)!.channelMode).toBeUndefined();
+    expect(
+      p.audioBusses!.find((b) => b.id === busId)!.channelMode,
+    ).toBeUndefined();
 
     p = setAudioBusName(p, busId, "  Reverb  ");
     expect(p.audioBusses!.find((b) => b.id === busId)!.name).toBe("Reverb");

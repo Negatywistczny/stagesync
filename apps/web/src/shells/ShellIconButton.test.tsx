@@ -57,9 +57,7 @@ describe("ShellIconButton", () => {
       ),
       "utf8",
     );
-    expect(css).toMatch(
-      /--ss-touch-min:\s*var\(--ss-touch-min-shell-action\)/,
-    );
+    expect(css).toMatch(/--ss-touch-min:\s*var\(--ss-touch-min-shell-action\)/);
   });
 
   it("keeps a muted border in the default state (not hover-only)", () => {
@@ -70,12 +68,13 @@ describe("ShellIconButton", () => {
       ),
       "utf8",
     );
-    const shellIconBlock =
-      css.match(/\.shellIcon\s*\{([^}]*)\}/)?.[1] ?? "";
+    const shellIconBlock = css.match(/\.shellIcon\s*\{([^}]*)\}/)?.[1] ?? "";
     expect(shellIconBlock).toMatch(
       /border:\s*1px\s+solid\s+var\(--ss-color-border\)/,
     );
-    expect(shellIconBlock).not.toMatch(/border:\s*none|border-color:\s*transparent/);
+    expect(shellIconBlock).not.toMatch(
+      /border:\s*none|border-color:\s*transparent/,
+    );
     expect(css).toMatch(
       /\.shellIcon:hover:not\(:disabled\)\s*\{[^}]*border-color:\s*var\(--ss-color-primary\)/,
     );

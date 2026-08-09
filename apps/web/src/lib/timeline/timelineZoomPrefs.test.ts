@@ -14,7 +14,11 @@ import {
   ZOOM_UI_MIN,
 } from "./timelineZoomPrefs.js";
 import { DEFAULT_PX_PER_BAR } from "@lib/timeline-edit/formaCanvas.js";
-import { DEFAULT_LANE_PX, MAX_LANE_PX, MIN_LANE_PX } from "./timelineLaneHeights.js";
+import {
+  DEFAULT_LANE_PX,
+  MAX_LANE_PX,
+  MIN_LANE_PX,
+} from "./timelineLaneHeights.js";
 
 function memoryStorage(initial: Record<string, string> = {}) {
   const store = { ...initial };
@@ -91,7 +95,6 @@ describe("timelineZoomPrefs", () => {
     expect(() => saveZoomPrefs(defaultZoomPrefs(), bad)).not.toThrow();
   });
 
-
   it("default storage arg uses localStorage when defined", () => {
     const store = new Map<string, string>();
     vi.stubGlobal("localStorage", {
@@ -111,5 +114,4 @@ describe("timelineZoomPrefs", () => {
     expect(() => saveZoomPrefs(defaultZoomPrefs())).not.toThrow();
     vi.unstubAllGlobals();
   });
-
 });

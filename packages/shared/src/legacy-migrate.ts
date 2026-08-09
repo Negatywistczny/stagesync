@@ -11,7 +11,12 @@ import {
   ticksPerBar,
   type TimeSignature,
 } from "./time.js";
-import { ProjectSchema, normalizeKeyTonic, type Project, type FormaClip } from "./schema.js";
+import {
+  ProjectSchema,
+  normalizeKeyTonic,
+  type Project,
+  type FormaClip,
+} from "./schema.js";
 import { withWholeLineTekstBlocks } from "./project-seed.js";
 import { sealAkordyLengths } from "./ug-import.js";
 import { scrubCountdownDigitClips } from "./countdown-content.js";
@@ -227,14 +232,7 @@ const AUDIO_EXT = new Set([
   ".ogg",
 ]);
 const MUSICXML_EXT = new Set([".musicxml", ".xml", ".mxl"]);
-const COVER_EXT = new Set([
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".webp",
-  ".gif",
-  ".svg",
-]);
+const COVER_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]);
 
 export function mimeForLegacyAsset(
   kind: "audio" | "cover" | "musicxml",
@@ -430,8 +428,7 @@ export function migrateLegacySong(
     400,
     Math.max(20, asFiniteNumber(song.tempo, 120)),
   );
-  const minBarBeats =
-    (defaultMeter.numerator * 4) / defaultMeter.denominator;
+  const minBarBeats = (defaultMeter.numerator * 4) / defaultMeter.denominator;
   /** One beat in quarters — dense chords must not use min=full bar (legacy deriveClipLengths). */
   const beatUnitQuarters = 4 / defaultMeter.denominator;
 
@@ -449,9 +446,7 @@ export function migrateLegacySong(
       ? undefined
       : mapLegacySubsectionOffsets(sec, startAbs, lengthTicks, ppq);
     return {
-      id: countdown
-        ? `forma-cd-${i}`
-        : `forma-${asString(sec.id, String(i))}`,
+      id: countdown ? `forma-cd-${i}` : `forma-${asString(sec.id, String(i))}`,
       name: asString(sec.name, countdown ? "Countdown" : `Sekcja ${i + 1}`),
       kind: countdown ? ("countdown" as const) : ("section" as const),
       startTicks,
@@ -533,10 +528,7 @@ export function migrateLegacySong(
   );
   const contentVocal = allVocalLines
     .map((line, i) => ({ line, lengthBeats: vocalBoundaryLens[i]! }))
-    .filter(
-      ({ line }) =>
-        !line.rest && !/^vl-cd-/i.test(asString(line.id)),
-    );
+    .filter(({ line }) => !line.rest && !/^vl-cd-/i.test(asString(line.id)));
   const tekstClips = contentVocal.map(({ line, lengthBeats }, i) => {
     const sourceSection = asString(line.sourceSection, "").trim();
     return withWholeLineTekstBlocks({
@@ -767,9 +759,7 @@ export function migrateLegacySong(
   }
 
   // Scrub leftover digit / CD-span clips; fill missing Forma 4-bar subsections (v4).
-  const project = ensureFormaSubsections(
-    scrubCountdownDigitClips(parsed.data),
-  );
+  const project = ensureFormaSubsections(scrubCountdownDigitClips(parsed.data));
 
   return {
     project,

@@ -389,9 +389,7 @@ describe("runMultiPassTempoSolver E2 prune + Forma walls", () => {
       ],
     });
     expect(result.tempoMap.length).toBeGreaterThanOrEqual(2);
-    const delta = Math.abs(
-      result.tempoMap[1]!.bpm - result.tempoMap[0]!.bpm,
-    );
+    const delta = Math.abs(result.tempoMap[1]!.bpm - result.tempoMap[0]!.bpm);
     expect(delta).toBeGreaterThan(TEMPO_SOLVER_PRUNE_DELTA_BPM);
     expect(result.sections[1]!.startTicks).toBe(
       result.sections[0]!.startTicks + result.sections[0]!.lengthTicks,
@@ -422,10 +420,34 @@ describe("runMultiPassTempoSolver E2 prune + Forma walls", () => {
           barOffset: 0,
         },
         { ms: 8000, sectionIndex: 1, kind: "phrase", weight: 1, barOffset: 0 },
-        { ms: 11_000, sectionIndex: 1, kind: "phrase", weight: 1, barOffset: 1 },
-        { ms: 14_000, sectionIndex: 1, kind: "phrase", weight: 1, barOffset: 2 },
-        { ms: 17_000, sectionIndex: 1, kind: "phrase", weight: 1, barOffset: 3 },
-        { ms: 20_000, sectionIndex: 1, kind: "phrase", weight: 1, barOffset: 4 },
+        {
+          ms: 11_000,
+          sectionIndex: 1,
+          kind: "phrase",
+          weight: 1,
+          barOffset: 1,
+        },
+        {
+          ms: 14_000,
+          sectionIndex: 1,
+          kind: "phrase",
+          weight: 1,
+          barOffset: 2,
+        },
+        {
+          ms: 17_000,
+          sectionIndex: 1,
+          kind: "phrase",
+          weight: 1,
+          barOffset: 3,
+        },
+        {
+          ms: 20_000,
+          sectionIndex: 1,
+          kind: "phrase",
+          weight: 1,
+          barOffset: 4,
+        },
       ],
       sections: [
         {
@@ -609,8 +631,6 @@ describe("Smart Tempo tempoNodes + audio duration", () => {
       ],
     });
     expect(result.tempoNodes.length).toBeGreaterThan(0);
-    expect(
-      result.warnings.some((w) => /długość audio/i.test(w)),
-    ).toBe(true);
+    expect(result.warnings.some((w) => /długość audio/i.test(w))).toBe(true);
   });
 });

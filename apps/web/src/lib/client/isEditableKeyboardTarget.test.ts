@@ -5,10 +5,7 @@ import {
   shouldAllowNativeTextClipboard,
 } from "./isEditableKeyboardTarget.js";
 
-function fake(
-  tagName: string,
-  isContentEditable = false,
-): EventTarget {
+function fake(tagName: string, isContentEditable = false): EventTarget {
   return { tagName, isContentEditable } as unknown as EventTarget;
 }
 
@@ -79,26 +76,26 @@ describe("hasNonCollapsedDomTextSelection", () => {
 
 describe("shouldAllowNativeTextClipboard", () => {
   it("allows editable targets even without a DOM selection", () => {
-    expect(
-      shouldAllowNativeTextClipboard(fake("INPUT"), () => null),
-    ).toBe(true);
+    expect(shouldAllowNativeTextClipboard(fake("INPUT"), () => null)).toBe(
+      true,
+    );
   });
 
   it("allows non-editable targets when text is selected", () => {
     expect(
-      shouldAllowNativeTextClipboard(fake("SPAN"), () =>
-        ({
-          rangeCount: 1,
-          isCollapsed: false,
-          toString: () => "kopiuł",
-        }) as unknown as Selection,
+      shouldAllowNativeTextClipboard(
+        fake("SPAN"),
+        () =>
+          ({
+            rangeCount: 1,
+            isCollapsed: false,
+            toString: () => "kopiuł",
+          }) as unknown as Selection,
       ),
     ).toBe(true);
   });
 
   it("denies non-editable targets without a selection", () => {
-    expect(
-      shouldAllowNativeTextClipboard(fake("DIV"), () => null),
-    ).toBe(false);
+    expect(shouldAllowNativeTextClipboard(fake("DIV"), () => null)).toBe(false);
   });
 });

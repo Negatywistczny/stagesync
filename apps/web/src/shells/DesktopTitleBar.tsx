@@ -51,7 +51,11 @@ export function DesktopTitleBar() {
       <div className={styles.title} data-tauri-drag-region aria-hidden>
         StageSync
       </div>
-      <div className={styles.controls} role="group" aria-label="Sterowanie oknem">
+      <div
+        className={styles.controls}
+        role="group"
+        aria-label="Sterowanie oknem"
+      >
         <button
           type="button"
           className={styles.control}

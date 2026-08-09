@@ -10,7 +10,10 @@ import type { TransportEngine } from "../transport/engine.js";
 import { handleRouteError } from "./errors.js";
 
 /** REST responses include serverTimeMs (same clock as WS ticks) for soft-clock ordering. */
-function respondTick(res: import("express").Response, transport: TransportEngine) {
+function respondTick(
+  res: import("express").Response,
+  transport: TransportEngine,
+) {
   res.json(transport.toTickMessage());
 }
 

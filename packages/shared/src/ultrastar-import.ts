@@ -261,7 +261,13 @@ export function ultrastarSyllableDisplayText(rawLyric: string): string {
  * Melisma `~` is empty content and stays inside the current word.
  */
 export function groupUltrastarSyllablesIntoWords(
-  notes: readonly { text: string; startBeat: number; lengthBeat: number; pitch: number; role?: TekstBlockRole }[],
+  notes: readonly {
+    text: string;
+    startBeat: number;
+    lengthBeat: number;
+    pitch: number;
+    role?: TekstBlockRole;
+  }[],
 ): UltrastarWord[] {
   const words: UltrastarWord[] = [];
   let current: UltrastarSyllable[] = [];
@@ -327,8 +333,7 @@ export function parseUltrastarNoteLine(
   if (!kind) return null;
 
   // kind + start + length + pitch + optional lyric (greedy remainder, spaces kept)
-  const m =
-    /^([:*RGF])\s+(\S+)\s+(\S+)\s+(\S+)(?: (.*))?$/.exec(src);
+  const m = /^([:*RGF])\s+(\S+)\s+(\S+)\s+(\S+)(?: (.*))?$/.exec(src);
   if (!m) return null;
 
   const startBeat = Number((m[2] ?? "").replace(",", "."));
@@ -474,8 +479,8 @@ export function importUltrastarText(
   const ultrastarMetronomeBpm = ultrastarHeaderBpmToMetronome(headerBpm);
   const placeBpm =
     options.gridBpm != null &&
-      Number.isFinite(options.gridBpm) &&
-      options.gridBpm > 0
+    Number.isFinite(options.gridBpm) &&
+    options.gridBpm > 0
       ? options.gridBpm
       : ultrastarMetronomeBpm;
 
@@ -667,9 +672,9 @@ export function applyUltrastarImportToProject(
   const bpmUpdates =
     options.applyBpm && bpm && bpm > 0
       ? {
-        defaultBpm: bpm,
-        tempoMap: tempoMapWithImportedBpm(project.tempoMap, bpm),
-      }
+          defaultBpm: bpm,
+          tempoMap: tempoMapWithImportedBpm(project.tempoMap, bpm),
+        }
       : {};
   return {
     ...project,

@@ -10,16 +10,20 @@ import { execSync } from "node:child_process";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
-  "apps/web/test/fixtures/smart-tempo-train-data"
+  "apps/web/test/fixtures/smart-tempo-train-data",
 );
 
 const SCRATCH_DIR = path.resolve(
   process.cwd(),
-  "../../.gemini/antigravity-ide/brain/92cb53a1-e486-4ccf-becb-91eacb83b093/scratch"
+  "../../.gemini/antigravity-ide/brain/92cb53a1-e486-4ccf-becb-91eacb83b093/scratch",
 );
 
 // Biquad IIR Filter coefficients generator (Direct Form I / II)
-function createBandpassFilter(centerFreq: number, q: number, sampleRate: number) {
+function createBandpassFilter(
+  centerFreq: number,
+  q: number,
+  sampleRate: number,
+) {
   const w0 = (2 * Math.PI * centerFreq) / sampleRate;
   const alpha = Math.sin(w0) / (2 * q);
   const b0 = alpha;
@@ -36,7 +40,10 @@ function createBandpassFilter(centerFreq: number, q: number, sampleRate: number)
   const na1 = a1 / a0;
   const na2 = a2 / a0;
 
-  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  let x1 = 0,
+    x2 = 0,
+    y1 = 0,
+    y2 = 0;
 
   return {
     processSample(x: number): number {
@@ -48,8 +55,11 @@ function createBandpassFilter(centerFreq: number, q: number, sampleRate: number)
       return y;
     },
     reset() {
-      x1 = 0; x2 = 0; y1 = 0; y2 = 0;
-    }
+      x1 = 0;
+      x2 = 0;
+      y1 = 0;
+      y2 = 0;
+    },
   };
 }
 
@@ -98,19 +108,28 @@ function parseRtfReference(rtfPath: string) {
   return points;
 }
 
-function loadAudioSamples(mp3Path: string): { samples: Float32Array; sampleRate: number } {
+function loadAudioSamples(mp3Path: string): {
+  samples: Float32Array;
+  sampleRate: number;
+} {
   const tmpWav = path.join(
     process.cwd(),
-    `node_modules/.cache/temp_inspect_${Date.now()}_${Math.random().toString(36).slice(2)}.wav`
+    `node_modules/.cache/temp_inspect_${Date.now()}_${Math.random().toString(36).slice(2)}.wav`,
   );
   fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
   try {
-    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, { stdio: "ignore" });
+    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   } catch {
-    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, { stdio: "ignore" });
+    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   }
   const buf = fs.readFileSync(tmpWav);
-  try { fs.unlinkSync(tmpWav); } catch {
+  try {
+    fs.unlinkSync(tmpWav);
+  } catch {
     // ignore
   }
 
@@ -119,7 +138,7 @@ function loadAudioSamples(mp3Path: string): { samples: Float32Array; sampleRate:
   const floatData = new Float32Array(
     dataBuf.buffer,
     dataBuf.byteOffset,
-    Math.floor(dataBuf.byteLength / 4)
+    Math.floor(dataBuf.byteLength / 4),
   );
 
   return { samples: floatData, sampleRate: 44100 };
@@ -139,9 +158,15 @@ type InspectionResult = {
 };
 
 async function main() {
-  console.log("=========================================================================");
-  console.log("🔍 INSPECT LOGIC ONSETS — Phase Shift & Transient Analysis Probe");
-  console.log("=========================================================================\n");
+  console.log(
+    "=========================================================================",
+  );
+  console.log(
+    "🔍 INSPECT LOGIC ONSETS — Phase Shift & Transient Analysis Probe",
+  );
+  console.log(
+    "=========================================================================\n",
+  );
 
   const files = fs.readdirSync(FIXTURES_DIR);
   const rtfFiles = files.filter((f) => f.endsWith(".rtf")).sort();
@@ -154,7 +179,7 @@ async function main() {
     const mp3File = files.find(
       (f) =>
         f.endsWith(".mp3") &&
-        f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8))
+        f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)),
     );
     if (!mp3File) continue;
 
@@ -217,7 +242,10 @@ async function main() {
       const centerSample = Math.round((tLogicMs / 1000) * sampleRate);
 
       const startSample = Math.max(0, centerSample - windowSamples);
-      const endSample = Math.min(samples.length - 1, centerSample + windowSamples);
+      const endSample = Math.min(
+        samples.length - 1,
+        centerSample + windowSamples,
+      );
 
       if (startSample >= endSample) continue;
 
@@ -264,7 +292,8 @@ async function main() {
       const deltaFluxMs = Math.round((tLogicMs - fluxPeakMs) * 10) / 10;
 
       // Best delta is closest transient (Low or Flux)
-      const bestTransientMs = Math.abs(deltaLowMs) <= Math.abs(deltaFluxMs) ? lowPeakMs : fluxPeakMs;
+      const bestTransientMs =
+        Math.abs(deltaLowMs) <= Math.abs(deltaFluxMs) ? lowPeakMs : fluxPeakMs;
       const bestDeltaMs = Math.round((tLogicMs - bestTransientMs) * 10) / 10;
 
       trackDeltasLow.push(deltaLowMs);
@@ -290,18 +319,31 @@ async function main() {
     const calcStats = (arr: number[]) => {
       if (arr.length === 0) return { mean: 0, std: 0, min: 0, max: 0 };
       const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-      const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length;
+      const variance =
+        arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length;
       const std = Math.sqrt(variance);
-      const absArr = arr.map(x => Math.abs(x)).sort((a, b) => a - b);
+      const absArr = arr.map((x) => Math.abs(x)).sort((a, b) => a - b);
       return {
         mean: Math.round(mean * 10) / 10,
         std: Math.round(std * 10) / 10,
         p50Abs: Math.round(absArr[Math.floor(arr.length * 0.5)]! * 10) / 10,
         p95Abs: Math.round(absArr[Math.floor(arr.length * 0.95)]! * 10) / 10,
-        within5msPct: Math.round((arr.filter(x => Math.abs(x) <= 5).length / arr.length) * 1000) / 10,
-        within10msPct: Math.round((arr.filter(x => Math.abs(x) <= 10).length / arr.length) * 1000) / 10,
-        within15msPct: Math.round((arr.filter(x => Math.abs(x) <= 15).length / arr.length) * 1000) / 10,
-        within30msPct: Math.round((arr.filter(x => Math.abs(x) <= 30).length / arr.length) * 1000) / 10,
+        within5msPct:
+          Math.round(
+            (arr.filter((x) => Math.abs(x) <= 5).length / arr.length) * 1000,
+          ) / 10,
+        within10msPct:
+          Math.round(
+            (arr.filter((x) => Math.abs(x) <= 10).length / arr.length) * 1000,
+          ) / 10,
+        within15msPct:
+          Math.round(
+            (arr.filter((x) => Math.abs(x) <= 15).length / arr.length) * 1000,
+          ) / 10,
+        within30msPct:
+          Math.round(
+            (arr.filter((x) => Math.abs(x) <= 30).length / arr.length) * 1000,
+          ) / 10,
       };
     };
 
@@ -321,19 +363,37 @@ async function main() {
 
   const calcGlobalStats = (arr: number[]) => {
     const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-    const std = Math.sqrt(arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length);
-    const absSorted = arr.map(x => Math.abs(x)).sort((a, b) => a - b);
+    const std = Math.sqrt(
+      arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length,
+    );
+    const absSorted = arr.map((x) => Math.abs(x)).sort((a, b) => a - b);
     return {
       total: arr.length,
       meanMs: Math.round(mean * 10) / 10,
       stdMs: Math.round(std * 10) / 10,
-      medianAbsMs: Math.round(absSorted[Math.floor(arr.length * 0.5)]! * 10) / 10,
+      medianAbsMs:
+        Math.round(absSorted[Math.floor(arr.length * 0.5)]! * 10) / 10,
       p95AbsMs: Math.round(absSorted[Math.floor(arr.length * 0.95)]! * 10) / 10,
-      within5msPct: Math.round((arr.filter(x => Math.abs(x) <= 5).length / arr.length) * 1000) / 10,
-      within10msPct: Math.round((arr.filter(x => Math.abs(x) <= 10).length / arr.length) * 1000) / 10,
-      within15msPct: Math.round((arr.filter(x => Math.abs(x) <= 15).length / arr.length) * 1000) / 10,
-      within30msPct: Math.round((arr.filter(x => Math.abs(x) <= 30).length / arr.length) * 1000) / 10,
-      greater30msPct: Math.round((arr.filter(x => Math.abs(x) > 30).length / arr.length) * 1000) / 10,
+      within5msPct:
+        Math.round(
+          (arr.filter((x) => Math.abs(x) <= 5).length / arr.length) * 1000,
+        ) / 10,
+      within10msPct:
+        Math.round(
+          (arr.filter((x) => Math.abs(x) <= 10).length / arr.length) * 1000,
+        ) / 10,
+      within15msPct:
+        Math.round(
+          (arr.filter((x) => Math.abs(x) <= 15).length / arr.length) * 1000,
+        ) / 10,
+      within30msPct:
+        Math.round(
+          (arr.filter((x) => Math.abs(x) <= 30).length / arr.length) * 1000,
+        ) / 10,
+      greater30msPct:
+        Math.round(
+          (arr.filter((x) => Math.abs(x) > 30).length / arr.length) * 1000,
+        ) / 10,
     };
   };
 
@@ -355,27 +415,57 @@ async function main() {
   fs.writeFileSync(outPath, JSON.stringify(globalReport, null, 2));
 
   // Console output
-  console.log("\n=========================================================================");
-  console.log("📊 INSPEXION REPORT SUMMARY (349 Logic Pro Measures vs Audio PCM)");
-  console.log("=========================================================================");
+  console.log(
+    "\n=========================================================================",
+  );
+  console.log(
+    "📊 INSPEXION REPORT SUMMARY (349 Logic Pro Measures vs Audio PCM)",
+  );
+  console.log(
+    "=========================================================================",
+  );
   console.log(`Saved full detailed analysis to: ${outPath}\n`);
 
   console.log("🌐 GLOBAL PHASE SHIFT SUMMARY (Δt = t_Logic - t_transient):");
-  console.log("-------------------------------------------------------------------------");
-  console.log(`  • Low Band (20-150Hz Kick)  : Mean Δt = ${globalReport.globalStats.lowBandKick.meanMs} ms | σ = ${globalReport.globalStats.lowBandKick.stdMs} ms | Median |Δt| = ${globalReport.globalStats.lowBandKick.medianAbsMs} ms`);
-  console.log(`  • Spectral Flux (Attack)    : Mean Δt = ${globalReport.globalStats.spectralFlux.meanMs} ms | σ = ${globalReport.globalStats.spectralFlux.stdMs} ms | Median |Δt| = ${globalReport.globalStats.spectralFlux.medianAbsMs} ms`);
-  console.log(`  • Best Combined Transient   : Mean Δt = ${globalReport.globalStats.bestTransient.meanMs} ms | σ = ${globalReport.globalStats.bestTransient.stdMs} ms | Median |Δt| = ${globalReport.globalStats.bestTransient.medianAbsMs} ms`);
+  console.log(
+    "-------------------------------------------------------------------------",
+  );
+  console.log(
+    `  • Low Band (20-150Hz Kick)  : Mean Δt = ${globalReport.globalStats.lowBandKick.meanMs} ms | σ = ${globalReport.globalStats.lowBandKick.stdMs} ms | Median |Δt| = ${globalReport.globalStats.lowBandKick.medianAbsMs} ms`,
+  );
+  console.log(
+    `  • Spectral Flux (Attack)    : Mean Δt = ${globalReport.globalStats.spectralFlux.meanMs} ms | σ = ${globalReport.globalStats.spectralFlux.stdMs} ms | Median |Δt| = ${globalReport.globalStats.spectralFlux.medianAbsMs} ms`,
+  );
+  console.log(
+    `  • Best Combined Transient   : Mean Δt = ${globalReport.globalStats.bestTransient.meanMs} ms | σ = ${globalReport.globalStats.bestTransient.stdMs} ms | Median |Δt| = ${globalReport.globalStats.bestTransient.medianAbsMs} ms`,
+  );
 
-  console.log("\n🎯 PROXIMITY DISTRIBUTION TO LOGIC PRO MARKERS (Best Transient):");
-  console.log("-------------------------------------------------------------------------");
-  console.log(`  🟢 ≤ 5 ms   (Exact Peak Lock)   : ${globalReport.globalStats.bestTransient.within5msPct}%`);
-  console.log(`  🟢 ≤ 10 ms  (Stage Tight)       : ${globalReport.globalStats.bestTransient.within10msPct}%`);
-  console.log(`  🟡 ≤ 15 ms  (Stage-Ready Limit) : ${globalReport.globalStats.bestTransient.within15msPct}%`);
-  console.log(`  🟡 ≤ 30 ms  (Micro-Rubato Zone) : ${globalReport.globalStats.bestTransient.within30msPct}%`);
-  console.log(`  🔴 > 30 ms  (Large Phase Shift) : ${globalReport.globalStats.bestTransient.greater30msPct}%`);
+  console.log(
+    "\n🎯 PROXIMITY DISTRIBUTION TO LOGIC PRO MARKERS (Best Transient):",
+  );
+  console.log(
+    "-------------------------------------------------------------------------",
+  );
+  console.log(
+    `  🟢 ≤ 5 ms   (Exact Peak Lock)   : ${globalReport.globalStats.bestTransient.within5msPct}%`,
+  );
+  console.log(
+    `  🟢 ≤ 10 ms  (Stage Tight)       : ${globalReport.globalStats.bestTransient.within10msPct}%`,
+  );
+  console.log(
+    `  🟡 ≤ 15 ms  (Stage-Ready Limit) : ${globalReport.globalStats.bestTransient.within15msPct}%`,
+  );
+  console.log(
+    `  🟡 ≤ 30 ms  (Micro-Rubato Zone) : ${globalReport.globalStats.bestTransient.within30msPct}%`,
+  );
+  console.log(
+    `  🔴 > 30 ms  (Large Phase Shift) : ${globalReport.globalStats.bestTransient.greater30msPct}%`,
+  );
 
   console.log("\n🎵 PER-TRACK DETAILED BREAKDOWN:");
-  console.log("-------------------------------------------------------------------------");
+  console.log(
+    "-------------------------------------------------------------------------",
+  );
   for (const [trackName, rawSummary] of Object.entries(trackSummaries)) {
     const summary = rawSummary as {
       measures: number;
@@ -384,12 +474,20 @@ async function main() {
       bestBand: { mean: number; std: number; within15msPct: number };
     };
     console.log(`\n📌 ${trackName} (${summary.measures} bars):`);
-    console.log(`   Low-Band Kick  : Mean Δt = ${summary.lowBand.mean}ms (σ=${summary.lowBand.std}ms) | ≤15ms: ${summary.lowBand.within15msPct}%`);
-    console.log(`   Spectral Flux  : Mean Δt = ${summary.fluxBand.mean}ms (σ=${summary.fluxBand.std}ms) | ≤15ms: ${summary.fluxBand.within15msPct}%`);
-    console.log(`   Best Transient : Mean Δt = ${summary.bestBand.mean}ms (σ=${summary.bestBand.std}ms) | ≤15ms: ${summary.bestBand.within15msPct}%`);
+    console.log(
+      `   Low-Band Kick  : Mean Δt = ${summary.lowBand.mean}ms (σ=${summary.lowBand.std}ms) | ≤15ms: ${summary.lowBand.within15msPct}%`,
+    );
+    console.log(
+      `   Spectral Flux  : Mean Δt = ${summary.fluxBand.mean}ms (σ=${summary.fluxBand.std}ms) | ≤15ms: ${summary.fluxBand.within15msPct}%`,
+    );
+    console.log(
+      `   Best Transient : Mean Δt = ${summary.bestBand.mean}ms (σ=${summary.bestBand.std}ms) | ≤15ms: ${summary.bestBand.within15msPct}%`,
+    );
   }
 
-  console.log("\n=========================================================================");
+  console.log(
+    "\n=========================================================================",
+  );
 }
 
 main().catch(console.error);

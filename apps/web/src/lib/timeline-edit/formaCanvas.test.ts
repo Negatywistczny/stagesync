@@ -23,11 +23,7 @@ import {
 } from "./formaCanvas.js";
 
 describe("formaCanvas", () => {
-  const project = createProjectV5Seed(
-    "id",
-    "Demo",
-    "2026-07-20T00:00:00.000Z",
-  );
+  const project = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
 
   it("computeFormaViewSpan includes countdown start and trailing padding", () => {
     const span = computeFormaViewSpan(project.forma.clips);
@@ -247,9 +243,9 @@ describe("formaCanvas", () => {
   it("pencilFormaClick appends after last section when clicking empty canvas", () => {
     const next = pencilFormaClick(project, 7680, "Verse");
     expect(next.forma.clips.some((c) => c.name === "Verse")).toBe(true);
-    expect(
-      next.forma.clips.find((c) => c.name === "Verse")?.startTicks,
-    ).toBe(7680);
+    expect(next.forma.clips.find((c) => c.name === "Verse")?.startTicks).toBe(
+      7680,
+    );
   });
 
   it("computeCanvasWidthPx scales with span", () => {
@@ -300,21 +296,39 @@ describe("formaCanvas", () => {
 
   it("contentFloorTicks and viewSpan fallbacks", () => {
     expect(contentFloorTicks([])).toBe(0);
-    expect(contentFloorTicks([{ id: "x", name: "S", kind: "section", startTicks: Number.NaN, lengthTicks: 1 } as never])).toBe(0);
+    expect(
+      contentFloorTicks([
+        {
+          id: "x",
+          name: "S",
+          kind: "section",
+          startTicks: Number.NaN,
+          lengthTicks: 1,
+        } as never,
+      ]),
+    ).toBe(0);
     const emptySpan = computeFormaViewSpan([]);
     expect(emptySpan.end).toBeGreaterThan(emptySpan.start);
-    expect(
-      scrollLeftKeepTickAnchored(0, 0, 10, 0),
-    ).toBe(10);
+    expect(scrollLeftKeepTickAnchored(0, 0, 10, 0)).toBe(10);
   });
 
   it("canvasPxFromPointer and ticksFromPointer", () => {
     const root = {
-      getBoundingClientRect: () => ({ left: 50, top: 0, width: 400, height: 100 }),
+      getBoundingClientRect: () => ({
+        left: 50,
+        top: 0,
+        width: 400,
+        height: 100,
+      }),
     } as unknown as HTMLElement;
     expect(canvasPxFromPointer(150, root)).toBe(100);
     const span = computeFormaViewSpan(project.forma.clips);
-    const ticks = ticksFromPointer(50 + tickToPx(0, span, 3840), root, span, 3840);
+    const ticks = ticksFromPointer(
+      50 + tickToPx(0, span, 3840),
+      root,
+      span,
+      3840,
+    );
     expect(ticks).toBe(0);
   });
 
@@ -322,9 +336,9 @@ describe("formaCanvas", () => {
     vi.stubGlobal("crypto", { randomUUID: () => "forma-new" });
     const next = pencilFormaClick(project, 7680, "Bridge");
     expect(next.forma.clips.some((c) => c.name === "Bridge")).toBe(true);
-    expect(addPencilSection(project, 7680, "Bridge2").forma.clips.length).toBeGreaterThan(
-      project.forma.clips.length - 1,
-    );
+    expect(
+      addPencilSection(project, 7680, "Bridge2").forma.clips.length,
+    ).toBeGreaterThan(project.forma.clips.length - 1);
     expect(projectContentEqual(project, project)).toBe(true);
     expect(projectContentEqual(project, next)).toBe(false);
   });
@@ -334,7 +348,6 @@ describe("formaCanvas", () => {
     const far = snapEditTicks(project, 500_000, "bar");
     expect(far % 3840 === 0 || far >= 0).toBe(true);
   });
-
 
   it("snap bar with meterMap mid-song and exact end fallback", () => {
     const p = {
@@ -354,7 +367,13 @@ describe("formaCanvas", () => {
 
     // Non-finite content end path via bogus clip lengths already covered; force empty finite filter
     const bad = computeFormaViewSpan([
-      { id: "x", name: "S", kind: "section", startTicks: Number.POSITIVE_INFINITY, lengthTicks: Number.NaN },
+      {
+        id: "x",
+        name: "S",
+        kind: "section",
+        startTicks: Number.POSITIVE_INFINITY,
+        lengthTicks: Number.NaN,
+      },
     ] as never);
     expect(bad.end).toBeGreaterThan(bad.start);
   });
@@ -383,5 +402,4 @@ describe("formaCanvas", () => {
     expect(bounds[0]?.endTicks).toBe(1920);
     expect(bounds.length).toBeGreaterThan(1);
   });
-
 });

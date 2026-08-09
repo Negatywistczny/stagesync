@@ -35,7 +35,10 @@ import {
   type TrackIcon,
   wouldCreateBusCycle,
 } from "@stagesync/shared";
-import { contentFloorTicks, snapEditTicks } from "@lib/timeline-edit/formaCanvas.js";
+import {
+  contentFloorTicks,
+  snapEditTicks,
+} from "@lib/timeline-edit/formaCanvas.js";
 import { resolveSplitParentId } from "@lib/timeline-edit/contentLaneEdit.js";
 import type {
   FormaGesturePreview,
@@ -314,10 +317,7 @@ export function joinAdjacentAudioClips(
   const drop = new Set([pair.left.id, pair.right.id]);
   return {
     ...project,
-    audioClips: [
-      ...project.audioClips.filter((c) => !drop.has(c.id)),
-      clamped,
-    ],
+    audioClips: [...project.audioClips.filter((c) => !drop.has(c.id)), clamped],
   };
 }
 
@@ -594,9 +594,7 @@ export function setAudioTrackOutput(
   output: MixerOutputDest,
 ): Project {
   const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
-  const hwIds = new Set(
-    (project.audioHardwareOutputs ?? []).map((h) => h.id),
-  );
+  const hwIds = new Set((project.audioHardwareOutputs ?? []).map((h) => h.id));
   let next: MixerOutputDest | undefined;
   if (output.kind === "master") {
     next = undefined;
@@ -683,9 +681,7 @@ export function setAudioBusGainDb(
   if (!busses.some((b) => b.id === busId)) return project;
   return {
     ...project,
-    audioBusses: busses.map((b) =>
-      b.id === busId ? { ...b, gainDb } : b,
-    ),
+    audioBusses: busses.map((b) => (b.id === busId ? { ...b, gainDb } : b)),
   };
 }
 
@@ -771,9 +767,7 @@ export function setAudioBusName(
   const busses = project.audioBusses ?? [];
   return {
     ...project,
-    audioBusses: busses.map((b) =>
-      b.id === busId ? { ...b, name: next } : b,
-    ),
+    audioBusses: busses.map((b) => (b.id === busId ? { ...b, name: next } : b)),
   };
 }
 
@@ -1187,7 +1181,10 @@ export function previewAudioFromSession(
       clipId: session.clipId,
       startTicks: snapped,
       lengthTicks: session.originClipLength,
-      targetLane: targetLane && isAudioLaneId(targetLane) ? targetLane : (session.lane as AudioLaneId | undefined),
+      targetLane:
+        targetLane && isAudioLaneId(targetLane)
+          ? targetLane
+          : (session.lane as AudioLaneId | undefined),
     };
   }
 
@@ -1250,10 +1247,7 @@ export function applyDecodedAudioMeta(
   });
 
   let audioTracks = project.audioTracks;
-  if (
-    meta.channelCount != null &&
-    Number.isFinite(meta.channelCount)
-  ) {
+  if (meta.channelCount != null && Number.isFinite(meta.channelCount)) {
     const mode = channelModeFromChannelCount(meta.channelCount);
     const trackIds = new Set(
       audioClips.filter((c) => c.assetId === assetId).map((c) => c.trackId),

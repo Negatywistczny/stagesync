@@ -65,10 +65,7 @@ describe("ultrastarImportApi", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () =>
-        Response.json(
-          { ok: false, error: "Brak konta USDB" },
-          { status: 503 },
-        ),
+        Response.json({ ok: false, error: "Brak konta USDB" }, { status: 503 }),
       ),
     );
     await expect(

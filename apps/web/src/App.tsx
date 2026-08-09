@@ -47,7 +47,8 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  const pathname =
+    typeof window !== "undefined" ? window.location.pathname : "";
 
   if (import.meta.env.DEV && isDevPreviewPath(pathname)) {
     return <DevPreviewApp />;

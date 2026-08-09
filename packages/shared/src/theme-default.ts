@@ -14,8 +14,7 @@ export const AppearanceProfileIdSchema = z.enum([
 
 export type AppearanceProfileId = z.infer<typeof AppearanceProfileIdSchema>;
 
-export const APPEARANCE_PROFILE_IDS =
-  AppearanceProfileIdSchema.options;
+export const APPEARANCE_PROFILE_IDS = AppearanceProfileIdSchema.options;
 
 /** Polish labels for UI pickers. */
 export const APPEARANCE_PROFILE_LABELS: Record<AppearanceProfileId, string> = {
@@ -48,7 +47,11 @@ export const APPEARANCE_PROFILE_SWATCHES: Record<
     elevatedBorder: "#1e293b",
     primary: "#22d3ee",
   },
-  matrix: { elevated: "#0a1f12", elevatedBorder: "#14532d", primary: "#22c55e" },
+  matrix: {
+    elevated: "#0a1f12",
+    elevatedBorder: "#14532d",
+    primary: "#22c55e",
+  },
   neon: { elevated: "#2a0a0a", elevatedBorder: "#450a0a", primary: "#f97316" },
 };
 

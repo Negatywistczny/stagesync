@@ -92,9 +92,7 @@ export function UltrastarImportForm({
       const data = await searchUltrastarSongs(searchTitle, searchArtist);
       setSearchHits(data.results);
       setSearchMessage(
-        data.results.length
-          ? null
-          : data.message ?? "Brak wyników na USDB.",
+        data.results.length ? null : (data.message ?? "Brak wyników na USDB."),
       );
     } catch (err) {
       setSearchHits([]);
@@ -181,9 +179,9 @@ export function UltrastarImportForm({
 
       <p className={styles.status}>
         Szukaj na USDB, wklej link albo wklej / wybierz plik <code>.txt</code>.
-        Tempo z <code>#BPM</code> to wartość ×4 (metronom = BPM/4). Import trafia
-        do draftu — potem Zapisz w nagłówku (⌘S / Ctrl+S), żeby
-        utrwalić na hoście. Wyszukiwanie online wymaga konta USDB
+        Tempo z <code>#BPM</code> to wartość ×4 (metronom = BPM/4). Import
+        trafia do draftu — potem Zapisz w nagłówku (⌘S / Ctrl+S), żeby utrwalić
+        na hoście. Wyszukiwanie online wymaga konta USDB
         {accountInfo.loaded
           ? accountInfo.configured
             ? ` (zapisane: ${accountInfo.user || "…"}).`
@@ -376,7 +374,9 @@ export function UltrastarImportForm({
         <Button
           type="button"
           variant="ghost"
-          disabled={applying || fetching || searching || busyApply || accountBusy}
+          disabled={
+            applying || fetching || searching || busyApply || accountBusy
+          }
           onClick={onCancel}
         >
           Anuluj

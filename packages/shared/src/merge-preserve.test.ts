@@ -17,8 +17,14 @@ describe("mergePreserveById", () => {
   it("skips empty ids and keeps client-only entries", () => {
     expect(
       mergePreserveById(
-        [{ id: "", name: "bad" }, { id: "s", name: "S" }],
-        [{ id: "c", name: "C" }, { id: "", name: "also-bad" }],
+        [
+          { id: "", name: "bad" },
+          { id: "s", name: "S" },
+        ],
+        [
+          { id: "c", name: "C" },
+          { id: "", name: "also-bad" },
+        ],
       ),
     ).toEqual([
       { id: "c", name: "C" },

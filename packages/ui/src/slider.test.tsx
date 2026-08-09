@@ -5,7 +5,13 @@ import { Slider } from "./slider.js";
 describe("Slider", () => {
   it("renders a range input with value", () => {
     render(
-      <Slider aria-label="Gain" value={-6} min={-24} max={12} onValueChange={() => {}} />,
+      <Slider
+        aria-label="Gain"
+        value={-6}
+        min={-24}
+        max={12}
+        onValueChange={() => {}}
+      />,
     );
     const el = screen.getByRole("slider", { name: "Gain" });
     expect(el).toBeTruthy();
@@ -15,7 +21,13 @@ describe("Slider", () => {
   it("calls onValueChange", () => {
     const onValueChange = vi.fn();
     render(
-      <Slider aria-label="Fader" value={0} min={-24} max={12} onValueChange={onValueChange} />,
+      <Slider
+        aria-label="Fader"
+        value={0}
+        min={-24}
+        max={12}
+        onValueChange={onValueChange}
+      />,
     );
     fireEvent.change(screen.getByRole("slider"), { target: { value: "3" } });
     expect(onValueChange).toHaveBeenCalledWith(3);

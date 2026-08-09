@@ -176,7 +176,9 @@ export const SetlistSnapshotMessageSchema = z.object({
   sentAtMs: z.number().finite(),
 });
 
-export type SetlistSnapshotMessage = z.infer<typeof SetlistSnapshotMessageSchema>;
+export type SetlistSnapshotMessage = z.infer<
+  typeof SetlistSnapshotMessageSchema
+>;
 
 /** Server → client frames on `/ws/transport`. */
 export const TransportWsServerMessageSchema = z.discriminatedUnion("type", [
@@ -227,7 +229,6 @@ export function defaultTransportState(): TransportState {
     loop: null,
   };
 }
-
 
 /**
  * Home tick for Stop / return-to-start (ADR 0002).

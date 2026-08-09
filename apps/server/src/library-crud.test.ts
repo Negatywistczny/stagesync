@@ -114,9 +114,9 @@ describe("library / projects CRUD", () => {
     const listAfter = LibrarySchema.parse(
       await (await fetch(`${baseUrl}/api/library`)).json(),
     );
-    expect(
-      listAfter.projects.find((p) => p.id === created.id)?.name,
-    ).toBe("Renamed Song");
+    expect(listAfter.projects.find((p) => p.id === created.id)?.name).toBe(
+      "Renamed Song",
+    );
 
     const delRes = await fetch(`${baseUrl}/api/projects/${created.id}`, {
       method: "DELETE",
@@ -350,9 +350,7 @@ describe("library / projects CRUD", () => {
     expect(library.projects.some((p) => p.name === "Legacy Import")).toBe(true);
 
     const project = ProjectSchema.parse(
-      await (
-        await fetch(`${baseUrl}/api/projects/${body.created[0]}`)
-      ).json(),
+      await (await fetch(`${baseUrl}/api/projects/${body.created[0]}`)).json(),
     );
     expect(project.formatVersion).toBe(6);
     expect(project.forma.clips.length).toBeGreaterThan(0);
@@ -409,10 +407,7 @@ describe("library / projects CRUD", () => {
     );
     const raw = JSON.parse(
       await readFile(
-        join(
-          repoRoot,
-          "docs/examples/v5/library.pack.sample.stagesync.json",
-        ),
+        join(repoRoot, "docs/examples/v5/library.pack.sample.stagesync.json"),
         "utf8",
       ),
     );
@@ -431,9 +426,7 @@ describe("library / projects CRUD", () => {
     expect(body.format).toBe("v5-pack");
     expect(body.created).toHaveLength(1);
     const project = ProjectSchema.parse(
-      await (
-        await fetch(`${baseUrl}/api/projects/${body.created[0]}`)
-      ).json(),
+      await (await fetch(`${baseUrl}/api/projects/${body.created[0]}`)).json(),
     );
     expect(project.name).toBe("Pack Sample");
   });

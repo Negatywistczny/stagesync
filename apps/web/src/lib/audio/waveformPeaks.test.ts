@@ -25,14 +25,19 @@ function fakeBuffer(samples: number[]): AudioBuffer {
 
 describe("waveformPeaks", () => {
   it("computes normalized peaks and rms", () => {
-    const meta = computeWaveformFromAudioBuffer(fakeBuffer([0, 0.5, -1, 0.25, 0]), 8);
+    const meta = computeWaveformFromAudioBuffer(
+      fakeBuffer([0, 0.5, -1, 0.25, 0]),
+      8,
+    );
     expect(meta.peaks).toHaveLength(8);
     expect(Math.max(...meta.peaks)).toBeCloseTo(1, 5);
     expect(meta.rms).toBeGreaterThan(0);
   });
 
   it("peaksToPolylinePoints returns paired coordinates", () => {
-    expect(peaksToPolylinePoints([0, 1, 0.5], 100, 40).split(" ")).toHaveLength(6);
+    expect(peaksToPolylinePoints([0, 1, 0.5], 100, 40).split(" ")).toHaveLength(
+      6,
+    );
   });
 
   it("empty AudioBuffer returns empty peaks", () => {

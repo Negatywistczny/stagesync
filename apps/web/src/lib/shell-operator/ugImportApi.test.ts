@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  fetchUgTabFromServer,
-  searchUgTabs,
-} from "./ugImportApi.js";
+import { fetchUgTabFromServer, searchUgTabs } from "./ugImportApi.js";
 
 describe("ugImportApi", () => {
   afterEach(() => {

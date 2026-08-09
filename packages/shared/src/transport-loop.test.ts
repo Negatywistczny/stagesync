@@ -10,9 +10,9 @@ describe("transport-loop", () => {
     expect(isUsableLoop({ enabled: true, startTicks: 0, endTicks: 0 })).toBe(
       false,
     );
-    expect(
-      isUsableLoop({ enabled: false, startTicks: 0, endTicks: 960 }),
-    ).toBe(true);
+    expect(isUsableLoop({ enabled: false, startTicks: 0, endTicks: 960 })).toBe(
+      true,
+    );
   });
 
   it("loopWrapTicks wraps at exclusive end when enabled", () => {
@@ -29,7 +29,9 @@ describe("transport-loop", () => {
   });
 
   it("normalizeLoop rejects bad ranges", () => {
-    expect(normalizeLoop({ enabled: true, startTicks: 10, endTicks: 5 })).toBeNull();
+    expect(
+      normalizeLoop({ enabled: true, startTicks: 10, endTicks: 5 }),
+    ).toBeNull();
     expect(
       normalizeLoop({ enabled: true, startTicks: 0, endTicks: 100 }),
     ).toEqual({ enabled: true, startTicks: 0, endTicks: 100 });
@@ -39,7 +41,11 @@ describe("transport-loop", () => {
     expect(normalizeLoop(null)).toBeNull();
     expect(normalizeLoop(undefined)).toBeNull();
     expect(
-      normalizeLoop({ enabled: 1 as unknown as boolean, startTicks: 1.9, endTicks: 4.2 }),
+      normalizeLoop({
+        enabled: 1 as unknown as boolean,
+        startTicks: 1.9,
+        endTicks: 4.2,
+      }),
     ).toEqual({ enabled: true, startTicks: 1, endTicks: 4 });
     expect(
       normalizeLoop({ enabled: false, startTicks: Number.NaN, endTicks: 10 }),
@@ -56,9 +62,9 @@ describe("transport-loop", () => {
   it("isUsableLoop rejects nullish and non-integer bounds", () => {
     expect(isUsableLoop(null)).toBe(false);
     expect(isUsableLoop(undefined)).toBe(false);
-    expect(
-      isUsableLoop({ enabled: true, startTicks: 0.5, endTicks: 10 }),
-    ).toBe(false);
+    expect(isUsableLoop({ enabled: true, startTicks: 0.5, endTicks: 10 })).toBe(
+      false,
+    );
   });
 
   it("loopWrapTicks ignores unusable enabled loops", () => {

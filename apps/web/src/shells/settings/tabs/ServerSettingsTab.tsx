@@ -1,5 +1,10 @@
 import { Button, Input, Select } from "@stagesync/ui";
-import { browseServerPath, type BrowseResult, type ServerSettingsValues, type ServerSettingsResponse } from "@lib/shell-operator/setlistApi.js";
+import {
+  browseServerPath,
+  type BrowseResult,
+  type ServerSettingsValues,
+  type ServerSettingsResponse,
+} from "@lib/shell-operator/setlistApi.js";
 import styles from "../../ServerSettingsModal.module.css";
 
 interface ServerSettingsTabProps {
@@ -22,7 +27,11 @@ interface ServerSettingsTabProps {
   onRestoreSelectedClick: () => void;
   onRestoreDirClick: () => void;
   onBrowseCancel: () => void;
-  renderBrowseEntry: (e: { path: string; name: string; type: "file" | "dir" }) => React.ReactNode;
+  renderBrowseEntry: (e: {
+    path: string;
+    name: string;
+    type: "file" | "dir";
+  }) => React.ReactNode;
 }
 
 export function ServerSettingsTab({
@@ -58,21 +67,37 @@ export function ServerSettingsTab({
   return (
     <div className={styles.body} role="tabpanel">
       {restartNote ? (
-        <p className={styles.restartNote} role="status">{restartNote}</p>
+        <p className={styles.restartNote} role="status">
+          {restartNote}
+        </p>
       ) : null}
-      
+
       <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>Sieć & Klienci</legend>
         <label className={styles.field}>
           <span className={styles.label}>Port HTTP</span>
-          <input className={styles.number} type="number" min={1} max={65535} value={server.PORT || "4000"}
-            onChange={(e) => onServerChange({ ...server, PORT: e.target.value })} aria-label="Port HTTP" />
+          <input
+            className={styles.number}
+            type="number"
+            min={1}
+            max={65535}
+            value={server.PORT || "4000"}
+            onChange={(e) =>
+              onServerChange({ ...server, PORT: e.target.value })
+            }
+            aria-label="Port HTTP"
+          />
           <span className={styles.muted}>Domyślnie 4000 · wymaga restartu</span>
         </label>
         <label className={styles.field}>
           <span className={styles.label}>Bind host</span>
-          <Select value={server.STAGESYNC_BIND_HOST || "0.0.0.0"}
-            onChange={(e) => onServerChange({ ...server, STAGESYNC_BIND_HOST: e.target.value })} aria-label="Host nasłuchu">
+          <Select
+            value={server.STAGESYNC_BIND_HOST || "0.0.0.0"}
+            onChange={(e) =>
+              onServerChange({ ...server, STAGESYNC_BIND_HOST: e.target.value })
+            }
+            aria-label="Host nasłuchu"
+          >
             <option value="0.0.0.0">0.0.0.0 (LAN)</option>
             <option value="127.0.0.1">localhost</option>
           </Select>
@@ -91,16 +116,26 @@ export function ServerSettingsTab({
             aria-label="Nazwa hosta w sieci"
           />
           <span className={styles.muted}>
-            Widoczna przy wyszukiwaniu hostów w launcherze; adres IP zostaje w drugiej linii.
+            Widoczna przy wyszukiwaniu hostów w launcherze; adres IP zostaje w
+            drugiej linii.
           </span>
         </label>
         <label className={styles.checkRow}>
-          <input type="checkbox" checked={Boolean(server.STAGESYNC_DISABLE_MDNS)}
-            onChange={(e) => onServerChange({ ...server, STAGESYNC_DISABLE_MDNS: e.target.checked })} aria-label="Wyłącz mDNS" />
+          <input
+            type="checkbox"
+            checked={Boolean(server.STAGESYNC_DISABLE_MDNS)}
+            onChange={(e) =>
+              onServerChange({
+                ...server,
+                STAGESYNC_DISABLE_MDNS: e.target.checked,
+              })
+            }
+            aria-label="Wyłącz mDNS"
+          />
           <span>Wyłącz ogłoszenie mDNS</span>
         </label>
       </fieldset>
-      
+
       <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>Import UltraStar (USDB)</legend>
         <p className={styles.muted}>
@@ -108,8 +143,8 @@ export function ServerSettingsTab({
           <a href="https://usdb.animux.de" target="_blank" rel="noreferrer">
             usdb.animux.de
           </a>{" "}
-          do wyszukiwania i pobierania. Zapis na hoście (bez restartu). Hasło nie
-          wraca z API — puste pole = bez zmiany.
+          do wyszukiwania i pobierania. Zapis na hoście (bez restartu). Hasło
+          nie wraca z API — puste pole = bez zmiany.
         </p>
         <label className={styles.field}>
           <span className={styles.label}>Użytkownik USDB</span>
@@ -155,8 +190,13 @@ export function ServerSettingsTab({
         <legend className={styles.legend}>Logi & Utrzymanie</legend>
         <label className={styles.field}>
           <span className={styles.label}>Poziom logów</span>
-          <Select value={server.LOG_LEVEL || "info"}
-            onChange={(e) => onServerChange({ ...server, LOG_LEVEL: e.target.value })} aria-label="Poziom logów">
+          <Select
+            value={server.LOG_LEVEL || "info"}
+            onChange={(e) =>
+              onServerChange({ ...server, LOG_LEVEL: e.target.value })
+            }
+            aria-label="Poziom logów"
+          >
             <option value="info">info</option>
             <option value="debug">debug</option>
             <option value="warn">warn</option>
@@ -164,41 +204,86 @@ export function ServerSettingsTab({
           </Select>
         </label>
         <label className={styles.checkRow}>
-          <input type="checkbox" checked={!server.STAGESYNC_DISABLE_AUTO_UPDATE}
-            onChange={(e) => onServerChange({ ...server, STAGESYNC_DISABLE_AUTO_UPDATE: !e.target.checked })} aria-label="Aktualizacje automatyczne" />
+          <input
+            type="checkbox"
+            checked={!server.STAGESYNC_DISABLE_AUTO_UPDATE}
+            onChange={(e) =>
+              onServerChange({
+                ...server,
+                STAGESYNC_DISABLE_AUTO_UPDATE: !e.target.checked,
+              })
+            }
+            aria-label="Aktualizacje automatyczne"
+          />
           <span>Aktualizacje z Admina</span>
         </label>
         <label className={styles.field}>
           <span className={styles.label}>Kanał aktualizacji</span>
-          <Select value={server.STAGESYNC_UPDATE_CHANNEL || "stable"}
-            onChange={(e) => onServerChange({ ...server, STAGESYNC_UPDATE_CHANNEL: e.target.value })} aria-label="Kanał">
+          <Select
+            value={server.STAGESYNC_UPDATE_CHANNEL || "stable"}
+            onChange={(e) =>
+              onServerChange({
+                ...server,
+                STAGESYNC_UPDATE_CHANNEL: e.target.value,
+              })
+            }
+            aria-label="Kanał"
+          >
             <option value="stable">Stable</option>
             <option value="beta">Beta</option>
             <option value="rc">RC</option>
           </Select>
         </label>
       </fieldset>
-      
+
       <details className={styles.fieldset}>
-        <summary className={styles.legend}>Zaawansowane — Ścieżki plików</summary>
-        {([
-          ["STAGESYNC_DATA_DIR", "dataDir", serverMeta?.resolved?.dataDir],
-          ["STAGESYNC_BACKUPS_DIR", "backupDir", serverMeta?.resolved?.backupsDir],
-          ["STAGESYNC_ASSETS_DIR", "assetsDir", serverMeta?.resolved?.assetsHint],
-        ] as const).map(([key, label, ph]) => (
+        <summary className={styles.legend}>
+          Zaawansowane — Ścieżki plików
+        </summary>
+        {(
+          [
+            ["STAGESYNC_DATA_DIR", "dataDir", serverMeta?.resolved?.dataDir],
+            [
+              "STAGESYNC_BACKUPS_DIR",
+              "backupDir",
+              serverMeta?.resolved?.backupsDir,
+            ],
+            [
+              "STAGESYNC_ASSETS_DIR",
+              "assetsDir",
+              serverMeta?.resolved?.assetsHint,
+            ],
+          ] as const
+        ).map(([key, label, ph]) => (
           <label key={key} className={styles.field}>
             <span className={styles.label}>{label}</span>
             <div className={styles.latencyRow}>
-              <Input style={{ flex: 1 }} type="text" value={String(server[key] ?? "")}
-                placeholder={ph ?? ""} onChange={(e) => onServerChange({ ...server, [key]: e.target.value })} aria-label={label} />
+              <Input
+                style={{ flex: 1 }}
+                type="text"
+                value={String(server[key] ?? "")}
+                placeholder={ph ?? ""}
+                onChange={(e) =>
+                  onServerChange({ ...server, [key]: e.target.value })
+                }
+                aria-label={label}
+              />
               <Button
                 variant="secondary"
                 aria-label={`Przeglądaj katalog — ${label}`}
                 onClick={() => {
-                onBrowseFieldChange(key);
-                onRestoreMsgChange(null);
-                void browseServerPath({ path: String(server[key] || ""), mode: "dir" }).then(onBrowseDataChange).catch(() => onBrowseDataChange(null));
-              }}>…</Button>
+                  onBrowseFieldChange(key);
+                  onRestoreMsgChange(null);
+                  void browseServerPath({
+                    path: String(server[key] || ""),
+                    mode: "dir",
+                  })
+                    .then(onBrowseDataChange)
+                    .catch(() => onBrowseDataChange(null));
+                }}
+              >
+                …
+              </Button>
             </div>
           </label>
         ))}
@@ -206,9 +291,9 @@ export function ServerSettingsTab({
           <span className={styles.label}>Przywróć z kopii</span>
           <p className={styles.muted}>
             Wybierz plik <code>.bak</code> (shadow backup), kilka plików
-            <code>.bak</code>, albo archiwum <code>.zip</code> z drzewem
-            danych / kopiami. Host nadpisze pliki w katalogu danych
-            (najpierw zrobi kopię <code>pre-restore</code>).
+            <code>.bak</code>, albo archiwum <code>.zip</code> z drzewem danych
+            / kopiami. Host nadpisze pliki w katalogu danych (najpierw zrobi
+            kopię <code>pre-restore</code>).
           </p>
           <div className={styles.latencyRow}>
             <Button
@@ -230,9 +315,17 @@ export function ServerSettingsTab({
           <div className={styles.panicBlock}>
             <p className={styles.muted}>{browseData.envPath}</p>
             <div className={styles.latencyRow}>
-              <Button variant="ghost" disabled={!browseData.parent} onClick={onBrowseUp}>W górę</Button>
+              <Button
+                variant="ghost"
+                disabled={!browseData.parent}
+                onClick={onBrowseUp}
+              >
+                W górę
+              </Button>
               {!isRestoreBrowse ? (
-                <Button variant="primary" onClick={onBrowseSelect}>Wybierz</Button>
+                <Button variant="primary" onClick={onBrowseSelect}>
+                  Wybierz
+                </Button>
               ) : (
                 <>
                   <Button
@@ -254,12 +347,16 @@ export function ServerSettingsTab({
                   </Button>
                 </>
               )}
-              <Button variant="ghost" onClick={onBrowseCancel}>Anuluj</Button>
+              <Button variant="ghost" onClick={onBrowseCancel}>
+                Anuluj
+              </Button>
             </div>
             <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
               {browseData.entries
                 .filter((e) =>
-                  isRestoreBrowse ? e.type === "dir" || e.type === "file" : e.type === "dir",
+                  isRestoreBrowse
+                    ? e.type === "dir" || e.type === "file"
+                    : e.type === "dir",
                 )
                 .map((e) => renderBrowseEntry(e))}
             </ul>

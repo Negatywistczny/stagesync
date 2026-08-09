@@ -10,16 +10,20 @@ import { execSync } from "node:child_process";
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
-  "apps/web/test/fixtures/smart-tempo-train-data"
+  "apps/web/test/fixtures/smart-tempo-train-data",
 );
 
 const SCRATCH_DIR = path.resolve(
   process.cwd(),
-  "../../.gemini/antigravity-ide/brain/92cb53a1-e486-4ccf-becb-91eacb83b093/scratch"
+  "../../.gemini/antigravity-ide/brain/92cb53a1-e486-4ccf-becb-91eacb83b093/scratch",
 );
 
 // Biquad IIR Bandpass Filter
-function createBandpassFilter(centerFreq: number, q: number, sampleRate: number) {
+function createBandpassFilter(
+  centerFreq: number,
+  q: number,
+  sampleRate: number,
+) {
   const w0 = (2 * Math.PI * centerFreq) / sampleRate;
   const alpha = Math.sin(w0) / (2 * q);
   const b0 = alpha;
@@ -35,7 +39,10 @@ function createBandpassFilter(centerFreq: number, q: number, sampleRate: number)
   const na1 = a1 / a0;
   const na2 = a2 / a0;
 
-  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  let x1 = 0,
+    x2 = 0,
+    y1 = 0,
+    y2 = 0;
 
   return {
     processSample(x: number): number {
@@ -94,19 +101,28 @@ function parseRtfReference(rtfPath: string) {
   return points;
 }
 
-function loadAudioSamples(mp3Path: string): { samples: Float32Array; sampleRate: number } {
+function loadAudioSamples(mp3Path: string): {
+  samples: Float32Array;
+  sampleRate: number;
+} {
   const tmpWav = path.join(
     process.cwd(),
-    `node_modules/.cache/temp_feat_adv_${Date.now()}_${Math.random().toString(36).slice(2)}.wav`
+    `node_modules/.cache/temp_feat_adv_${Date.now()}_${Math.random().toString(36).slice(2)}.wav`,
   );
   fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
   try {
-    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, { stdio: "ignore" });
+    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   } catch {
-    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, { stdio: "ignore" });
+    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   }
   const buf = fs.readFileSync(tmpWav);
-  try { fs.unlinkSync(tmpWav); } catch {
+  try {
+    fs.unlinkSync(tmpWav);
+  } catch {
     // ignore
   }
 
@@ -115,14 +131,17 @@ function loadAudioSamples(mp3Path: string): { samples: Float32Array; sampleRate:
   const floatData = new Float32Array(
     dataBuf.buffer,
     dataBuf.byteOffset,
-    Math.floor(dataBuf.byteLength / 4)
+    Math.floor(dataBuf.byteLength / 4),
   );
 
   return { samples: floatData, sampleRate: 44100 };
 }
 
 // Detect MP3 initial silence padding delay t_pad (samples < -40dB)
-function detectMp3SilencePaddingMs(samples: Float32Array, sampleRate: number): number {
+function detectMp3SilencePaddingMs(
+  samples: Float32Array,
+  sampleRate: number,
+): number {
   const threshold = 0.01; // -40dB threshold
   for (let i = 0; i < Math.min(samples.length, sampleRate * 5); i++) {
     if (Math.abs(samples[i]!) >= threshold) {
@@ -164,9 +183,15 @@ export type AdvancedMeasureFeature = {
 };
 
 async function main() {
-  console.log("=========================================================================");
-  console.log("🔍 ADVANCED REVERSE ENGINEERING (Adaptive Spectral Normalization & HMM)");
-  console.log("=========================================================================\n");
+  console.log(
+    "=========================================================================",
+  );
+  console.log(
+    "🔍 ADVANCED REVERSE ENGINEERING (Adaptive Spectral Normalization & HMM)",
+  );
+  console.log(
+    "=========================================================================\n",
+  );
 
   const files = fs.readdirSync(FIXTURES_DIR);
   const rtfFiles = files.filter((f) => f.endsWith(".rtf")).sort();
@@ -177,13 +202,17 @@ async function main() {
   for (const rtfFile of rtfFiles) {
     const baseName = rtfFile.replace(/\.rtf$/, "");
     const mp3File = files.find(
-      (f) => f.endsWith(".mp3") && f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8))
+      (f) =>
+        f.endsWith(".mp3") &&
+        f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)),
     );
     if (!mp3File) continue;
 
     console.log(`🎵 Processing Track Profile: ${baseName}...`);
     const points = parseRtfReference(path.join(FIXTURES_DIR, rtfFile));
-    const { samples, sampleRate } = loadAudioSamples(path.join(FIXTURES_DIR, mp3File));
+    const { samples, sampleRate } = loadAudioSamples(
+      path.join(FIXTURES_DIR, mp3File),
+    );
 
     const paddingMs = detectMp3SilencePaddingMs(samples, sampleRate);
 
@@ -196,7 +225,9 @@ async function main() {
     const kickFiltered = new Float32Array(samples.length);
     const snareFiltered = new Float32Array(samples.length);
 
-    let subSum = 0, kickSum = 0, snareSum = 0;
+    let subSum = 0,
+      kickSum = 0,
+      snareSum = 0;
     for (let i = 0; i < samples.length; i++) {
       subFiltered[i] = Math.abs(subFilter.processSample(samples[i]!));
       kickFiltered[i] = Math.abs(kickFilter.processSample(samples[i]!));
@@ -245,7 +276,9 @@ async function main() {
       adaptiveWeights,
     };
 
-    console.log(`   Padding: ${paddingMs} ms | Spectral Weights: Sub=${adaptiveWeights.wSub}, Kick=${adaptiveWeights.wKick}, Snare=${adaptiveWeights.wSnare}, Flux=${adaptiveWeights.wFlux}`);
+    console.log(
+      `   Padding: ${paddingMs} ms | Spectral Weights: Sub=${adaptiveWeights.wSub}, Kick=${adaptiveWeights.wKick}, Snare=${adaptiveWeights.wSnare}, Flux=${adaptiveWeights.wFlux}`,
+    );
 
     const windowMs = 100;
     const windowSamples = Math.round((windowMs / 1000) * sampleRate);
@@ -256,7 +289,10 @@ async function main() {
       const centerSample = Math.round((tLogicMs / 1000) * sampleRate);
 
       const startSample = Math.max(0, centerSample - windowSamples);
-      const endSample = Math.min(samples.length - 1, centerSample + windowSamples);
+      const endSample = Math.min(
+        samples.length - 1,
+        centerSample + windowSamples,
+      );
 
       if (startSample >= endSample) continue;
 
@@ -269,7 +305,11 @@ async function main() {
             maxIdx = s;
           }
         }
-        return { maxV, offsetMs: Math.round(((maxIdx - centerSample) / sampleRate) * 1000 * 10) / 10 };
+        return {
+          maxV,
+          offsetMs:
+            Math.round(((maxIdx - centerSample) / sampleRate) * 1000 * 10) / 10,
+        };
       };
 
       const subRes = findPeak(subFiltered);
@@ -286,7 +326,10 @@ async function main() {
           maxFluxHop = h;
         }
       }
-      const fluxOffsetMs = Math.round(((maxFluxHop * hopSize - centerSample) / sampleRate) * 1000 * 10) / 10;
+      const fluxOffsetMs =
+        Math.round(
+          ((maxFluxHop * hopSize - centerSample) / sampleRate) * 1000 * 10,
+        ) / 10;
 
       allFeatures.push({
         trackName: baseName,
@@ -313,8 +356,12 @@ async function main() {
   fs.writeFileSync(outPathFeats, JSON.stringify(allFeatures, null, 2));
   fs.writeFileSync(outPathProfiles, JSON.stringify(trackProfiles, null, 2));
 
-  console.log("\n=========================================================================");
-  console.log(`✅ Phase 1 Advanced Complete! Processed ${allFeatures.length} measure points.`);
+  console.log(
+    "\n=========================================================================",
+  );
+  console.log(
+    `✅ Phase 1 Advanced Complete! Processed ${allFeatures.length} measure points.`,
+  );
   console.log(`Saved features to: ${outPathFeats}`);
   console.log(`Saved profiles to: ${outPathProfiles}\n`);
 }

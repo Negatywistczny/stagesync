@@ -43,7 +43,10 @@ const KEY_GROUPS: ShortcutGroup[] = [
         action:
           "Wybór narzędzia: T T Wskaźnik, T P Ołówek, T E Gumka, T I Nożyczki, T J Połącz, T M Mute, T S Solo, T A Fade, T G Gain, T R Zaznaczanie, T Y Zoom",
       },
-      { keys: "W", action: "Różdżka — przycisk przy Formie lub skrót (1/2/3 w menu)" },
+      {
+        keys: "W",
+        action: "Różdżka — przycisk przy Formie lub skrót (1/2/3 w menu)",
+      },
       { keys: "1 / 2 / 3", action: "Tekst / Akordy / obie (menu Różdżki)" },
       {
         keys: "Przycisk Tap (Tekst)",
@@ -67,7 +70,10 @@ const KEY_GROUPS: ShortcutGroup[] = [
       { keys: "⌘/Ctrl+T", action: "Podziel zaznaczony klip przy playheadzie" },
       { keys: "⌘/Ctrl+J", action: "Połącz sąsiednie zaznaczone klipy" },
       { keys: "⌥/Alt+← / →", action: "Nudge zaznaczonego klipu ±1 siatka" },
-      { keys: "Delete / ⌫", action: "Usuń klip / mapę / ścieżkę / bus / HW Out" },
+      {
+        keys: "Delete / ⌫",
+        action: "Usuń klip / mapę / ścieżkę / bus / HW Out",
+      },
       { keys: "⌘/Ctrl+Z", action: "Undo (z zaznaczeniem)" },
       { keys: "⌘/Ctrl+⇧+Z", action: "Redo" },
     ],
@@ -124,8 +130,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       },
       {
         term: "Metadane",
-        detail:
-          "ikona info ⓘ — tytuł, PC, tempo, tonacja, artysta, gatunek.",
+        detail: "ikona info ⓘ — tytuł, PC, tempo, tonacja, artysta, gatunek.",
       },
       {
         term: "Widok",
@@ -225,8 +230,7 @@ const TOOL_SECTIONS: ToolSection[] = [
       },
       {
         term: "Import",
-        detail:
-          "upuść plik na pustą lane, PPM → Importuj, albo z Inspectora.",
+        detail: "upuść plik na pustą lane, PPM → Importuj, albo z Inspectora.",
       },
       {
         term: "Schowek audio",
@@ -259,7 +263,8 @@ const TOOL_SECTIONS: ToolSection[] = [
       },
       {
         term: "Eraser (T E)",
-        detail: "usuń kliknięty klip (Forma / treść / audio) lub zdarzenie mapy.",
+        detail:
+          "usuń kliknięty klip (Forma / treść / audio) lub zdarzenie mapy.",
       },
       {
         term: "Scissors (T I)",

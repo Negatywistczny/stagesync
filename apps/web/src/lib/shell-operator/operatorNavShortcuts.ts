@@ -8,7 +8,10 @@ import {
   type AdminSectionId,
 } from "./operatorNavRoutes.js";
 import { markOperatorSession } from "./operatorSession.js";
-import { shouldShowOperatorNav, isOsMenuDesktopShell } from "./operatorSurface.js";
+import {
+  shouldShowOperatorNav,
+  isOsMenuDesktopShell,
+} from "./operatorSurface.js";
 
 export type OperatorNavShortcutInput = {
   key: string;
@@ -20,9 +23,11 @@ export type OperatorNavShortcutInput = {
   meta: boolean;
 };
 
-export type OperatorNavShortcutAction =
-  | { type: "navigate"; path: string; markSession?: boolean }
-  | null;
+export type OperatorNavShortcutAction = {
+  type: "navigate";
+  path: string;
+  markSession?: boolean;
+} | null;
 
 const ADMIN_SECTION_BY_DIGIT: Record<string, AdminSectionId> = {
   "1": "songs",
@@ -79,7 +84,8 @@ export function useOperatorNavShortcuts({
   pathname,
 }: UseOperatorNavShortcutsOptions): void {
   const navigate = useNavigate();
-  const active = enabled && (shouldShowOperatorNav(pathname) || isOsMenuDesktopShell());
+  const active =
+    enabled && (shouldShowOperatorNav(pathname) || isOsMenuDesktopShell());
 
   useEffect(() => {
     if (!active) return;

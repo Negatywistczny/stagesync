@@ -9,11 +9,17 @@ describe("SmartTempoAccuracyDashboard Component", () => {
     render(<SmartTempoAccuracyDashboard />);
 
     expect(
-      screen.getByText("Smart Tempo vs Logic Pro — Wizualizacja Dokładności Siatki Taktowej"),
+      screen.getByText(
+        "Smart Tempo vs Logic Pro — Wizualizacja Dokładności Siatki Taktowej",
+      ),
     ).toBeDefined();
 
-    expect(screen.getAllByText("🟢 Dokładne (≤ 60 ms)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("🟡 Tolerancja (60–125 ms)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("🟢 Dokładne (≤ 60 ms)").length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      screen.getAllByText("🟡 Tolerancja (60–125 ms)").length,
+    ).toBeGreaterThan(0);
     expect(screen.getAllByText("🔴 Błąd (> 125 ms)").length).toBeGreaterThan(0);
     expect(screen.getByText("📈 Statystyki Błędu")).toBeDefined();
   });
@@ -22,7 +28,9 @@ describe("SmartTempoAccuracyDashboard Component", () => {
     render(<SmartTempoAccuracyDashboard />);
 
     expect(
-      screen.getAllByText("A. Histogram Błędów w Nieliniowych Przedziałach (DAW Grade)")[0],
+      screen.getAllByText(
+        "A. Histogram Błędów w Nieliniowych Przedziałach (DAW Grade)",
+      )[0],
     ).toBeDefined();
     expect(
       screen.getAllByText("B. Wykres Skumulowanej Dokładności (CDF)")[0],
@@ -47,15 +55,23 @@ describe("SmartTempoAccuracyDashboard Component", () => {
 
     fireEvent.click(stageModeBtn);
 
-    expect(screen.getAllByText("🟢 Stage Perfect (≤ 15 ms)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("🟡 Stage Acceptable (15–35 ms)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("🔴 Stage Unusable (> 35 ms)").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("🟢 Stage Perfect (≤ 15 ms)").length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("🟡 Stage Acceptable (15–35 ms)").length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("🔴 Stage Unusable (> 35 ms)").length,
+    ).toBeGreaterThan(0);
   });
 
   it("allows switching between track filters", () => {
     render(<SmartTempoAccuracyDashboard />);
 
-    const billieBtn = screen.getAllByRole("button", { name: /Billie Jean/i })[0]!;
+    const billieBtn = screen.getAllByRole("button", {
+      name: /Billie Jean/i,
+    })[0]!;
     expect(billieBtn).toBeDefined();
 
     fireEvent.click(billieBtn);
@@ -78,7 +94,11 @@ describe("SmartTempoAccuracyDashboard Component", () => {
           medianMs: 180.0,
           p95Ms: 300.0,
           dawGrade: { exactPct: 5.0, closePct: 10.0, failPct: 85.0 },
-          stageGrade: { perfectPct: 2.0, acceptablePct: 8.0, unusablePct: 90.0 },
+          stageGrade: {
+            perfectPct: 2.0,
+            acceptablePct: 8.0,
+            unusablePct: 90.0,
+          },
         },
       },
     ];
@@ -117,8 +137,14 @@ describe("SmartTempoAccuracyDashboard Component", () => {
           refBarMs: 2000,
           estBarMs: 2000,
           errorMs: i * 5,
-          tier: (i * 5 <= 60 ? "exact" : i * 5 <= 125 ? "close" : "fail") as "exact" | "close" | "fail",
-          stageTier: (i * 5 <= 15 ? "stage-perfect" : i * 5 <= 35 ? "stage-acceptable" : "stage-unusable") as "stage-perfect" | "stage-acceptable" | "stage-unusable",
+          tier: (i * 5 <= 60 ? "exact" : i * 5 <= 125 ? "close" : "fail") as
+            "exact" | "close" | "fail",
+          stageTier: (i * 5 <= 15
+            ? "stage-perfect"
+            : i * 5 <= 35
+              ? "stage-acceptable"
+              : "stage-unusable") as
+            "stage-perfect" | "stage-acceptable" | "stage-unusable",
         })),
       },
     ];
@@ -144,8 +170,28 @@ describe("SmartTempoAccuracyDashboard Component", () => {
         medianErrorMs: 10,
         p95ErrorMs: 10,
         bars: [
-          { trackName: "Track 1", bar: 1, timeSec: 0, refBpm: 120, estBpm: 120, refBarMs: 2000, estBarMs: 2000, errorMs: 10, tier: "exact" as const },
-          { trackName: "Track 1", bar: 2, timeSec: 2, refBpm: 120, estBpm: 120, refBarMs: 2000, estBarMs: 2000, errorMs: 12, tier: "exact" as const },
+          {
+            trackName: "Track 1",
+            bar: 1,
+            timeSec: 0,
+            refBpm: 120,
+            estBpm: 120,
+            refBarMs: 2000,
+            estBarMs: 2000,
+            errorMs: 10,
+            tier: "exact" as const,
+          },
+          {
+            trackName: "Track 1",
+            bar: 2,
+            timeSec: 2,
+            refBpm: 120,
+            estBpm: 120,
+            refBarMs: 2000,
+            estBarMs: 2000,
+            errorMs: 12,
+            tier: "exact" as const,
+          },
         ],
       },
       {
@@ -161,13 +207,35 @@ describe("SmartTempoAccuracyDashboard Component", () => {
         medianErrorMs: 15,
         p95ErrorMs: 15,
         bars: [
-          { trackName: "Track 2", bar: 1, timeSec: 0, refBpm: 120, estBpm: 120, refBarMs: 2000, estBarMs: 2000, errorMs: 15, tier: "exact" as const },
-          { trackName: "Track 2", bar: 2, timeSec: 2, refBpm: 120, estBpm: 120, refBarMs: 2000, estBarMs: 2000, errorMs: 18, tier: "exact" as const },
+          {
+            trackName: "Track 2",
+            bar: 1,
+            timeSec: 0,
+            refBpm: 120,
+            estBpm: 120,
+            refBarMs: 2000,
+            estBarMs: 2000,
+            errorMs: 15,
+            tier: "exact" as const,
+          },
+          {
+            trackName: "Track 2",
+            bar: 2,
+            timeSec: 2,
+            refBpm: 120,
+            estBpm: 120,
+            refBarMs: 2000,
+            estBarMs: 2000,
+            errorMs: 18,
+            tier: "exact" as const,
+          },
         ],
       },
     ];
 
-    const { container } = render(<SmartTempoAccuracyDashboard dataset={multiTrackDataset} />);
+    const { container } = render(
+      <SmartTempoAccuracyDashboard dataset={multiTrackDataset} />,
+    );
     const driftPath = container.querySelector("path[class*='driftLine']");
     expect(driftPath).not.toBeNull();
     const pathD = driftPath?.getAttribute("d") || "";

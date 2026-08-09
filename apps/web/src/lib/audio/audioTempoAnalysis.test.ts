@@ -173,9 +173,10 @@ describe("analyzeAudioTempo", () => {
 
   it("reconcileEstimatedBpm prefers competing peak nearer seed when ACF diverges >6%", () => {
     // Same octave, ACF far from seed, but a competing real peak nearer seed.
-    expect(
-      reconcileEstimatedBpm(128.45, 120, 40, [123.1, 96]),
-    ).toBeCloseTo(123.1, 1);
+    expect(reconcileEstimatedBpm(128.45, 120, 40, [123.1, 96])).toBeCloseTo(
+      123.1,
+      1,
+    );
     // Without a nearer competitor, keep the audio peak (no song-specific snap).
     expect(reconcileEstimatedBpm(128.45, 120, 40)).toBeCloseTo(128.45, 1);
   });
@@ -183,7 +184,12 @@ describe("analyzeAudioTempo", () => {
   it("reconcileEstimatedBpm rejects weak near-seed ghost (~112.5) vs ACF ~128", () => {
     // Regression: coarse-hop ACF ghost + half-time hist must not invent a
     // seed/ACF "compromise" periodHint (112.5 → Viterbi collapse toward ~91).
-    const out = reconcileEstimatedBpm(128.45, 120, 40, [63.92, 112.5, 64.28, 81.46]);
+    const out = reconcileEstimatedBpm(
+      128.45,
+      120,
+      40,
+      [63.92, 112.5, 64.28, 81.46],
+    );
     expect(out).toBeGreaterThan(120);
     expect(out).toBeLessThan(132);
     expect(Math.abs(out - 112.5)).toBeGreaterThan(5);
@@ -217,10 +223,7 @@ describe("analyzeAudioTempo", () => {
   it("pickBestAcfBpm does not invent octave mate without a real secondary peak", () => {
     // Only a strong half-time peak — ×2 mate must not win without lag evidence
     // (mate candidates are filtered before pick; here we only pass the real peak).
-    const chosen = pickBestAcfBpm(
-      [{ bpm: 64.0, score: 0.9 }],
-      120,
-    );
+    const chosen = pickBestAcfBpm([{ bpm: 64.0, score: 0.9 }], 120);
     expect(chosen).toBeCloseTo(64, 0);
   });
 
@@ -250,7 +253,12 @@ describe("analyzeAudioTempo", () => {
       if (i + 1 < flux.length) flux[i + 1] = 0.35;
     }
     // Distant US-style metro seed (~header/4) must not win over ~122 peak.
-    const estimated = estimateBpmFromOnsetStrength(flux, sampleRate, hop, 84.84);
+    const estimated = estimateBpmFromOnsetStrength(
+      flux,
+      sampleRate,
+      hop,
+      84.84,
+    );
     expect(estimated).toBeGreaterThanOrEqual(110);
     expect(estimated).toBeLessThanOrEqual(135);
   });
@@ -279,7 +287,13 @@ describe("analyzeAudioTempo", () => {
       onsets.push(Math.round(t + (i % 3 === 0 ? 8 : 0)));
       t += 500;
     }
-    const beats = buildBeatGrid(onsets, 120, onsets[onsets.length - 1]! + 500, 64, 0);
+    const beats = buildBeatGrid(
+      onsets,
+      120,
+      onsets[onsets.length - 1]! + 500,
+      64,
+      0,
+    );
     expect(beats.length).toBeGreaterThan(16);
     const early = (beats[4]! - beats[0]!) / 4;
     const late = (beats[20]! - beats[16]!) / 4;
@@ -288,7 +302,9 @@ describe("analyzeAudioTempo", () => {
     expect(late).toBeGreaterThan(480);
     expect(late).toBeLessThan(520);
     // No half-time collapse
-    expect(Math.min(...beats.slice(1).map((b, i) => b - beats[i]!))).toBeGreaterThan(400);
+    expect(
+      Math.min(...beats.slice(1).map((b, i) => b - beats[i]!)),
+    ).toBeGreaterThan(400);
   });
 
   it("buildBeatGrid with ~112 or ~128 hint does not median-collapse to ~91 on ~490ms onsets", () => {
@@ -398,8 +414,7 @@ describe("analyzeAudioTempo", () => {
     expect(Math.min(...periods)).toBeGreaterThan(period * 0.78);
     // Around bar 5 (beats 16–24) stay near 123 — not ~double and not +several % sustained
     const aroundBar5 = bpms.slice(16, 24);
-    const meanBar5 =
-      aroundBar5.reduce((a, b) => a + b, 0) / aroundBar5.length;
+    const meanBar5 = aroundBar5.reduce((a, b) => a + b, 0) / aroundBar5.length;
     expect(meanBar5).toBeGreaterThan(bpm * 0.97);
     expect(meanBar5).toBeLessThan(bpm * 1.03);
     expect(Math.max(...aroundBar5)).toBeLessThan(bpm * 1.08);

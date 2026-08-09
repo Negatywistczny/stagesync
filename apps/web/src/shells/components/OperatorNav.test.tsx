@@ -68,9 +68,7 @@ describe("OperatorNav", () => {
 
   it("renders center slot before settings on compact", () => {
     vi.mocked(useMqMobileCompact).mockReturnValue(true);
-    const out = html(
-      <OperatorNav activeApp="timeline" center="Mój utwór" />,
-    );
+    const out = html(<OperatorNav activeApp="timeline" center="Mój utwór" />);
     expect(out.indexOf("Admin")).toBeLessThan(out.indexOf("Mój utwór"));
     expect(out.indexOf("Mój utwór")).toBeLessThan(out.indexOf("Ustawienia"));
     expect(out).toContain('aria-label="Aplikacje"');
@@ -92,7 +90,11 @@ describe("OperatorNav", () => {
   it("opens preferences from settings gear (admin → general tab)", () => {
     render(
       <MemoryRouter initialEntries={["/admin"]}>
-        <OperatorNav activeApp="admin" section="songs" onSectionChange={() => {}} />
+        <OperatorNav
+          activeApp="admin"
+          section="songs"
+          onSectionChange={() => {}}
+        />
       </MemoryRouter>,
     );
     fireEvent.click(screen.getByRole("button", { name: "Ustawienia" }));
@@ -130,7 +132,9 @@ describe("OperatorNav", () => {
         />
       </MemoryRouter>,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Ustawienia globalne" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ustawienia globalne" }),
+    );
     expect(onSettings).toHaveBeenCalledOnce();
     expect(openPreferences).not.toHaveBeenCalled();
   });
@@ -140,14 +144,10 @@ describe("OperatorNav", () => {
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const css = readFileSync(
-      join(
-        dirname(fileURLToPath(import.meta.url)),
-        "OperatorNav.module.css",
-      ),
+      join(dirname(fileURLToPath(import.meta.url)), "OperatorNav.module.css"),
       "utf8",
     );
-    const compactBlock =
-      css.match(/\.compact\s*\{([^}]*)\}/)?.[1] ?? "";
+    const compactBlock = css.match(/\.compact\s*\{([^}]*)\}/)?.[1] ?? "";
     expect(compactBlock).toContain(
       "grid-template-columns: minmax(0, max-content) minmax(0, 1fr) minmax(0, max-content)",
     );
@@ -160,7 +160,11 @@ describe("OperatorNav", () => {
       css.match(
         /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.sectionSelectInput\s*\{([^}]*)\}/,
       )?.[1] ?? "";
-    expect(selectBlock).toContain("min-height: var(--ss-touch-min-shell-action)");
-    expect(selectBlock).toContain("max-height: var(--ss-touch-min-shell-action)");
+    expect(selectBlock).toContain(
+      "min-height: var(--ss-touch-min-shell-action)",
+    );
+    expect(selectBlock).toContain(
+      "max-height: var(--ss-touch-min-shell-action)",
+    );
   });
 });

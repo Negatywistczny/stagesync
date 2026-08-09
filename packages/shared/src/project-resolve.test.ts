@@ -9,11 +9,7 @@ import {
 } from "./project-resolve.js";
 
 describe("project resolvers", () => {
-  const project = createProjectV5Seed(
-    "id",
-    "Demo",
-    "2026-07-20T00:00:00.000Z",
-  );
+  const project = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
 
   const withMaps = {
     ...project,

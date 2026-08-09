@@ -59,16 +59,15 @@ describe("useTimelineTouchGestures", () => {
   it("attaches pinch zoom and double-tap handlers when enabled", async () => {
     const cleanups: Array<() => void> = [];
     vi.doMock("react", () => ({
-      useRef: <T,>(value: T) => ({ current: value }),
+      useRef: <T>(value: T) => ({ current: value }),
       useEffect: (effect: () => void | (() => void)) => {
         const cleanup = effect();
         if (typeof cleanup === "function") cleanups.push(cleanup);
       },
     }));
 
-    const { useTimelineTouchGestures } = await import(
-      "./useTimelineTouchGestures.js"
-    );
+    const { useTimelineTouchGestures } =
+      await import("./useTimelineTouchGestures.js");
 
     const scrollEl = createScrollEl();
     const applyZoomH = vi.fn();
@@ -120,14 +119,13 @@ describe("useTimelineTouchGestures", () => {
 
   it("no-ops when disabled or scrollRef empty", async () => {
     vi.doMock("react", () => ({
-      useRef: <T,>(value: T) => ({ current: value }),
+      useRef: <T>(value: T) => ({ current: value }),
       useEffect: (effect: () => void | (() => void)) => {
         effect();
       },
     }));
-    const { useTimelineTouchGestures } = await import(
-      "./useTimelineTouchGestures.js"
-    );
+    const { useTimelineTouchGestures } =
+      await import("./useTimelineTouchGestures.js");
     const applyZoomH = vi.fn();
     useTimelineTouchGestures({
       enabled: false,

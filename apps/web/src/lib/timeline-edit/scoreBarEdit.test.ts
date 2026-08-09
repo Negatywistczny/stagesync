@@ -48,10 +48,7 @@ describe("ticksFromLogicBar / logicBarFromTicks meter walk", () => {
         },
       ],
     };
-    const bar5_8 = ticksPerBar(
-      { numerator: 5, denominator: 8 },
-      p.ppq,
-    );
+    const bar5_8 = ticksPerBar({ numerator: 5, denominator: 8 }, p.ppq);
     expect(ticksFromLogicBar(p, 3)).toBe(bar4_4 * 2);
     expect(ticksFromLogicBar(p, 4)).toBe(bar4_4 * 2 + bar5_8);
     expect(logicBarFromTicks(p, bar4_4 * 2 + bar5_8)).toBe(4);
@@ -61,7 +58,9 @@ describe("ticksFromLogicBar / logicBarFromTicks meter walk", () => {
 describe("scoreAnchors / canEditKotwice / CRUD", () => {
   it("scoreAnchors normalizes missing map", () => {
     const p = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
-    expect(scoreAnchors({ ...p, scoreBarMap: undefined } as unknown as typeof p)).toEqual([]);
+    expect(
+      scoreAnchors({ ...p, scoreBarMap: undefined } as unknown as typeof p),
+    ).toEqual([]);
   });
 
   it("canEditKotwice requires musicxml or existing anchors", () => {
@@ -155,9 +154,7 @@ describe("scoreAnchors / canEditKotwice / CRUD", () => {
 
   it("anchorBarWidthTicks uses meter at bar start", () => {
     const p = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
-    expect(anchorBarWidthTicks(p, 1)).toBe(
-      ticksPerBar(p.defaultMeter, p.ppq),
-    );
+    expect(anchorBarWidthTicks(p, 1)).toBe(ticksPerBar(p.defaultMeter, p.ppq));
   });
 });
 

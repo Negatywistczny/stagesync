@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { Button, ContextMenuProvider } from "@stagesync/ui";
 import { renderSVG } from "uqr";
@@ -59,10 +67,7 @@ import { QrWrap } from "./shared/index.js";
 import styles from "./DesktopMenuBridge.module.css";
 
 type NamePromptKind =
-  | "new-song"
-  | "new-template"
-  | "new-from-template"
-  | "save-as";
+  "new-song" | "new-template" | "new-from-template" | "save-as";
 
 type NamePromptState = {
   kind: NamePromptKind;
@@ -147,7 +152,9 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
       } catch (err) {
         if (!cancelled) {
           setError(
-            err instanceof Error ? err.message : "Nie udało się pobrać URL sieci",
+            err instanceof Error
+              ? err.message
+              : "Nie udało się pobrać URL sieci",
           );
         }
       } finally {
@@ -228,10 +235,7 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
             Brak adresów LAN z hosta.
           </p>
         ) : null}
-        {!loading &&
-        !error &&
-        mode === "performer" &&
-        !performerReady ? (
+        {!loading && !error && mode === "performer" && !performerReady ? (
           <p className={styles.muted} role="status">
             Host nie serwuje teraz Performer APK (
             {performerUrl ?? "/downloads/stagesync-performer.apk"}). Pobierz z
@@ -266,7 +270,8 @@ function HostQrModal({ onClose }: { onClose: () => void }) {
         ) : null}
         {mode === "join" ? (
           <p className={styles.muted}>
-            Zeskanuj kod telefonem / tabletem w tej samej sieci LAN (dołączenie).
+            Zeskanuj kod telefonem / tabletem w tej samej sieci LAN
+            (dołączenie).
           </p>
         ) : (
           <p className={styles.muted}>
@@ -417,9 +422,7 @@ export function DesktopMenuBridge() {
       await postSystemRestart();
       setRestartOpen(false);
     } catch (err) {
-      setRestartError(
-        err instanceof Error ? err.message : "Restart nieudany",
-      );
+      setRestartError(err instanceof Error ? err.message : "Restart nieudany");
     } finally {
       restartPendingRef.current = false;
       setRestartPending(false);
@@ -480,9 +483,7 @@ export function DesktopMenuBridge() {
           const result = await importLibraryFile(file);
           const n = result.createdCount;
           window.alert(
-            n === 1
-              ? "Zaimportowano 1 utwór."
-              : `Zaimportowano ${n} utworów.`,
+            n === 1 ? "Zaimportowano 1 utwór." : `Zaimportowano ${n} utworów.`,
           );
           navigate("/admin?section=songs");
         } catch (err) {
@@ -616,7 +617,10 @@ export function DesktopMenuBridge() {
         case "edit-copy":
         case "edit-paste":
           // TimelineShell handles clip clipboard; elsewhere yield to OS text.
-          if (!onTimeline && shouldAllowNativeTextClipboard(document.activeElement)) {
+          if (
+            !onTimeline &&
+            shouldAllowNativeTextClipboard(document.activeElement)
+          ) {
             const cmd =
               detail.action === "edit-cut"
                 ? "cut"
@@ -680,7 +684,9 @@ export function DesktopMenuBridge() {
     function onOpenPrefs(ev: Event) {
       if (onClient) {
         window.dispatchEvent(
-          new CustomEvent(DESKTOP_MENU_EVENT, { detail: { action: "appearance" } }),
+          new CustomEvent(DESKTOP_MENU_EVENT, {
+            detail: { action: "appearance" },
+          }),
         );
         return;
       }
@@ -704,7 +710,9 @@ export function DesktopMenuBridge() {
       ev.preventDefault();
       if (onClient) {
         window.dispatchEvent(
-          new CustomEvent(DESKTOP_MENU_EVENT, { detail: { action: "appearance" } }),
+          new CustomEvent(DESKTOP_MENU_EVENT, {
+            detail: { action: "appearance" },
+          }),
         );
         return;
       }
@@ -721,12 +729,16 @@ export function DesktopMenuBridge() {
         ev.preventDefault();
       }
     }
-    window.addEventListener("keydown", preventBrowserHistoryShortcuts, { capture: true });
+    window.addEventListener("keydown", preventBrowserHistoryShortcuts, {
+      capture: true,
+    });
 
     return () => {
       window.removeEventListener(OPEN_PREFERENCES_EVENT, onOpenPrefs);
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("keydown", preventBrowserHistoryShortcuts, { capture: true });
+      window.removeEventListener("keydown", preventBrowserHistoryShortcuts, {
+        capture: true,
+      });
     };
   }, [onClient]);
 

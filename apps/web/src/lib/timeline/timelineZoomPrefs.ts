@@ -3,7 +3,11 @@
  */
 
 import { DEFAULT_PX_PER_BAR } from "@lib/timeline-edit/formaCanvas.js";
-import { DEFAULT_LANE_PX, MAX_LANE_PX, MIN_LANE_PX } from "./timelineLaneHeights.js";
+import {
+  DEFAULT_LANE_PX,
+  MAX_LANE_PX,
+  MIN_LANE_PX,
+} from "./timelineLaneHeights.js";
 
 export const TIMELINE_ZOOM_KEY = "stagesync-timeline-zoom";
 
@@ -21,11 +25,17 @@ export type TimelineZoomPrefs = {
 };
 
 export function clampZoomH(px: number): number {
-  return Math.max(ZOOM_H_MIN, Math.min(ZOOM_H_MAX, Math.round(Number(px) || DEFAULT_PX_PER_BAR)));
+  return Math.max(
+    ZOOM_H_MIN,
+    Math.min(ZOOM_H_MAX, Math.round(Number(px) || DEFAULT_PX_PER_BAR)),
+  );
 }
 
 export function clampZoomV(px: number): number {
-  return Math.max(MIN_LANE_PX, Math.min(MAX_LANE_PX, Math.round(Number(px) || DEFAULT_LANE_PX)));
+  return Math.max(
+    MIN_LANE_PX,
+    Math.min(MAX_LANE_PX, Math.round(Number(px) || DEFAULT_LANE_PX)),
+  );
 }
 
 export function clampZoomUi(pct: number): number {

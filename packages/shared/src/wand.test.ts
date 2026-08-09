@@ -296,8 +296,9 @@ describe("placeContentFromForma", () => {
       },
     };
     const formaBefore = structuredClone(p.forma);
-    const introStartBefore = p.tekst.clips.find((c) => c.id === "ti")!
-      .startTicks;
+    const introStartBefore = p.tekst.clips.find(
+      (c) => c.id === "ti",
+    )!.startTicks;
     const result = placeContentFromForma(p, "tekst", {
       sectionIds: [verse.id],
     });
@@ -680,7 +681,9 @@ describe("placeContentFromForma", () => {
     expect(result.ok).toBe(true);
     expect(result.placed).toBe(2);
     expect(
-      result.project.akordy.clips.every((c) => c.startTicks >= verse.startTicks),
+      result.project.akordy.clips.every(
+        (c) => c.startTicks >= verse.startTicks,
+      ),
     ).toBe(true);
   });
 
@@ -1008,7 +1011,11 @@ describe("placeContentFromForma", () => {
   });
 
   it("fail-soft ok:false matrix without throwing", () => {
-    const emptyForma = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const emptyForma = createProjectV5Seed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    );
     const noSections = {
       ...emptyForma,
       forma: { clips: [] },

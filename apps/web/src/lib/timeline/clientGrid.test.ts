@@ -21,7 +21,6 @@ import {
 } from "./clientGrid.js";
 import { pencilAkordyClick } from "@lib/timeline-edit/akordyEdit.js";
 
-
 const BAR = 4 * DEFAULT_PPQ; // 3840 in 4/4
 
 describe("clientGrid", () => {
@@ -67,11 +66,7 @@ describe("clientGrid", () => {
   });
 
   it("buildGridLiveContext exposes cycle cells for section chords", () => {
-    let p: Project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     // Intro is 2 bars (0..7680). Put Am then F.
     p = {
       ...p,
@@ -105,11 +100,7 @@ describe("clientGrid", () => {
   it("scopes cycle to active Forma subsection only", () => {
     // 12-bar Verse with 4-bar subsections @ 4·BAR and 8·BAR.
     const verseLen = 12 * BAR;
-    let p: Project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       forma: {
@@ -176,11 +167,7 @@ describe("clientGrid", () => {
 
   it("exposes nextCycle for upcoming subsection (2-line carousel)", () => {
     const verseLen = 12 * BAR;
-    let p: Project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       forma: {
@@ -244,11 +231,7 @@ describe("clientGrid", () => {
   });
 
   it("heroNext points to next step within subsection cycle", () => {
-    let p: Project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       forma: {
@@ -293,11 +276,7 @@ describe("clientGrid", () => {
   });
 
   it("countdownPreview collapses current and previews first section", () => {
-    let p: Project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       akordy: {
@@ -381,11 +360,7 @@ describe("clientGrid", () => {
   });
 
   it("chordStepsForTickRange uses clip onsets (not only bar starts)", () => {
-    let p: Project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const half = BAR / 2;
     p = {
       ...p,
@@ -422,7 +397,9 @@ describe("clientGrid", () => {
   it("buildGridLiveContext empty project and no chords", () => {
     expect(buildGridLiveContext(null, 0).emptyReason).toMatch(/Oczekiwanie/);
     const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
-    expect(buildGridLiveContext({ ...p, akordy: { clips: [] } }, 0).emptyReason).toMatch(/Brak akordów/);
+    expect(
+      buildGridLiveContext({ ...p, akordy: { clips: [] } }, 0).emptyReason,
+    ).toMatch(/Brak akordów/);
   });
 
   it("resolveNextPhraseBand crosses into next section subsections", () => {
@@ -441,17 +418,29 @@ describe("clientGrid", () => {
       forma: { clips: [...p.forma.clips, verse] },
       akordy: {
         clips: [
-          { id: "a1", symbol: "C", startTicks: verse.startTicks, lengthTicks: BAR },
-          { id: "a2", symbol: "G", startTicks: verse.startTicks + BAR, lengthTicks: BAR },
+          {
+            id: "a1",
+            symbol: "C",
+            startTicks: verse.startTicks,
+            lengthTicks: BAR,
+          },
+          {
+            id: "a2",
+            symbol: "G",
+            startTicks: verse.startTicks + BAR,
+            lengthTicks: BAR,
+          },
         ],
       },
     };
     // At end of intro → next phrase is verse first subsection
-    const band = resolveNextPhraseBand(p, intro.startTicks + intro.lengthTicks - 1);
+    const band = resolveNextPhraseBand(
+      p,
+      intro.startTicks + intro.lengthTicks - 1,
+    );
     expect(band?.sectionName).toBe("Verse");
     expect(band?.barChords.length).toBeGreaterThan(0);
   });
-
 
   it("carouselKey clip fallback without sectionInfo", () => {
     let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
@@ -462,14 +451,14 @@ describe("clientGrid", () => {
         clips: p.forma.clips.filter((c) => c.kind === "countdown"),
       },
       akordy: {
-        clips: [
-          { id: "solo", symbol: "Em", startTicks: 0, lengthTicks: BAR },
-        ],
+        clips: [{ id: "solo", symbol: "Em", startTicks: 0, lengthTicks: BAR }],
       },
     };
     const ctx = buildGridLiveContext(p, 100);
     expect(ctx.hero === "Em" || ctx.hero === "—").toBe(true);
-    expect(ctx.carouselKey.includes("clip:") || ctx.carouselKey === "").toBe(true);
+    expect(ctx.carouselKey.includes("clip:") || ctx.carouselKey === "").toBe(
+      true,
+    );
   });
 
   it("detectCycleLength falls through when no proper divisor cycles", () => {
@@ -486,7 +475,12 @@ describe("clientGrid", () => {
       },
       akordy: {
         clips: [
-          { id: "a1", symbol: "C", startTicks: intro.startTicks, lengthTicks: BAR },
+          {
+            id: "a1",
+            symbol: "C",
+            startTicks: intro.startTicks,
+            lengthTicks: BAR,
+          },
         ],
       },
     };
@@ -529,9 +523,7 @@ describe("clientGrid", () => {
         ],
       },
       akordy: {
-        clips: [
-          { id: "a", symbol: "C", startTicks: far, lengthTicks: BAR },
-        ],
+        clips: [{ id: "a", symbol: "C", startTicks: far, lengthTicks: BAR }],
       },
     };
     expect(
@@ -543,7 +535,11 @@ describe("clientGrid", () => {
   });
 
   it("sectionBarChords barIndex past last bar uses fallthrough", () => {
-    const p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p: Project = createProjectV5Seed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    );
     const intro = p.forma.clips.find((c) => c.kind === "section")!;
     // Playhead just inside exclusive end-1 so still in section; last bar index fallthrough
     // when displayTicks equals a bar end inside the subsection range.
@@ -551,14 +547,13 @@ describe("clientGrid", () => {
     expect(info?.barIndexInSection).toBeGreaterThanOrEqual(0);
   });
 
-
   it("mergeAkordyWithCountdownDigits synth inside CD and strips legacy", () => {
     const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
     const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
     const inside = mergeAkordyWithCountdownDigits(p, cd.startTicks);
-    expect(inside.some((c) => /^\d+$/.test(c.symbol) || c.id.includes("cd"))).toBe(
-      true,
-    );
+    expect(
+      inside.some((c) => /^\d+$/.test(c.symbol) || c.id.includes("cd")),
+    ).toBe(true);
     const past = mergeAkordyWithCountdownDigits(
       p,
       cd.startTicks + cd.lengthTicks + 1,

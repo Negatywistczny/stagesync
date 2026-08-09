@@ -34,7 +34,11 @@ export function createPushRouter(store: PushTokenStore): Router {
     try {
       const body = PushTokenRegisterBodySchema.parse(req.body);
       const saved = await store.upsert(body);
-      res.status(201).json({ ok: true as const, token: saved.token, platform: saved.platform });
+      res.status(201).json({
+        ok: true as const,
+        token: saved.token,
+        platform: saved.platform,
+      });
     } catch (err) {
       handleRouteError(res, err);
     }

@@ -11,12 +11,10 @@ interface BatchPcModalProps {
   onSaved: (library: Library) => void | Promise<void>;
 }
 
-export function BatchPcModal({
-  library,
-  onClose,
-  onSaved,
-}: BatchPcModalProps) {
-  const playable = (library?.projects ?? []).filter((p) => p.isTemplate !== true);
+export function BatchPcModal({ library, onClose, onSaved }: BatchPcModalProps) {
+  const playable = (library?.projects ?? []).filter(
+    (p) => p.isTemplate !== true,
+  );
   const [draft, setDraft] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {};
     for (const p of playable) {
@@ -104,7 +102,9 @@ export function BatchPcModal({
                 const next = await batchMidiProgramIds(assignments);
                 await onSaved(next);
               } catch (err) {
-                setError(err instanceof Error ? err.message : "Zapis PC nieudany");
+                setError(
+                  err instanceof Error ? err.message : "Zapis PC nieudany",
+                );
               } finally {
                 setBusy(false);
               }

@@ -17,7 +17,10 @@ import {
   nudgeShowsLeftEdge,
   shouldShowTouchNudge,
 } from "./timelineTouchNudge.js";
-import { MAX_COUNTDOWN_BARS, setCountdownBars } from "@lib/timeline-edit/formaInspector.js";
+import {
+  MAX_COUNTDOWN_BARS,
+  setCountdownBars,
+} from "@lib/timeline-edit/formaInspector.js";
 import {
   isDoubleTap,
   pinchZoomFromRatio,
@@ -207,10 +210,20 @@ describe("timelineTouchGestures", () => {
   it("detects double-tap within 300ms same spot", () => {
     const t0 = 1000;
     expect(
-      isDoubleTap({ time: t0, x: 10, y: 10 }, t0 + TOUCH_DOUBLE_TAP_MS - 1, 12, 11),
+      isDoubleTap(
+        { time: t0, x: 10, y: 10 },
+        t0 + TOUCH_DOUBLE_TAP_MS - 1,
+        12,
+        11,
+      ),
     ).toBe(true);
     expect(
-      isDoubleTap({ time: t0, x: 10, y: 10 }, t0 + TOUCH_DOUBLE_TAP_MS + 1, 12, 11),
+      isDoubleTap(
+        { time: t0, x: 10, y: 10 },
+        t0 + TOUCH_DOUBLE_TAP_MS + 1,
+        12,
+        11,
+      ),
     ).toBe(false);
   });
 

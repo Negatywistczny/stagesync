@@ -29,9 +29,7 @@ function describeError(error: unknown): { message: string; detail?: string } {
   if (error instanceof Error) {
     return {
       message: (error.message || "Nieoczekiwany błąd.").slice(0, 500),
-      detail: import.meta.env.DEV
-        ? error.stack?.slice(0, 4000)
-        : undefined,
+      detail: import.meta.env.DEV ? error.stack?.slice(0, 4000) : undefined,
     };
   }
   if (typeof error === "string" && error.length > 0) {

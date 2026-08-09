@@ -190,7 +190,9 @@ describe("fader taper anchors", () => {
   });
 
   it("clamps stored gain for schema / GainNode", () => {
-    expect(clampFaderGainDb(Number.NEGATIVE_INFINITY)).toBe(FADER_GAIN_FLOOR_DB);
+    expect(clampFaderGainDb(Number.NEGATIVE_INFINITY)).toBe(
+      FADER_GAIN_FLOOR_DB,
+    );
     expect(clampFaderGainDb(Number.NaN)).toBe(FADER_GAIN_FLOOR_DB);
     expect(clampFaderGainDb(100)).toBe(FADER_TAPER_DB_MAX);
     expect(clampFaderGainDb(-100)).toBe(FADER_GAIN_FLOOR_DB);

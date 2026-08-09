@@ -27,7 +27,10 @@ import {
   subsectionMaxChunkForClip,
   withFormaSubsections,
 } from "./formaSubsections.js";
-import type { FormaGesturePreview, FormaGestureSession } from "@lib/timeline/timelineGesture.js";
+import type {
+  FormaGesturePreview,
+  FormaGestureSession,
+} from "@lib/timeline/timelineGesture.js";
 import {
   PENCIL_DRAG_THRESHOLD_PX,
   resolvePencilRangeTicks,
@@ -76,7 +79,10 @@ export function insertFormaSubsectionAt(
   mode: SnapMode = "bar",
 ): Project {
   const floor = contentFloorTicks(project.forma.clips);
-  const snapped = Math.max(floor, snapEditTicksWithMode(project, atTicks, mode));
+  const snapped = Math.max(
+    floor,
+    snapEditTicksWithMode(project, atTicks, mode),
+  );
   const clip = project.forma.clips.find((c) => c.id === clipId);
   if (!clip || clip.kind === "countdown") return project;
 
@@ -115,7 +121,10 @@ export function commitSubsectionBoundaryMove(
   mode: SnapMode = "bar",
 ): Project {
   const floor = contentFloorTicks(project.forma.clips);
-  const snapped = Math.max(floor, snapEditTicksWithMode(project, newAbsTicks, mode));
+  const snapped = Math.max(
+    floor,
+    snapEditTicksWithMode(project, newAbsTicks, mode),
+  );
   const clip = project.forma.clips.find((c) => c.id === clipId);
   if (!clip || clip.kind === "countdown") return project;
 
@@ -378,10 +387,7 @@ export function previewFromSession(
 
   if (session.kind === "resize-start") {
     const end = session.originClipStart + session.originClipLength;
-    let start = Math.max(
-      floor,
-      snapEditTicksWithMode(project, rawTicks, mode),
-    );
+    let start = Math.max(floor, snapEditTicksWithMode(project, rawTicks, mode));
     if (end - start < 1) {
       const meter = resolveMeterAt(project, end);
       start = end - ticksPerBar(meter, project.ppq);
@@ -438,7 +444,9 @@ export function previewFromSession(
       pxPerBar != null &&
       pxPerBar > 0
     ) {
-      delta = Math.round(((clientX - session.originClientX) / pxPerBar) * barTicks);
+      delta = Math.round(
+        ((clientX - session.originClientX) / pxPerBar) * barTicks,
+      );
     } else {
       delta = rawTicks - session.originTicks;
     }

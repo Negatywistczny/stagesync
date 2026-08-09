@@ -193,7 +193,11 @@ export function OperatorPinGate({ children }: { children: ReactNode }) {
               {error}
             </p>
           ) : null}
-          <Button variant="primary" type="submit" disabled={pending || !draft.trim()}>
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={pending || !draft.trim()}
+          >
             {pending ? "Sprawdzanie…" : "Odblokuj"}
           </Button>
         </form>

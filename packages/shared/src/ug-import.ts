@@ -233,8 +233,7 @@ export function sealAkordyLengths(clips: AkordClip[]): AkordClip[] {
   const last = sorted[sorted.length - 1]!;
   const fallbackEnd = last.startTicks + Math.max(1, last.lengthTicks);
   return sorted.map((c, i) => {
-    const end =
-      i + 1 < sorted.length ? sorted[i + 1]!.startTicks : fallbackEnd;
+    const end = i + 1 < sorted.length ? sorted[i + 1]!.startTicks : fallbackEnd;
     return {
       ...c,
       lengthTicks: Math.max(1, end - c.startTicks),
@@ -256,10 +255,7 @@ function parseSectionHeader(line: string): string | null {
     !extractBracketChords(line).length
   ) {
     const inner = line.slice(1, -1).trim();
-    if (
-      inner &&
-      (inner.length > CHORD_TOKEN_MAX || !CHORD_TOKEN.test(inner))
-    ) {
+    if (inner && (inner.length > CHORD_TOKEN_MAX || !CHORD_TOKEN.test(inner))) {
       return inner.slice(0, 120);
     }
   }
@@ -274,8 +270,7 @@ function parseSectionHeader(line: string): string | null {
       if (value) return value.slice(0, 120);
     } else if (key.startsWith("start_of_")) {
       const kind = key.slice("start_of_".length).replace(/_/g, " ");
-      const title =
-        value || kind.replace(/\b\w/g, (c) => c.toUpperCase());
+      const title = value || kind.replace(/\b\w/g, (c) => c.toUpperCase());
       return title.slice(0, 120);
     }
   }
@@ -444,7 +439,10 @@ export function importUgText(
         if (bracketChords.length && lyric) {
           sawContent = true;
           lyricLines += 1;
-          const chords = dedupeConsecutive([...pendingChords, ...bracketChords]);
+          const chords = dedupeConsecutive([
+            ...pendingChords,
+            ...bracketChords,
+          ]);
           pendingChords = [];
           const lineStart = cursor;
           const tekstId = `${prefix}-tekst-${++seq}`;
@@ -649,8 +647,7 @@ export function reflowUgImportSectionBars(
         old.lengthTicks > 0
           ? (clip.startTicks - old.startTicks) / old.lengthTicks
           : 0;
-      const scale =
-        old.lengthTicks > 0 ? neu.lengthTicks / old.lengthTicks : 1;
+      const scale = old.lengthTicks > 0 ? neu.lengthTicks / old.lengthTicks : 1;
       return {
         ...clip,
         startTicks: neu.startTicks + Math.round(rel * neu.lengthTicks),

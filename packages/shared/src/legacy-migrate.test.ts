@@ -210,7 +210,11 @@ describe("migrateLegacySong", () => {
     // Force invalid with bad id:
     expect(() =>
       migrateLegacySong(
-        { id: "x", title: "Bad", sections: [{ id: 1, name: "A", startAbs: 0 }] },
+        {
+          id: "x",
+          title: "Bad",
+          sections: [{ id: 1, name: "A", startAbs: 0 }],
+        },
         { projectId: "", updatedAt: FIXED_AT },
       ),
     ).toThrow(/ProjectSchema/);
@@ -221,8 +225,7 @@ describe("migrateLegacySong", () => {
       year: 1978,
       artist: "ABBA",
       genre: "Pop",
-      coverUrl:
-        "https://resources.tidal.com/images/example/1280x1280.jpg",
+      coverUrl: "https://resources.tidal.com/images/example/1280x1280.jpg",
       musicxmlFile: "halo-tu-londyn.mxl",
       audioFile: "guide.wav",
       stems: ["drums.wav", "bass.mp3"],
@@ -300,7 +303,11 @@ describe("migrateLegacyDatabase", () => {
     const db: LegacyDatabase = {
       songs: [
         templateSong(),
-        { id: "bad", title: "Bad", sections: [{ id: 1, name: "A", startAbs: 0 }] },
+        {
+          id: "bad",
+          title: "Bad",
+          sections: [{ id: 1, name: "A", startAbs: 0 }],
+        },
       ],
       setlist: { enabled: true, songIds: ["song-template", "missing-song"] },
     };
@@ -317,16 +324,20 @@ describe("migrateLegacyDatabase", () => {
       migrateLegacyDatabase(
         {
           songs: [
-            { id: "x", title: "Bad", sections: [{ id: 1, name: "A", startAbs: 0 }] },
+            {
+              id: "x",
+              title: "Bad",
+              sections: [{ id: 1, name: "A", startAbs: 0 }],
+            },
           ],
         },
         { idForSong: () => "" },
       ),
     ).toThrow(/No songs migrated successfully/);
 
-    expect(() => migrateLegacyDatabase(null as unknown as LegacyDatabase)).toThrow(
-      /must be an object/,
-    );
+    expect(() =>
+      migrateLegacyDatabase(null as unknown as LegacyDatabase),
+    ).toThrow(/must be an object/);
   });
 });
 
@@ -342,7 +353,9 @@ describe("legacy-migrate asset mime + helpers", () => {
     expect(mimeForLegacyAsset("audio", "a.m4a")).toBe("audio/mp4");
     expect(mimeForLegacyAsset("audio", "a.flac")).toBe("audio/flac");
     expect(mimeForLegacyAsset("audio", "a.ogg")).toBe("audio/ogg");
-    expect(mimeForLegacyAsset("audio", "a.xyz")).toBe("application/octet-stream");
+    expect(mimeForLegacyAsset("audio", "a.xyz")).toBe(
+      "application/octet-stream",
+    );
     expect(legacyAssetId(PID, "audio", "x.wav")).toMatch(/^[/0-9a-f-]{36}$/i);
   });
 
@@ -423,9 +436,9 @@ describe("migrateLegacySong rich maps", () => {
     expect(project.scoreBarMap.anchors.length).toBeGreaterThan(0);
     expect(project.midiProgramId).toBe(12);
     expect(project.cue.clips.some((c) => c.priority === "alert")).toBe(true);
-    expect(warnings.some((w) => /invalid year|unsupported extension/.test(w))).toBe(
-      true,
-    );
+    expect(
+      warnings.some((w) => /invalid year|unsupported extension/.test(w)),
+    ).toBe(true);
     expect(project.assets.some((a) => a.originalName === "extra.aiff")).toBe(
       true,
     );

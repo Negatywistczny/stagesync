@@ -45,9 +45,10 @@ function u32(n: number): Buffer {
 function dosDateTime(d = new Date()): { time: number; date: number } {
   const year = Math.max(1980, d.getFullYear());
   const time =
-    (d.getHours() << 11) | (d.getMinutes() << 5) | Math.floor(d.getSeconds() / 2);
-  const date =
-    ((year - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+    (d.getHours() << 11) |
+    (d.getMinutes() << 5) |
+    Math.floor(d.getSeconds() / 2);
+  const date = ((year - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
   return { time, date };
 }
 
@@ -228,7 +229,9 @@ export function parseZipArchive(buf: Buffer): ZipEntry[] {
       data = Buffer.from(compressed);
     } else {
       try {
-        data = inflateRawSync(compressed, { maxOutputLength: uncompSize || undefined });
+        data = inflateRawSync(compressed, {
+          maxOutputLength: uncompSize || undefined,
+        });
       } catch {
         throw new Error(`Nie udało się rozpakować „${name}”`);
       }

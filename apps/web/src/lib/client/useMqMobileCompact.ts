@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { MQ_LANDSCAPE_PHONE, MQ_MOBILE_COMPACT } from "@lib/timeline/breakpoints.js";
+import {
+  MQ_LANDSCAPE_PHONE,
+  MQ_MOBILE_COMPACT,
+} from "@lib/timeline/breakpoints.js";
 import { shouldUseMobileCompactChrome } from "@lib/shell-operator/operatorSurface.js";
 
 /**

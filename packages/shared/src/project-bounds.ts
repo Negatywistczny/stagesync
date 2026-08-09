@@ -13,12 +13,15 @@ export function emptyProjectEndTicks(project: {
   defaultMeter: { numerator: number; denominator: number };
 }): number {
   return (
-    EMPTY_PROJECT_END_BARS *
-    ticksPerBar(project.defaultMeter, project.ppq)
+    EMPTY_PROJECT_END_BARS * ticksPerBar(project.defaultMeter, project.ppq)
   );
 }
 
-function considerEnd(maxEnd: number, startTicks: number, lengthTicks: number): number {
+function considerEnd(
+  maxEnd: number,
+  startTicks: number,
+  lengthTicks: number,
+): number {
   const end = startTicks + lengthTicks;
   return end > maxEnd ? end : maxEnd;
 }

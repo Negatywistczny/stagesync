@@ -65,13 +65,19 @@ describe("transport api", () => {
     await setTransportLoop({ enabled: true, startTicks: 0, endTicks: 3840 });
 
     expect(fetchMock.mock.calls[0]![0]).toBe("/api/transport/load");
-    expect(JSON.parse(String((fetchMock.mock.calls[0]![1] as RequestInit).body))).toEqual({
+    expect(
+      JSON.parse(String((fetchMock.mock.calls[0]![1] as RequestInit).body)),
+    ).toEqual({
       projectId,
     });
-    expect(JSON.parse(String((fetchMock.mock.calls[1]![1] as RequestInit).body))).toEqual({
+    expect(
+      JSON.parse(String((fetchMock.mock.calls[1]![1] as RequestInit).body)),
+    ).toEqual({
       positionTicks: 960,
     });
-    expect(JSON.parse(String((fetchMock.mock.calls[2]![1] as RequestInit).body))).toEqual({
+    expect(
+      JSON.parse(String((fetchMock.mock.calls[2]![1] as RequestInit).body)),
+    ).toEqual({
       enabled: true,
       startTicks: 0,
       endTicks: 3840,
@@ -157,9 +163,7 @@ describe("transport api", () => {
   it("rejects invalid play body before fetch", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    await expect(
-      playTransport({ bpm: -1 } as never),
-    ).rejects.toThrow();
+    await expect(playTransport({ bpm: -1 } as never)).rejects.toThrow();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

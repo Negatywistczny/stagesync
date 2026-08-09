@@ -51,7 +51,10 @@ import {
 } from "@lib/client/clientDisplayPrefs.js";
 import { applyVocalTap, vocalTapQueue } from "@lib/client/clientVocalTap.js";
 import { putProject } from "@lib/shell-operator/libraryApi.js";
-import { ticksFromSyncLeadAlongMap, ticksFromSyncLeadMs } from "@lib/timeline/syncLead.js";
+import {
+  ticksFromSyncLeadAlongMap,
+  ticksFromSyncLeadMs,
+} from "@lib/timeline/syncLead.js";
 import { useActiveProject } from "@lib/shell-operator/useActiveProject.js";
 import { useTransport } from "../transport/useTransport.js";
 import type { WsStatus } from "../transport/transportContext.js";
@@ -261,7 +264,9 @@ export function ClientShell() {
   const sessionCues = stageCues.filter((cue) => {
     if (cue.ttlMs === 0) return true;
     const ttl =
-      typeof cue.ttlMs === "number" && Number.isFinite(cue.ttlMs) && cue.ttlMs > 0
+      typeof cue.ttlMs === "number" &&
+      Number.isFinite(cue.ttlMs) &&
+      cue.ttlMs > 0
         ? cue.ttlMs
         : 6000;
     return wallClockMs < cue.sentAtMs + ttl;
@@ -379,7 +384,12 @@ export function ClientShell() {
   if (nameModal) {
     return (
       <div className={styles.page}>
-        <div className={styles.modal} role="dialog" aria-modal aria-labelledby="name-title">
+        <div
+          className={styles.modal}
+          role="dialog"
+          aria-modal
+          aria-labelledby="name-title"
+        >
           <div className={styles.modalConn}>
             <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
           </div>
@@ -387,7 +397,9 @@ export function ClientShell() {
           <h1 id="name-title" className={styles.modalTitle}>
             Zmień nazwę
           </h1>
-          <p className={styles.modalHint}>Podaj swoje imię lub nazwę urządzenia.</p>
+          <p className={styles.modalHint}>
+            Podaj swoje imię lub nazwę urządzenia.
+          </p>
           <form className={styles.modalForm} onSubmit={submitName}>
             <Input
               maxLength={DEVICE_DISPLAY_NAME_MAX}
@@ -491,17 +503,18 @@ export function ClientShell() {
       ) : null}
 
       <div
-        className={[
-          styles.stage,
-          picked.length === 2 ? styles.stageSplit : "",
-        ]
+        className={[styles.stage, picked.length === 2 ? styles.stageSplit : ""]
           .filter(Boolean)
           .join(" ")}
       >
         {picked.map((id) => {
           const role = ROLES.find((r) => r.id === id)!;
           return (
-            <section key={id} className={styles.rolePane} aria-label={role.label}>
+            <section
+              key={id}
+              className={styles.rolePane}
+              aria-label={role.label}
+            >
               {/* Role display prefs: v4 view-settings sliders (not global gear) */}
               <SettingsPopoverAnchor className={styles.roleSettings}>
                 <ShellIconButton
@@ -833,7 +846,7 @@ function ClientChrome({
       <div className={styles.headerActions}>
         {appJump.length > 0 ? (
           <nav className={styles.appJump} aria-label="Aplikacje">
-                {appJump.map((link) =>
+            {appJump.map((link) =>
               link.disabled ? (
                 <span
                   key={link.label}

@@ -19,7 +19,9 @@ afterEach(() => {
 });
 
 function cssColor(el: Element): string {
-  return (el as HTMLElement).style.backgroundColor.replace(/\s/g, "").toLowerCase();
+  return (el as HTMLElement).style.backgroundColor
+    .replace(/\s/g, "")
+    .toLowerCase();
 }
 
 describe("ShellAppearanceFields", () => {
@@ -53,9 +55,7 @@ describe("ShellAppearanceFields", () => {
       elevated === APPEARANCE_PROFILE_SWATCHES.booth.elevated.toLowerCase() ||
         elevated === "rgb(24,24,27)",
     ).toBe(true);
-    expect(
-      primary === "#fbbf24" || primary === "rgb(251,191,36)",
-    ).toBe(true);
+    expect(primary === "#fbbf24" || primary === "rgb(251,191,36)").toBe(true);
     expect(APPEARANCE_PROFILE_SWATCHES.booth.primary).toBe("#fbbf24");
   });
 

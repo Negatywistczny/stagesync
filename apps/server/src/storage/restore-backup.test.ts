@@ -29,8 +29,15 @@ async function scratchUnderHome(prefix: string): Promise<string> {
     scratchDirs.push(dir);
     return dir;
   } catch (e) {
-    if (e && typeof e === "object" && "code" in e && (e as { code?: string }).code === "EPERM") {
-      const dir = await mkdtemp(join(resolveTestScratchRoot(), prefix.replace(/^\./, "")));
+    if (
+      e &&
+      typeof e === "object" &&
+      "code" in e &&
+      (e as { code?: string }).code === "EPERM"
+    ) {
+      const dir = await mkdtemp(
+        join(resolveTestScratchRoot(), prefix.replace(/^\./, "")),
+      );
       scratchDirs.push(dir);
       return dir;
     }
@@ -40,7 +47,9 @@ async function scratchUnderHome(prefix: string): Promise<string> {
 
 describe("resolveLiveNameFromBak", () => {
   it("strips labeled schema / pre-migrate / pre-restore suffixes", () => {
-    expect(resolveLiveNameFromBak("project.json.schema.bak")).toBe("project.json");
+    expect(resolveLiveNameFromBak("project.json.schema.bak")).toBe(
+      "project.json",
+    );
     expect(resolveLiveNameFromBak("library.json.pre-migrate.bak")).toBe(
       "library.json",
     );
@@ -50,7 +59,9 @@ describe("resolveLiveNameFromBak", () => {
   });
 
   it("is case-insensitive on labeled .bak suffixes", () => {
-    expect(resolveLiveNameFromBak("project.json.SCHEMA.BAK")).toBe("project.json");
+    expect(resolveLiveNameFromBak("project.json.SCHEMA.BAK")).toBe(
+      "project.json",
+    );
     expect(resolveLiveNameFromBak("library.json.Pre-Migrate.Bak")).toBe(
       "library.json",
     );
@@ -65,9 +76,11 @@ describe("resolveLiveNameFromBak", () => {
 
 describe("resolveLivePathFromBak", () => {
   it("strips labeled .schema.bak", () => {
-    expect(resolveLivePathFromBak(resolve("/data/projects/p/project.json.schema.bak"))).toBe(
-      resolve("/data/projects/p/project.json"),
-    );
+    expect(
+      resolveLivePathFromBak(
+        resolve("/data/projects/p/project.json.schema.bak"),
+      ),
+    ).toBe(resolve("/data/projects/p/project.json"));
   });
 
   it("strips plain .bak", () => {
@@ -77,7 +90,9 @@ describe("resolveLivePathFromBak", () => {
   });
 
   it("rejects non-bak", () => {
-    expect(() => resolveLivePathFromBak(resolve("/data/project.json"))).toThrow(/\.bak/);
+    expect(() => resolveLivePathFromBak(resolve("/data/project.json"))).toThrow(
+      /\.bak/,
+    );
   });
 });
 
@@ -93,9 +108,7 @@ describe("stripSharedZipRoot", () => {
 
   it("returns null when mixed or flat", () => {
     expect(stripSharedZipRoot(["library.json"])).toBeNull();
-    expect(
-      stripSharedZipRoot(["a/library.json", "b/library.json"]),
-    ).toBeNull();
+    expect(stripSharedZipRoot(["a/library.json", "b/library.json"])).toBeNull();
   });
 });
 
@@ -129,12 +142,7 @@ describe("restoreFromBackup", () => {
     await mkdir(join(backupsDir, "projects", "p1"), { recursive: true });
     const live = join(dataDir, "projects", "p1", "project.json");
     await writeFile(live, '{"live":true}', "utf8");
-    const bak = join(
-      backupsDir,
-      "projects",
-      "p1",
-      "project.json.schema.bak",
-    );
+    const bak = join(backupsDir, "projects", "p1", "project.json.schema.bak");
     await writeFile(bak, '{"fromBak":true}', "utf8");
     vi.stubEnv("STAGESYNC_BACKUPS_DIR", backupsDir);
 

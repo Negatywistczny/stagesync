@@ -51,7 +51,12 @@ interface TimelineToolbarProps {
   displayTicks: number;
   openMapEdit: (kind: MapLaneId, ticks: number) => void;
   timelineSurface: "timeline" | "mixer";
-  setTimelineSurface: (v: "timeline" | "mixer" | ((v: "timeline" | "mixer") => "timeline" | "mixer")) => void;
+  setTimelineSurface: (
+    v:
+      | "timeline"
+      | "mixer"
+      | ((v: "timeline" | "mixer") => "timeline" | "mixer"),
+  ) => void;
   loopOn: boolean;
   onLoopToggle: () => void;
   meterAtPlayhead: TimeSignature;
@@ -74,7 +79,9 @@ interface TimelineToolbarProps {
   songScreenId: string;
   setlistEnabled: boolean;
   autoAdvance: boolean;
-  patchSetlistAutoAdvance: (v: boolean) => Promise<{ autoAdvance: { enabled: boolean } }>;
+  patchSetlistAutoAdvance: (
+    v: boolean,
+  ) => Promise<{ autoAdvance: { enabled: boolean } }>;
   setAutoAdvance: (v: boolean) => void;
 }
 
@@ -132,12 +139,15 @@ export function TimelineToolbar({
   return (
     <div className={styles.toolbar} data-ss-level="2">
       {operatorNavCompact ? (
-        <div className={styles.toolbarHeaderActions}>{timelineHeaderActions}</div>
+        <div className={styles.toolbarHeaderActions}>
+          {timelineHeaderActions}
+        </div>
       ) : null}
       {!isMobilePreview ? (
         <div className={styles.toolBar} role="toolbar" aria-label="Narzędzia">
-          {tools.filter(({ id }) => toolbarVisibleSet.has(id)).map(
-            ({ id, title, Icon }) => (
+          {tools
+            .filter(({ id }) => toolbarVisibleSet.has(id))
+            .map(({ id, title, Icon }) => (
               <ShellIconButton
                 key={id}
                 label={title}
@@ -146,8 +156,7 @@ export function TimelineToolbar({
               >
                 <Icon />
               </ShellIconButton>
-            ),
-          )}
+            ))}
           <ShellIconButton
             ref={toolsVisBtnRef}
             label="Widoczne narzędzia na pasku"
@@ -207,7 +216,10 @@ export function TimelineToolbar({
             {clockLabel}
           </span>
           {isMobilePreview ? (
-            <span className={styles.metaChip} aria-label={`Tempo ${tempoAtPlayhead} BPM`}>
+            <span
+              className={styles.metaChip}
+              aria-label={`Tempo ${tempoAtPlayhead} BPM`}
+            >
               {tempoAtPlayhead} BPM
             </span>
           ) : (
@@ -296,17 +308,11 @@ export function TimelineToolbar({
             <IconIndicator />
           </ShellIconButton>
           <ShellIconButton
-            label={
-              timelineSurface === "mixer"
-                ? "Wróć do Timeline"
-                : "Mikser"
-            }
+            label={timelineSurface === "mixer" ? "Wróć do Timeline" : "Mikser"}
             aria-keyshortcuts="x"
             pressed={timelineSurface === "mixer"}
             onClick={() =>
-              setTimelineSurface((s) =>
-                s === "mixer" ? "timeline" : "mixer",
-              )
+              setTimelineSurface((s) => (s === "mixer" ? "timeline" : "mixer"))
             }
           >
             <IconMixer />
@@ -316,25 +322,27 @@ export function TimelineToolbar({
 
       <div className={styles.songCluster} role="group" aria-label="Setlista">
         {!isMobilePreview ? (
-        <ShellIconButton
-          label="Metadane utworu"
-          disabled={!draftProject}
-          pressed={songMetaOpen}
-          onClick={() => {
-            if (!draftProject) return;
-            clearClipSelection();
-            clearMapSelection();
-            setInspectorVisible(true);
-            setSongMetaOpen(true);
-          }}
-        >
-          <IconInfo />
-        </ShellIconButton>
+          <ShellIconButton
+            label="Metadane utworu"
+            disabled={!draftProject}
+            pressed={songMetaOpen}
+            onClick={() => {
+              if (!draftProject) return;
+              clearClipSelection();
+              clearMapSelection();
+              setInspectorVisible(true);
+              setSongMetaOpen(true);
+            }}
+          >
+            <IconInfo />
+          </ShellIconButton>
         ) : null}
         <ShellIconButton
           label="Poprzedni utwór setlisty"
           disabled={!prevSetlistId}
-          onClick={() => prevSetlistId && navigate(`/timeline/${prevSetlistId}`)}
+          onClick={() =>
+            prevSetlistId && navigate(`/timeline/${prevSetlistId}`)
+          }
         >
           <IconChevronLeft />
         </ShellIconButton>
@@ -351,7 +359,9 @@ export function TimelineToolbar({
         <ShellIconButton
           label="Następny utwór setlisty"
           disabled={!nextSetlistId}
-          onClick={() => nextSetlistId && navigate(`/timeline/${nextSetlistId}`)}
+          onClick={() =>
+            nextSetlistId && navigate(`/timeline/${nextSetlistId}`)
+          }
         >
           <IconChevronRight />
         </ShellIconButton>

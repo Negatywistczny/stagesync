@@ -171,7 +171,9 @@ describe("timelineGesture remaining", () => {
     expect(cursorForTimelineTool("zoom")).toBe("zoom-in");
     expect(effectiveTimelineTool("pointer", true, true)).toBe("zoom");
     expect(effectiveTimelineTool("pencil", true, false)).toBe("pencil");
-    expect(snapModeFromPointerEvent({ metaKey: true, ctrlKey: false })).toBe("off");
+    expect(snapModeFromPointerEvent({ metaKey: true, ctrlKey: false })).toBe(
+      "off",
+    );
     expect(cursorForHitZone("body", false)).toBe("crosshair");
     expect(cursorForHitZone("fade-in", true)).toBe("col-resize");
     expect(cursorForHitZone("fade-out", true)).toBe("col-resize");
@@ -186,7 +188,9 @@ describe("timelineGesture remaining", () => {
     const store = new Map<string, string>();
     vi.stubGlobal("localStorage", {
       getItem: (k: string) => store.get(k) ?? null,
-      setItem: (k: string, v: string) => { store.set(k, v); },
+      setItem: (k: string, v: string) => {
+        store.set(k, v);
+      },
       removeItem: () => undefined,
       clear: () => undefined,
     });
@@ -194,13 +198,20 @@ describe("timelineGesture remaining", () => {
     expect(getSessionSnapMode()).toBe("beat");
     expect(store.get("stagesync-timeline-snap-mode")).toBe("beat");
     store.set("stagesync-timeline-snap-mode", "subdivision:16");
-    expect(loadSessionSnapModeFromStorage()).toEqual({ kind: "subdivision", parts: 16 });
+    expect(loadSessionSnapModeFromStorage()).toEqual({
+      kind: "subdivision",
+      parts: 16,
+    });
     store.clear();
     expect(loadSessionSnapModeFromStorage()).toBe(getSessionSnapMode());
 
     vi.stubGlobal("localStorage", {
-      getItem: () => { throw new Error("blocked"); },
-      setItem: () => { throw new Error("blocked"); },
+      getItem: () => {
+        throw new Error("blocked");
+      },
+      setItem: () => {
+        throw new Error("blocked");
+      },
     });
     expect(loadSessionSnapModeFromStorage()).toBe(getSessionSnapMode());
     persistSessionSnapMode("bar"); // swallows throw

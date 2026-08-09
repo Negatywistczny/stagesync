@@ -11,11 +11,13 @@ describe("SmartTempoPage", () => {
     render(
       <MemoryRouter>
         <SmartTempoPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Analiza Smart Tempo vs Logic Pro")).toBeDefined();
     expect(screen.getByText("← Wróć do Panelu Admina")).toBeDefined();
-    expect(screen.getByText("Smart Tempo 5.5 · Multi-Band Anchor Engine")).toBeDefined();
+    expect(
+      screen.getByText("Smart Tempo 5.5 · Multi-Band Anchor Engine"),
+    ).toBeDefined();
   });
 });

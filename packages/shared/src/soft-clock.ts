@@ -1,9 +1,9 @@
-import { advanceTicksAlongTempoMap, type TempoMapProject } from "./tempo-map.js";
-import { elapsedToTicks } from "./time.js";
 import {
-  isUsableLoop,
-  type TransportLoop,
-} from "./transport-loop.js";
+  advanceTicksAlongTempoMap,
+  type TempoMapProject,
+} from "./tempo-map.js";
+import { elapsedToTicks } from "./time.js";
+import { isUsableLoop, type TransportLoop } from "./transport-loop.js";
 
 export type TransportAnchor = {
   positionTicks: number;

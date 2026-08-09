@@ -13,8 +13,9 @@ function actionIds(
   items: ReturnType<typeof buildClipContextMenuItems>,
 ): string[] {
   return items
-    .filter((i): i is { id: string; label: string; onSelect: () => void } =>
-      !("type" in i && i.type === "separator"),
+    .filter(
+      (i): i is { id: string; label: string; onSelect: () => void } =>
+        !("type" in i && i.type === "separator"),
     )
     .map((i) => i.id);
 }
@@ -28,9 +29,10 @@ describe("timelineContextMenus", () => {
       onDuplicate,
       onRemove: vi.fn(),
     });
-    const dup = items.find(
-      (i) => "id" in i && i.id === "duplicate",
-    ) as { disabled?: boolean; onSelect: () => void };
+    const dup = items.find((i) => "id" in i && i.id === "duplicate") as {
+      disabled?: boolean;
+      onSelect: () => void;
+    };
     expect(dup.disabled).toBe(true);
     expect(actionIds(items)).toEqual(["rename", "duplicate", "remove"]);
   });
@@ -84,9 +86,9 @@ describe("timelineContextMenus", () => {
       onFocusInspector: vi.fn(),
     });
     expect(actionIds(audio)).toContain("mute");
-    const mute = audio.find(
-      (i) => "id" in i && i.id === "mute",
-    ) as { label: string };
+    const mute = audio.find((i) => "id" in i && i.id === "mute") as {
+      label: string;
+    };
     expect(mute.label).toMatch(/Unmute/);
   });
 
@@ -106,9 +108,9 @@ describe("timelineContextMenus", () => {
       onImportAudio: vi.fn(),
     });
     expect(actionIds(audio)).toEqual(["paste", "import-audio"]);
-    const paste = audio.find(
-      (i) => "id" in i && i.id === "paste",
-    ) as { disabled?: boolean };
+    const paste = audio.find((i) => "id" in i && i.id === "paste") as {
+      disabled?: boolean;
+    };
     expect(paste.disabled).toBe(true);
   });
 
@@ -134,12 +136,12 @@ describe("timelineContextMenus", () => {
   });
 
   it("mapSegmentSelectionAriaLabel includes selection / group size", () => {
-    expect(
-      mapSegmentSelectionAriaLabel("120 BPM", { selected: false }),
-    ).toBe("120 BPM — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij");
-    expect(
-      mapSegmentSelectionAriaLabel("120 BPM", { selected: true }),
-    ).toBe("120 BPM, zaznaczony — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij");
+    expect(mapSegmentSelectionAriaLabel("120 BPM", { selected: false })).toBe(
+      "120 BPM — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij",
+    );
+    expect(mapSegmentSelectionAriaLabel("120 BPM", { selected: true })).toBe(
+      "120 BPM, zaznaczony — ⌘/⇧ zaznaczanie · przeciągnij lub kliknij",
+    );
     expect(
       mapSegmentSelectionAriaLabel("4/4", {
         selected: true,

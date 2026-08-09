@@ -47,9 +47,7 @@ describe("DeviceNameGate", () => {
     expect(title.getAttribute("id")).toBe("device-name-title");
     const sync = title.querySelector("[class*='brandSync']");
     expect(sync?.textContent).toBe("Sync");
-    expect(
-      screen.getByLabelText("Imię lub nazwa urządzenia"),
-    ).toBeTruthy();
+    expect(screen.getByLabelText("Imię lub nazwa urządzenia")).toBeTruthy();
     expect(screen.queryByText("app")).toBeNull();
   });
 

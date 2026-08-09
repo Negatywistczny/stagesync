@@ -9,10 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  createFileLogger,
-  installConsoleFileMirror,
-} from "./file-logger.js";
+import { createFileLogger, installConsoleFileMirror } from "./file-logger.js";
 
 describe("file-logger", () => {
   const dirs: string[] = [];

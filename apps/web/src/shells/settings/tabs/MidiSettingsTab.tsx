@@ -47,9 +47,7 @@ export function MidiSettingsTab({
       {midiReady && midiStatus && midiDraft ? (
         <>
           {!midiStatus.available ? (
-            <p className={styles.muted}>
-              MIDI niedostępne w tym środowisku.
-            </p>
+            <p className={styles.muted}>MIDI niedostępne w tym środowisku.</p>
           ) : null}
           <div className={styles.panicBlock}>
             <Button

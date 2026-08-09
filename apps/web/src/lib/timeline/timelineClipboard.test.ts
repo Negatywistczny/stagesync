@@ -208,7 +208,9 @@ describe("timelineClipboard", () => {
     const board = buildClipboardFromClips(lane, project.audioClips)!;
     const ok = pasteClipboardAt(project, board, 7680);
     expect(ok?.project.audioClips).toHaveLength(2);
-    expect(ok?.project.audioClips.find((c) => c.id === ok!.newIds[0])).toMatchObject({
+    expect(
+      ok?.project.audioClips.find((c) => c.id === ok!.newIds[0]),
+    ).toMatchObject({
       trimInMs: 10,
       trimOutMs: 20,
       muted: true,
@@ -481,30 +483,24 @@ describe("timelineClipboard", () => {
     expect(afterMissing).toBe(p);
 
     const afterForma = deleteClipsOnLane(p, "forma", ["forma-v"]);
-    expect(afterForma.forma.clips.find((c) => c.id === "forma-v")).toBeUndefined();
+    expect(
+      afterForma.forma.clips.find((c) => c.id === "forma-v"),
+    ).toBeUndefined();
 
     expect(deleteClipsOnLane(p, "tekst", ["nope"])).toBe(p);
-    expect(
-      deleteClipsOnLane(p, "tekst", ["t1"]).tekst.clips,
-    ).toHaveLength(0);
+    expect(deleteClipsOnLane(p, "tekst", ["t1"]).tekst.clips).toHaveLength(0);
 
     expect(deleteClipsOnLane(p, "akordy", ["nope"])).toBe(p);
-    expect(
-      deleteClipsOnLane(p, "akordy", ["a1"]).akordy.clips,
-    ).toHaveLength(0);
+    expect(deleteClipsOnLane(p, "akordy", ["a1"]).akordy.clips).toHaveLength(0);
 
     expect(deleteClipsOnLane(p, "cue", ["nope"])).toBe(p);
     expect(deleteClipsOnLane(p, "cue", ["c1"]).cue.clips).toHaveLength(0);
 
     const lane = audioLaneId("track-a");
     expect(deleteClipsOnLane(p, lane, ["nope"])).toBe(p);
-    expect(
-      deleteClipsOnLane(p, lane, ["clip-1"]).audioClips,
-    ).toHaveLength(0);
+    expect(deleteClipsOnLane(p, lane, ["clip-1"]).audioClips).toHaveLength(0);
 
     // unknown lane falls through (defensive)
-    expect(
-      deleteClipsOnLane(p, "mapa" as "cue", ["x"]),
-    ).toBe(p);
+    expect(deleteClipsOnLane(p, "mapa" as "cue", ["x"])).toBe(p);
   });
 });

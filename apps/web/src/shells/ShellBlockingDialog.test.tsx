@@ -105,7 +105,12 @@ describe("ShellBlockingDialog focus trap", () => {
   it("Escape on alert calls onClose", () => {
     const onClose = vi.fn();
     render(
-      <ShellAlertDialog open title="Błąd" message="Coś poszło nie tak." onClose={onClose} />,
+      <ShellAlertDialog
+        open
+        title="Błąd"
+        message="Coś poszło nie tak."
+        onClose={onClose}
+      />,
     );
     expect(document.activeElement).toBe(
       screen.getByRole("button", { name: "Rozumiem" }),

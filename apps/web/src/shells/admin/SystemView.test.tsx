@@ -1,13 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import {
-  act,
-  cleanup,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -138,19 +132,16 @@ beforeEach(() => {
     latest: null,
     updateAvailable: false,
   });
-  vi.stubGlobal(
-    "matchMedia",
-    (query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-      onchange: null,
-    }),
-  );
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+    onchange: null,
+  }));
   vi.stubGlobal(
     "EventSource",
     class {
@@ -169,7 +160,7 @@ describe("SystemView APK download aria", () => {
     render(
       <MemoryRouter>
         <SystemView statusMsg={null} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     await waitFor(() => {
       expect(
@@ -194,7 +185,7 @@ describe("SystemView APK download aria", () => {
     render(
       <MemoryRouter>
         <SystemView statusMsg={null} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     await waitFor(() => {
       expect(
@@ -204,9 +195,7 @@ describe("SystemView APK download aria", () => {
     expect(
       screen.getByRole("region", { name: "O aplikacji i aktualizacje" }),
     ).toBeTruthy();
-    expect(
-      screen.getByRole("region", { name: "Logi serwera" }),
-    ).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Logi serwera" })).toBeTruthy();
     expect(
       screen.getByRole("region", { name: "MIDI i Safety Net" }),
     ).toBeTruthy();
@@ -216,7 +205,7 @@ describe("SystemView APK download aria", () => {
     render(
       <MemoryRouter>
         <SystemView statusMsg={null} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     await waitFor(() => {
       expect(screen.getByText("http://stage.local:8787")).toBeTruthy();
@@ -231,7 +220,7 @@ describe("SystemView APK download aria", () => {
     render(
       <MemoryRouter>
         <SystemView statusMsg={null} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const urlBtn = await screen.findByRole("button", {
       name: "Kopiuj adres: http://192.168.1.10:8787",
@@ -263,7 +252,7 @@ describe("SystemView APK download aria", () => {
     render(
       <MemoryRouter>
         <SystemView statusMsg={null} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     await waitFor(() => {
       expect(
@@ -316,7 +305,7 @@ describe("SystemView APK download aria", () => {
     render(
       <MemoryRouter>
         <SystemView statusMsg={null} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const check = await screen.findByRole("button", {
       name: "Sprawdź aktualizacje",

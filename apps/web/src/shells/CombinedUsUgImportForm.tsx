@@ -3,7 +3,14 @@
  * Steps: UltraStar → UG → Audio → Beat Mapper → Apply.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useDeferredValue,
+} from "react";
 import { Button, Input, Textarea } from "@stagesync/ui";
 import {
   TEXT_ANCHOR_WEAK_ALIGN,
@@ -76,7 +83,10 @@ import {
   fetchUltrastarFromServer,
   searchUltrastarSongs,
 } from "@lib/shell-operator/ultrastarImportApi.js";
-import { fetchUgTabFromServer, searchUgTabs } from "@lib/shell-operator/ugImportApi.js";
+import {
+  fetchUgTabFromServer,
+  searchUgTabs,
+} from "@lib/shell-operator/ugImportApi.js";
 import { Check, Music } from "lucide-react";
 import { AudioDropzone } from "./import/AudioDropzone.js";
 import { BeatMapperPane } from "./import/BeatMapperPane.js";
@@ -214,7 +224,11 @@ type PipelineStage = {
 const DEFAULT_PIPELINE_STAGES: PipelineStage[] = [
   { id: "download", label: "Pobieranie audio z YouTube", status: "pending" },
   { id: "analyze", label: "Analiza Smart Tempo & Viterbi", status: "pending" },
-  { id: "build", label: "Budowanie siatki taktowej i waveformu", status: "pending" },
+  {
+    id: "build",
+    label: "Budowanie siatki taktowej i waveformu",
+    status: "pending",
+  },
 ];
 
 export function CombinedUsUgImportForm({
@@ -271,8 +285,9 @@ export function CombinedUsUgImportForm({
   const [serverProjectSnapshot, setServerProjectSnapshot] =
     useState<Project | null>(null);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
-  const [pipelineStages, setPipelineStages] =
-    useState<PipelineStage[]>(DEFAULT_PIPELINE_STAGES);
+  const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>(
+    DEFAULT_PIPELINE_STAGES,
+  );
 
   useEffect(() => {
     if (!projectId || serverProjectSnapshot) return;
@@ -374,7 +389,7 @@ export function CombinedUsUgImportForm({
         smartTempoAudio?.estimatedBpm != null &&
         smartTempoAudio.estimatedBpm > 0
           ? smartTempoAudio.estimatedBpm
-          : suggestedGridBpm ?? fileMetroBpm ?? 120,
+          : (suggestedGridBpm ?? fileMetroBpm ?? 120),
     }),
     [
       pipeIntroBarCount,
@@ -397,9 +412,7 @@ export function CombinedUsUgImportForm({
 
   const audioRefForBridge = useMemo(
     () =>
-      smartTempoAudio
-        ? { ...smartTempoAudio, audioStartOffsetMs }
-        : undefined,
+      smartTempoAudio ? { ...smartTempoAudio, audioStartOffsetMs } : undefined,
     [smartTempoAudio, audioStartOffsetMs],
   );
 
@@ -408,8 +421,7 @@ export function CombinedUsUgImportForm({
     const passGrid =
       gridBpmForBridge != null &&
       !(
-        fileMetroBpm != null &&
-        Math.abs(gridBpmForBridge - fileMetroBpm) < 0.05
+        fileMetroBpm != null && Math.abs(gridBpmForBridge - fileMetroBpm) < 0.05
       );
     const res = bridgeUsUgFromTexts(usText, ugText, {
       ...importOptions,
@@ -428,7 +440,9 @@ export function CombinedUsUgImportForm({
         : {}),
     });
     if (res.ok) {
-      console.log(`[IMPORT_PHASE_BRIDGED] step=${step} seedBpm=${res.seedBpm} tempoMap[0]=${res.tempoMap[0]?.bpm} offset=${audioStartOffsetMs}ms userEditedNodes=${draftTempoNodesUserEdited}`);
+      console.log(
+        `[IMPORT_PHASE_BRIDGED] step=${step} seedBpm=${res.seedBpm} tempoMap[0]=${res.tempoMap[0]?.bpm} offset=${audioStartOffsetMs}ms userEditedNodes=${draftTempoNodesUserEdited}`,
+      );
     }
     return res;
   }, [
@@ -536,8 +550,7 @@ export function CombinedUsUgImportForm({
     );
   }, []);
 
-  const usYoutubeId =
-    usPreview?.ok === true ? usPreview.youtubeVideoId : null;
+  const usYoutubeId = usPreview?.ok === true ? usPreview.youtubeVideoId : null;
   const draftYoutubeId = extractYoutubeVideoId(youtubeUrlDraft.trim());
   const resolvedYoutubeId = draftYoutubeId ?? usYoutubeId;
   const youtubeAvailable = Boolean(resolvedYoutubeId);
@@ -546,9 +559,7 @@ export function CombinedUsUgImportForm({
   useEffect(() => {
     if (!usYoutubeId) return;
     setYoutubeUrlDraft((prev) =>
-      prev.trim()
-        ? prev
-        : `https://www.youtube.com/watch?v=${usYoutubeId}`,
+      prev.trim() ? prev : `https://www.youtube.com/watch?v=${usYoutubeId}`,
     );
   }, [usYoutubeId]);
 
@@ -694,12 +705,7 @@ export function CombinedUsUgImportForm({
         setBusyNet(false);
       }
     },
-    [
-      projectId,
-      projectAudioAssets,
-      usPreview,
-      beat1ResolveOpts,
-    ],
+    [projectId, projectAudioAssets, usPreview, beat1ResolveOpts],
   );
 
   const ingestLocalFile = useCallback(
@@ -838,7 +844,9 @@ export function CombinedUsUgImportForm({
         }
       } catch (err) {
         setPipelineStages((prev) =>
-          prev.map((s) => (s.status === "running" ? { ...s, status: "error" } : s)),
+          prev.map((s) =>
+            s.status === "running" ? { ...s, status: "error" } : s,
+          ),
         );
         setApplyError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -1080,9 +1088,7 @@ export function CombinedUsUgImportForm({
       const meta = computeWaveformFromAudioBuffer(buffer, 384);
       setIngestProgress(pipelinePct("prepare", 1, true));
       const gapMs =
-        usPreview?.ok === true && usPreview.gapMs > 0
-          ? usPreview.gapMs
-          : null;
+        usPreview?.ok === true && usPreview.gapMs > 0 ? usPreview.gapMs : null;
       const editorialOffsetMs = resolveInitialAudioStartOffsetMs(
         buffer,
         gapMs,
@@ -1154,11 +1160,15 @@ export function CombinedUsUgImportForm({
       ]);
       const sessionNotice = `Audio z YouTube gotowe (${Math.round(meta.durationMs / 1000)} s) · ~${analysis.estimatedBpm} BPM`;
       setStepNotice(
-        analysisWarning ? `${sessionNotice} — ${analysisWarning}` : sessionNotice,
+        analysisWarning
+          ? `${sessionNotice} — ${analysisWarning}`
+          : sessionNotice,
       );
     } catch (err) {
       setPipelineStages((prev) =>
-        prev.map((s) => (s.status === "running" ? { ...s, status: "error" } : s)),
+        prev.map((s) =>
+          s.status === "running" ? { ...s, status: "error" } : s,
+        ),
       );
       setApplyError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -1183,7 +1193,8 @@ export function CombinedUsUgImportForm({
       setGridBpmDraft(null);
       const metaTitle =
         fetched.metadata.title?.trim() || hit.title?.trim() || "";
-      const metaArtist = fetched.metadata.artist?.trim() || hit.artist?.trim() || "";
+      const metaArtist =
+        fetched.metadata.artist?.trim() || hit.artist?.trim() || "";
       if (metaTitle) setUsTitle(metaTitle);
       if (metaArtist) setUsArtist(metaArtist);
       setStepNotice(`Załadowano: ${metaTitle || "utwór"}`);
@@ -1250,7 +1261,9 @@ export function CombinedUsUgImportForm({
         setStepNotice(data.message ?? "Brak wyników USDB.");
         return;
       }
-      setStepNotice(`Znaleziono ${data.results.length} wersji — wybierz kartę.`);
+      setStepNotice(
+        `Znaleziono ${data.results.length} wersji — wybierz kartę.`,
+      );
     } catch (err) {
       setUsHits([]);
       const message = err instanceof Error ? err.message : String(err);
@@ -1278,7 +1291,9 @@ export function CombinedUsUgImportForm({
       }
 
       if (usText.trim()) {
-        setStepNotice(`Znaleziono ${data.results.length} zakładek — obliczanie zgodności…`);
+        setStepNotice(
+          `Znaleziono ${data.results.length} zakładek — obliczanie zgodności…`,
+        );
         setUgHitScoresBusy(true);
         void Promise.allSettled(
           data.results.map(async (hit) => {
@@ -1300,10 +1315,14 @@ export function CombinedUsUgImportForm({
           }),
         ).finally(() => {
           setUgHitScoresBusy(false);
-          setStepNotice(`Znaleziono ${data.results.length} zakładek — wybierz kartę.`);
+          setStepNotice(
+            `Znaleziono ${data.results.length} zakładek — wybierz kartę.`,
+          );
         });
       } else {
-        setStepNotice(`Znaleziono ${data.results.length} zakładek — wybierz kartę.`);
+        setStepNotice(
+          `Znaleziono ${data.results.length} zakładek — wybierz kartę.`,
+        );
       }
     } catch (err) {
       setUgHits([]);
@@ -1335,7 +1354,9 @@ export function CombinedUsUgImportForm({
             peaks: smartTempoAudio.peaks,
           }
         : undefined;
-      console.log(`[APPLY_SUBMIT] seedBpm=${bridgeOk.seedBpm} tempoMap[0]=${bridgeOk.tempoMap[0]?.bpm} audioOffset=${audioPayload?.audioStartOffsetMs}ms estimatedBpm=${audioPayload?.estimatedBpm}`);
+      console.log(
+        `[APPLY_SUBMIT] seedBpm=${bridgeOk.seedBpm} tempoMap[0]=${bridgeOk.tempoMap[0]?.bpm} audioOffset=${audioPayload?.audioStartOffsetMs}ms estimatedBpm=${audioPayload?.estimatedBpm}`,
+      );
       await onApply({
         bridge: bridgeOk,
         smartTempoAudio: audioPayload,
@@ -1546,7 +1567,8 @@ export function CombinedUsUgImportForm({
                         hit.url && hit.url === selectedUgUrl,
                       );
                       const score = hit.url ? ugHitScores[hit.url] : undefined;
-                      const scorePct = score != null ? Math.round(score * 100) : null;
+                      const scorePct =
+                        score != null ? Math.round(score * 100) : null;
                       const alignClass =
                         score != null
                           ? score >= 0.7
@@ -1581,7 +1603,9 @@ export function CombinedUsUgImportForm({
                                   Zgodność: {scorePct}%
                                 </span>
                               ) : ugHitScoresBusy ? (
-                                <span className={styles.resultMeta}>Liczenie…</span>
+                                <span className={styles.resultMeta}>
+                                  Liczenie…
+                                </span>
                               ) : null}
                             </div>
                             {meta ? (
@@ -1689,7 +1713,10 @@ export function CombinedUsUgImportForm({
                                 readOnly
                                 className={styles.projectFileRadio}
                               />
-                              <Music className={styles.projectFileIcon} size={18} />
+                              <Music
+                                className={styles.projectFileIcon}
+                                size={18}
+                              />
                               <div className={styles.projectFileInfo}>
                                 <span className={styles.projectFileName}>
                                   {asset.originalName || asset.storageName}
@@ -1753,9 +1780,14 @@ export function CombinedUsUgImportForm({
 
             {/* Bottom Section: Pipeline Progress Checklist */}
 
-            {ytJobBusy || busyNet || hasAudio || pipelineStages.some((s) => s.status !== "pending") ? (
+            {ytJobBusy ||
+            busyNet ||
+            hasAudio ||
+            pipelineStages.some((s) => s.status !== "pending") ? (
               <div className={styles.pipelineSection}>
-                <h5 className={styles.pipelineTitle}>Postęp przygotowania audio</h5>
+                <h5 className={styles.pipelineTitle}>
+                  Postęp przygotowania audio
+                </h5>
                 <ul className={styles.pipelineList}>
                   {pipelineStages.map((s) => {
                     const isDone = s.status === "done";
@@ -1787,7 +1819,9 @@ export function CombinedUsUgImportForm({
                               .filter(Boolean)
                               .join(" ")}
                           >
-                            {isDone ? <Check size={12} strokeWidth={3} /> : null}
+                            {isDone ? (
+                              <Check size={12} strokeWidth={3} />
+                            ) : null}
                           </span>
                           <span>{s.label}</span>
                         </div>

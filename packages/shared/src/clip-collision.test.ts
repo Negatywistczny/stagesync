@@ -185,9 +185,9 @@ describe("resizeClipNoOverlap", () => {
   });
 
   it("rejects countdown resize", () => {
-    expect(
-      resizeClipNoOverlap(base(), "forma-cd", "end", -1000),
-    ).toEqual(base());
+    expect(resizeClipNoOverlap(base(), "forma-cd", "end", -1000)).toEqual(
+      base(),
+    );
   });
 });
 

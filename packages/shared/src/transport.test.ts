@@ -45,7 +45,9 @@ describe("TransportSeekBodySchema", () => {
       TransportSeekBodySchema.parse({ positionTicks: Number.NaN }),
     ).toThrow();
     expect(() =>
-      TransportSeekBodySchema.parse({ positionTicks: Number.POSITIVE_INFINITY }),
+      TransportSeekBodySchema.parse({
+        positionTicks: Number.POSITIVE_INFINITY,
+      }),
     ).toThrow();
   });
 });
@@ -68,9 +70,7 @@ describe("TransportPlayBodySchema", () => {
   });
 
   it("rejects unknown keys and non-uuid projectId", () => {
-    expect(() =>
-      TransportPlayBodySchema.parse({ extra: true }),
-    ).toThrow();
+    expect(() => TransportPlayBodySchema.parse({ extra: true })).toThrow();
     expect(() =>
       TransportPlayBodySchema.parse({ projectId: "not-a-uuid" }),
     ).toThrow();
@@ -84,9 +84,7 @@ describe("TransportLoadBodySchema", () => {
       projectId: id,
     });
     expect(() => TransportLoadBodySchema.parse({})).toThrow();
-    expect(() =>
-      TransportLoadBodySchema.parse({ projectId: "x" }),
-    ).toThrow();
+    expect(() => TransportLoadBodySchema.parse({ projectId: "x" })).toThrow();
     expect(() =>
       TransportLoadBodySchema.parse({ projectId: id, extra: 1 }),
     ).toThrow();

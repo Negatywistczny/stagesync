@@ -15,7 +15,7 @@ describe("useActiveProject", () => {
       const slots: unknown[] = [];
       let i = 0;
       return {
-        useState: <T,>(init: T) => {
+        useState: <T>(init: T) => {
           const idx = i++;
           if (slots[idx] === undefined) slots[idx] = init;
           return [
@@ -28,7 +28,7 @@ describe("useActiveProject", () => {
             },
           ] as const;
         },
-        useRef: <T,>(v: T) => ({ current: v }),
+        useRef: <T>(v: T) => ({ current: v }),
         useCallback: <T extends (...args: never[]) => unknown>(fn: T) => fn,
         useEffect: (effect: () => void | (() => void)) => {
           effect();
@@ -51,7 +51,7 @@ describe("useActiveProject", () => {
     type Slot = { value: unknown; set: (v: unknown) => void };
     const slots: Slot[] = [];
     vi.doMock("react", () => ({
-      useState: <T,>(init: T) => {
+      useState: <T>(init: T) => {
         const slot: Slot = {
           value: init,
           set: (v) => {
@@ -64,7 +64,7 @@ describe("useActiveProject", () => {
         slots.push(slot);
         return [slot.value as T, slot.set] as const;
       },
-      useRef: <T,>(v: T) => ({ current: v }),
+      useRef: <T>(v: T) => ({ current: v }),
       useCallback: <T extends (...args: never[]) => unknown>(fn: T) => fn,
       useEffect: (effect: () => void | (() => void)) => {
         void Promise.resolve().then(() => effect());
@@ -77,7 +77,9 @@ describe("useActiveProject", () => {
       expect(fetchProject).toHaveBeenCalledWith("p1");
     });
     await vi.waitFor(() => {
-      const projectSlot = slots.find((s) => s.value && typeof s.value === "object");
+      const projectSlot = slots.find(
+        (s) => s.value && typeof s.value === "object",
+      );
       expect(projectSlot?.value).toEqual(project);
     });
   });

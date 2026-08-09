@@ -61,7 +61,8 @@ function openLightbox(button: HTMLButtonElement): void {
   if (!src || !dialog || !imgEl || !captionEl) return;
   lastFocus = button;
   imgEl.src = src;
-  imgEl.alt = button.querySelector("img")?.alt ?? button.dataset.previewLabel ?? "";
+  imgEl.alt =
+    button.querySelector("img")?.alt ?? button.dataset.previewLabel ?? "";
   captionEl.textContent = button.dataset.previewLabel ?? "";
   document.body.classList.add("has-modal");
   if (!dialog.open) dialog.showModal();
@@ -111,7 +112,8 @@ function mountRail(root: ParentNode): void {
 }
 
 export function mountPreviewLightbox(root: ParentNode = document): void {
-  const buttons = root.querySelectorAll<HTMLButtonElement>("[data-preview-src]");
+  const buttons =
+    root.querySelectorAll<HTMLButtonElement>("[data-preview-src]");
   if (!buttons.length) return;
 
   ensureLightbox();

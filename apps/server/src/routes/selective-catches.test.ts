@@ -77,7 +77,11 @@ describe("selective route catch paths", () => {
 
     const paths: Array<{ method: string; url: string; body?: unknown }> = [
       { method: "GET", url: "/api/setlist" },
-      { method: "PUT", url: "/api/setlist", body: { enabled: true, items: [] } },
+      {
+        method: "PUT",
+        url: "/api/setlist",
+        body: { enabled: true, items: [] },
+      },
       {
         method: "PATCH",
         url: "/api/setlist/auto-advance",
@@ -103,7 +107,11 @@ describe("selective route catch paths", () => {
       },
       { method: "POST", url: "/api/transport/pause" },
       { method: "POST", url: "/api/transport/stop" },
-      { method: "POST", url: "/api/transport/seek", body: { positionTicks: 0 } },
+      {
+        method: "POST",
+        url: "/api/transport/seek",
+        body: { positionTicks: 0 },
+      },
       { method: "POST", url: "/api/transport/loop", body: { enabled: false } },
     ];
 

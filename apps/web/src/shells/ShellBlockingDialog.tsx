@@ -90,8 +90,18 @@ export function ShellConfirmDialog({
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby={titleId}>
-      <button type="button" className={styles.backdrop} aria-label="Anuluj" onClick={onCancel} />
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal
+      aria-labelledby={titleId}
+    >
+      <button
+        type="button"
+        className={styles.backdrop}
+        aria-label="Anuluj"
+        onClick={onCancel}
+      />
       <div ref={panelRef} className={styles.panel}>
         <h2 id={titleId} className={styles.title}>
           {title}
@@ -153,8 +163,18 @@ export function ShellPromptDialog({
   }
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby={titleId}>
-      <button type="button" className={styles.backdrop} aria-label="Anuluj" onClick={onCancel} />
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal
+      aria-labelledby={titleId}
+    >
+      <button
+        type="button"
+        className={styles.backdrop}
+        aria-label="Anuluj"
+        onClick={onCancel}
+      />
       <form ref={panelRef} className={styles.panel} onSubmit={onSubmit}>
         <h2 id={titleId} className={styles.title}>
           {title}
@@ -190,7 +210,12 @@ type ShellAlertDialogProps = {
 };
 
 /** Zamiennik window.alert — działa w Tauri WebView. */
-export function ShellAlertDialog({ open, title, message, onClose }: ShellAlertDialogProps) {
+export function ShellAlertDialog({
+  open,
+  title,
+  message,
+  onClose,
+}: ShellAlertDialogProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   useDialogFocusTrap(open, panelRef, ".ss-btn--primary", onClose);
@@ -198,8 +223,18 @@ export function ShellAlertDialog({ open, title, message, onClose }: ShellAlertDi
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal aria-labelledby={titleId}>
-      <button type="button" className={styles.backdrop} aria-label="Zamknij" onClick={onClose} />
+    <div
+      className={styles.overlay}
+      role="dialog"
+      aria-modal
+      aria-labelledby={titleId}
+    >
+      <button
+        type="button"
+        className={styles.backdrop}
+        aria-label="Zamknij"
+        onClick={onClose}
+      />
       <div ref={panelRef} className={styles.panel}>
         <h2 id={titleId} className={styles.title}>
           {title}

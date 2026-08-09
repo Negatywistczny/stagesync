@@ -36,7 +36,7 @@ function backupNative(): DevNativeBackup {
 function applyNativeShell(surface: DevSurface | null): void {
   if (typeof window === "undefined") return;
   const backup = backupNative();
-  
+
   if (surface === null) {
     window.StageSyncNative = backup.native;
     return;
@@ -54,7 +54,7 @@ function applyNativeShell(surface: DevSurface | null): void {
     };
     return;
   }
-  
+
   delete window.StageSyncNative;
 }
 
@@ -63,21 +63,29 @@ function readTauriBackup(): TauriBackup {
   const w = window as unknown as Record<string, unknown>;
   return {
     tauriShell: w["__STAGESYNC_TAURI_SHELL__"] === true ? true : undefined,
-    shell: typeof w["__STAGESYNC_SHELL__"] === "string" ? w["__STAGESYNC_SHELL__"] : undefined,
+    shell:
+      typeof w["__STAGESYNC_SHELL__"] === "string"
+        ? w["__STAGESYNC_SHELL__"]
+        : undefined,
     isTauri: w["isTauri"] === true ? true : undefined,
     tauri: w["__TAURI__"],
   };
 }
 
-function applyTauriMarkers(surface: DevSurface | null, backup: TauriBackup): void {
+function applyTauriMarkers(
+  surface: DevSurface | null,
+  backup: TauriBackup,
+): void {
   if (typeof window === "undefined") return;
   const w = window as unknown as Record<string, unknown>;
-  
+
   if (surface === null) {
-    if (backup.tauriShell === true) Reflect.set(w, "__STAGESYNC_TAURI_SHELL__", true);
+    if (backup.tauriShell === true)
+      Reflect.set(w, "__STAGESYNC_TAURI_SHELL__", true);
     else Reflect.deleteProperty(w, "__STAGESYNC_TAURI_SHELL__");
 
-    if (backup.shell !== undefined) Reflect.set(w, "__STAGESYNC_SHELL__", backup.shell);
+    if (backup.shell !== undefined)
+      Reflect.set(w, "__STAGESYNC_SHELL__", backup.shell);
     else Reflect.deleteProperty(w, "__STAGESYNC_SHELL__");
 
     if (backup.isTauri === true) Reflect.set(w, "isTauri", true);

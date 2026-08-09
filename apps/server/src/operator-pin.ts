@@ -35,8 +35,7 @@ export function assertOperatorPinAllowed(req: Request, res: Response): boolean {
   if (provided === expected) return true;
   res.status(403).json({
     ok: false,
-    error:
-      "Wymagany PIN operatora (nagłówek X-Stagesync-Operator-Pin).",
+    error: "Wymagany PIN operatora (nagłówek X-Stagesync-Operator-Pin).",
   });
   return false;
 }

@@ -114,7 +114,7 @@ export function parseTonicSymbol(tonic: string): number | null {
     if (ch === "#" || ch === "♯") delta += 1;
     else if (ch === "b" || ch === "♭") delta -= 1;
   }
-  return ((base + delta) % 12 + 12) % 12;
+  return (((base + delta) % 12) + 12) % 12;
 }
 
 /** Map tonic+mode onto major/minor spell lists (transpose spelling). */
@@ -140,7 +140,8 @@ export const INSTRUMENT_PITCH_PRESETS = Object.freeze({
   eb: 9,
 } as const);
 
-export type InstrumentPitchMode = keyof typeof INSTRUMENT_PITCH_PRESETS | "manual";
+export type InstrumentPitchMode =
+  keyof typeof INSTRUMENT_PITCH_PRESETS | "manual";
 
 export const INSTRUMENT_PITCH_MANUAL_MIN = -6;
 export const INSTRUMENT_PITCH_MANUAL_MAX = 6;
@@ -154,7 +155,9 @@ export function clampManualInstrumentPitch(n: unknown): number {
   );
 }
 
-export function isInstrumentPitchMode(mode: unknown): mode is InstrumentPitchMode {
+export function isInstrumentPitchMode(
+  mode: unknown,
+): mode is InstrumentPitchMode {
   return (
     mode === "manual" ||
     (typeof mode === "string" &&
@@ -171,14 +174,16 @@ export function resolveInstrumentPitchOffset(
     typeof mode === "string" &&
     Object.prototype.hasOwnProperty.call(INSTRUMENT_PITCH_PRESETS, mode)
   ) {
-    return INSTRUMENT_PITCH_PRESETS[mode as keyof typeof INSTRUMENT_PITCH_PRESETS];
+    return INSTRUMENT_PITCH_PRESETS[
+      mode as keyof typeof INSTRUMENT_PITCH_PRESETS
+    ];
   }
   return 0;
 }
 
 function circleDistanceToSemitones(circleDistance: number): number {
   if (!circleDistance) return 0;
-  let semi = ((circleDistance * 7) % 12 + 12) % 12;
+  let semi = (((circleDistance * 7) % 12) + 12) % 12;
   if (circleDistance > 0 && semi > 6) return semi;
   if (semi > 6) semi -= 12;
   return semi;
@@ -224,7 +229,7 @@ export function resolveTranspose(
       circleDistance: 0,
     };
   }
-  const targetSemi = ((origSemi + x) % 12 + 12) % 12;
+  const targetSemi = (((origSemi + x) % 12) + 12) % 12;
   const targetKey = names[targetSemi] ?? null;
 
   const oldCircle = CIRCLE_INDEX[original];
@@ -242,7 +247,10 @@ export function resolveTranspose(
   };
 }
 
-function spellPitchClass(semitoneIdx: number, targetKey: string | null): string {
+function spellPitchClass(
+  semitoneIdx: number,
+  targetKey: string | null,
+): string {
   const i = ((semitoneIdx % 12) + 12) % 12;
   const anchor = targetKey ? CIRCLE_INDEX[targetKey] : CIRCLE_INDEX.C;
   if (anchor == null) return CHROMATIC[i] ?? "C";

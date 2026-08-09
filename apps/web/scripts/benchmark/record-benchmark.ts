@@ -88,7 +88,12 @@ function parseTimecodeToMs(tc: string): number {
 function parseRtfReference(rtfPath: string) {
   const content = fs.readFileSync(rtfPath, "utf-8");
   const lines = content.split("\n");
-  const points: { bar: number; beat: number; bpm: number; timecodeMs: number }[] = [];
+  const points: {
+    bar: number;
+    beat: number;
+    bpm: number;
+    timecodeMs: number;
+  }[] = [];
 
   for (const line of lines) {
     const cleanLine = line
@@ -127,15 +132,13 @@ function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
   );
   fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
   try {
-    execSync(
-      `afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`,
-      { stdio: "ignore" },
-    );
+    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   } catch {
-    execSync(
-      `ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`,
-      { stdio: "ignore" },
-    );
+    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
+      stdio: "ignore",
+    });
   }
   const buf = fs.readFileSync(tmpWav);
   try {
@@ -207,7 +210,11 @@ async function recordBenchmark() {
     medianErrorMs: number;
     p95ErrorMs: number;
     dawGrade: { exactPct: number; closePct: number; failPct: number };
-    stageGrade: { perfectPct: number; acceptablePct: number; unusablePct: number };
+    stageGrade: {
+      perfectPct: number;
+      acceptablePct: number;
+      unusablePct: number;
+    };
     bars: Array<{
       trackName: string;
       bar: number;
@@ -309,7 +316,8 @@ async function recordBenchmark() {
       const estBarTimeMs =
         alignedBeatMs[targetIdx] ??
         (alignedBeatMs[alignedBeatMs.length - 1] ?? 0) +
-        (targetIdx - Math.max(0, alignedBeatMs.length - 1)) * (60_000 / estBpmAtBar);
+          (targetIdx - Math.max(0, alignedBeatMs.length - 1)) *
+            (60_000 / estBpmAtBar);
 
       // Absolute timeline position error: difference between estimated bar timestamp and reference timestamp
       const errorMsRaw = Math.abs(estBarTimeMs - refPt.timecodeMs);
@@ -357,25 +365,40 @@ async function recordBenchmark() {
     }
 
     if (shouldTraceTrack) {
-      console.log(`\n================================================================================`);
+      console.log(
+        `\n================================================================================`,
+      );
       console.log(`🔍 EXPLAINABLE DSP DECISION TRACE: ${baseName}`);
-      console.log(`================================================================================`);
+      console.log(
+        `================================================================================`,
+      );
 
       console.log(`\n--- [INTRO PHASING TRACE: Beats 0..16] ---`);
       for (let beatIdx = 0; beatIdx <= 16; beatIdx += 4) {
-        const traceLayer = analysis.viterbiTrace?.find((vt) => vt.beatIdx === beatIdx);
+        const traceLayer = analysis.viterbiTrace?.find(
+          (vt) => vt.beatIdx === beatIdx,
+        );
         if (traceLayer) {
-          console.log(`\n[BeatIdx ${beatIdx} (Bar ${beatIdx / 4 + 1})] Selected DSP: ${traceLayer.selectedMs.toFixed(1)} ms`);
+          console.log(
+            `\n[BeatIdx ${beatIdx} (Bar ${beatIdx / 4 + 1})] Selected DSP: ${traceLayer.selectedMs.toFixed(1)} ms`,
+          );
           traceLayer.candidates.slice(0, 5).forEach((cand, cIdx) => {
-            const statusTag = cand.status === "WINNER" ? "🟢 [WINNER]" : "🔴 [REJECTED]";
-            const reasonMsg = cand.rejectReason ? ` -> ${cand.rejectReason}` : "";
-            console.log(`   ${statusTag} #${cIdx + 1} @ ${cand.tMs.toFixed(1)} ms | RawScore: ${cand.rawScore.toFixed(2)}, TotalScore: ${cand.totalScore.toFixed(2)}${reasonMsg}`);
+            const statusTag =
+              cand.status === "WINNER" ? "🟢 [WINNER]" : "🔴 [REJECTED]";
+            const reasonMsg = cand.rejectReason
+              ? ` -> ${cand.rejectReason}`
+              : "";
+            console.log(
+              `   ${statusTag} #${cIdx + 1} @ ${cand.tMs.toFixed(1)} ms | RawScore: ${cand.rawScore.toFixed(2)}, TotalScore: ${cand.totalScore.toFixed(2)}${reasonMsg}`,
+            );
           });
         }
       }
 
       console.log(`\n--- [FAILING BARS TRACE (DAW FAIL > 60 ms)] ---`);
-      const failingBars = barPoints.filter((bp) => bp.tier === "fail").slice(0, 5);
+      const failingBars = barPoints
+        .filter((bp) => bp.tier === "fail")
+        .slice(0, 5);
       if (failingBars.length === 0) {
         console.log(`✅ Brak taktów przekraczających 60 ms w tym utworze!`);
       } else {
@@ -384,33 +407,55 @@ async function recordBenchmark() {
           const refPt = points.find((p) => p.bar === bp.bar);
           const refMs = refPt?.timecodeMs ?? 0;
           const estMs = alignedBeatMs[targetIdx] ?? 0;
-          console.log(`\n[Bar ${bp.bar}] Ref RTF: ${refMs.toFixed(1)} ms | Selected DSP: ${estMs.toFixed(1)} ms | Error: ${bp.errorMs.toFixed(1)} ms (DAW FAIL)`);
-          const traceLayer = analysis.viterbiTrace?.find((vt) => vt.beatIdx === targetIdx);
+          console.log(
+            `\n[Bar ${bp.bar}] Ref RTF: ${refMs.toFixed(1)} ms | Selected DSP: ${estMs.toFixed(1)} ms | Error: ${bp.errorMs.toFixed(1)} ms (DAW FAIL)`,
+          );
+          const traceLayer = analysis.viterbiTrace?.find(
+            (vt) => vt.beatIdx === targetIdx,
+          );
           if (traceLayer && traceLayer.candidates.length > 0) {
-            console.log(`   Oceniani kandydaci Viterbiego (layer beatIdx ${targetIdx}):`);
+            console.log(
+              `   Oceniani kandydaci Viterbiego (layer beatIdx ${targetIdx}):`,
+            );
             traceLayer.candidates.slice(0, 5).forEach((cand, cIdx) => {
-              const statusTag = cand.status === "WINNER" ? "🟢 [WINNER]" : "🔴 [REJECTED]";
-              const reasonMsg = cand.rejectReason ? ` -> ${cand.rejectReason}` : "";
-              console.log(`      ${statusTag} #${cIdx + 1} @ ${cand.tMs.toFixed(1)} ms | RawScore: ${cand.rawScore.toFixed(2)}, TotalScore: ${cand.totalScore.toFixed(2)}${reasonMsg}`);
+              const statusTag =
+                cand.status === "WINNER" ? "🟢 [WINNER]" : "🔴 [REJECTED]";
+              const reasonMsg = cand.rejectReason
+                ? ` -> ${cand.rejectReason}`
+                : "";
+              console.log(
+                `      ${statusTag} #${cIdx + 1} @ ${cand.tMs.toFixed(1)} ms | RawScore: ${cand.rawScore.toFixed(2)}, TotalScore: ${cand.totalScore.toFixed(2)}${reasonMsg}`,
+              );
             });
           } else {
-            console.log(`   (Brak rejestracji kandydatów dla beatIdx ${targetIdx})`);
+            console.log(
+              `   (Brak rejestracji kandydatów dla beatIdx ${targetIdx})`,
+            );
           }
         }
       }
-      console.log(`================================================================================\n`);
+      console.log(
+        `================================================================================\n`,
+      );
     }
 
     const songExactCount = barPoints.filter((b) => b.tier === "exact").length;
     const songCloseCount = barPoints.filter((b) => b.tier === "close").length;
     const songFailCount = barPoints.filter((b) => b.tier === "fail").length;
 
-    const songStagePerfCount = barPoints.filter((b) => b.stageTier === "stage-perfect").length;
-    const songStageAccCount = barPoints.filter((b) => b.stageTier === "stage-acceptable").length;
-    const songStageUnuCount = barPoints.filter((b) => b.stageTier === "stage-unusable").length;
+    const songStagePerfCount = barPoints.filter(
+      (b) => b.stageTier === "stage-perfect",
+    ).length;
+    const songStageAccCount = barPoints.filter(
+      (b) => b.stageTier === "stage-acceptable",
+    ).length;
+    const songStageUnuCount = barPoints.filter(
+      (b) => b.stageTier === "stage-unusable",
+    ).length;
 
     const songSum = songBarErrors.reduce((a, b) => a + b, 0);
-    const songExactPct = Math.round((songExactCount / points.length) * 1000) / 10;
+    const songExactPct =
+      Math.round((songExactCount / points.length) * 1000) / 10;
     const songMeanMs = Math.round((songSum / points.length) * 10) / 10;
 
     const songDawGrade = {
@@ -420,7 +465,8 @@ async function recordBenchmark() {
     };
     const songStageGrade = {
       perfectPct: Math.round((songStagePerfCount / points.length) * 1000) / 10,
-      acceptablePct: Math.round((songStageAccCount / points.length) * 1000) / 10,
+      acceptablePct:
+        Math.round((songStageAccCount / points.length) * 1000) / 10,
       unusablePct: Math.round((songStageUnuCount / points.length) * 1000) / 10,
     };
 
@@ -447,8 +493,13 @@ async function recordBenchmark() {
       closePct: songDawGrade.closePct,
       failPct: songDawGrade.failPct,
       avgErrorMs: songMeanMs,
-      medianErrorMs: Math.round((sortedSongErr[Math.floor(points.length / 2)] ?? 0) * 10) / 10,
-      p95ErrorMs: Math.round((sortedSongErr[Math.floor(points.length * 0.95)] ?? 0) * 10) / 10,
+      medianErrorMs:
+        Math.round((sortedSongErr[Math.floor(points.length / 2)] ?? 0) * 10) /
+        10,
+      p95ErrorMs:
+        Math.round(
+          (sortedSongErr[Math.floor(points.length * 0.95)] ?? 0) * 10,
+        ) / 10,
       dawGrade: songDawGrade,
       stageGrade: songStageGrade,
       bars: barPoints,
@@ -463,13 +514,18 @@ async function recordBenchmark() {
   const closePct = Math.round((totalCloseCount / totalMeasures) * 1000) / 10;
   const failPct = Math.round((totalFailCount / totalMeasures) * 1000) / 10;
 
-  const perfectPct = Math.round((totalStagePerfectCount / totalMeasures) * 1000) / 10;
-  const acceptablePct = Math.round((totalStageAcceptableCount / totalMeasures) * 1000) / 10;
-  const unusablePct = Math.round((totalStageUnusableCount / totalMeasures) * 1000) / 10;
+  const perfectPct =
+    Math.round((totalStagePerfectCount / totalMeasures) * 1000) / 10;
+  const acceptablePct =
+    Math.round((totalStageAcceptableCount / totalMeasures) * 1000) / 10;
+  const unusablePct =
+    Math.round((totalStageUnusableCount / totalMeasures) * 1000) / 10;
 
   const meanMs = Math.round((totalSumMs / totalMeasures) * 10) / 10;
-  const medianMs = Math.round((sortedAll[Math.floor(totalMeasures * 0.5)] ?? 0) * 10) / 10;
-  const p95Ms = Math.round((sortedAll[Math.floor(totalMeasures * 0.95)] ?? 0) * 10) / 10;
+  const medianMs =
+    Math.round((sortedAll[Math.floor(totalMeasures * 0.5)] ?? 0) * 10) / 10;
+  const p95Ms =
+    Math.round((sortedAll[Math.floor(totalMeasures * 0.95)] ?? 0) * 10) / 10;
 
   const runId = `run-${now.toISOString().slice(0, 10)}-${now.toTimeString().slice(0, 8).replace(/:/g, "")}`;
 
@@ -512,15 +568,27 @@ async function recordBenchmark() {
 
   history.push(entry);
   // codeql[js/file-system-race] Protected internal benchmark history snapshot write
-  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), { encoding: "utf8", mode: 0o600 });
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), {
+    encoding: "utf8",
+    mode: 0o600,
+  });
   // codeql[js/file-system-race] Protected internal benchmark dataset write
-  fs.writeFileSync(DATASET_FILE, JSON.stringify(datasetOutput, null, 2), { encoding: "utf8", mode: 0o600 });
+  fs.writeFileSync(DATASET_FILE, JSON.stringify(datasetOutput, null, 2), {
+    encoding: "utf8",
+    mode: 0o600,
+  });
 
   console.log(`\n✅ Snapshot successfully recorded!`);
   console.log(`   ID: ${entry.id}`);
-  console.log(`   🎛️ DAW Grade:   Exact (≤60ms): ${entry.summary.dawGrade.exactPct}% | Close: ${entry.summary.dawGrade.closePct}% | Fail: ${entry.summary.dawGrade.failPct}%`);
-  console.log(`   🎤 Stage Grade: Perfect (≤15ms): ${entry.summary.stageGrade.perfectPct}% | Acceptable (15-35ms): ${entry.summary.stageGrade.acceptablePct}% | Unusable (>35ms): ${entry.summary.stageGrade.unusablePct}%`);
-  console.log(`   📈 Mean Error:  ${entry.summary.meanMs} ms | Median: ${entry.summary.medianMs} ms\n`);
+  console.log(
+    `   🎛️ DAW Grade:   Exact (≤60ms): ${entry.summary.dawGrade.exactPct}% | Close: ${entry.summary.dawGrade.closePct}% | Fail: ${entry.summary.dawGrade.failPct}%`,
+  );
+  console.log(
+    `   🎤 Stage Grade: Perfect (≤15ms): ${entry.summary.stageGrade.perfectPct}% | Acceptable (15-35ms): ${entry.summary.stageGrade.acceptablePct}% | Unusable (>35ms): ${entry.summary.stageGrade.unusablePct}%`,
+  );
+  console.log(
+    `   📈 Mean Error:  ${entry.summary.meanMs} ms | Median: ${entry.summary.medianMs} ms\n`,
+  );
 }
 
 recordBenchmark().catch(console.error);

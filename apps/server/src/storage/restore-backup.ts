@@ -4,7 +4,14 @@
 
 import { copyFile, access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
-import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+} from "node:path";
 import { parseZipArchive } from "../diagnostics-zip.js";
 import { isUnderAllowedRoot } from "../path-browser.js";
 import { shadowBackup } from "./shadow-backup.js";
@@ -36,8 +43,9 @@ export const RESTORE_BULK_MAX = 64;
  */
 export function resolveLiveNameFromBak(bakName: string): string {
   const name = basename(bakName);
-  const labeled =
-    /^(.*)(\.(?:schema|pre-migrate|pre-restore))\.bak$/i.exec(name);
+  const labeled = /^(.*)(\.(?:schema|pre-migrate|pre-restore))\.bak$/i.exec(
+    name,
+  );
   if (labeled?.[1]) return labeled[1];
   if (name.toLowerCase().endsWith(".bak") && name.length > 4) {
     return name.slice(0, -4);
@@ -85,11 +93,7 @@ function assertTargetUnderDataDir(targetPath: string, dataDir: string): void {
     throw new Error("Ścieżka docelowa poza dozwolonym obszarem");
   }
   const relToData = relative(dataDir, targetPath);
-  if (
-    relToData === "" ||
-    relToData.startsWith("..") ||
-    isAbsolute(relToData)
-  ) {
+  if (relToData === "" || relToData.startsWith("..") || isAbsolute(relToData)) {
     throw new Error("Przywracanie dozwolone tylko wewnątrz katalogu danych");
   }
 }
@@ -166,9 +170,7 @@ export async function restoreBulkFromBackups(opts: {
     throw new Error("Brak plików do przywrócenia");
   }
   if (opts.bakPaths.length > RESTORE_BULK_MAX) {
-    throw new Error(
-      `Zbyt wiele plików naraz (max ${RESTORE_BULK_MAX})`,
-    );
+    throw new Error(`Zbyt wiele plików naraz (max ${RESTORE_BULK_MAX})`);
   }
   const restored: RestoreItemResult[] = [];
   for (const bakPath of opts.bakPaths) {
@@ -200,7 +202,10 @@ export function stripSharedZipRoot(names: string[]): string | null {
   return root;
 }
 
-function zipEntryToTargetRel(entryName: string, sharedRoot: string | null): string {
+function zipEntryToTargetRel(
+  entryName: string,
+  sharedRoot: string | null,
+): string {
   let rel = entryName;
   if (sharedRoot && rel.startsWith(`${sharedRoot}/`)) {
     rel = rel.slice(sharedRoot.length + 1);
@@ -255,11 +260,7 @@ export async function restoreFromZipArchive(opts: {
   for (const entry of entries) {
     const rel = zipEntryToTargetRel(entry.name, sharedRoot);
     const targetPath = join(dataDir, rel);
-    const shadowed = await writeLiveWithShadow(
-      targetPath,
-      dataDir,
-      entry.data,
-    );
+    const shadowed = await writeLiveWithShadow(targetPath, dataDir, entry.data);
     restored.push({
       source: `${zipPath}#${entry.name}`,
       targetPath,

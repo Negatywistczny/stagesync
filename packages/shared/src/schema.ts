@@ -1,9 +1,6 @@
 import { z } from "zod";
 import { assertValidTimeSignature, DEFAULT_PPQ } from "./time.js";
-import {
-  TrackColorSchema,
-  TrackIconSchema,
-} from "./track-appearance.js";
+import { TrackColorSchema, TrackIconSchema } from "./track-appearance.js";
 import {
   AudioBusSchema,
   AudioHardwareOutputSchema,
@@ -146,7 +143,11 @@ export const ProjectAssetSchema = z.object({
   originalName: z.string().min(1).max(512),
   kind: ProjectAssetKindSchema,
   mimeType: z.string().min(1).max(128),
-  sizeBytes: z.number().int().nonnegative().max(100 * 1024 * 1024),
+  sizeBytes: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(100 * 1024 * 1024),
   durationMs: z
     .number()
     .positive()
@@ -467,12 +468,7 @@ export const AkordClipSchema = z.object({
 export type AkordClip = z.infer<typeof AkordClipSchema>;
 
 /** Performance roles that can receive a Timeline cue (v4 cue-model). */
-export const CueClipRoleSchema = z.enum([
-  "karaoke",
-  "grid",
-  "score",
-  "drums",
-]);
+export const CueClipRoleSchema = z.enum(["karaoke", "grid", "score", "drums"]);
 
 export type CueClipRole = z.infer<typeof CueClipRoleSchema>;
 
@@ -692,9 +688,7 @@ function refineProjectRouting(
     });
   }
   const busIds = new Set((project.audioBusses ?? []).map((b) => b.id));
-  const hwIds = new Set(
-    (project.audioHardwareOutputs ?? []).map((h) => h.id),
-  );
+  const hwIds = new Set((project.audioHardwareOutputs ?? []).map((h) => h.id));
   project.audioTracks.forEach((track, i) => {
     if (track.output?.kind === "bus" && !busIds.has(track.output.busId)) {
       ctx.addIssue({
@@ -792,9 +786,8 @@ function refineProjectRouting(
   });
 }
 
-export const ProjectSchemaV5 = ProjectSchemaV5Object.superRefine(
-  refineProjectRouting,
-);
+export const ProjectSchemaV5 =
+  ProjectSchemaV5Object.superRefine(refineProjectRouting);
 
 export type ProjectV5 = z.infer<typeof ProjectSchemaV5>;
 
@@ -817,9 +810,8 @@ const ProjectSchemaV6Object = ProjectSchemaV5Object.omit({
   })
   .strict();
 
-export const ProjectSchemaV6 = ProjectSchemaV6Object.superRefine(
-  refineProjectRouting,
-);
+export const ProjectSchemaV6 =
+  ProjectSchemaV6Object.superRefine(refineProjectRouting);
 
 export type ProjectV6 = z.infer<typeof ProjectSchemaV6>;
 export type Project = ProjectV6;
@@ -904,13 +896,10 @@ export const HealthResponseSchema = z
      * (`STAGESYNC_THEME_DEFAULT`). Accepts new profile IDs and legacy
      * dark/light/*-high aliases (normalized). Omitted when unset.
      */
-    themeDefault: z.preprocess(
-      (v) => {
-        if (v == null || v === "") return undefined;
-        return normalizeAppearanceProfile(String(v)) ?? v;
-      },
-      AppearanceProfileIdSchema.optional(),
-    ),
+    themeDefault: z.preprocess((v) => {
+      if (v == null || v === "") return undefined;
+      return normalizeAppearanceProfile(String(v)) ?? v;
+    }, AppearanceProfileIdSchema.optional()),
   })
   .strict();
 
@@ -1052,7 +1041,6 @@ export const PutServerSettingsBodySchema = z
 
 export type PutServerSettingsBody = z.infer<typeof PutServerSettingsBodySchema>;
 
-
 /** MIDI port listed by the host (apps/server). */
 export const MidiPortSchema = z.object({
   id: z.string().min(1),
@@ -1139,10 +1127,7 @@ export const PushPlatformSchema = z.enum([
 export type PushPlatform = z.infer<typeof PushPlatformSchema>;
 
 /** Android / WebPush channel ids (must match native channel strings). */
-export const PushChannelSchema = z.enum([
-  "critical_updates",
-  "announcements",
-]);
+export const PushChannelSchema = z.enum(["critical_updates", "announcements"]);
 
 export type PushChannel = z.infer<typeof PushChannelSchema>;
 

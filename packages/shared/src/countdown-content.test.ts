@@ -115,9 +115,9 @@ describe("countdown-content", () => {
     expect(next.tekst.clips.find((c) => c.id === "vl-hi")?.startTicks).toBe(0);
     expect(next.akordy.clips.map((c) => c.id)).toEqual(["ok"]);
     // Digits are display-only — not persisted after scrub.
-    expect(next.tekst.clips.filter((c) => c.text === "1" || c.text === "2")).toEqual(
-      [],
-    );
+    expect(
+      next.tekst.clips.filter((c) => c.text === "1" || c.text === "2"),
+    ).toEqual([]);
   });
 
   it("syntheticCountdownDisplayFromProject derives from Forma CD length", () => {
@@ -265,9 +265,9 @@ describe("migrateLegacySong countdown digits", () => {
         updatedAt: "2026-07-20T18:00:00.000Z",
       },
     );
-    expect(project.tekst.clips.every((c) => !isCountdownDigitClipId(c.id))).toBe(
-      true,
-    );
+    expect(
+      project.tekst.clips.every((c) => !isCountdownDigitClipId(c.id)),
+    ).toBe(true);
     expect(project.tekst.clips.find((c) => c.id === "vl-hi")?.text).toBe(
       "I work all night",
     );
@@ -275,7 +275,9 @@ describe("migrateLegacySong countdown digits", () => {
     expect(cd?.startTicks).toBe(-7680);
     expect(cd?.lengthTicks).toBe(7680);
     const synth = syntheticCountdownDisplayFromProject(project);
-    expect(synth.tekst.map((c) => [c.text, c.startTicks, c.lengthTicks])).toEqual([
+    expect(
+      synth.tekst.map((c) => [c.text, c.startTicks, c.lengthTicks]),
+    ).toEqual([
       ["2", -7680, 3840],
       ["1", -3840, 3840],
     ]);

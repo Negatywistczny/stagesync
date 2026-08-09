@@ -20,7 +20,6 @@ describe("ShellWordmark", () => {
     expect(screen.getByRole("img", { name: "StageSync Admin" })).toBeTruthy();
   });
 
-
   it("falls back to brand label when clickable without title", () => {
     render(<ShellWordmark onClick={() => {}} suffix="Client" />);
     expect(

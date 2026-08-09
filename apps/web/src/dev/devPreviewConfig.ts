@@ -14,7 +14,10 @@ export type DevPreviewConfig = {
 const SURFACES: DevSurface[] = ["tauri", "console", "performer", "web"];
 const ROUTES: DevPreviewRoute[] = ["/admin", "/client", "/timeline"];
 
-export const PERFORMER_DEV_PREVIEW_CONFIG: Pick<DevPreviewConfig, "path" | "session"> = {
+export const PERFORMER_DEV_PREVIEW_CONFIG: Pick<
+  DevPreviewConfig,
+  "path" | "session"
+> = {
   path: "/client",
   session: false,
 };
@@ -25,7 +28,9 @@ export function devPreviewShowsOperatorSession(surface: DevSurface): boolean {
 }
 
 /** Performer = Client only; operator session is web-only. */
-export function normalizeDevPreviewConfig(config: DevPreviewConfig): DevPreviewConfig {
+export function normalizeDevPreviewConfig(
+  config: DevPreviewConfig,
+): DevPreviewConfig {
   let normalized = config;
   if (config.surface === "performer") {
     normalized = { ...config, ...PERFORMER_DEV_PREVIEW_CONFIG };
@@ -49,9 +54,7 @@ function parseRoute(raw: string | null): DevPreviewRoute {
   return "/admin";
 }
 
-export function parseDevPreviewSearch(
-  search: string,
-): DevPreviewConfig {
+export function parseDevPreviewSearch(search: string): DevPreviewConfig {
   const params = new URLSearchParams(search);
   return normalizeDevPreviewConfig({
     surface: parseSurface(params.get("surface")),

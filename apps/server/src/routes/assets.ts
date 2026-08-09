@@ -27,11 +27,7 @@ function uploadSingleFile(
       return;
     }
     if (err) {
-      sendError(
-        res,
-        400,
-        err instanceof Error ? err.message : "Upload failed",
-      );
+      sendError(res, 400, err instanceof Error ? err.message : "Upload failed");
       return;
     }
     next();

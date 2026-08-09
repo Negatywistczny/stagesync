@@ -68,11 +68,20 @@ const lifecycle = createLifecycle(server, {
   },
 });
 
-const { app, transport, stageHub, setlistHub, liveDesk, presence, logBuffer, stores, midi } =
-  createApp({
-    lifecycle,
-    port: PORT,
-  });
+const {
+  app,
+  transport,
+  stageHub,
+  setlistHub,
+  liveDesk,
+  presence,
+  logBuffer,
+  stores,
+  midi,
+} = createApp({
+  lifecycle,
+  port: PORT,
+});
 disposeTransport = () => transport.dispose();
 disposeMidi = () => midi.dispose();
 

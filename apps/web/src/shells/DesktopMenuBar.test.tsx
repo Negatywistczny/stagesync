@@ -68,8 +68,10 @@ describe("DesktopMenuBar menubar contract", () => {
     render(<DesktopMenuBar />);
     fireEvent.click(screen.getByRole("menuitem", { name: "Plik" }));
     fireEvent.keyDown(window, { key: "ArrowLeft" });
-    expect(screen.getByRole("menuitem", { name: "Pomoc" }).getAttribute("aria-expanded")).toBe(
-      "true",
-    );
+    expect(
+      screen
+        .getByRole("menuitem", { name: "Pomoc" })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
   });
 });

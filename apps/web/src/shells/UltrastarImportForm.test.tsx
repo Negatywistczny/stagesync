@@ -110,9 +110,12 @@ describe("UltrastarImportForm", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText(/Tytuł do wyszukiwania UltraStar/i), {
-      target: { value: "Smoke" },
-    });
+    fireEvent.change(
+      screen.getByLabelText(/Tytuł do wyszukiwania UltraStar/i),
+      {
+        target: { value: "Smoke" },
+      },
+    );
     fireEvent.click(screen.getByRole("button", { name: /Szukaj na USDB/i }));
 
     await vi.waitFor(() => {
@@ -160,9 +163,7 @@ describe("UltrastarImportForm", () => {
       expect(putUltrastarAccount).toHaveBeenCalledWith("alice", "secret");
     });
 
-    expect(
-      await screen.findByText(/Zapisano konto USDB/i),
-    ).toBeTruthy();
+    expect(await screen.findByText(/Zapisano konto USDB/i)).toBeTruthy();
   });
 
   it("opens Konto USDB when search reports missing credentials", async () => {
@@ -180,14 +181,15 @@ describe("UltrastarImportForm", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText(/Tytuł do wyszukiwania UltraStar/i), {
-      target: { value: "Smoke" },
-    });
+    fireEvent.change(
+      screen.getByLabelText(/Tytuł do wyszukiwania UltraStar/i),
+      {
+        target: { value: "Smoke" },
+      },
+    );
     fireEvent.click(screen.getByRole("button", { name: /Szukaj na USDB/i }));
 
-    expect(
-      await screen.findByTestId("ultrastar-usdb-account"),
-    ).toBeTruthy();
+    expect(await screen.findByTestId("ultrastar-usdb-account")).toBeTruthy();
     expect(screen.getByText(/Brak konta USDB/i)).toBeTruthy();
   });
 
@@ -206,14 +208,15 @@ describe("UltrastarImportForm", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText(/Tytuł do wyszukiwania UltraStar/i), {
-      target: { value: "Smoke" },
-    });
+    fireEvent.change(
+      screen.getByLabelText(/Tytuł do wyszukiwania UltraStar/i),
+      {
+        target: { value: "Smoke" },
+      },
+    );
     fireEvent.click(screen.getByRole("button", { name: /Szukaj na USDB/i }));
 
-    expect(
-      await screen.findByTestId("ultrastar-usdb-account"),
-    ).toBeTruthy();
+    expect(await screen.findByTestId("ultrastar-usdb-account")).toBeTruthy();
     expect(screen.getByText(/odnowić sesji USDB/i)).toBeTruthy();
   });
 });

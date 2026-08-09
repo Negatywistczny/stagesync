@@ -31,7 +31,12 @@ export function getLanAddresses(): LanAddress[] {
 export function isLoopbackJoinUrl(url: string): boolean {
   try {
     const host = new URL(url).hostname.toLowerCase();
-    return host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1";
+    return (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "[::1]" ||
+      host === "::1"
+    );
   } catch {
     return /localhost|127\.0\.0\.1|\[?::1\]?/i.test(url);
   }
@@ -48,7 +53,10 @@ export function pickPrimaryJoinUrl(urls: string[]): string | null {
 
 /** Strip trailing `.local` and truncate for advertise / Admin display. */
 export function normalizeAdvertiseHostname(raw: string): string {
-  const host = raw.trim().replace(/\.local\.?$/i, "").slice(0, 64);
+  const host = raw
+    .trim()
+    .replace(/\.local\.?$/i, "")
+    .slice(0, 64);
   return host || "localhost";
 }
 
@@ -67,10 +75,7 @@ function makeHostDisplayNameRegex(): RegExp {
   try {
     // Feature-detect Unicode property escapes: some JS bundles/environments
     // can fail to parse `\p{...}` syntax at import-time.
-    return new RegExp(
-      "^[\\p{L}\\p{N}][\\p{L}\\p{N} ._-]{0,39}$",
-      "u",
-    );
+    return new RegExp("^[\\p{L}\\p{N}][\\p{L}\\p{N} ._-]{0,39}$", "u");
   } catch {
     // Fallback: ASCII-only. Better to accept a narrower set than crash the host.
     return /^[A-Za-z0-9][A-Za-z0-9 ._-]{0,39}$/;
@@ -90,9 +95,7 @@ export function validateHostDisplayName(raw: string): string {
   const text = raw.trim();
   if (!text) return "";
   if (text.length > HOST_DISPLAY_NAME_MAX) {
-    throw new Error(
-      `Nazwa hosta: maksymalnie ${HOST_DISPLAY_NAME_MAX} znaków`,
-    );
+    throw new Error(`Nazwa hosta: maksymalnie ${HOST_DISPLAY_NAME_MAX} znaków`);
   }
   if (!HOST_DISPLAY_NAME_RE.test(text)) {
     throw new Error(
@@ -116,15 +119,14 @@ export function buildMdnsJoinUrl(
  * Insert mDNS `.local` URL after LAN IPs and before localhost (when present).
  * No-op when `mdnsUrl` is null or already listed.
  */
-export function withMdnsJoinUrl(urls: string[], mdnsUrl: string | null): string[] {
+export function withMdnsJoinUrl(
+  urls: string[],
+  mdnsUrl: string | null,
+): string[] {
   if (!mdnsUrl || urls.includes(mdnsUrl)) return urls;
   const localhostIdx = urls.findIndex((u) => isLoopbackJoinUrl(u));
   if (localhostIdx < 0) return [...urls, mdnsUrl];
-  return [
-    ...urls.slice(0, localhostIdx),
-    mdnsUrl,
-    ...urls.slice(localhostIdx),
-  ];
+  return [...urls.slice(0, localhostIdx), mdnsUrl, ...urls.slice(localhostIdx)];
 }
 
 export function buildNetworkInfo(port: number): {

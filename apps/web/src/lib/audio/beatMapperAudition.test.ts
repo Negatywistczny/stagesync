@@ -47,7 +47,11 @@ describe("stopBeatMapperAudition", () => {
     const stop = vi.fn();
     const disconnect = vi.fn();
     const voice: BeatMapperAuditionVoice = {
-      source: { stop, disconnect, onended: vi.fn() } as unknown as AudioBufferSourceNode,
+      source: {
+        stop,
+        disconnect,
+        onended: vi.fn(),
+      } as unknown as AudioBufferSourceNode,
       raf: 42,
       startCtx: 0,
       startMs: 0,

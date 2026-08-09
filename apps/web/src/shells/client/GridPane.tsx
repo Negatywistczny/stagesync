@@ -37,8 +37,7 @@ import {
 
 /** v4 `--slot-bar-units`: 1-bar = square; N-bar = N× square width (fractional OK). */
 function slotBarUnitsStyle(barUnits: number): CSSProperties {
-  const units =
-    Number.isFinite(barUnits) && barUnits > 0 ? barUnits : 1;
+  const units = Number.isFinite(barUnits) && barUnits > 0 ? barUnits : 1;
   return {
     ["--slot-bar-units" as string]: String(units),
   };
@@ -499,9 +498,7 @@ function GridPaneBody({
     }
 
     const morphFromNext =
-      prevNextRaw != null &&
-      prevNextRaw !== "—" &&
-      prevNextRaw === heroRaw;
+      prevNextRaw != null && prevNextRaw !== "—" && prevNextRaw === heroRaw;
 
     cancelHeroRef.current?.();
 
@@ -568,7 +565,8 @@ function GridPaneBody({
   const showCurrent = !display.countdownPreview && display.cycle.length > 0;
   const showNext = display.nextCycle.length > 0 || highlightNextRow;
   const singleRow = !(
-    showCurrent && (display.nextCycle.length > 0 || highlightNextRow)
+    showCurrent &&
+    (display.nextCycle.length > 0 || highlightNextRow)
   );
 
   // During promote, paint incoming cycle (live active cell) on the next row.
@@ -684,9 +682,7 @@ function GridPaneBody({
               (highlightNextRow ? promotingCycle : display.nextCycle).length >
                 0 ? (
                 <CycleRow
-                  cycle={
-                    highlightNextRow ? promotingCycle : display.nextCycle
-                  }
+                  cycle={highlightNextRow ? promotingCycle : display.nextCycle}
                   fmtParts={fmtParts}
                   active={highlightNextRow}
                 />

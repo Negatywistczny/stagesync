@@ -23,10 +23,8 @@ describe("network-info", () => {
   });
 
   it("buildMdnsJoinUrl and withMdnsJoinUrl insert .local before localhost", async () => {
-    const {
-      buildMdnsJoinUrl,
-      withMdnsJoinUrl,
-    } = await import("./network-info.js");
+    const { buildMdnsJoinUrl, withMdnsJoinUrl } =
+      await import("./network-info.js");
     expect(buildMdnsJoinUrl("Studio-Mac.local", 4000)).toBe(
       "http://Studio-Mac.local:4000",
     );
@@ -45,10 +43,7 @@ describe("network-info", () => {
 
   it("pickPrimaryJoinUrl prefers non-loopback", () => {
     expect(
-      pickPrimaryJoinUrl([
-        "http://localhost:4000",
-        "http://192.168.1.10:4000",
-      ]),
+      pickPrimaryJoinUrl(["http://localhost:4000", "http://192.168.1.10:4000"]),
     ).toBe("http://192.168.1.10:4000");
     expect(pickPrimaryJoinUrl(["http://127.0.0.1:4000"])).toBe(
       "http://127.0.0.1:4000",

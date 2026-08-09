@@ -5,7 +5,11 @@
  * - Desktop Tauri uses tauri-plugin-notification (not WebView Notification API).
  */
 
-import type { PushChannel, PushPlatform, PushPublicConfig } from "@stagesync/shared";
+import type {
+  PushChannel,
+  PushPlatform,
+  PushPublicConfig,
+} from "@stagesync/shared";
 import {
   hasExplicitTauriShellMarker,
   requestDesktopNotificationPermission,
@@ -19,7 +23,11 @@ const LS_ENABLED = "stagesync.pushEnabled";
 export type StageSyncNativePushBridge = {
   requestNotificationPermission?: () => void | string | Promise<string>;
   notificationPermission?: () => string;
-  showLocalNotification?: (title: string, body: string, channel?: string) => void;
+  showLocalNotification?: (
+    title: string,
+    body: string,
+    channel?: string,
+  ) => void;
   getFcmToken?: () => string | null;
 };
 
@@ -44,7 +52,8 @@ export function setPushEnabledPreference(enabled: boolean): void {
   else localStorage.removeItem(LS_ENABLED);
 }
 
-export function getWebNotificationPermission(): NotificationPermission | "unsupported" {
+export function getWebNotificationPermission():
+  NotificationPermission | "unsupported" {
   // WebView2 sticky-denies the Web Notification API; desktop uses the Tauri plugin.
   if (isDesktopNotificationPath()) {
     return readPushEnabledPreference() ? "granted" : "default";
@@ -160,10 +169,7 @@ export function detectPushPlatform(): PushPlatform {
   if (kind === "performer") return "android-performer";
   if (kind === "console") return "android-console";
   // Tauri desktop shell — treat as desktop for token fan-out.
-  if (
-    typeof window !== "undefined" &&
-    "__TAURI_INTERNALS__" in window
-  ) {
+  if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
     return "desktop";
   }
   return "web";
@@ -207,7 +213,8 @@ export async function syncPushRegistration(apiBase = ""): Promise<boolean> {
 
   const config = await fetchPushPublicConfig(apiBase);
   if (!config.vapidPublicKey) return false;
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window))
+    return false;
 
   try {
     const reg = await navigator.serviceWorker.ready;

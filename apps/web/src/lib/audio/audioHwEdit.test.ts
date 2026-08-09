@@ -56,9 +56,9 @@ describe("audioHwEdit", () => {
       nextHardwareChannelOffset([], "stereo", { channelOffset: 4 }, 8),
     ).toBe(0);
     // Master on CH 3–4 frees CH 1–2 for a stereo HW patch on a 4-ch device.
-    expect(
-      canAddHardwareOutput([], 4, "stereo", { channelOffset: 2 }),
-    ).toBe(true);
+    expect(canAddHardwareOutput([], 4, "stereo", { channelOffset: 2 })).toBe(
+      true,
+    );
     expect(
       nextHardwareChannelOffset([], "stereo", { channelOffset: 2 }, 4),
     ).toBe(0);

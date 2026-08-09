@@ -32,12 +32,7 @@ const ROLE_FILTER_KEY = "stagesync-karaoke-role-filter";
 function readStoredRoleFilter(): TekstBlockRole | null {
   try {
     const v = localStorage.getItem(ROLE_FILTER_KEY);
-    if (
-      v === "vocal_1" ||
-      v === "vocal_2" ||
-      v === "backing" ||
-      v === "all"
-    ) {
+    if (v === "vocal_1" || v === "vocal_2" || v === "backing" || v === "all") {
       return v;
     }
   } catch {

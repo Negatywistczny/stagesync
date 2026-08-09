@@ -78,7 +78,9 @@ function emptyHoldStore(): HoldLatchStore {
   };
 }
 
-function floorReading(hold: PeakHoldState = emptyPeakHold()): ChannelMeterReading {
+function floorReading(
+  hold: PeakHoldState = emptyPeakHold(),
+): ChannelMeterReading {
   return { liveDb: FLOOR, hold };
 }
 
@@ -104,9 +106,10 @@ export function latchChannelPeaks(
 }
 
 /** Clear wins: empty store, then tick may re-latch only from *new* live peaks. */
-export function clearThenLatch(
-  peaks: { l: number; r?: number },
-): ChannelMeterReading {
+export function clearThenLatch(peaks: {
+  l: number;
+  r?: number;
+}): ChannelMeterReading {
   return latchChannelPeaks(emptyPeakHold(), peaks);
 }
 

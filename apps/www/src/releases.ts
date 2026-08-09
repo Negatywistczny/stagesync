@@ -37,7 +37,10 @@ interface GhRelease {
   assets: GhAsset[];
 }
 
-const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel" | "installTab">> = {
+const META: Record<
+  DownloadKind,
+  Omit<DownloadOffer, "kind" | "url" | "helpLabel" | "installTab">
+> = {
   windows: {
     category: "desktop",
     icon: "windows",
@@ -75,17 +78,24 @@ const META: Record<DownloadKind, Omit<DownloadOffer, "kind" | "url" | "helpLabel
     icon: "performer",
     title: "Performer",
     subtitle: "Muzyk na scenie",
-    detail: "Dedykowany widok nut, akordów i\u00A0tekstu na telefonie lub tablecie",
+    detail:
+      "Dedykowany widok nut, akordów i\u00A0tekstu na telefonie lub tablecie",
     cta: "Pobierz Performer (Android)",
   },
 };
 
 function classifyAsset(name: string): DownloadKind | null {
   const lower = name.toLowerCase();
-  if (lower.endsWith(".dmg") && (lower.includes("aarch64") || lower.includes("arm64"))) {
+  if (
+    lower.endsWith(".dmg") &&
+    (lower.includes("aarch64") || lower.includes("arm64"))
+  ) {
     return "macos-arm";
   }
-  if (lower.endsWith(".dmg") && (lower.includes("x64") || lower.includes("x86_64"))) {
+  if (
+    lower.endsWith(".dmg") &&
+    (lower.includes("x64") || lower.includes("x86_64"))
+  ) {
     return "macos-x64";
   }
   // Ludzki instalator (splash) ma pierwszeństwo przed payloadem updatera *_x64-setup.exe.
@@ -122,7 +132,9 @@ export interface DownloadCatalog {
   };
 }
 
-function helpFor(kind: DownloadKind): Pick<DownloadOffer, "helpLabel" | "installTab"> {
+function helpFor(
+  kind: DownloadKind,
+): Pick<DownloadOffer, "helpLabel" | "installTab"> {
   if (kind === "windows") {
     return { helpLabel: "Jak zainstalować na Windows", installTab: "windows" };
   }
@@ -136,11 +148,15 @@ function toOffer(kind: DownloadKind, url: string): DownloadOffer {
   return { kind, url, ...META[kind], ...helpFor(kind) };
 }
 
-export function catalogFromRelease(release: GhRelease, channels: SiteChannels): DownloadCatalog {
+export function catalogFromRelease(
+  release: GhRelease,
+  channels: SiteChannels,
+): DownloadCatalog {
   const byKind = new Map<DownloadKind, DownloadOffer>();
   // StageSync-Setup.exe przed *_x64-setup.exe (pierwszy trafiony kind wygrywa).
   const assets = [...release.assets].sort((a, b) => {
-    const rank = (n: string) => (n.toLowerCase() === "stagesync-setup.exe" ? 0 : 1);
+    const rank = (n: string) =>
+      n.toLowerCase() === "stagesync-setup.exe" ? 0 : 1;
     return rank(a.name) - rank(b.name);
   });
   for (const asset of assets) {
@@ -168,10 +184,10 @@ export function catalogFromRelease(release: GhRelease, channels: SiteChannels): 
 export function catalogHasAny(catalog: DownloadCatalog): boolean {
   return Boolean(
     catalog.desktop.windows ||
-      catalog.desktop.macosArm ||
-      catalog.desktop.macosIntel ||
-      catalog.android.console ||
-      catalog.android.performer,
+    catalog.desktop.macosArm ||
+    catalog.desktop.macosIntel ||
+    catalog.android.console ||
+    catalog.android.performer,
   );
 }
 

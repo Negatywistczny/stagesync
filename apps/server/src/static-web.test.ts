@@ -9,7 +9,10 @@ import { createApp } from "./app.js";
 async function listenStatic(
   staticDir: string,
 ): Promise<{ server: Server; baseUrl: string }> {
-  const { app } = createApp({ dataDir: await mkdtemp(join(tmpdir(), "ss-web-")), staticDir });
+  const { app } = createApp({
+    dataDir: await mkdtemp(join(tmpdir(), "ss-web-")),
+    staticDir,
+  });
   const server = await new Promise<Server>((resolve) => {
     const s = app.listen(0, "127.0.0.1", () => resolve(s));
   });
@@ -25,7 +28,10 @@ describe("static web SPA", () => {
 
   beforeEach(async () => {
     staticDir = await mkdtemp(join(tmpdir(), "ss-static-"));
-    await writeFile(join(staticDir, "index.html"), "<!doctype html><title>spa</title>");
+    await writeFile(
+      join(staticDir, "index.html"),
+      "<!doctype html><title>spa</title>",
+    );
     prevShell = process.env.STAGESYNC_SHELL;
   });
 

@@ -71,19 +71,13 @@ describe("LibrarySchema", () => {
   });
 
   it("rejects wrong version", () => {
-    expect(() =>
-      LibrarySchema.parse({ version: 2, projects: [] }),
-    ).toThrow();
+    expect(() => LibrarySchema.parse({ version: 2, projects: [] })).toThrow();
   });
 });
 
 describe("ProjectSchemaV3", () => {
   it("parses a v3 project seed", () => {
-    const raw = createProjectV3Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const raw = createProjectV3Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     expect(ProjectSchemaV3.parse(raw)).toEqual(raw);
     expect(raw.formatVersion).toBe(3);
   });
@@ -98,11 +92,7 @@ describe("ProjectSchemaV3", () => {
 
 describe("ProjectSchemaV4", () => {
   it("parses a v4 project seed", () => {
-    const raw = createProjectV4Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const raw = createProjectV4Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     expect(ProjectSchemaV4.parse(raw)).toEqual(raw);
     expect(raw.formatVersion).toBe(4);
   });
@@ -116,11 +106,7 @@ describe("ProjectSchemaV4", () => {
 
 describe("ProjectSchemaV5", () => {
   it("parses a v5 project seed", () => {
-    const raw = createProjectV5Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const raw = createProjectV5Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     expect(ProjectSchemaV5.parse(raw)).toEqual(raw);
     expect(raw.formatVersion).toBe(5);
     expect(raw.keyMap.length).toBeGreaterThan(0);
@@ -257,11 +243,7 @@ describe("ProjectSchemaV5", () => {
 
 describe("ProjectSchemaV6", () => {
   it("parses a v6 project seed", () => {
-    const raw = createProjectV6Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const raw = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     expect(ProjectSchema.parse(raw)).toEqual(raw);
     expect(raw.formatVersion).toBe(6);
     expect(raw.melody).toEqual({ clips: [] });
@@ -271,11 +253,7 @@ describe("ProjectSchemaV6", () => {
   });
 
   it("rejects tekst clip without blocks", () => {
-    const seed = createProjectV6Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const seed = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     expect(() =>
       ProjectSchema.parse({
         ...seed,
@@ -294,11 +272,7 @@ describe("ProjectSchemaV6", () => {
   });
 
   it("rejects empty blocks array", () => {
-    const seed = createProjectV6Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const seed = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     expect(() =>
       ProjectSchema.parse({
         ...seed,
@@ -318,11 +292,7 @@ describe("ProjectSchemaV6", () => {
   });
 
   it("accepts multi-block line and optional role / melody note", () => {
-    const seed = createProjectV6Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const seed = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const raw = {
       ...seed,
       tekst: {
@@ -368,11 +338,7 @@ describe("ProjectSchemaV6", () => {
   });
 
   it("rejects melody pitchMidi out of range", () => {
-    const seed = createProjectV6Seed(
-      "abc",
-      "Song",
-      "2026-07-19T12:00:00.000Z",
-    );
+    const seed = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     expect(() =>
       ProjectSchema.parse({
         ...seed,
@@ -584,9 +550,7 @@ describe("ClientHelloMessageSchema", () => {
   });
 
   it("rejects bad type, roles, latency, and unknown keys", () => {
-    expect(() =>
-      ClientHelloMessageSchema.parse({ type: "hello" }),
-    ).toThrow();
+    expect(() => ClientHelloMessageSchema.parse({ type: "hello" })).toThrow();
     expect(() =>
       ClientHelloMessageSchema.parse({
         type: "client_hello",
@@ -633,9 +597,7 @@ describe("PutProjectBodySchema", () => {
     const full = createProjectV6Seed("abc", "Song", "2026-07-19T12:00:00.000Z");
     const { id, ...body } = full;
     void id;
-    expect(() =>
-      PutProjectBodySchema.parse({ ...body, extra: 1 }),
-    ).toThrow();
+    expect(() => PutProjectBodySchema.parse({ ...body, extra: 1 })).toThrow();
   });
 
   it("rejects stale audio bus output on PUT body", () => {
@@ -728,9 +690,9 @@ describe("StageMessageBodySchema", () => {
 
 describe("ProjectIdSchema", () => {
   it("accepts UUID and rejects non-uuid", () => {
-    expect(
-      ProjectIdSchema.parse("11111111-1111-4111-8111-111111111111"),
-    ).toBe("11111111-1111-4111-8111-111111111111");
+    expect(ProjectIdSchema.parse("11111111-1111-4111-8111-111111111111")).toBe(
+      "11111111-1111-4111-8111-111111111111",
+    );
     expect(() => ProjectIdSchema.parse("not-a-uuid")).toThrow();
     expect(() => ProjectIdSchema.parse("../escape")).toThrow();
   });
@@ -786,9 +748,9 @@ describe("DefaultMeter refine + Setlist coerce", () => {
   });
 
   it("PutSetlistBodySchema requires items or projectIds", () => {
-    expect(() =>
-      PutSetlistBodySchema.parse({ enabled: true }),
-    ).toThrow(/Provide items or projectIds/);
+    expect(() => PutSetlistBodySchema.parse({ enabled: true })).toThrow(
+      /Provide items or projectIds/,
+    );
     expect(
       PutSetlistBodySchema.parse({
         enabled: true,
@@ -863,12 +825,8 @@ describe("DefaultMeter refine + Setlist coerce", () => {
       inputChannel: 3,
       outputChannel: 5,
     });
-    expect(() =>
-      PutMidiHostConfigBodySchema.parse({ inputId: "" }),
-    ).toThrow();
-    expect(() =>
-      PutMidiHostConfigBodySchema.parse({ extra: true }),
-    ).toThrow();
+    expect(() => PutMidiHostConfigBodySchema.parse({ inputId: "" })).toThrow();
+    expect(() => PutMidiHostConfigBodySchema.parse({ extra: true })).toThrow();
     expect(() =>
       PutMidiHostConfigBodySchema.parse({ inputChannel: 16 }),
     ).toThrow();

@@ -14,11 +14,13 @@ export function sendError(
   details?: ApiErrorDetail[],
 ): void {
   const message = String(error).slice(0, 500);
-  res.status(status).json(
-    details && details.length > 0
-      ? { ok: false, error: message, details }
-      : { ok: false, error: message },
-  );
+  res
+    .status(status)
+    .json(
+      details && details.length > 0
+        ? { ok: false, error: message, details }
+        : { ok: false, error: message },
+    );
 }
 
 function zodDetails(err: unknown): {
@@ -49,7 +51,10 @@ function zodDetails(err: unknown): {
     message: issue.message.slice(0, 200),
     ...(issue.code ? { code: issue.code } : {}),
   }));
-  const message = details.map((d) => d.message).join("; ").slice(0, 2000);
+  const message = details
+    .map((d) => d.message)
+    .join("; ")
+    .slice(0, 2000);
   return { message, details };
 }
 

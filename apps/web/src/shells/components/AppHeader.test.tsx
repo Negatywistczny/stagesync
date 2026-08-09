@@ -14,7 +14,10 @@ vi.mock("../../lib/client/useMqMobileCompact.js", () => ({
   useMqMobileCompact: vi.fn(() => false),
 }));
 
-import { isOsMenuDesktopShell, shouldShowOperatorNav } from "../../lib/shell-operator/operatorSurface.js";
+import {
+  isOsMenuDesktopShell,
+  shouldShowOperatorNav,
+} from "../../lib/shell-operator/operatorSurface.js";
 import { useMqMobileCompact } from "../../lib/client/useMqMobileCompact.js";
 import { AppHeader } from "./AppHeader.js";
 
@@ -105,7 +108,7 @@ describe("AppHeader", () => {
     expect(out).not.toMatch(/niezapisane/i);
     expect(out).toContain("Zapisz");
     expect(out).toContain("Odrzuć");
-    expect(out).toContain("aria-pressed=\"true\"");
+    expect(out).toContain('aria-pressed="true"');
     expect(out).toContain("Cofnij");
   });
 
@@ -255,6 +258,8 @@ describe("AppHeader", () => {
       css.match(
         /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.appJump a,\s*\n\s*\.appJumpMuted\s*\{([^}]*)\}/,
       )?.[1] ?? "";
-    expect(mobileAppJumpBlock).toContain("min-height: var(--ss-touch-min-shell-action)");
+    expect(mobileAppJumpBlock).toContain(
+      "min-height: var(--ss-touch-min-shell-action)",
+    );
   });
 });

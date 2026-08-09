@@ -27,9 +27,7 @@ export function MusicXmlModal({
         <p className={styles.muted}>Wybierz utwór.</p>
       ) : (
         <>
-          <p className={styles.muted}>
-            {projectName ?? projectId}
-          </p>
+          <p className={styles.muted}>{projectName ?? projectId}</p>
           {error ? (
             <p className={styles.error} role="alert">
               {error}
@@ -51,7 +49,9 @@ export function MusicXmlModal({
                   onUploaded();
                   onClose();
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : "Przesyłanie nieudane");
+                  setError(
+                    err instanceof Error ? err.message : "Przesyłanie nieudane",
+                  );
                 } finally {
                   setBusy(false);
                 }

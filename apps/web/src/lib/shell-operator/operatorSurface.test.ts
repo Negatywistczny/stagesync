@@ -12,7 +12,10 @@ import {
   shouldShowOperatorNav,
   shouldUseMobileCompactChrome,
 } from "./operatorSurface.js";
-import { markOperatorSession, clearOperatorSession } from "./operatorSession.js";
+import {
+  markOperatorSession,
+  clearOperatorSession,
+} from "./operatorSession.js";
 
 vi.mock("@lib/client/desktopBridge.js", () => ({
   isDesktopShell: vi.fn(() => false),
@@ -37,7 +40,8 @@ afterEach(() => {
   vi.mocked(tauriInvokeAvailable).mockReturnValue(false);
   vi.mocked(isRealTauriWebView).mockReturnValue(false);
   vi.mocked(getStageSyncNative).mockReturnValue(null);
-  delete (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__;
+  delete (globalThis as { __STAGESYNC_UI_TARGET__?: string })
+    .__STAGESYNC_UI_TARGET__;
 });
 
 describe("isOperatorSurfaceRoute", () => {
@@ -62,14 +66,16 @@ describe("shouldShowFullscreenControl", () => {
   });
 
   it("hides on console shell", () => {
-    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
-      "console";
+    (
+      globalThis as { __STAGESYNC_UI_TARGET__?: string }
+    ).__STAGESYNC_UI_TARGET__ = "console";
     expect(shouldShowFullscreenControl()).toBe(false);
   });
 
   it("hides on performer shell", () => {
-    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
-      "performer";
+    (
+      globalThis as { __STAGESYNC_UI_TARGET__?: string }
+    ).__STAGESYNC_UI_TARGET__ = "performer";
     expect(shouldShowFullscreenControl()).toBe(false);
   });
 });
@@ -81,8 +87,9 @@ describe("shouldShowOperatorNav", () => {
   });
 
   it("hides on performer shell", () => {
-    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
-      "performer";
+    (
+      globalThis as { __STAGESYNC_UI_TARGET__?: string }
+    ).__STAGESYNC_UI_TARGET__ = "performer";
     expect(shouldShowOperatorNav("/admin")).toBe(false);
   });
 
@@ -120,8 +127,9 @@ describe("shouldShowOperatorNav", () => {
   });
 
   it("shows operator nav on console /client without web session", () => {
-    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
-      "console";
+    (
+      globalThis as { __STAGESYNC_UI_TARGET__?: string }
+    ).__STAGESYNC_UI_TARGET__ = "console";
     expect(isConsoleShell()).toBe(true);
     markOperatorSession();
     expect(shouldShowOperatorNav("/client")).toBe(true);

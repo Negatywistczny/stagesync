@@ -22,7 +22,10 @@ describe("youtube-audio router", () => {
     };
     const app = express();
     app.use(express.json());
-    app.use("/api/projects/:id/assets", createYoutubeAudioRouter(stores as never));
+    app.use(
+      "/api/projects/:id/assets",
+      createYoutubeAudioRouter(stores as never),
+    );
     const server = app.listen(0);
     const port = (server.address() as { port: number }).port;
     try {
@@ -73,7 +76,10 @@ describe("youtube-audio router", () => {
     };
     const app = express();
     app.use(express.json());
-    app.use("/api/projects/:id/assets", createYoutubeAudioRouter(stores as never));
+    app.use(
+      "/api/projects/:id/assets",
+      createYoutubeAudioRouter(stores as never),
+    );
     const server = app.listen(0);
     const port = (server.address() as { port: number }).port;
     try {
@@ -108,15 +114,11 @@ describe("checkYtDlpAvailable", () => {
 });
 
 describe("resolveYtDlpCommand", () => {
-  it(
-    "accepts repo bundled yt-dlp when runnable",
-    async () => {
-      resetYtDlpAvailabilityCacheForTests();
-      const cmd = await resolveYtDlpCommand(process.cwd(), {
-        allowDownload: false,
-      });
-      expect(cmd === null || typeof cmd === "string").toBe(true);
-    },
-    30_000,
-  );
+  it("accepts repo bundled yt-dlp when runnable", async () => {
+    resetYtDlpAvailabilityCacheForTests();
+    const cmd = await resolveYtDlpCommand(process.cwd(), {
+      allowDownload: false,
+    });
+    expect(cmd === null || typeof cmd === "string").toBe(true);
+  }, 30_000);
 });

@@ -38,10 +38,7 @@ describe("timelineToolbarTools", () => {
   it("toggle cannot remove pointer; adds/removes others", () => {
     const base = [...DEFAULT_TOOLBAR_VISIBLE];
     expect(toggleToolbarVisibleTool(base, "pointer")).toEqual(base);
-    expect(toggleToolbarVisibleTool(base, "join")).toEqual([
-      ...base,
-      "join",
-    ]);
+    expect(toggleToolbarVisibleTool(base, "join")).toEqual([...base, "join"]);
     expect(toggleToolbarVisibleTool([...base, "join"], "join")).toEqual(base);
   });
 
@@ -90,15 +87,9 @@ describe("timelineToolbarTools", () => {
   });
 
   it("default storage arg uses localStorage when defined", () => {
-    const getItem = vi.fn(() =>
-      JSON.stringify(["marquee", "pointer", "fade"]),
-    );
+    const getItem = vi.fn(() => JSON.stringify(["marquee", "pointer", "fade"]));
     vi.stubGlobal("localStorage", { getItem, setItem: vi.fn() });
-    expect(loadToolbarVisibleTools()).toEqual([
-      "pointer",
-      "fade",
-      "marquee",
-    ]);
+    expect(loadToolbarVisibleTools()).toEqual(["pointer", "fade", "marquee"]);
     expect(getItem).toHaveBeenCalledWith(TOOLBAR_TOOLS_STORAGE_KEY);
     vi.unstubAllGlobals();
   });

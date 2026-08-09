@@ -26,9 +26,7 @@ describe("DeviceNameFields", () => {
   it("labels the device name field", () => {
     render(<DeviceNameFields />);
     expect(screen.getByLabelText("Nazwa urządzenia")).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Zapisz nazwę" }),
-    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Zapisz nazwę" })).toBeTruthy();
   });
 
   it("persists uncontrolled submit and shows status", () => {
@@ -36,7 +34,9 @@ describe("DeviceNameFields", () => {
     fireEvent.change(screen.getByLabelText("Nazwa urządzenia"), {
       target: { value: "  Bartek  " },
     });
-    fireEvent.submit(screen.getByLabelText("Nazwa urządzenia").closest("form")!);
+    fireEvent.submit(
+      screen.getByLabelText("Nazwa urządzenia").closest("form")!,
+    );
     expect(setStored).toHaveBeenCalledWith("  Bartek  ");
     expect(screen.getByRole("status").textContent).toMatch(/Zapisano/);
   });

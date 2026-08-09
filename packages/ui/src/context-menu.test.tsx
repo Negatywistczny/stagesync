@@ -45,9 +45,7 @@ describe("ContextMenu", () => {
     const onSelect = vi.fn();
     render(
       <ContextMenuProvider>
-        <Harness
-          items={[{ id: "copy", label: "Kopiuj", onSelect }]}
-        />
+        <Harness items={[{ id: "copy", label: "Kopiuj", onSelect }]} />
       </ContextMenuProvider>,
     );
 
@@ -62,9 +60,7 @@ describe("ContextMenu", () => {
     render(
       <ContextMenuProvider>
         <Harness
-          items={[
-            { id: "paste", label: "Wklej", disabled: true, onSelect },
-          ]}
+          items={[{ id: "paste", label: "Wklej", disabled: true, onSelect }]}
         />
       </ContextMenuProvider>,
     );
@@ -78,9 +74,7 @@ describe("ContextMenu", () => {
   it("closes on Escape", () => {
     render(
       <ContextMenuProvider>
-        <Harness
-          items={[{ id: "a", label: "A", onSelect: () => undefined }]}
-        />
+        <Harness items={[{ id: "a", label: "A", onSelect: () => undefined }]} />
       </ContextMenuProvider>,
     );
 
@@ -112,9 +106,7 @@ describe("ContextMenu", () => {
 
     render(
       <ContextMenuProvider>
-        <Harness
-          items={[{ id: "a", label: "A", onSelect: () => undefined }]}
-        />
+        <Harness items={[{ id: "a", label: "A", onSelect: () => undefined }]} />
         <LabeledHarness />
       </ContextMenuProvider>,
     );
@@ -132,9 +124,7 @@ describe("ContextMenu", () => {
   });
 
   it("throws outside provider", () => {
-    expect(() => render(<Harness items={[]} />)).toThrow(
-      /ContextMenuProvider/,
-    );
+    expect(() => render(<Harness items={[]} />)).toThrow(/ContextMenuProvider/);
   });
 
   it("stays closed for empty items and closes on outside mousedown", () => {

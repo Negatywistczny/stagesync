@@ -79,8 +79,7 @@ export function mergeAkordyWithCountdownDigits(
       !(c.startTicks < 0 && /^\d+$/.test(c.symbol)),
   );
   return [...synth, ...real].sort(
-    (a, b) =>
-      a.startTicks - b.startTicks || a.id.localeCompare(b.id),
+    (a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id),
   );
 }
 
@@ -105,7 +104,7 @@ export function compressBarChordsToProgression(
 ): { chord: string; bars: number }[] {
   if (!barChords.length) return [];
   const result: { chord: string; bars: number }[] = [];
-  for (let i = 0; i < barChords.length; ) {
+  for (let i = 0; i < barChords.length;) {
     const chord = barChords[i]!;
     let bars = 1;
     while (i + bars < barChords.length && barChords[i + bars] === chord) {
@@ -188,10 +187,7 @@ export function chordStepsForTickRange(
       const clipEnd = c.startTicks + c.lengthTicks;
       return c.startTicks < end && clipEnd > start;
     })
-    .sort(
-      (a, b) =>
-        a.startTicks - b.startTicks || a.id.localeCompare(b.id),
-    );
+    .sort((a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id));
 
   const steps: ChordStepSpan[] = [];
   for (const clip of overlapping) {
@@ -218,10 +214,7 @@ export function mergeAdjacentChordSteps(
   for (let i = 1; i < steps.length; i++) {
     const cur = steps[i]!;
     const last = out[out.length - 1]!;
-    if (
-      cur.symbol === last.symbol &&
-      cur.startTicks <= last.endTicks + 1
-    ) {
+    if (cur.symbol === last.symbol && cur.startTicks <= last.endTicks + 1) {
       last.endTicks = Math.max(last.endTicks, cur.endTicks);
       last.barUnits = barUnitsForSpan(project, last.startTicks, last.endTicks);
       continue;
@@ -380,12 +373,7 @@ export function resolveNextPhraseBand(
     rangeStart: number,
     rangeEnd: number,
   ) => {
-    const spans = chordStepsForTickRange(
-      project,
-      clips,
-      rangeStart,
-      rangeEnd,
-    );
+    const spans = chordStepsForTickRange(project, clips, rangeStart, rangeEnd);
     const { barChords } = barChordsForRange(
       project,
       clips,
@@ -553,8 +541,7 @@ export function cycleGridTemplateColumns(
   if (steps.length === 0) return "";
   return steps
     .map((s) => {
-      const units =
-        Number.isFinite(s.bars) && s.bars > 0 ? s.bars : 1;
+      const units = Number.isFinite(s.bars) && s.bars > 0 ? s.bars : 1;
       return `${units}fr`;
     })
     .join(" ");
@@ -563,8 +550,7 @@ export function cycleGridTemplateColumns(
 /** Sum of bar units in the cycle — drives proportional tile columns. */
 export function cycleTotalBars(cycle: readonly GridCycleStep[]): number {
   return cycle.reduce((sum, step) => {
-    const bars =
-      Number.isFinite(step.bars) && step.bars > 0 ? step.bars : 0;
+    const bars = Number.isFinite(step.bars) && step.bars > 0 ? step.bars : 0;
     return sum + bars;
   }, 0);
 }
@@ -601,12 +587,11 @@ export function buildGridLiveContext(
   const current =
     resolveMergedAkordAt(clips, displayTicks) ??
     resolveAkordClipAt(project, displayTicks);
-  const upcoming = clips
-    .filter((c) => c.startTicks > displayTicks)
-    .slice(0, 2);
+  const upcoming = clips.filter((c) => c.startTicks > displayTicks).slice(0, 2);
 
   const section = resolveFormaClipAt(project, displayTicks);
-  const isCountdown = section?.kind === "countdown" ||
+  const isCountdown =
+    section?.kind === "countdown" ||
     (current != null && isNumericCountdownChord(current.symbol));
   const countdownPreview = section?.kind === "countdown";
 
@@ -662,10 +647,10 @@ export function buildGridLiveContext(
   const hero =
     current?.symbol?.trim() && current.symbol !== "—"
       ? current.symbol
-      : cycle.find((s) => s.active)?.symbol ?? "—";
+      : (cycle.find((s) => s.active)?.symbol ?? "—");
 
   const heroNext = countdownPreview
-    ? upcoming[0]?.symbol ?? nextCycle[0]?.symbol ?? null
+    ? (upcoming[0]?.symbol ?? nextCycle[0]?.symbol ?? null)
     : resolveHeroNextSymbol(cycle, nextCycle);
 
   const carouselKey = countdownPreview

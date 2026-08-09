@@ -166,11 +166,7 @@ export function installDevPreviewScreenshotListener(): () => void {
           document.getElementById("root") ??
           document.body ??
           document.documentElement;
-        const blob = await captureElementToPng(
-          root,
-          data.width,
-          data.height,
-        );
+        const blob = await captureElementToPng(root, data.width, data.height);
         const dataUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(String(reader.result));

@@ -12,7 +12,10 @@ import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
 } from "@lib/shell-operator/operatorSurface.js";
-import { clearOperatorSession, hasOperatorSession } from "@lib/shell-operator/operatorSession.js";
+import {
+  clearOperatorSession,
+  hasOperatorSession,
+} from "@lib/shell-operator/operatorSession.js";
 import { isDesktopShell } from "@lib/client/desktopBridge.js";
 
 function setPreviewSearch(search: string): void {
@@ -32,7 +35,9 @@ afterEach(() => {
 
 describe("applyDevSurfaceMocks", () => {
   it("maps performer surface to client-only preview without operator nav", () => {
-    setPreviewSearch("?surface=performer&path=%2Fadmin&session=1&projectId=dev-preview");
+    setPreviewSearch(
+      "?surface=performer&path=%2Fadmin&session=1&projectId=dev-preview",
+    );
     const config = getDevPreviewConfig();
     expect(config).toEqual({
       surface: "performer",
@@ -51,7 +56,9 @@ describe("applyDevSurfaceMocks", () => {
   });
 
   it("maps console surface to operator nav on /client without web session", () => {
-    setPreviewSearch("?surface=console&path=%2Fclient&session=1&projectId=dev-preview");
+    setPreviewSearch(
+      "?surface=console&path=%2Fclient&session=1&projectId=dev-preview",
+    );
     const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
 
     expect(getActiveDevSurface()).toBe("console");
@@ -63,7 +70,9 @@ describe("applyDevSurfaceMocks", () => {
   });
 
   it("maps console surface to operator nav on admin routes", () => {
-    setPreviewSearch("?surface=console&path=%2Fadmin&session=0&projectId=dev-preview");
+    setPreviewSearch(
+      "?surface=console&path=%2Fadmin&session=0&projectId=dev-preview",
+    );
     const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
 
     expect(getActiveDevSurface()).toBe("console");
@@ -74,7 +83,9 @@ describe("applyDevSurfaceMocks", () => {
   });
 
   it("maps tauri surface to desktop shell with operator nav (compact gated by viewport)", () => {
-    setPreviewSearch("?surface=tauri&path=%2Ftimeline&session=0&projectId=dev-preview");
+    setPreviewSearch(
+      "?surface=tauri&path=%2Ftimeline&session=0&projectId=dev-preview",
+    );
     const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
 
     expect(getActiveDevSurface()).toBe("tauri");
@@ -86,7 +97,9 @@ describe("applyDevSurfaceMocks", () => {
   });
 
   it("maps web surface to operator nav on admin", () => {
-    setPreviewSearch("?surface=web&path=%2Fadmin&session=0&projectId=dev-preview");
+    setPreviewSearch(
+      "?surface=web&path=%2Fadmin&session=0&projectId=dev-preview",
+    );
     const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
 
     expect(getActiveDevSurface()).toBe("web");
@@ -100,7 +113,9 @@ describe("applyDevSurfaceMocks", () => {
   });
 
   it("maps web client with session to operator nav", () => {
-    setPreviewSearch("?surface=web&path=%2Fclient&session=1&projectId=dev-preview");
+    setPreviewSearch(
+      "?surface=web&path=%2Fclient&session=1&projectId=dev-preview",
+    );
     const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
 
     expect(hasOperatorSession()).toBe(true);
@@ -110,7 +125,9 @@ describe("applyDevSurfaceMocks", () => {
   });
 
   it("hides web client operator nav without session", () => {
-    setPreviewSearch("?surface=web&path=%2Fclient&session=0&projectId=dev-preview");
+    setPreviewSearch(
+      "?surface=web&path=%2Fclient&session=0&projectId=dev-preview",
+    );
     const cleanup = applyDevSurfaceMocks(getDevPreviewConfig()!);
 
     expect(hasOperatorSession()).toBe(false);

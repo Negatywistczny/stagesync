@@ -24,9 +24,9 @@ describe("OutputSelector dest helpers", () => {
     expect(serializeOutputDest(undefined)).toBe("master");
     expect(serializeOutputDest({ kind: "master" })).toBe("master");
     expect(serializeOutputDest({ kind: "bus", busId: "b1" })).toBe("bus:b1");
-    expect(
-      serializeOutputDest({ kind: "hw_out", hwOutputId: "h1" }),
-    ).toBe("hw:h1");
+    expect(serializeOutputDest({ kind: "hw_out", hwOutputId: "h1" })).toBe(
+      "hw:h1",
+    );
   });
 });
 

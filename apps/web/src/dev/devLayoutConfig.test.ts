@@ -8,7 +8,9 @@ import {
 
 describe("parseDevPreviewConfig", () => {
   it("parses valid params", () => {
-    expect(parseDevPreviewConfig("?surface=console&route=client&session=1")).toEqual({
+    expect(
+      parseDevPreviewConfig("?surface=console&route=client&session=1"),
+    ).toEqual({
       surface: "console",
       route: "client",
       session: true,

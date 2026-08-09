@@ -16,7 +16,10 @@ function usesOperatorSessionStorage(): boolean {
   if (devSurface !== null && devSurface !== "web") return false;
 
   if (typeof __STAGESYNC_UI_TARGET__ !== "undefined") {
-    if (__STAGESYNC_UI_TARGET__ === "performer" || __STAGESYNC_UI_TARGET__ === "console") {
+    if (
+      __STAGESYNC_UI_TARGET__ === "performer" ||
+      __STAGESYNC_UI_TARGET__ === "console"
+    ) {
       return false;
     }
   }

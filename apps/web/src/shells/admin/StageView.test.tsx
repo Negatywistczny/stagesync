@@ -63,9 +63,7 @@ describe("StageView regions and delete aria", () => {
     fetchStageMessages.mockResolvedValue([]);
     render(<StageView />);
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /Komunikaty/ }),
-      ).toBeTruthy();
+      expect(screen.getByRole("button", { name: /Komunikaty/ })).toBeTruthy();
     });
 
     const messagesToggle = screen.getByRole("button", { name: /Komunikaty/ });
@@ -79,9 +77,9 @@ describe("StageView regions and delete aria", () => {
     });
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /Klienci/ }).getAttribute(
-          "aria-expanded",
-        ),
+        screen
+          .getByRole("button", { name: /Klienci/ })
+          .getAttribute("aria-expanded"),
       ).toBe("true");
     });
     expect(messagesToggle.getAttribute("aria-expanded")).toBe("false");

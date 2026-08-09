@@ -5,7 +5,8 @@
 /** localStorage key — also seeded by Playwright e2e (`playwright.config.ts`). */
 export const DEVICE_DISPLAY_NAME_STORAGE_KEY = "stagesync-device-display-name";
 export const DEVICE_DISPLAY_NAME_MAX = 40;
-export const DEVICE_DISPLAY_NAME_CHANGED_EVENT = "stagesync-device-display-name";
+export const DEVICE_DISPLAY_NAME_CHANGED_EVENT =
+  "stagesync-device-display-name";
 
 export function normalizeDeviceDisplayName(raw: string): string {
   return raw.replace(/\s+/g, " ").trim().slice(0, DEVICE_DISPLAY_NAME_MAX);

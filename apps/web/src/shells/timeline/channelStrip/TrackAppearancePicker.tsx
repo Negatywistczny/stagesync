@@ -86,14 +86,15 @@ export function TrackAppearancePicker({
       // Flip if the preferred side does not fit.
       if (placement === "above" && top < VIEWPORT_PAD_PX) {
         top = rect.bottom + POPOVER_GAP_PX;
-      } else if (
-        placement === "below" &&
-        top + ph > vh - VIEWPORT_PAD_PX
-      ) {
+      } else if (placement === "below" && top + ph > vh - VIEWPORT_PAD_PX) {
         top = rect.top - ph - POPOVER_GAP_PX;
       }
 
-      top = clamp(top, VIEWPORT_PAD_PX, Math.max(VIEWPORT_PAD_PX, vh - ph - VIEWPORT_PAD_PX));
+      top = clamp(
+        top,
+        VIEWPORT_PAD_PX,
+        Math.max(VIEWPORT_PAD_PX, vh - ph - VIEWPORT_PAD_PX),
+      );
       const left = clamp(
         rect.left + rect.width / 2 - pw / 2,
         VIEWPORT_PAD_PX,

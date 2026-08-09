@@ -36,8 +36,7 @@ export function ConnectionIndicator({
   const compactLatency =
     connected && variant === "compact" ? formatLatency(latencyMs) : null;
   const titleText =
-    title ??
-    (latencyText ? `${label} · ${latencyText}` : label);
+    title ?? (latencyText ? `${label} · ${latencyText}` : label);
 
   if (variant === "compact") {
     return (
@@ -48,9 +47,7 @@ export function ConnectionIndicator({
         title={titleText}
         role="status"
         aria-live="polite"
-        aria-label={
-          compactLatency ? `${label} · ${compactLatency}` : label
-        }
+        aria-label={compactLatency ? `${label} · ${compactLatency}` : label}
       >
         <span
           className={[styles.dot, connected ? styles.on : ""]
@@ -68,7 +65,9 @@ export function ConnectionIndicator({
   if (variant === "dot") {
     return (
       <span
-        className={[styles.dot, connected ? styles.on : ""].filter(Boolean).join(" ")}
+        className={[styles.dot, connected ? styles.on : ""]
+          .filter(Boolean)
+          .join(" ")}
         title={titleText}
         aria-label={label}
       />
@@ -78,7 +77,9 @@ export function ConnectionIndicator({
   if (variant === "label") {
     return (
       <span
-        className={[styles.label, connected ? styles.on : ""].filter(Boolean).join(" ")}
+        className={[styles.label, connected ? styles.on : ""]
+          .filter(Boolean)
+          .join(" ")}
         title={titleText}
         role="status"
         aria-live="polite"
@@ -93,13 +94,17 @@ export function ConnectionIndicator({
 
   return (
     <span
-      className={[styles.status, connected ? styles.on : ""].filter(Boolean).join(" ")}
+      className={[styles.status, connected ? styles.on : ""]
+        .filter(Boolean)
+        .join(" ")}
       title={titleText}
       role="status"
       aria-live="polite"
     >
       <span
-        className={[styles.dot, connected ? styles.on : ""].filter(Boolean).join(" ")}
+        className={[styles.dot, connected ? styles.on : ""]
+          .filter(Boolean)
+          .join(" ")}
         aria-hidden
       />
       <span className={styles.statusText}>

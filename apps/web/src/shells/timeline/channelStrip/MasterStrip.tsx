@@ -3,7 +3,10 @@
  * Optional Out selector remaps Master onto a physical stereo pair.
  */
 
-import type { MasterStripCallbacks, MasterStripState } from "./channelStripTypes.js";
+import type {
+  MasterStripCallbacks,
+  MasterStripState,
+} from "./channelStripTypes.js";
 import { DualDbReadout } from "./DualDbReadout.js";
 import { meterPaintKey } from "./meterPaint.js";
 import { OutputSelector } from "./OutputSelector.js";

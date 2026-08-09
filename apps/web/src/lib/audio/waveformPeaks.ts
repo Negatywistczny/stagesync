@@ -74,8 +74,7 @@ export function detectFirstTransientMs(
     data.length,
     Math.max(1, Math.ceil(maxScanSec * buffer.sampleRate)),
   );
-  const stride =
-    maxSamples > 500_000 ? Math.ceil(maxSamples / 500_000) : 1;
+  const stride = maxSamples > 500_000 ? Math.ceil(maxSamples / 500_000) : 1;
   for (let i = 0; i < maxSamples; i += stride) {
     if (Math.abs(data[i] ?? 0) > thr) {
       return Math.max(0, Math.round((i / buffer.sampleRate) * 1000));

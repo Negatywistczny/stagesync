@@ -65,8 +65,7 @@ export function contentFloorTicks(clips: FormaClip[]): number {
 export function computeFormaViewSpan(clips: FormaClip[]): ViewSpan {
   const barTicks = ticksPerBar(DEFAULT_VIEW_METER, DEFAULT_PPQ);
   const finite = clips.filter(
-    (c) =>
-      Number.isFinite(c.startTicks) && Number.isFinite(c.lengthTicks),
+    (c) => Number.isFinite(c.startTicks) && Number.isFinite(c.lengthTicks),
   );
   if (finite.length === 0) {
     return { start: -7680, end: 7680 * 4 };
@@ -128,7 +127,9 @@ export function scrollLeftKeepTickAnchored(
  * Jump timeline canvas to the beginning (CD / song start at left) — v4
  * `scrollToTimelineStart` feel after Countdown length change.
  */
-export function scrollCanvasToStart(scroll: HTMLElement | null | undefined): void {
+export function scrollCanvasToStart(
+  scroll: HTMLElement | null | undefined,
+): void {
   if (!scroll) return;
   const apply = () => {
     scroll.scrollLeft = 0;
@@ -367,7 +368,9 @@ export function snapLocatorTicks(
 ): number {
   const cdClip = project.forma?.clips?.find((c) => c.kind === "countdown");
   const floor =
-    cdClip != null && Number.isFinite(cdClip.startTicks) && cdClip.startTicks < 0
+    cdClip != null &&
+    Number.isFinite(cdClip.startTicks) &&
+    cdClip.startTicks < 0
       ? cdClip.startTicks
       : 0;
 
@@ -399,7 +402,8 @@ function snapToMusicalBarStart(
   floor: number,
 ): number {
   const cdClip = project.forma?.clips.find((c) => c.kind === "countdown");
-  const minFloor = cdClip != null && cdClip.startTicks < 0 ? cdClip.startTicks : 0;
+  const minFloor =
+    cdClip != null && cdClip.startTicks < 0 ? cdClip.startTicks : 0;
   if (atTicks < 0) {
     const bars = iterPreRollBarBoundariesTicks(project, minFloor, 0);
     if (bars.length === 0) return Math.max(minFloor, atTicks);
@@ -422,10 +426,7 @@ function snapToMusicalBarStart(
 
   const t = atTicks;
   const meterHere = meterAtTicks(project, t);
-  let searchEnd = Math.max(
-    t + 1,
-    t + ticksPerBar(meterHere, project.ppq) * 2,
-  );
+  let searchEnd = Math.max(t + 1, t + ticksPerBar(meterHere, project.ppq) * 2);
   let bars = iterBarBoundariesTicks(project, searchEnd);
   let guard = 0;
   while (
@@ -435,15 +436,12 @@ function snapToMusicalBarStart(
   ) {
     const last = bars[bars.length - 1]!;
     const nextMeter = meterAtTicks(project, last.endTicks);
-    searchEnd =
-      last.endTicks + ticksPerBar(nextMeter, project.ppq) * 4;
+    searchEnd = last.endTicks + ticksPerBar(nextMeter, project.ppq) * 4;
     bars = iterBarBoundariesTicks(project, searchEnd);
     guard += 1;
   }
 
-  const containing = bars.find(
-    (b) => t >= b.startTicks && t < b.endTicks,
-  );
+  const containing = bars.find((b) => t >= b.startTicks && t < b.endTicks);
   if (!containing) {
     // Exact end of last walked bar, or empty map — fall back to constant meter.
     /* v8 ignore next 3 — continuous bar walk makes exact-end-only rare */

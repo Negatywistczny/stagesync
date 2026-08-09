@@ -62,11 +62,7 @@ function MeterColumn({
 
   return (
     <div className={styles.column} aria-hidden={label ? undefined : true}>
-      <div
-        ref={trackRef}
-        className={styles.track}
-        data-band={band}
-      >
+      <div ref={trackRef} className={styles.track} data-band={band}>
         <div className={styles.leds} aria-hidden />
         <div
           ref={dimRef}

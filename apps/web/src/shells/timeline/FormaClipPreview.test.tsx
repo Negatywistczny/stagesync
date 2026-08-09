@@ -34,10 +34,7 @@ describe("FormaClipPreview", () => {
       screen.getByTestId("forma-clip-preview").getAttribute("aria-hidden"),
     ).toBe("true");
     rerender(
-      <FormaClipPreview
-        label="Intro"
-        style={{ left: "4px", width: "80px" }}
-      />,
+      <FormaClipPreview label="Intro" style={{ left: "4px", width: "80px" }} />,
     );
     expect(
       screen.getByTestId("forma-clip-preview").getAttribute("aria-hidden"),

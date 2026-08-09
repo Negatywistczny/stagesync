@@ -71,12 +71,17 @@ describe("fetchLatestReleaseVersion", () => {
       "all",
     );
     expect(result).toEqual({ latest: "5.0.0-alpha.13", error: null });
-    expect(String(fetchImpl.mock.calls[0]?.[0])).toContain("/releases?per_page=20");
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toContain(
+      "/releases?per_page=20",
+    );
   });
 
   it("explains private-repo 404 without token", async () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 404 }));
-    const result = await fetchLatestReleaseVersion(undefined, fetchImpl as unknown as typeof fetch);
+    const result = await fetchLatestReleaseVersion(
+      undefined,
+      fetchImpl as unknown as typeof fetch,
+    );
     expect(result.latest).toBeNull();
     expect(result.error).toMatch(/tokenu|prywatne/i);
   });
@@ -85,7 +90,10 @@ describe("fetchLatestReleaseVersion", () => {
     const fetchImpl = vi.fn(async () => {
       throw new Error("offline");
     });
-    const result = await fetchLatestReleaseVersion("tok", fetchImpl as unknown as typeof fetch);
+    const result = await fetchLatestReleaseVersion(
+      "tok",
+      fetchImpl as unknown as typeof fetch,
+    );
     expect(result.latest).toBeNull();
     expect(result.error).toMatch(/nieosiągalne|sieć|timeout/i);
     expect(result.error).not.toMatch(/token/i);
@@ -161,13 +169,15 @@ describe("GET /api/system/update-status", () => {
   it("skips GitHub fetch in desktop sidecar shell", async () => {
     process.env.STAGESYNC_SHELL = "desktop";
     const realFetch = globalThis.fetch;
-    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input);
-      if (isGithubApiUrl(url)) {
-        throw new Error("GitHub must not be contacted in desktop shell");
-      }
-      return realFetch(input, init);
-    });
+    const fetchSpy = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (isGithubApiUrl(url)) {
+          throw new Error("GitHub must not be contacted in desktop shell");
+        }
+        return realFetch(input, init);
+      },
+    );
     vi.stubGlobal("fetch", fetchSpy);
 
     const dataDir = await mkdtemp(join(tmpdir(), "stagesync-update-"));
@@ -186,7 +196,9 @@ describe("GET /api/system/update-status", () => {
       expect(body.error).toBeNull();
       expect(body.current.length).toBeGreaterThan(0);
       expect(
-        fetchSpy.mock.calls.some((c) => isGithubApiUrl(c[0] as RequestInfo | URL)),
+        fetchSpy.mock.calls.some((c) =>
+          isGithubApiUrl(c[0] as RequestInfo | URL),
+        ),
       ).toBe(false);
     } finally {
       await new Promise<void>((resolve, reject) => {
@@ -199,13 +211,15 @@ describe("GET /api/system/update-status", () => {
   it("skips GitHub fetch in Android Console embedded host shell", async () => {
     process.env.STAGESYNC_SHELL = "console";
     const realFetch = globalThis.fetch;
-    const fetchSpy = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input);
-      if (isGithubApiUrl(url)) {
-        throw new Error("GitHub must not be contacted in console shell");
-      }
-      return realFetch(input, init);
-    });
+    const fetchSpy = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (isGithubApiUrl(url)) {
+          throw new Error("GitHub must not be contacted in console shell");
+        }
+        return realFetch(input, init);
+      },
+    );
     vi.stubGlobal("fetch", fetchSpy);
 
     const dataDir = await mkdtemp(join(tmpdir(), "stagesync-update-console-"));

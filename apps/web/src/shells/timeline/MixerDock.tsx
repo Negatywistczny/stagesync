@@ -1,8 +1,6 @@
 import { type Project } from "@stagesync/shared";
 import { type TrackSelection } from "@lib/timeline/timelineSelection.js";
-import {
-  MixerSurface,
-} from "./channelStrip/index.js";
+import { MixerSurface } from "./channelStrip/index.js";
 import type {
   ChannelStripCallbacks,
   MasterStripCallbacks,
@@ -84,8 +82,7 @@ export function MixerDock({
       onHwMuteToggle={onHwMuteToggle}
       onHwChannelModeChange={onHwChannelModeChange}
       onEmptyDoubleClick={(e) => {
-        if ((e.target as HTMLElement).closest("button, input, select"))
-          return;
+        if ((e.target as HTMLElement).closest("button, input, select")) return;
         onAddAudioTrack();
       }}
     />

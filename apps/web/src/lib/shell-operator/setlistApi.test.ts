@@ -133,10 +133,7 @@ describe("setlistApi", () => {
         updatedAt: 2,
       },
     ];
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(okJson({ clients })),
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(okJson({ clients })));
     await expect(fetchStageClients()).resolves.toEqual(clients);
   });
 

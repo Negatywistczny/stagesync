@@ -34,7 +34,8 @@ async function readFileSafe(path: string): Promise<TokenFile> {
     if (!parsed || !Array.isArray(parsed.tokens)) return { tokens: [] };
     return {
       tokens: parsed.tokens.filter((t) => {
-        if (!t || typeof t.token !== "string" || t.token.length < 8) return false;
+        if (!t || typeof t.token !== "string" || t.token.length < 8)
+          return false;
         return PushPlatformSchema.safeParse(t.platform).success;
       }),
     };

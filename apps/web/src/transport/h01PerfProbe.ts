@@ -80,8 +80,7 @@ export function isH01PerfEnabled(
   storage?: Storage | null,
 ): boolean {
   const q =
-    search ??
-    (typeof window !== "undefined" ? window.location.search : "");
+    search ?? (typeof window !== "undefined" ? window.location.search : "");
   const store =
     storage !== undefined
       ? storage

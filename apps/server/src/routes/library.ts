@@ -80,9 +80,7 @@ export function createLibraryRouter(stores: Stores): Router {
         if (!item || typeof item !== "object") continue;
         const src = item as Record<string, unknown>;
         const name =
-          typeof src.name === "string" && src.name.trim()
-            ? src.name
-            : "Import";
+          typeof src.name === "string" && src.name.trim() ? src.name : "Import";
         const project = await stores.createProject(name);
         try {
           const isTemplate = src.isTemplate === true;

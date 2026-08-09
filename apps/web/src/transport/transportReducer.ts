@@ -3,9 +3,17 @@
  * Provider stays a thin adapter over these reducers.
  */
 
-import type { TempoMapProject, TransportAnchor, TransportState } from "@stagesync/shared";
+import type {
+  TempoMapProject,
+  TransportAnchor,
+  TransportState,
+} from "@stagesync/shared";
 import type { TransportLoop } from "@stagesync/shared";
-import type { LiveDeskState, SetlistSnapshotState, StageCue } from "./transportContext.js";
+import type {
+  LiveDeskState,
+  SetlistSnapshotState,
+  StageCue,
+} from "./transportContext.js";
 
 const MAX_LATENCY_MS = 60_000;
 

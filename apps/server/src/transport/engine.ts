@@ -207,10 +207,7 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
       return snapshot();
     },
 
-    play(
-      opts: TransportPlayBody = {},
-      project?: Project,
-    ): TransportState {
+    play(opts: TransportPlayBody = {}, project?: Project): TransportState {
       if (opts.timeSignature !== undefined) {
         assertValidTimeSignature(opts.timeSignature, ppq);
       }
@@ -225,7 +222,11 @@ export function createTransportEngine(options: TransportEngineOptions = {}) {
         }
       }
 
-      if (project && opts.bpm === undefined && opts.timeSignature === undefined) {
+      if (
+        project &&
+        opts.bpm === undefined &&
+        opts.timeSignature === undefined
+      ) {
         applyMapsFromProject(project, positionTicks);
       } else {
         if (opts.bpm !== undefined) {

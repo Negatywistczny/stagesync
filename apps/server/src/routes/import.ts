@@ -72,7 +72,10 @@ function usdbAccountStatus(env: NodeJS.ProcessEnv = process.env): {
   };
 }
 
-function persistUsdbAccount(user: string, pass: string | undefined): {
+function persistUsdbAccount(
+  user: string,
+  pass: string | undefined,
+): {
   configured: boolean;
   user: string;
 } {

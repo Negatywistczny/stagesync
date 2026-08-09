@@ -91,5 +91,4 @@ describe("clientDisplayPrefs", () => {
     expect(() => setInstrumentPitch("bb")).not.toThrow();
     expect(() => setInstrumentPitchManual(3)).not.toThrow();
   });
-
 });

@@ -434,4 +434,3 @@ export function splitClipAt(
     clampFormaSubsections(right),
   ]);
 }
-

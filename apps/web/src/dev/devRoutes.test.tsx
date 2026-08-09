@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildDevRoutes, isDevOnlyPath, isDevPreviewPath } from "./devRoutes.js";
+import {
+  buildDevRoutes,
+  isDevOnlyPath,
+  isDevPreviewPath,
+} from "./devRoutes.js";
 
 describe("buildDevRoutes", () => {
   it("returns no routes when disabled", () => {

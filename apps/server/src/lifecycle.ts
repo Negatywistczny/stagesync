@@ -10,10 +10,7 @@ const SHUTDOWN_TIMEOUT_MS = 8_000;
 
 export type Lifecycle = {
   isShuttingDown: () => boolean;
-  gracefulShutdown: (
-    signal: string,
-    options?: { restart?: boolean },
-  ) => void;
+  gracefulShutdown: (signal: string, options?: { restart?: boolean }) => void;
   scheduleProcessRestart: () => void;
 };
 
@@ -46,7 +43,8 @@ export function createLifecycle(
   let shuttingDown = false;
   let wantsRestart = false;
 
-  const log = opts?.log ?? ((msg: string) => console.log(`[stagesync-server] ${msg}`));
+  const log =
+    opts?.log ?? ((msg: string) => console.log(`[stagesync-server] ${msg}`));
 
   function finishShutdown(): void {
     const restart = wantsRestart && !shouldDeferRestartToPm2();

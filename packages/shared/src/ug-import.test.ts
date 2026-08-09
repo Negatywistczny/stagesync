@@ -174,7 +174,8 @@ Must be funny`;
       meter: { numerator: 0, denominator: 4 },
     });
     expect(badMeter.ok).toBe(false);
-    if (!badMeter.ok) expect(badMeter.message).toMatch(/Nie udało się sparsować/);
+    if (!badMeter.ok)
+      expect(badMeter.message).toMatch(/Nie udało się sparsować/);
   });
 
   it("skips invalid lone brackets; pending chords flush at EOF", () => {

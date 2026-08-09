@@ -219,7 +219,10 @@ describe("TransportEngine", () => {
     engine.seek(1900);
     engine.play();
     t = 500; // past exclusive end @ 120bpm / ppq 960
-    const samples = Array.from({ length: 10 }, () => engine.getState().positionTicks);
+    const samples = Array.from(
+      { length: 10 },
+      () => engine.getState().positionTicks,
+    );
     expect(new Set(samples).size).toBe(1);
     expect(samples[0]).toBeGreaterThanOrEqual(1000);
     expect(samples[0]).toBeLessThan(2000);

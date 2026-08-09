@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  resolveOperatorNavShortcut,
-} from "./operatorNavShortcuts.js";
+import { resolveOperatorNavShortcut } from "./operatorNavShortcuts.js";
 
 vi.mock("./operatorNavRoutes.js", () => ({
   getAdminNavUrl: (section?: string) =>

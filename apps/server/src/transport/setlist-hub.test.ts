@@ -17,8 +17,14 @@ describe("setlist-hub", () => {
         version: 1,
         enabled: true,
         items: [
-          { type: "project", projectId: "11111111-1111-4111-8111-111111111111" },
-          { type: "project", projectId: "22222222-2222-4222-8222-222222222222" },
+          {
+            type: "project",
+            projectId: "11111111-1111-4111-8111-111111111111",
+          },
+          {
+            type: "project",
+            projectId: "22222222-2222-4222-8222-222222222222",
+          },
         ],
         projectIds: [
           "11111111-1111-4111-8111-111111111111",
@@ -79,7 +85,10 @@ describe("setlist-hub", () => {
       version: 1 as const,
       enabled: true,
       items: [
-        { type: "project" as const, projectId: "11111111-1111-4111-8111-111111111111" },
+        {
+          type: "project" as const,
+          projectId: "11111111-1111-4111-8111-111111111111",
+        },
       ],
       projectIds: ["11111111-1111-4111-8111-111111111111"],
       autoAdvance: { enabled: false },
@@ -97,11 +106,7 @@ describe("setlist-hub", () => {
       getActiveProjectId: () => "11111111-1111-4111-8111-111111111111",
     };
 
-    await publishSetlistHubFromStores(
-      stores as never,
-      transport as never,
-      hub,
-    );
+    await publishSetlistHubFromStores(stores as never, transport as never, hub);
     const snap = hub.snapshotMessage();
     expect(snap?.type).toBe("setlist_snapshot");
     expect(snap?.projectIds).toEqual(setlist.projectIds);

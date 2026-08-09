@@ -52,7 +52,12 @@ describe("draftHistory", () => {
     expect(undoDraft(h)).toBe(h);
     expect(redoDraft(h)).toBe(h);
     for (let i = 0; i < 5; i++) {
-      h = pushDraftHistory(h, { ...h.present.project, name: `n${i}` }, sel(`s${i}`), 2);
+      h = pushDraftHistory(
+        h,
+        { ...h.present.project, name: `n${i}` },
+        sel(`s${i}`),
+        2,
+      );
     }
     expect(h.past.length).toBe(2);
     h = undoDraft(h, 1);

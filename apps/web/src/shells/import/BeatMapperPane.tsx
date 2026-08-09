@@ -224,7 +224,7 @@ export function BeatMapperPane({
 
   const peaks = useMemo(() => audio?.peaks ?? [], [audio?.peaks]);
 
-  const meter = useMemo(() => ({ numerator: 4, denominator: 4 } as const), []);
+  const meter = useMemo(() => ({ numerator: 4, denominator: 4 }) as const, []);
 
   const tempoProject = useMemo((): TempoMapProject => {
     return {
@@ -260,29 +260,27 @@ export function BeatMapperPane({
     (nextZoom: number, anchorMs?: number) => {
       const z = clamp(nextZoom, ZOOM_MIN, ZOOM_MAX);
       const win = Math.max(1, durationMs / z);
-      const anchor =
-        anchorMs ?? viewStartMs + viewDurationMs / 2;
+      const anchor = anchorMs ?? viewStartMs + viewDurationMs / 2;
       const ratio =
-        viewDurationMs > 0
-          ? (anchor - viewStartMs) / viewDurationMs
-          : 0.5;
-      const nextStart = clamp(anchor - ratio * win, 0, Math.max(0, durationMs - win));
+        viewDurationMs > 0 ? (anchor - viewStartMs) / viewDurationMs : 0.5;
+      const nextStart = clamp(
+        anchor - ratio * win,
+        0,
+        Math.max(0, durationMs - win),
+      );
       setZoom(z);
       setViewStartMs(nextStart);
     },
     [durationMs, viewStartMs, viewDurationMs],
   );
 
-  const clientXToMs = useCallback(
-    (clientX: number) => {
-      const rect = frameRef.current?.getBoundingClientRect();
-      const { start, duration } = viewRef.current;
-      if (!rect || rect.width <= 0 || duration <= 0) return start;
-      const x = clamp(clientX - rect.left, 0, rect.width);
-      return start + (x / rect.width) * duration;
-    },
-    [],
-  );
+  const clientXToMs = useCallback((clientX: number) => {
+    const rect = frameRef.current?.getBoundingClientRect();
+    const { start, duration } = viewRef.current;
+    if (!rect || rect.width <= 0 || duration <= 0) return start;
+    const x = clamp(clientX - rect.left, 0, rect.width);
+    return start + (x / rect.width) * duration;
+  }, []);
 
   const msToPct = useCallback(
     (ms: number) => {
@@ -408,12 +406,7 @@ export function BeatMapperPane({
 
     const bins =
       localAudioBuffer != null
-        ? computeEnvelopeBins(
-            localAudioBuffer,
-            cssW,
-            viewStartMs,
-            viewEndMs,
-          )
+        ? computeEnvelopeBins(localAudioBuffer, cssW, viewStartMs, viewEndMs)
         : peaksWindowBins(peaks, cssW, viewStartMs, viewEndMs, durationMs);
 
     const fill =
@@ -621,9 +614,7 @@ export function BeatMapperPane({
   function onWavePointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (dragBeat1Ref.current) {
       e.preventDefault();
-      onAudioStartOffsetChange(
-        Math.max(0, Math.round(clientXToMs(e.clientX))),
-      );
+      onAudioStartOffsetChange(Math.max(0, Math.round(clientXToMs(e.clientX))));
       return;
     }
     const idx = dragIdxRef.current;
@@ -662,10 +653,7 @@ export function BeatMapperPane({
       </div>
       <ul className={styles.sections}>
         {bridge.sections.map((s) => (
-          <li
-            key={`${s.name}-${s.startTicks}`}
-            className={styles.sectionCard}
-          >
+          <li key={`${s.name}-${s.startTicks}`} className={styles.sectionCard}>
             <span className={styles.sectionName}>{s.name}</span>
             <span>
               {s.chordCount} akordów

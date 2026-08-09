@@ -71,10 +71,9 @@ function parseRecent(raw: string | null): RecentTimelineProject[] {
 export function getRecentTimelineProjects(): RecentTimelineProject[] {
   if (typeof localStorage === "undefined") return [];
   try {
-    return parseRecent(localStorage.getItem(RECENT_TIMELINE_PROJECTS_KEY)).slice(
-      0,
-      MAX_RECENT_TIMELINE_PROJECTS,
-    );
+    return parseRecent(
+      localStorage.getItem(RECENT_TIMELINE_PROJECTS_KEY),
+    ).slice(0, MAX_RECENT_TIMELINE_PROJECTS);
   } catch {
     return [];
   }

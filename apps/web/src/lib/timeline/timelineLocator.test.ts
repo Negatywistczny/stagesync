@@ -99,7 +99,9 @@ describe("timelineLocator", () => {
   });
 
   it("ticksInLoopRegion rejects non-finite / inverted ranges", () => {
-    expect(ticksInLoopRegion(Number.NaN, { startTicks: 0, endTicks: 10 })).toBe(false);
+    expect(ticksInLoopRegion(Number.NaN, { startTicks: 0, endTicks: 10 })).toBe(
+      false,
+    );
     expect(ticksInLoopRegion(5, { startTicks: 10, endTicks: 0 })).toBe(false);
     expect(ticksInLoopRegion(5, null)).toBe(false);
   });
@@ -122,5 +124,4 @@ describe("timelineLocator", () => {
     );
     expect(moved).toEqual({ startTicks: 100, endTicks: 1060 });
   });
-
 });

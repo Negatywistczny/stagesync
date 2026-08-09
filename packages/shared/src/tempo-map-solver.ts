@@ -45,11 +45,7 @@ export const TEMPO_MAP_MIN_BPM = 40;
 export const TEMPO_MAP_MAX_BPM = 320;
 
 export type TempoAnchorKind =
-  | "section"
-  | "phrase"
-  | "chord"
-  | "syllable"
-  | "instrumental";
+  "section" | "phrase" | "chord" | "syllable" | "instrumental";
 
 export type TempoSolverAnchor = {
   /** Wall-clock ms from song timeline origin (same basis as UltraStar GAP+beats). */
@@ -364,8 +360,7 @@ export function anacrusisPickupBarsBeforeSection(
   }
 
   // Vocal→vocal with US walls already ends on this Beat 1.
-  const prevIsInstrumental =
-    prevPlan.fromPipe || prevSec.vocalMsRange == null;
+  const prevIsInstrumental = prevPlan.fromPipe || prevSec.vocalMsRange == null;
   return prevIsInstrumental ? 1 : 0;
 }
 
@@ -437,9 +432,11 @@ export function softClampBpmAdjacent(
   const vsSeed = softClampBpmToSeed(seedBpm, next);
   if (!(seedBpm > 0) || !Number.isFinite(prevBpm)) return vsSeed;
   const step = seedBpm * TEMPO_SOLVER_MAX_STEP_RATIO;
-  return Math.round(
-    Math.min(prevBpm + step, Math.max(prevBpm - step, vsSeed)) * 100,
-  ) / 100;
+  return (
+    Math.round(
+      Math.min(prevBpm + step, Math.max(prevBpm - step, vsSeed)) * 100,
+    ) / 100
+  );
 }
 
 /**
@@ -559,9 +556,11 @@ export function tempoEventsFromMsTickAnchors(
     return [{ startTicks: floorTicks, bpm: seedBpm }];
   }
   const bt = barTicks ?? ticksPerBar(meter, ppq);
-  const sorted = soft ? thinMsTickAnchors(anchors, bt, 2) : anchors.slice().sort(
-    (a, b) => a.targetTick - b.targetTick || a.ms - b.ms,
-  );
+  const sorted = soft
+    ? thinMsTickAnchors(anchors, bt, 2)
+    : anchors
+        .slice()
+        .sort((a, b) => a.targetTick - b.targetTick || a.ms - b.ms);
 
   const dedup: MsTickAnchor[] = [];
   for (const a of sorted) {

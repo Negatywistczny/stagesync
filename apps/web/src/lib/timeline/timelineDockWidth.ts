@@ -13,7 +13,10 @@ export const DEFAULT_DOCK_WIDTH_PX = 120;
 export function clampDockWidth(px: number): number {
   return Math.max(
     MIN_DOCK_WIDTH_PX,
-    Math.min(MAX_DOCK_WIDTH_PX, Math.round(Number(px) || DEFAULT_DOCK_WIDTH_PX)),
+    Math.min(
+      MAX_DOCK_WIDTH_PX,
+      Math.round(Number(px) || DEFAULT_DOCK_WIDTH_PX),
+    ),
   );
 }
 

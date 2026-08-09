@@ -3,7 +3,8 @@ import type { LibraryProjectEntry } from "@stagesync/shared";
 import { filterAndSortLibrarySongs } from "./filterLibrarySongs.js";
 
 function song(
-  partial: Partial<LibraryProjectEntry> & Pick<LibraryProjectEntry, "id" | "name">,
+  partial: Partial<LibraryProjectEntry> &
+    Pick<LibraryProjectEntry, "id" | "name">,
 ): LibraryProjectEntry {
   return partial as LibraryProjectEntry;
 }
@@ -27,39 +28,38 @@ describe("filterAndSortLibrarySongs", () => {
   ];
 
   it("excludes templates and keeps library order", () => {
-    expect(filterAndSortLibrarySongs(catalog, "", "library").map((p) => p.id)).toEqual([
-      "a",
-      "b",
-    ]);
+    expect(
+      filterAndSortLibrarySongs(catalog, "", "library").map((p) => p.id),
+    ).toEqual(["a", "b"]);
   });
 
   it("filters by name, artist, genre, and PC string", () => {
-    expect(filterAndSortLibrarySongs(catalog, "zebra", "library").map((p) => p.id)).toEqual([
-      "a",
-    ]);
-    expect(filterAndSortLibrarySongs(catalog, "beta", "library").map((p) => p.id)).toEqual([
-      "b",
-    ]);
-    expect(filterAndSortLibrarySongs(catalog, "jazz", "library").map((p) => p.id)).toEqual([
-      "a",
-    ]);
-    expect(filterAndSortLibrarySongs(catalog, "20", "library").map((p) => p.id)).toEqual([
-      "a",
-    ]);
+    expect(
+      filterAndSortLibrarySongs(catalog, "zebra", "library").map((p) => p.id),
+    ).toEqual(["a"]);
+    expect(
+      filterAndSortLibrarySongs(catalog, "beta", "library").map((p) => p.id),
+    ).toEqual(["b"]);
+    expect(
+      filterAndSortLibrarySongs(catalog, "jazz", "library").map((p) => p.id),
+    ).toEqual(["a"]);
+    expect(
+      filterAndSortLibrarySongs(catalog, "20", "library").map((p) => p.id),
+    ).toEqual(["a"]);
   });
 
   it("sorts by title and program change", () => {
-    expect(filterAndSortLibrarySongs(catalog, "", "title").map((p) => p.id)).toEqual([
-      "b",
-      "a",
-    ]);
-    expect(filterAndSortLibrarySongs(catalog, "", "pc").map((p) => p.id)).toEqual([
-      "b",
-      "a",
-    ]);
+    expect(
+      filterAndSortLibrarySongs(catalog, "", "title").map((p) => p.id),
+    ).toEqual(["b", "a"]);
+    expect(
+      filterAndSortLibrarySongs(catalog, "", "pc").map((p) => p.id),
+    ).toEqual(["b", "a"]);
   });
 
   it("returns empty when filter matches nothing", () => {
-    expect(filterAndSortLibrarySongs(catalog, "brak-takiego", "title")).toEqual([]);
+    expect(filterAndSortLibrarySongs(catalog, "brak-takiego", "title")).toEqual(
+      [],
+    );
   });
 });

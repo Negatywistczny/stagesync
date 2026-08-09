@@ -48,34 +48,31 @@ describe("nativeShell", () => {
   });
 
   it("treats mobile standalone PWA as immersive", () => {
-    window.matchMedia = ((q: string) =>
-      ({
-        matches:
-          q.includes("display-mode: standalone") ||
-          q.includes("max-width: 768"),
-        media: q,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-        onchange: null,
-      })) as typeof window.matchMedia;
+    window.matchMedia = ((q: string) => ({
+      matches:
+        q.includes("display-mode: standalone") || q.includes("max-width: 768"),
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    })) as typeof window.matchMedia;
     expect(isImmersiveClientSurface()).toBe(true);
   });
 
   it("does not treat desktop browser as immersive", () => {
-    window.matchMedia = ((q: string) =>
-      ({
-        matches: false,
-        media: q,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        addListener: () => {},
-        removeListener: () => {},
-        dispatchEvent: () => false,
-        onchange: null,
-      })) as typeof window.matchMedia;
+    window.matchMedia = ((q: string) => ({
+      matches: false,
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    })) as typeof window.matchMedia;
     expect(isImmersiveClientSurface()).toBe(false);
   });
 

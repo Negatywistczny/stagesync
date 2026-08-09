@@ -88,9 +88,13 @@ export function AudioDropzone({
         />
         <div className={styles.textWrapper}>
           <p className={styles.title}>
-            {compact ? "Przeciągnij plik tutaj lub..." : "Przeciągnij i upuść plik MP3 / WAV"}
+            {compact
+              ? "Przeciągnij plik tutaj lub..."
+              : "Przeciągnij i upuść plik MP3 / WAV"}
           </p>
-          {!compact ? <p className={styles.hint}>Albo wybierz plik z dysku.</p> : null}
+          {!compact ? (
+            <p className={styles.hint}>Albo wybierz plik z dysku.</p>
+          ) : null}
         </div>
       </div>
       <div className={styles.actions}>

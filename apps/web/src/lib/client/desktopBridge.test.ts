@@ -270,7 +270,9 @@ describe("openExternalUrl", () => {
     });
     vi.stubGlobal("document", { querySelector: () => null });
 
-    await openExternalUrl("https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md");
+    await openExternalUrl(
+      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
+    );
 
     expect(invoke).toHaveBeenCalledWith("open_external_url", {
       url: "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
@@ -291,7 +293,9 @@ describe("formatUnknownError", () => {
   });
 
   it("reads { message } objects without casting to Error", () => {
-    expect(formatUnknownError({ message: "no update url" })).toBe("no update url");
+    expect(formatUnknownError({ message: "no update url" })).toBe(
+      "no update url",
+    );
   });
 
   it("does not render literal undefined", () => {
@@ -401,7 +405,9 @@ describe("desktop update + nav sync + Tauri paths", () => {
       __STAGESYNC_SHELL__: "desktop",
       __TAURI__: { core: { invoke } },
     });
-    await expect(toggleAppFullscreen()).rejects.toThrow(/Desktop fullscreen failed/);
+    await expect(toggleAppFullscreen()).rejects.toThrow(
+      /Desktop fullscreen failed/,
+    );
   });
 
   it("detects desktop via meta tag and __TAURI_INTERNALS__", () => {

@@ -59,8 +59,7 @@ export function isUgPipeBarLine(line: string): boolean {
     if (parts.length === 0) return false;
     return parts.every(
       (p) =>
-        isRestToken(p) ||
-        (p.length <= CHORD_TOKEN_MAX && CHORD_TOKEN.test(p)),
+        isRestToken(p) || (p.length <= CHORD_TOKEN_MAX && CHORD_TOKEN.test(p)),
     );
   });
 }
@@ -77,9 +76,7 @@ function parsePipeCell(cellRaw: string): PipeCell | null {
   if (cell === "%") {
     return { symbols: [], isRest: false }; // marker — expand later
   }
-  const parts = unwrapBracketSpans(cell)
-    .split(/\s+/)
-    .filter(Boolean);
+  const parts = unwrapBracketSpans(cell).split(/\s+/).filter(Boolean);
   if (parts.length === 0) return null;
   if (parts.every(isRestToken)) {
     return { symbols: [], isRest: true };
@@ -94,7 +91,9 @@ function parsePipeCell(cellRaw: string): PipeCell | null {
   return { symbols, isRest: false };
 }
 
-function cellToOffsets(cell: PipeCell): { offsetInBar: number; symbol: string; isRest: boolean }[] {
+function cellToOffsets(
+  cell: PipeCell,
+): { offsetInBar: number; symbol: string; isRest: boolean }[] {
   if (cell.isRest) {
     return [{ offsetInBar: 0, symbol: "N.C.", isRest: true }];
   }
@@ -118,7 +117,9 @@ function cellToOffsets(cell: PipeCell): { offsetInBar: number; symbol: string; i
 /**
  * Parse one pipe-bar line into cells (including `%` placeholders).
  */
-export function parseUgPipeBarCells(line: string): Array<PipeCell | { repeat: true }> {
+export function parseUgPipeBarCells(
+  line: string,
+): Array<PipeCell | { repeat: true }> {
   const stripped = line.trim();
   const rawCells = stripped.split("|").map((c) => c.trim());
   // Leading/trailing empties from edge `|`
@@ -179,9 +180,7 @@ export function quantizeTicksToBar(ticks: number, barTicks: number): number {
   if (ticks <= 0) return 0;
   const barStart = Math.floor(ticks / barTicks) * barTicks;
   const next = barStart + barTicks;
-  return Math.abs(ticks - barStart) <= Math.abs(ticks - next)
-    ? barStart
-    : next;
+  return Math.abs(ticks - barStart) <= Math.abs(ticks - next) ? barStart : next;
 }
 
 /** Snap ticks to nearest barline or half-bar (beat 3 in 4/4). Pipe mid-cell OK. */

@@ -22,14 +22,19 @@ export function SmartTempoPage() {
             ← Wróć do Panelu Admina
           </Link>
           <div className={styles.pageHeaderInfo}>
-            <h1 className={styles.pageTitle}>Analiza Smart Tempo vs Logic Pro</h1>
+            <h1 className={styles.pageTitle}>
+              Analiza Smart Tempo vs Logic Pro
+            </h1>
             <p className={styles.pageSubtitle}>
-              Dedykowany panel wizualizacji odchyleń siatki taktowej, histogramów oraz analizy regresji
+              Dedykowany panel wizualizacji odchyleń siatki taktowej,
+              histogramów oraz analizy regresji
             </p>
           </div>
         </div>
         <div className={styles.rightSection}>
-          <span className={styles.versionBadge}>Smart Tempo 5.5 · Multi-Band Anchor Engine</span>
+          <span className={styles.versionBadge}>
+            Smart Tempo 5.5 · Multi-Band Anchor Engine
+          </span>
         </div>
       </header>
 

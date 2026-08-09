@@ -3,7 +3,8 @@
  * Applied as a tick offset on WebAudio scheduling — server transport stays SSOT.
  */
 
-export const AUDIO_LATENCY_STORAGE_KEY = "stagesync.audio.latencyCompensationMs";
+export const AUDIO_LATENCY_STORAGE_KEY =
+  "stagesync.audio.latencyCompensationMs";
 
 export const AUDIO_LATENCY_MIN_MS = -100;
 export const AUDIO_LATENCY_MAX_MS = 500;

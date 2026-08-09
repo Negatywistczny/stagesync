@@ -23,7 +23,9 @@ describe("mixerZoneVisibility", () => {
     expect(loadMixerZoneVisibility(memoryStorage())).toEqual(
       DEFAULT_MIXER_ZONE_VISIBILITY,
     );
-    expect(loadMixerZoneVisibility(null)).toEqual(DEFAULT_MIXER_ZONE_VISIBILITY);
+    expect(loadMixerZoneVisibility(null)).toEqual(
+      DEFAULT_MIXER_ZONE_VISIBILITY,
+    );
   });
 
   it("loads partial prefs and ignores garbage keys", () => {
@@ -61,8 +63,6 @@ describe("mixerZoneVisibility", () => {
     expect(hidden.bus).toBe(false);
     saveMixerZoneVisibility(hidden, storage);
     expect(loadMixerZoneVisibility(storage)).toEqual(hidden);
-    expect(
-      toggleMixerZoneVisibility(hidden, "bus").bus,
-    ).toBe(true);
+    expect(toggleMixerZoneVisibility(hidden, "bus").bus).toBe(true);
   });
 });

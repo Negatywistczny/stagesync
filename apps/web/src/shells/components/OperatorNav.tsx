@@ -62,16 +62,16 @@ export function OperatorNav({
       openPreferences(activeApp === "admin" ? "general" : undefined);
     });
 
-  const rootClass = [
-    styles.root,
-    styles[variant],
-    className,
-  ]
+  const rootClass = [styles.root, styles[variant], className]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <nav className={rootClass} aria-label="Nawigacja operatora" data-ss-level="1">
+    <nav
+      className={rootClass}
+      aria-label="Nawigacja operatora"
+      data-ss-level="1"
+    >
       <div className={styles.segments} aria-label="Aplikacje">
         {OPERATOR_APP_SEGMENTS.map((seg) => {
           const selected = activeApp === seg.id;

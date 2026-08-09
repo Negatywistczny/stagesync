@@ -51,9 +51,7 @@ export function normalizeMdnsHostname(raw: string): string {
   return truncateMdnsTxtValue(host || "localhost");
 }
 
-export function buildMdnsTxt(
-  meta: MdnsTxtMeta,
-): Record<string, string> {
+export function buildMdnsTxt(meta: MdnsTxtMeta): Record<string, string> {
   return {
     hostname: normalizeMdnsHostname(meta.hostname),
     version: truncateMdnsTxtValue(meta.version, 32),
@@ -97,7 +95,8 @@ export function startMdnsAdvertiser(opts: {
   getMeta?: () => MdnsTxtMeta | Promise<MdnsTxtMeta>;
   log?: (msg: string) => void;
 }): MdnsAdvertiser {
-  const log = opts.log ?? ((msg: string) => console.log(`[stagesync-server] ${msg}`));
+  const log =
+    opts.log ?? ((msg: string) => console.log(`[stagesync-server] ${msg}`));
   const noop: MdnsAdvertiser = {
     stop: () => undefined,
     refresh: () => undefined,
@@ -218,7 +217,9 @@ export function startMdnsAdvertiser(opts: {
       refresh: scheduleRefresh,
     };
   } catch (err) {
-    log(`mDNS advertise failed: ${err instanceof Error ? err.message : String(err)}`);
+    log(
+      `mDNS advertise failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return noop;
   }
 }

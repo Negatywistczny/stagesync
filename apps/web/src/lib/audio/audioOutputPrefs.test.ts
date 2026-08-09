@@ -70,13 +70,15 @@ describe("audioOutputPrefs", () => {
   });
 
   it("applyAudioOutputSink throws without setSinkId", async () => {
-    await expect(
-      applyAudioOutputSink("x", {} as AudioContext),
-    ).rejects.toThrow(/setSinkId/);
+    await expect(applyAudioOutputSink("x", {} as AudioContext)).rejects.toThrow(
+      /setSinkId/,
+    );
   });
 
   it("restoreAudioOutputSink no-ops without stored id and swallows apply errors", async () => {
-    await restoreAudioOutputSink({ setSinkId: vi.fn() } as unknown as AudioContext);
+    await restoreAudioOutputSink({
+      setSinkId: vi.fn(),
+    } as unknown as AudioContext);
     setStoredAudioOutputDeviceId("gone");
     await restoreAudioOutputSink({
       setSinkId: vi.fn(async () => {
@@ -100,5 +102,4 @@ describe("audioOutputPrefs", () => {
     expect(getStoredAudioOutputDeviceId()).toBeNull();
     expect(() => setStoredAudioOutputDeviceId("x")).not.toThrow();
   });
-
 });

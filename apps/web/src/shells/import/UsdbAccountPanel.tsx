@@ -155,11 +155,7 @@ export function UsdbAccountPanel({
           <p className={styles.title}>Konto USDB (host)</p>
           <p className={styles.status}>
             Darmowe konto na{" "}
-            <a
-              href="https://usdb.animux.de"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href="https://usdb.animux.de" target="_blank" rel="noreferrer">
               usdb.animux.de
             </a>
             . Dane zapisują się na serwerze (wszyscy klienci tego hosta).
@@ -183,9 +179,7 @@ export function UsdbAccountPanel({
               value={accountPass}
               aria-label="Hasło USDB"
               placeholder={
-                accountConfigured
-                  ? "Zostaw puste, aby nie zmieniać"
-                  : undefined
+                accountConfigured ? "Zostaw puste, aby nie zmieniać" : undefined
               }
               disabled={locked}
               onChange={(e) => setAccountPass(e.target.value)}

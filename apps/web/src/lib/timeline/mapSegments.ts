@@ -135,10 +135,8 @@ export function segmentStylePx(
   barTicks: number,
   pxPerBar: number,
 ): { left: string; width: string } {
-  const left =
-    ((segment.startTicks - span.start) / barTicks) * pxPerBar;
-  const width =
-    ((segment.endTicks - segment.startTicks) / barTicks) * pxPerBar;
+  const left = ((segment.startTicks - span.start) / barTicks) * pxPerBar;
+  const width = ((segment.endTicks - segment.startTicks) / barTicks) * pxPerBar;
   return {
     left: `${left}px`,
     width: `${Math.max(0, width)}px`,

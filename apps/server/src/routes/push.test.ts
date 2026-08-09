@@ -69,7 +69,10 @@ describe("push routes (#810)", () => {
     expect(listed).toHaveLength(1);
     expect(listed[0]?.platform).toBe("android-performer");
 
-    const raw = await readFile(join(dataDir, "host", "push-tokens.json"), "utf8");
+    const raw = await readFile(
+      join(dataDir, "host", "push-tokens.json"),
+      "utf8",
+    );
     expect(raw).toContain("fcm-token-abcdefgh");
 
     const del = await fetch(`${baseUrl}/api/push/tokens`, {

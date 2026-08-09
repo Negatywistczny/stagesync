@@ -82,12 +82,7 @@ export type KaraokeBuildOptions = {
   roleFilter?: TekstBlockRole | null;
 };
 
-const ROLE_ORDER: TekstBlockRole[] = [
-  "vocal_1",
-  "vocal_2",
-  "backing",
-  "all",
-];
+const ROLE_ORDER: TekstBlockRole[] = ["vocal_1", "vocal_2", "backing", "all"];
 
 /** Polish labels for the optional Karaoke role filter. */
 export const TEKST_BLOCK_ROLE_LABELS: Record<TekstBlockRole, string> = {
@@ -236,8 +231,7 @@ export function mergeTekstWithCountdownDigits(
     (c) => !/^vl-cd-/i.test(c.id),
   );
   return [...synth, ...real].sort(
-    (a, b) =>
-      a.startTicks - b.startTicks || a.id.localeCompare(b.id),
+    (a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id),
   );
 }
 
@@ -260,10 +254,7 @@ function formaClipsForKaraoke(project: Project): FormaClip[] {
   return project.forma.clips
     .filter((c) => c.kind === "section" || c.kind === "countdown")
     .slice()
-    .sort(
-      (a, b) =>
-        a.startTicks - b.startTicks || a.id.localeCompare(b.id),
-    );
+    .sort((a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id));
 }
 
 function formaEndExclusive(
@@ -450,8 +441,7 @@ export function buildKaraokeLiveContext(
       displayTicks < c.startTicks + c.lengthTicks,
   );
 
-  const activeLineId =
-    activeIdx >= 0 ? (clips[activeIdx]?.id ?? null) : null;
+  const activeLineId = activeIdx >= 0 ? (clips[activeIdx]?.id ?? null) : null;
 
   const availableRoles = collectTekstBlockRoles(clips);
   // Apply filter only when ≥2 roles are present and the choice is still valid.
@@ -492,8 +482,7 @@ export function buildKaraokeLiveContext(
     sections.find((s) => s.id === section?.id) ??
     null;
 
-  const sectionBars =
-    activeGroup?.useProgress === true ? activeGroup.bars : [];
+  const sectionBars = activeGroup?.useProgress === true ? activeGroup.bars : [];
 
   return {
     songTitle: project.name,

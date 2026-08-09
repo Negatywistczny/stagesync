@@ -112,8 +112,7 @@ export function SettingsPopover({
       const right = Math.max(VIEWPORT_PAD_PX, vw - rect.right);
       // Portaled panel escapes shell roots (Client `.page`) — copy touch target.
       const touchMin =
-        getComputedStyle(a).getPropertyValue("--ss-touch-min").trim() ||
-        "36px";
+        getComputedStyle(a).getPropertyValue("--ss-touch-min").trim() || "36px";
       setPos({ top, right, touchMin });
     }
 

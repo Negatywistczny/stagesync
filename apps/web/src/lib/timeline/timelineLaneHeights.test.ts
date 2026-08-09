@@ -124,7 +124,6 @@ describe("timelineLaneHeights", () => {
     expect(setLaneHeightOverride({}, "", 90)).toEqual({});
   });
 
-
   it("default storage arg uses localStorage when defined", () => {
     const store = new Map<string, string>();
     vi.stubGlobal("localStorage", {
@@ -144,5 +143,4 @@ describe("timelineLaneHeights", () => {
     expect(() => saveLaneHeights({ forma: 72 })).not.toThrow();
     vi.unstubAllGlobals();
   });
-
 });

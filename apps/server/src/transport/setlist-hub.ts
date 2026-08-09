@@ -40,7 +40,10 @@ export function createSetlistHub() {
       return msg;
     },
 
-    publishFromView(view: SetlistView, sentAtMs = Date.now()): SetlistSnapshotMessage {
+    publishFromView(
+      view: SetlistView,
+      sentAtMs = Date.now(),
+    ): SetlistSnapshotMessage {
       return this.publish(setlistSnapshotFromView(view, sentAtMs));
     },
 

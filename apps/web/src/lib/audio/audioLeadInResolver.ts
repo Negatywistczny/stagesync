@@ -22,7 +22,7 @@ export type AudioLeadInResolveOptions = {
  */
 export function resolveAudioLeadInDelayMs(
   buffer: AudioBuffer | { channelData: Float32Array; sampleRate: number },
-  options: AudioLeadInResolveOptions = {}
+  options: AudioLeadInResolveOptions = {},
 ): number {
   const format = (options.formatHint ?? "").toLowerCase().trim();
 
@@ -41,10 +41,17 @@ export function resolveAudioLeadInDelayMs(
   }
 
   const sampleRate = "sampleRate" in buffer ? buffer.sampleRate : 44100;
-  const channelData = "getChannelData" in buffer ? buffer.getChannelData(0) : buffer.channelData;
+  const channelData =
+    "getChannelData" in buffer ? buffer.getChannelData(0) : buffer.channelData;
 
   // 2. AAC / M4A Containers (CoreAudio / iTunes / QuickTime default priming delay: 2112 samples)
-  if (format === "m4a" || format === "aac" || format === "mp4" || format === "audio/mp4" || format === "audio/aac") {
+  if (
+    format === "m4a" ||
+    format === "aac" ||
+    format === "mp4" ||
+    format === "audio/mp4" ||
+    format === "audio/aac"
+  ) {
     // If raw bytes provided, try parsing iTunSMPB atom string
     if (options.rawBytes) {
       const parsedDelay = parseITunSmpbDelay(options.rawBytes, sampleRate);
@@ -77,11 +84,14 @@ export function detectPcmSilenceThresholdMs(
   channelData: Float32Array,
   sampleRate: number,
   thresholdAmplitude: number = 0.001, // -60 dBFS
-  maxScanMs: number = 150
+  maxScanMs: number = 150,
 ): number {
   if (!channelData || channelData.length === 0) return 0;
 
-  const maxScanSamples = Math.min(channelData.length, Math.round((maxScanMs / 1000) * sampleRate));
+  const maxScanSamples = Math.min(
+    channelData.length,
+    Math.round((maxScanMs / 1000) * sampleRate),
+  );
 
   for (let i = 0; i < maxScanSamples; i++) {
     if (Math.abs(channelData[i]!) >= thresholdAmplitude) {
@@ -96,13 +106,24 @@ export function detectPcmSilenceThresholdMs(
  * Helper: Parses iTunes iTunSMPB meta atom from raw M4A/AAC bytes.
  * Format: " 00000000 00000840 00000000 ..." where 0x840 = 2112 samples.
  */
-function parseITunSmpbDelay(bytes: Uint8Array, sampleRate: number): number | null {
+function parseITunSmpbDelay(
+  bytes: Uint8Array,
+  sampleRate: number,
+): number | null {
   try {
-    const text = new TextDecoder("ascii").decode(bytes.subarray(0, Math.min(bytes.length, 16384)));
-    const match = text.match(/iTunSMPB[\s\S]*?\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})/);
+    const text = new TextDecoder("ascii").decode(
+      bytes.subarray(0, Math.min(bytes.length, 16384)),
+    );
+    const match = text.match(
+      /iTunSMPB[\s\S]*?\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})/,
+    );
     if (match && match[2]) {
       const primingSamples = parseInt(match[2], 16);
-      if (!isNaN(primingSamples) && primingSamples > 0 && primingSamples < 10000) {
+      if (
+        !isNaN(primingSamples) &&
+        primingSamples > 0 &&
+        primingSamples < 10000
+      ) {
         return Math.round((primingSamples / sampleRate) * 1000 * 10) / 10;
       }
     }
@@ -115,9 +136,14 @@ function parseITunSmpbDelay(bytes: Uint8Array, sampleRate: number): number | nul
 /**
  * Helper: Parses LAME / Xing encoder delay from MP3 header.
  */
-function parseMp3XingDelay(bytes: Uint8Array, sampleRate: number): number | null {
+function parseMp3XingDelay(
+  bytes: Uint8Array,
+  sampleRate: number,
+): number | null {
   try {
-    const text = new TextDecoder("ascii").decode(bytes.subarray(0, Math.min(bytes.length, 4096)));
+    const text = new TextDecoder("ascii").decode(
+      bytes.subarray(0, Math.min(bytes.length, 4096)),
+    );
     const xingIdx = text.indexOf("Xing");
     const infoIdx = text.indexOf("Info");
     const headerIdx = xingIdx !== -1 ? xingIdx : infoIdx;

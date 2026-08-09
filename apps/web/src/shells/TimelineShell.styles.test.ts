@@ -57,7 +57,9 @@ describe("TimelineShell styles", () => {
     expect(css).toMatch(
       /\.shell\[data-tl-tier="mobile"\]\s+\.toolBar[\s\S]*?display:\s*none/,
     );
-    expect(css).toMatch(/\.toolbar\s*\{[\s\S]*?grid-template-areas:\s*"tools center song"/);
+    expect(css).toMatch(
+      /\.toolbar\s*\{[\s\S]*?grid-template-areas:\s*"tools center song"/,
+    );
     expect(css).not.toMatch(
       /@media\s*\(max-width:\s*768px\)\s*\{[\s\S]*?\.toolbar\s*\{[\s\S]*?display:\s*flex/,
     );
@@ -68,15 +70,9 @@ describe("TimelineShell styles", () => {
       join(dirname(fileURLToPath(import.meta.url)), "TimelineShell.module.css"),
       "utf8",
     );
-    expect(css).toMatch(
-      /\.touchNudge\s*\{[^}]*pointer-events:\s*none/,
-    );
-    expect(css).toMatch(
-      /\.touchNudgeEdge\s*\{[^}]*flex-direction:\s*column/,
-    );
-    expect(css).toMatch(
-      /\.touchNudgeStretch\s*\{[^}]*flex-direction:\s*row/,
-    );
+    expect(css).toMatch(/\.touchNudge\s*\{[^}]*pointer-events:\s*none/);
+    expect(css).toMatch(/\.touchNudgeEdge\s*\{[^}]*flex-direction:\s*column/);
+    expect(css).toMatch(/\.touchNudgeStretch\s*\{[^}]*flex-direction:\s*row/);
     expect(css).toMatch(
       /\.touchNudgeStretchBtn\s*\{[^}]*--ss-touch-min:\s*var\(--ss-space-8\)/,
     );
@@ -91,8 +87,7 @@ describe("TimelineShell styles", () => {
       join(dirname(fileURLToPath(import.meta.url)), "TimelineShell.module.css"),
       "utf8",
     );
-    const playAccent =
-      css.match(/\.playAccent\s*\{([^}]*)\}/)?.[1] ?? "";
+    const playAccent = css.match(/\.playAccent\s*\{([^}]*)\}/)?.[1] ?? "";
     expect(playAccent).toMatch(
       /border:\s*1px\s+solid\s+var\(--ss-color-primary\)/,
     );
@@ -110,8 +105,7 @@ describe("TimelineShell styles", () => {
     expect(sharedCluster).toMatch(/padding-block:\s*1px/);
     expect(css).toMatch(/\.toolBar\s*\{[^}]*overflow-x:\s*auto/);
     expect(css).toMatch(/\.transport\s*\{[^}]*overflow-x:\s*auto/);
-    const songCluster =
-      css.match(/\.songCluster\s*\{([^}]*)\}/)?.[1] ?? "";
+    const songCluster = css.match(/\.songCluster\s*\{([^}]*)\}/)?.[1] ?? "";
     expect(songCluster).toMatch(/padding-block:\s*1px/);
     expect(songCluster).toMatch(/overflow-x:\s*auto/);
     const transportExtras =

@@ -69,7 +69,11 @@ vi.mock("@lib/client/deviceNamePrefs.js", () => ({
   setStoredDeviceDisplayName: (v: string) => v,
 }));
 
-const project = createProjectSeed("song-1", "Test Song", "2026-07-25T00:00:00.000Z");
+const project = createProjectSeed(
+  "song-1",
+  "Test Song",
+  "2026-07-25T00:00:00.000Z",
+);
 project.defaultBpm = 112;
 project.tempoMap = [{ id: "tempo-0", startTicks: 0, bpm: 112 }];
 project.keyMap = [
@@ -202,12 +206,18 @@ describe("ClientShell chrome", () => {
       css.match(
         /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.headerCompact\s*\{([^}]*)\}/,
       )?.[1] ?? "";
-    expect(compactBlock).toContain("padding: var(--ss-space-1) var(--ss-space-2)");
+    expect(compactBlock).toContain(
+      "padding: var(--ss-space-1) var(--ss-space-2)",
+    );
     expect(compactBlock).toContain(
       "padding-top: max(var(--ss-space-1), env(safe-area-inset-top, 0px))",
     );
-    expect(compactBlock).toContain("--ss-touch-min: var(--ss-touch-min-shell-action)");
-    expect(compactBlock).toContain("var(--ss-touch-min-shell-action) + var(--ss-space-1)");
+    expect(compactBlock).toContain(
+      "--ss-touch-min: var(--ss-touch-min-shell-action)",
+    );
+    expect(compactBlock).toContain(
+      "var(--ss-touch-min-shell-action) + var(--ss-space-1)",
+    );
     expect(compactBlock).not.toMatch(/\n\s*height:\s*calc\(/);
     expect(compactBlock).not.toMatch(/\bmax-height:/);
   });
@@ -267,9 +277,7 @@ describe("ClientShell chrome", () => {
     );
     expect(tabletBlock).not.toMatch(/\.roleGrid\s*\{[^}]*grid-template-rows:/);
     expect(tabletBlock).not.toMatch(/\.roleTile\s*\{[^}]*height:\s*100%/);
-    expect(tabletBlock).not.toMatch(
-      /\.roleIcon\s*\{[^}]*--ss-text-stage-2xl/,
-    );
+    expect(tabletBlock).not.toMatch(/\.roleIcon\s*\{[^}]*--ss-text-stage-2xl/);
     expect(tabletBlock).toMatch(/\.roleIcon\s*\{[^}]*--ss-text-3xl/);
     expect(tabletBlock).toMatch(/\.roleLabel\s*\{[^}]*--ss-text-xl/);
     expect(css).toMatch(
@@ -282,7 +290,9 @@ describe("ClientShell chrome", () => {
 
   it("uses ShellIconButton (ss-btn--icon) for global settings chrome", () => {
     renderClient();
-    const settings = screen.getByRole("button", { name: /Ustawienia globalne/i });
+    const settings = screen.getByRole("button", {
+      name: /Ustawienia globalne/i,
+    });
     expect(settings.className).toContain("ss-btn");
     expect(settings.className).toContain("ss-btn--icon");
   });
@@ -334,7 +344,9 @@ describe("ClientShell chrome", () => {
   it("opens global settings from header gear without operator session", () => {
     vi.mocked(shouldShowOperatorNav).mockReturnValue(false);
     renderClient();
-    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ustawienia globalne/i }),
+    );
     const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
     expect(dialog).toBeTruthy();
     expect(dialog.parentElement).toBe(document.body);
@@ -344,7 +356,9 @@ describe("ClientShell chrome", () => {
     vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
     vi.mocked(useMqMobileCompact).mockReturnValue(true);
     renderClient();
-    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ustawienia globalne/i }),
+    );
     const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
     expect(dialog).toBeTruthy();
     // Portaled fixed-top-right — escapes Client `.page` overflow clipping.
@@ -355,7 +369,9 @@ describe("ClientShell chrome", () => {
     const onOpen = vi.fn();
     window.addEventListener(OPEN_PREFERENCES_EVENT, onOpen);
     renderClient();
-    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ustawienia globalne/i }),
+    );
     expect(onOpen).not.toHaveBeenCalled();
     expect(
       screen.getByRole("dialog", { name: /Ustawienia globalne/i }),
@@ -408,7 +424,6 @@ describe("ClientShell chrome", () => {
     expect(screen.getByText("Test Song")).toBeTruthy();
     expect(screen.queryByLabelText("Meta utworu")).toBeNull();
   });
-
 
   it("toggles role tile aria-pressed on the welcome picker", () => {
     renderClient();
@@ -485,7 +500,9 @@ describe("ClientShell chrome", () => {
 
     expect(screen.getByRole("button", { name: /Zmień nazwę/i })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ustawienia globalne/i }),
+    );
     const dialog = screen.getByRole("dialog", { name: /Ustawienia globalne/i });
     expect(dialog).toBeTruthy();
     expect(dialog.parentElement).toBe(document.body);
@@ -495,7 +512,9 @@ describe("ClientShell chrome", () => {
 
   it("names instrument pitch group in global settings", () => {
     renderClient();
-    fireEvent.click(screen.getByRole("button", { name: /Ustawienia globalne/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ustawienia globalne/i }),
+    );
     expect(
       screen.getByRole("group", { name: "Strój instrumentu transponującego" }),
     ).toBeTruthy();
@@ -517,10 +536,18 @@ describe("ClientShell chrome", () => {
     renderClient();
     startScoreRole();
     expect(screen.getByTestId("score-pane")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /Ustawienia Partytura/i }));
-    expect(screen.getByRole("button", { name: "Pomniejsz partyturę" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Powiększ partyturę" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Resetuj zoom partytury" })).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ustawienia Partytura/i }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Pomniejsz partyturę" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Powiększ partyturę" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Resetuj zoom partytury" }),
+    ).toBeTruthy();
     expect(
       screen.getByRole("combobox", { name: "Transpozycja oktawy partytury" }),
     ).toBeTruthy();
@@ -544,7 +571,9 @@ describe("ClientShell chrome", () => {
     expect(screen.getByTestId("grid-pane")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia Akordy/i }));
     expect(screen.getByRole("switch", { name: /H zamiast B/i })).toBeTruthy();
-    expect(screen.getByRole("switch", { name: /Litery zamiast symboli/i })).toBeTruthy();
+    expect(
+      screen.getByRole("switch", { name: /Litery zamiast symboli/i }),
+    ).toBeTruthy();
     expect(screen.getByRole("switch", { name: /^Animacje$/i })).toBeTruthy();
   });
 
@@ -553,7 +582,8 @@ describe("ClientShell chrome", () => {
     startDrumsRole();
     expect(screen.getByTestId("drums-pane")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Ustawienia Forma/i }));
-    expect(screen.getByRole("switch", { name: /Edycja notatek Formy/i })).toBeTruthy();
+    expect(
+      screen.getByRole("switch", { name: /Edycja notatek Formy/i }),
+    ).toBeTruthy();
   });
-
 });

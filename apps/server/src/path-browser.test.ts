@@ -20,7 +20,12 @@ function scratchUnderHomeSync(): string {
   try {
     return mkdtempSync(homeBase);
   } catch (e) {
-    if (e && typeof e === "object" && "code" in e && (e as { code?: string }).code === "EPERM") {
+    if (
+      e &&
+      typeof e === "object" &&
+      "code" in e &&
+      (e as { code?: string }).code === "EPERM"
+    ) {
       return mkdtempSync(join(resolveTestScratchRoot(), "stagesync-browse-"));
     }
     throw e;
@@ -40,10 +45,14 @@ vi.mock("node:fs", async (importOriginal) => {
   fsHooks.actual = actual;
   return {
     ...actual,
-    statSync: ((path: Parameters<typeof actual.statSync>[0], opts?: unknown) => {
-      if (fsHooks.statSync) return fsHooks.statSync(String(path)) as ReturnType<
-        typeof actual.statSync
-      >;
+    statSync: ((
+      path: Parameters<typeof actual.statSync>[0],
+      opts?: unknown,
+    ) => {
+      if (fsHooks.statSync)
+        return fsHooks.statSync(String(path)) as ReturnType<
+          typeof actual.statSync
+        >;
       return actual.statSync(path, opts as never);
     }) as typeof actual.statSync,
     existsSync: ((path: Parameters<typeof actual.existsSync>[0]) => {
@@ -57,10 +66,14 @@ vi.mock("node:fs", async (importOriginal) => {
       if (fsHooks.readdirSync) return fsHooks.readdirSync(String(path));
       return actual.readdirSync(path, opts as never);
     }) as typeof actual.readdirSync,
-    lstatSync: ((path: Parameters<typeof actual.lstatSync>[0], opts?: unknown) => {
-      if (fsHooks.lstatSync) return fsHooks.lstatSync(String(path)) as ReturnType<
-        typeof actual.lstatSync
-      >;
+    lstatSync: ((
+      path: Parameters<typeof actual.lstatSync>[0],
+      opts?: unknown,
+    ) => {
+      if (fsHooks.lstatSync)
+        return fsHooks.lstatSync(String(path)) as ReturnType<
+          typeof actual.lstatSync
+        >;
       return actual.lstatSync(path, opts as never);
     }) as typeof actual.lstatSync,
   };
@@ -95,15 +108,17 @@ describe("path-browser", () => {
 
   it("rejects paths outside allowed roots", () => {
     expect(isUnderAllowedRoot("/etc")).toBe(false);
-    expect(() => listBrowseDirectory("/etc", { mode: "dir" })).toThrow(/dozwolonym/);
+    expect(() => listBrowseDirectory("/etc", { mode: "dir" })).toThrow(
+      /dozwolonym/,
+    );
   });
 
   it("toEnvPath uses relative ./ for repo paths and absolute outside", () => {
     expect(toEnvPath(REPO_ROOT)).toBe("./");
     expect(toEnvPath(join(REPO_ROOT, "data"))).toMatch(/^\.\//);
-    expect(toEnvPath(join(resolveTestScratchRoot(), "somewhere-outside-repo"))).not.toMatch(
-      /^\.\//,
-    );
+    expect(
+      toEnvPath(join(resolveTestScratchRoot(), "somewhere-outside-repo")),
+    ).not.toMatch(/^\.\//);
   });
 
   it("resolveBrowseStartPath handles dir, file, missing, and file-mode default", () => {
@@ -211,7 +226,9 @@ describe("path-browser", () => {
       mode: "file",
       ext: ".bak,.zip",
     });
-    const multiNames = multi.entries.filter((e) => e.type === "file").map((e) => e.name);
+    const multiNames = multi.entries
+      .filter((e) => e.type === "file")
+      .map((e) => e.name);
     expect(multiNames).toEqual(expect.arrayContaining(["snap.zip", "old.bak"]));
     expect(multiNames).not.toContain("keep.json");
   });
@@ -221,7 +238,9 @@ describe("path-browser", () => {
     // On Windows, resolve("/") might resolve to "C:\" or similar, which is under allowed roots.
     // Let's make sure allowedRoot is actually under allowed roots. If not, we stub/mock or use REPO_ROOT.
     // Actually, let's check if allowedRoot is under allowed roots. If not, we can use REPO_ROOT as the allowed root.
-    const targetRoot = isUnderAllowedRoot(allowedRoot) ? allowedRoot : REPO_ROOT;
+    const targetRoot = isUnderAllowedRoot(allowedRoot)
+      ? allowedRoot
+      : REPO_ROOT;
     const rootList = listBrowseDirectory(targetRoot, { mode: "dir" });
     // If targetRoot is REPO_ROOT, its parent might be under allowed roots (e.g. C:\Users\kacpe\Documents\GitHub).
     // So parent might not be null. Let's find a root that has no parent under allowed roots, or just test parent is null
@@ -237,7 +256,10 @@ describe("path-browser", () => {
     } else {
       // If it has a parent, let's list the parent until we reach a root with no parent under allowed roots.
       let current = targetRoot;
-      while (isUnderAllowedRoot(dirname(current)) && dirname(current) !== current) {
+      while (
+        isUnderAllowedRoot(dirname(current)) &&
+        dirname(current) !== current
+      ) {
         current = dirname(current);
       }
       const topList = listBrowseDirectory(current, { mode: "dir" });

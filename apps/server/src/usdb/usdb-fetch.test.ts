@@ -143,9 +143,7 @@ describe("usdb-fetch parsers", () => {
   });
 
   it("usdbDetailUrl builds canonical link", () => {
-    expect(usdbDetailUrl(12)).toBe(
-      "https://usdb.animux.de/?link=detail&id=12",
-    );
+    expect(usdbDetailUrl(12)).toBe("https://usdb.animux.de/?link=detail&id=12");
   });
 
   it("parseUsdbSearchHtml extracts songs", () => {
@@ -179,9 +177,7 @@ describe("usdb-fetch parsers", () => {
       title: "Africa",
       language: "English",
     });
-    expect(rows.some((r) => /results?\s+on/i.test(r.artist ?? ""))).toBe(
-      false,
-    );
+    expect(rows.some((r) => /results?\s+on/i.test(r.artist ?? ""))).toBe(false);
     expect(rows.some((r) => r.title === "Title")).toBe(false);
   });
 
@@ -193,7 +189,9 @@ describe("usdb-fetch parsers", () => {
 
   it("parseUltrastarHeaders reads TITLE/ARTIST/LANGUAGE", () => {
     expect(
-      parseUltrastarHeaders("#TITLE:A\n#ARTIST:B\n#LANGUAGE:Polish\n: 0 1 0 x\n"),
+      parseUltrastarHeaders(
+        "#TITLE:A\n#ARTIST:B\n#LANGUAGE:Polish\n: 0 1 0 x\n",
+      ),
     ).toEqual({ title: "A", artist: "B", language: "Polish" });
   });
 });

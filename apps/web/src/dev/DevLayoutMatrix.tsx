@@ -63,12 +63,13 @@ export function DevLayoutMatrix() {
     [surface, path, session],
   );
 
-  const previewUrl = useMemo(
-    () => buildDevPreviewUrl(config),
-    [config],
-  );
+  const previewUrl = useMemo(() => buildDevPreviewUrl(config), [config]);
 
-  const handleScreenshot = async (viewportId: string, width: number, height: number) => {
+  const handleScreenshot = async (
+    viewportId: string,
+    width: number,
+    height: number,
+  ) => {
     const iframe = iframeRefs.current[viewportId];
     if (!iframe) {
       setScreenshotError("Podgląd nie jest jeszcze gotowy.");
@@ -136,7 +137,7 @@ export function DevLayoutMatrix() {
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage(
             { type: "stagesync-dev-preview-navigate", path: action.path },
-            "*"
+            "*",
           );
         }
       });
@@ -170,7 +171,9 @@ export function DevLayoutMatrix() {
             Powierzchnia
             <Select
               value={surface}
-              onChange={(e) => handleSurfaceChange(e.target.value as DevSurface)}
+              onChange={(e) =>
+                handleSurfaceChange(e.target.value as DevSurface)
+              }
               aria-label="Powierzchnia"
             >
               {(Object.keys(SURFACE_LABELS) as DevSurface[]).map((id) => (
@@ -207,7 +210,8 @@ export function DevLayoutMatrix() {
             </>
           ) : (
             <p className={styles.performerHint}>
-              Podgląd Performer zawsze używa <code>/client</code> (bez sesji operatora).
+              Podgląd Performer zawsze używa <code>/client</code> (bez sesji
+              operatora).
             </p>
           )}
         </div>
@@ -228,46 +232,53 @@ export function DevLayoutMatrix() {
 
       <div className={styles.grid}>
         <div className={styles.gridTrack}>
-        {DEV_VIEWPORTS.map((vp) => (
-          <section key={vp.id} className={styles.card}>
-            <div className={styles.label}>{vp.label}</div>
-            <div className={styles.frameWrap}>
-              <iframe
-                ref={(node) => {
-                  iframeRefs.current[vp.id] = node;
-                }}
-                className={styles.frame}
-                title={`Podgląd ${vp.label}`}
-                src={previewUrl}
-                width={vp.width}
-                height={vp.height}
-                style={{ width: `${vp.width}px`, height: `${vp.height}px` }}
-                loading="lazy"
-              />
-            </div>
-            <div className={styles.cardActions}>
-              <Button
-                type="button"
-                variant="secondary"
-                loading={capturingViewportId === vp.id}
-                disabled={capturingViewportId !== null && capturingViewportId !== vp.id}
-                aria-label={`Zrzut ekranu ${vp.label}`}
-                onClick={() => {
-                  void handleScreenshot(vp.id, vp.width, vp.height);
-                }}
-              >
-                Zrzut ekranu
-              </Button>
-            </div>
-          </section>
-        ))}
+          {DEV_VIEWPORTS.map((vp) => (
+            <section key={vp.id} className={styles.card}>
+              <div className={styles.label}>{vp.label}</div>
+              <div className={styles.frameWrap}>
+                <iframe
+                  ref={(node) => {
+                    iframeRefs.current[vp.id] = node;
+                  }}
+                  className={styles.frame}
+                  title={`Podgląd ${vp.label}`}
+                  src={previewUrl}
+                  width={vp.width}
+                  height={vp.height}
+                  style={{ width: `${vp.width}px`, height: `${vp.height}px` }}
+                  loading="lazy"
+                />
+              </div>
+              <div className={styles.cardActions}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  loading={capturingViewportId === vp.id}
+                  disabled={
+                    capturingViewportId !== null &&
+                    capturingViewportId !== vp.id
+                  }
+                  aria-label={`Zrzut ekranu ${vp.label}`}
+                  onClick={() => {
+                    void handleScreenshot(vp.id, vp.width, vp.height);
+                  }}
+                >
+                  Zrzut ekranu
+                </Button>
+              </div>
+            </section>
+          ))}
         </div>
       </div>
 
       <p className={styles.hint}>
         Tylko <code>import.meta.env.DEV</code>. Otwórz{" "}
-        <code>{typeof window !== "undefined" ? `${window.location.origin}/_dev/layouts` : "/_dev/layouts"}</code>
-        {" "}przy działającym Vite + hoście :4000.
+        <code>
+          {typeof window !== "undefined"
+            ? `${window.location.origin}/_dev/layouts`
+            : "/_dev/layouts"}
+        </code>{" "}
+        przy działającym Vite + hoście :4000.
       </p>
     </div>
   );

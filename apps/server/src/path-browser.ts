@@ -113,10 +113,7 @@ function nameMatchesExt(name: string, exts: string[] | null): boolean {
 
 export function listBrowseDirectory(
   rawPath: string,
-  {
-    mode = "dir",
-    ext,
-  }: { mode?: "dir" | "file"; ext?: string } = {},
+  { mode = "dir", ext }: { mode?: "dir" | "file"; ext?: string } = {},
 ): BrowseResult {
   const absPath = rawPath ? resolve(rawPath) : REPO_ROOT;
   if (!isUnderAllowedRoot(absPath)) {

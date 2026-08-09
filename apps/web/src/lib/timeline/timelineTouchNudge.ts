@@ -20,7 +20,10 @@ import {
   commitResizeContentClip,
   type ContentLaneId,
 } from "@lib/timeline-edit/contentLaneEdit.js";
-import { commitMoveClip, commitResizeClip } from "@lib/timeline-edit/formaEdit.js";
+import {
+  commitMoveClip,
+  commitResizeClip,
+} from "@lib/timeline-edit/formaEdit.js";
 import {
   applyCountdownLengthFromBoundary,
   countdownBars,
@@ -130,10 +133,7 @@ function applyMove(
     const clip = project.forma.clips.find((c) => c.id === clipId);
     if (!clip || clip.kind !== "countdown") return project;
     const bars = countdownBars(project, clip);
-    const nextBars = Math.max(
-      1,
-      Math.min(MAX_COUNTDOWN_BARS, bars + dir),
-    );
+    const nextBars = Math.max(1, Math.min(MAX_COUNTDOWN_BARS, bars + dir));
     if (nextBars === bars) return project;
     return setCountdownBars(project, nextBars);
   }

@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  emptyProjectEndTicks,
-  projectEndTicks,
-} from "./project-bounds.js";
+import { emptyProjectEndTicks, projectEndTicks } from "./project-bounds.js";
 import { createProjectV5Seed } from "./project-seed.js";
 import { DEFAULT_PPQ } from "./time.js";
 

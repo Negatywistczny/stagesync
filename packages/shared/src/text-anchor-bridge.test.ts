@@ -26,10 +26,11 @@ import {
   timedWordsFromUltrastar,
   tokenizeLyrics,
 } from "./text-anchor-bridge.js";
+import { importUltrastarText } from "./ultrastar-import.js";
 import {
-  importUltrastarText,
-} from "./ultrastar-import.js";
-import { US_UG_BACKING_CLIP_ID, suggestBeat1MsFromPipeAndGap } from "./smart-tempo.js";
+  US_UG_BACKING_CLIP_ID,
+  suggestBeat1MsFromPipeAndGap,
+} from "./smart-tempo.js";
 import { secondsToTicks } from "./tempo-map.js";
 import { DEFAULT_PPQ } from "./time.js";
 import { isTickOnBarOrHalf } from "./tempo-map-solver.js";
@@ -219,9 +220,7 @@ describe("quantizeChordOnsets (section-bounded)", () => {
     expect(quantizeChordOnsets([start - 100], start, end, BAR)).toEqual([
       start,
     ]);
-    expect(quantizeChordOnsets([end + 50], start, end, BAR)).toEqual([
-      end - 1,
-    ]);
+    expect(quantizeChordOnsets([end + 50], start, end, BAR)).toEqual([end - 1]);
     expect(
       quantizeChordOnsets([start + BAR / 2 + 40], start, end, BAR),
     ).toEqual([start + BAR / 2]);
@@ -269,12 +268,7 @@ describe("mapOnsetsIntoContainer / fitOnsetsInContainer", () => {
     const start = 0;
     const end = 2 * BAR;
     // 5 onsets cannot fit at half-bar gaps in a 2-bar window
-    const fit = fitOnsetsInContainer(
-      [0, 10, 20, 30, 40],
-      start,
-      end,
-      BAR,
-    );
+    const fit = fitOnsetsInContainer([0, 10, 20, 30, 40], start, end, BAR);
     expect(fit.length).toBeLessThan(5);
     expect(fit.every((t) => t >= start && t < end)).toBe(true);
   });
@@ -286,7 +280,12 @@ describe("enforceMinChordGap", () => {
     const start = 0;
     const end = 8 * BAR;
     // G + B7 + Em collapsed onto two points (classic dual chord-above line)
-    const collapsed = [start, start + BAR / 2, start + BAR / 2, start + 2 * BAR];
+    const collapsed = [
+      start,
+      start + BAR / 2,
+      start + BAR / 2,
+      start + 2 * BAR,
+    ];
     const out = enforceMinChordGap(collapsed, start, end, BAR / 2);
     expect(out.length).toBeGreaterThanOrEqual(3);
     expect(out[2]! - out[1]!).toBeGreaterThanOrEqual(BAR / 2);
@@ -478,7 +477,9 @@ describe("golden fixtures US+UG", () => {
     expect(() => ProjectSchema.parse(applied)).not.toThrow();
     expect(applied.forma.clips.some((c) => c.kind === "countdown")).toBe(true);
     expect(
-      applied.forma.clips.filter((c) => c.kind === "section").map((c) => c.name),
+      applied.forma.clips
+        .filter((c) => c.kind === "section")
+        .map((c) => c.name),
     ).toEqual(["Verse", "Chorus", "Zwrotka 2"]);
     expect(applied.tekst.clips.length).toBeGreaterThan(0);
     expect(applied.akordy.clips.length).toBeGreaterThan(0);
@@ -504,9 +505,7 @@ describe("golden fixtures US+UG", () => {
     expect(solo!.chordCount).toBeGreaterThanOrEqual(1);
     expect(bridged.approximate).toBe(true);
     expect(
-      bridged.warnings.some(
-        (w) => /Solo/i.test(w) || /bez wokalu/i.test(w),
-      ),
+      bridged.warnings.some((w) => /Solo/i.test(w) || /bez wokalu/i.test(w)),
     ).toBe(true);
 
     const soloClips = bridged.akordy.clips.filter(
@@ -516,7 +515,9 @@ describe("golden fixtures US+UG", () => {
     );
     expect(soloClips.length).toBe(solo!.chordCount);
     // Even spacing inside solo window
-    const gaps = soloClips.slice(1).map((c, i) => c.startTicks - soloClips[i]!.startTicks);
+    const gaps = soloClips
+      .slice(1)
+      .map((c, i) => c.startTicks - soloClips[i]!.startTicks);
     expect(gaps.every((g) => g > 0)).toBe(true);
   });
 
@@ -729,9 +730,9 @@ E`;
     for (const c of verseChords) {
       expect(c.startTicks).toBeGreaterThanOrEqual(verse!.startTicks);
       expect(c.startTicks).toBeLessThan(verse!.startTicks + verse!.lengthTicks);
-      expect(
-        isTickOnBarOrHalf(c.startTicks, BAR, verse!.startTicks),
-      ).toBe(true);
+      expect(isTickOnBarOrHalf(c.startTicks, BAR, verse!.startTicks)).toBe(
+        true,
+      );
     }
     // First Verse chord on Forma Beat 1 (map bends audio to barline)
     expect(verseChords[0]!.startTicks).toBe(verse!.startTicks);
@@ -1128,7 +1129,9 @@ describe("bridgeUsUgImport API", () => {
 
     // Pickup in last Intro bar; Verse downbeat = Forma Verse
     const firstVocal = r.tekst.clips[0]!;
-    expect(firstVocal.startTicks).toBeGreaterThanOrEqual(verse.startTicks - BAR);
+    expect(firstVocal.startTicks).toBeGreaterThanOrEqual(
+      verse.startTicks - BAR,
+    );
     expect(firstVocal.startTicks).toBeLessThan(verse.startTicks);
 
     const about = r.tekst.clips.find((c) => /About/i.test(c.text));
@@ -1283,9 +1286,9 @@ E
     expect(applied.akordy.clips.length).toBeGreaterThan(0);
     expect(applied.tempoMap.length).toBe(r.tempoMap.length);
     // Synthetic wizard id must not place a stub clip before real upload.
-    expect(
-      applied.audioClips.some((c) => c.id === US_UG_BACKING_CLIP_ID),
-    ).toBe(false);
+    expect(applied.audioClips.some((c) => c.id === US_UG_BACKING_CLIP_ID)).toBe(
+      false,
+    );
 
     expect(() => ProjectSchema.parse(applied)).not.toThrow();
 
@@ -1314,8 +1317,7 @@ E
     if (!usImport.ok) return;
 
     const bpm =
-      suggestGridBpmFromUsUgTexts(us, ug) ??
-      usImport.ultrastarMetronomeBpm;
+      suggestGridBpmFromUsUgTexts(us, ug) ?? usImport.ultrastarMetronomeBpm;
     expect(bpm).toBeCloseTo(120, 0);
     const period = 60_000 / bpm;
     const durationMs = 180_000;
@@ -1410,7 +1412,13 @@ E
 
     // Content-epoch: Beat 1 → tick 0 on the map
     expect(
-      secondsToTicks(0, r.tempoMap, r.seedBpm, { numerator: 4, denominator: 4 }, DEFAULT_PPQ),
+      secondsToTicks(
+        0,
+        r.tempoMap,
+        r.seedBpm,
+        { numerator: 4, denominator: 4 },
+        DEFAULT_PPQ,
+      ),
     ).toBe(0);
   });
 
@@ -1454,7 +1462,9 @@ E
     expect(firstVocal.startTicks).toBeGreaterThanOrEqual(gapTicks - BAR);
     expect(firstVocal.startTicks).toBeLessThanOrEqual(gapTicks + BAR);
     expect(firstVocal.startTicks).toBeLessThan(verse.startTicks);
-    expect(firstVocal.startTicks).toBeGreaterThanOrEqual(verse.startTicks - BAR);
+    expect(firstVocal.startTicks).toBeGreaterThanOrEqual(
+      verse.startTicks - BAR,
+    );
   });
 
   it("winner-intro-vc: does not rewrite Audio Start Offset via chord↔syllable lock", () => {
@@ -1465,7 +1475,10 @@ E
 
     const durationMs = 180_000;
     const lateOffsetMs = 2_000;
-    const beatMs = Array.from({ length: 400 }, (_, i) => lateOffsetMs + i * 500);
+    const beatMs = Array.from(
+      { length: 400 },
+      (_, i) => lateOffsetMs + i * 500,
+    );
 
     const r = bridgeUsUgImport(usImport, ug, {
       idPrefix: "winner-align",

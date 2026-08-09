@@ -23,10 +23,7 @@ import type { Stores } from "../storage/index.js";
 import { handleRouteError, sendError } from "./errors.js";
 
 export type YoutubeAudioJobStatus =
-  | "pending"
-  | "downloading"
-  | "done"
-  | "error";
+  "pending" | "downloading" | "done" | "error";
 
 export type YoutubeAudioJob = {
   id: string;
@@ -199,7 +196,9 @@ export const ytDlpResolver = {
 };
 
 export async function checkYtDlpAvailable(dataDir: string): Promise<boolean> {
-  const command = await ytDlpResolver.resolve(dataDir, { allowDownload: false });
+  const command = await ytDlpResolver.resolve(dataDir, {
+    allowDownload: false,
+  });
   return Boolean(command);
 }
 
@@ -266,7 +265,16 @@ export async function downloadYoutubeMp3Bytes(
     // 1. Primary attempt: MP3 post-processing
     let res = await runYtDlpSpawn(
       ytDlpCommand,
-      ["-x", "--audio-format", "mp3", "--no-playlist", "--newline", "-o", outTemplate, url],
+      [
+        "-x",
+        "--audio-format",
+        "mp3",
+        "--no-playlist",
+        "--newline",
+        "-o",
+        outTemplate,
+        url,
+      ],
       onProgress,
     );
 
@@ -274,17 +282,37 @@ export async function downloadYoutubeMp3Bytes(
     if (res.code !== 0) {
       res = await runYtDlpSpawn(
         ytDlpCommand,
-        ["-f", "bestaudio/best", "--no-playlist", "--newline", "-o", outTemplate, url],
+        [
+          "-f",
+          "bestaudio/best",
+          "--no-playlist",
+          "--newline",
+          "-o",
+          outTemplate,
+          url,
+        ],
         onProgress,
       );
     }
 
     // 3. Fallback: Try repo-bundled binary if command was system yt-dlp
     const repoBundled = ytdlpRepoBundledPath();
-    if (res.code !== 0 && ytDlpCommand !== repoBundled && (await looksLikeYtDlpBinary(repoBundled))) {
+    if (
+      res.code !== 0 &&
+      ytDlpCommand !== repoBundled &&
+      (await looksLikeYtDlpBinary(repoBundled))
+    ) {
       res = await runYtDlpSpawn(
         repoBundled,
-        ["-f", "bestaudio/best", "--no-playlist", "--newline", "-o", outTemplate, url],
+        [
+          "-f",
+          "bestaudio/best",
+          "--no-playlist",
+          "--newline",
+          "-o",
+          outTemplate,
+          url,
+        ],
         onProgress,
       );
     }
@@ -296,7 +324,15 @@ export async function downloadYoutubeMp3Bytes(
         if (freshBundled && (await looksLikeYtDlpBinary(freshBundled))) {
           res = await runYtDlpSpawn(
             freshBundled,
-            ["-f", "bestaudio/best", "--no-playlist", "--newline", "-o", outTemplate, url],
+            [
+              "-f",
+              "bestaudio/best",
+              "--no-playlist",
+              "--newline",
+              "-o",
+              outTemplate,
+              url,
+            ],
             onProgress,
           );
         }
@@ -434,8 +470,7 @@ export function mountSessionYoutubeRoutes(router: Router): void {
     try {
       pruneSessionJobs();
       const videoIdRaw = req.body?.videoId;
-      const videoId =
-        typeof videoIdRaw === "string" ? videoIdRaw.trim() : "";
+      const videoId = typeof videoIdRaw === "string" ? videoIdRaw.trim() : "";
       if (!YOUTUBE_VIDEO_ID_RE.test(videoId)) {
         sendError(res, 400, "Nieprawidłowy identyfikator YouTube (11 znaków).");
         return;
@@ -535,8 +570,7 @@ export function createYoutubeAudioRouter(stores: Stores): Router {
       const projectId = projectIdFrom(req);
       await stores.getProject(projectId);
       const videoIdRaw = req.body?.videoId;
-      const videoId =
-        typeof videoIdRaw === "string" ? videoIdRaw.trim() : "";
+      const videoId = typeof videoIdRaw === "string" ? videoIdRaw.trim() : "";
       if (!YOUTUBE_VIDEO_ID_RE.test(videoId)) {
         sendError(res, 400, "Nieprawidłowy identyfikator YouTube (11 znaków).");
         return;

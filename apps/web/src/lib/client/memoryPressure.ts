@@ -335,12 +335,18 @@ export function startMemoryPressureMonitor(
   if (typeof window === "undefined") return;
   if (monitorTimer != null) return;
   noteMemoryCheckpoint("monitor-start");
-  monitorTimer = setInterval(() => {
-    if (typeof document !== "undefined" && document.visibilityState === "hidden") {
-      return;
-    }
-    noteMemoryCheckpoint("poll");
-  }, Math.max(2_000, intervalMs));
+  monitorTimer = setInterval(
+    () => {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
+      noteMemoryCheckpoint("poll");
+    },
+    Math.max(2_000, intervalMs),
+  );
 }
 
 export function stopMemoryPressureMonitor(): void {

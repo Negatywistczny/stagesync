@@ -74,10 +74,7 @@ export class UsdbSessionExpiredError extends Error {
 }
 
 export type UsdbAuthErrorCode =
-  | "invalid_credentials"
-  | "unreachable"
-  | "rate_limited"
-  | "no_session";
+  "invalid_credentials" | "unreachable" | "rate_limited" | "no_session";
 
 /** Login / account-test failures with a stable code for HTTP + UI copy. */
 export class UsdbAuthError extends Error {
@@ -288,7 +285,10 @@ export function parseUsdbTxtFromHtml(html: string): string | null {
   if (!match) return null;
   const raw = decodeHtmlEntities(match[1] ?? "");
   // USDB may wrap with leading whitespace; keep UltraStar newlines.
-  return raw.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").trim()
+  return raw
+    .replace(/^\uFEFF/, "")
+    .replace(/\r\n/g, "\n")
+    .trim()
     ? raw.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n")
     : null;
 }
@@ -352,7 +352,11 @@ const DEFAULT_HEADERS: Record<string, string> = {
 async function usdbRequest(
   pathAndQuery: string,
   init: RequestInit & { cookie?: string } = {},
-): Promise<{ status: number; html: string; cookieFromResponse: string | null }> {
+): Promise<{
+  status: number;
+  html: string;
+  cookieFromResponse: string | null;
+}> {
   const { cookie, headers: initHeaders, ...rest } = init;
   const headers: Record<string, string> = {
     ...DEFAULT_HEADERS,
@@ -478,7 +482,10 @@ export async function loginUsdb(creds: UsdbCredentials): Promise<string> {
 
   cookie = mergeCookieHeader(cookie, verify.cookieFromResponse) ?? cookie;
 
-  if (NOT_LOGGED_IN_RE.test(verify.html) || !LOGGED_IN_HINT_RE.test(verify.html)) {
+  if (
+    NOT_LOGGED_IN_RE.test(verify.html) ||
+    !LOGGED_IN_HINT_RE.test(verify.html)
+  ) {
     throw new UsdbAuthError("invalid_credentials", MSG_INVALID_CREDENTIALS);
   }
 
@@ -604,17 +611,14 @@ export async function fetchUsdbSong(
   return withUsdbSession(creds, async (cookie) => {
     let result: { status: number; html: string };
     try {
-      result = await usdbRequest(
-        `/index.php?link=gettxt&id=${id}`,
-        {
-          method: "POST",
-          cookie,
-          headers: {
-            "content-type": "application/x-www-form-urlencoded",
-          },
-          body: "wd=1",
+      result = await usdbRequest(`/index.php?link=gettxt&id=${id}`, {
+        method: "POST",
+        cookie,
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
         },
-      );
+        body: "wd=1",
+      });
     } catch (err) {
       const e = err as { name?: string; message?: string };
       if (e.name === "TimeoutError" || e.name === "AbortError") {

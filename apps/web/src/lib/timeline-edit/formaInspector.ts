@@ -17,7 +17,11 @@ import {
 import { logicBarFromTicks, ticksFromLogicBar } from "./scoreBarEdit.js";
 import { shiftTekstBlocks } from "./tekstBlocks.js";
 
-export function renameFormaClip(project: Project, clipId: string, name: string): Project {
+export function renameFormaClip(
+  project: Project,
+  clipId: string,
+  name: string,
+): Project {
   const trimmed = name.trim();
   if (!trimmed) return project;
   return {
@@ -74,8 +78,7 @@ export function shiftProjectContentFromTicks(
 
   const meter = resolveMeterAt(project, Math.max(0, from));
   const barTicks = ticksPerBar(meter, project.ppq);
-  const deltaBars =
-    barTicks > 0 ? Math.round(delta / barTicks) : 0;
+  const deltaBars = barTicks > 0 ? Math.round(delta / barTicks) : 0;
   const fromBar = logicBarFromTicks(project, from);
   const anchors =
     deltaBars !== 0 && project.scoreBarMap?.anchors?.length
@@ -90,9 +93,7 @@ export function shiftProjectContentFromTicks(
     ...project,
     forma: { clips: formaClips },
     tekst: {
-      clips: project.tekst.clips.map((c) =>
-        shiftTekstClipFrom(c, from, delta),
-      ),
+      clips: project.tekst.clips.map((c) => shiftTekstClipFrom(c, from, delta)),
     },
     akordy: {
       clips: project.akordy.clips.map((c) => shiftStartTicks(c, from, delta)),
@@ -148,7 +149,8 @@ function shiftAllProjectTicks(project: Project, deltaTicks: number): Project {
       startTicks: c.startTicks + delta,
       blocks: blocks.length > 0 ? blocks : c.blocks,
     };
-  };  const meter = resolveMeterAt(project, 0);
+  };
+  const meter = resolveMeterAt(project, 0);
   const barTicks = ticksPerBar(meter, project.ppq);
   const deltaBars = barTicks > 0 ? Math.round(delta / barTicks) : 0;
   return {
@@ -186,7 +188,10 @@ export function setCountdownBars(project: Project, bars: number): Project {
   const cd = project.forma.clips.find((c) => c.kind === "countdown");
   if (!cd) return project;
 
-  const meter = resolveMeterAt(project, Math.max(0, cd.startTicks + cd.lengthTicks));
+  const meter = resolveMeterAt(
+    project,
+    Math.max(0, cd.startTicks + cd.lengthTicks),
+  );
   const barTicks = ticksPerBar(meter, project.ppq);
   const lengthTicks = bars * barTicks;
   if (lengthTicks === cd.lengthTicks && cd.startTicks + cd.lengthTicks === 0) {
@@ -314,7 +319,10 @@ export function addFormaSubsection(
   const last = ranges[ranges.length - 1]!;
   const meter = resolveMeterAt(project, clip.startTicks + last.startRel);
   const barTicks = ticksPerBar(meter, project.ppq);
-  const beatTicks = Math.max(1, Math.floor(barTicks / Math.max(1, meter.numerator)));
+  const beatTicks = Math.max(
+    1,
+    Math.floor(barTicks / Math.max(1, meter.numerator)),
+  );
 
   let cutRel: number;
   if (last.lengthRel >= 2 * beatTicks) {
@@ -358,7 +366,7 @@ export function deleteFormaSubsection(
   const ranges = subsectionRanges(clip.subsections, clip.lengthTicks);
   if (ranges.length < 2) {
     // Already a single span — clear storage.
-    if (!(clip.subsections?.length)) return null;
+    if (!clip.subsections?.length) return null;
     const cleared = {
       ...project,
       forma: {

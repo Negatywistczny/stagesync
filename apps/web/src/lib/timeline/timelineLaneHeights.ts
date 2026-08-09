@@ -21,7 +21,10 @@ export const DOCK_COMPACT_MAX_PX = 56;
 export type LaneHeightsMap = Record<string, number>;
 
 export function clampLaneHeight(px: number): number {
-  return Math.max(MIN_LANE_PX, Math.min(MAX_LANE_PX, Math.round(Number(px) || DEFAULT_LANE_PX)));
+  return Math.max(
+    MIN_LANE_PX,
+    Math.min(MAX_LANE_PX, Math.round(Number(px) || DEFAULT_LANE_PX)),
+  );
 }
 
 /** Unset-lane default: audio follows Zoom V; meta lanes stay compact vs audio. */

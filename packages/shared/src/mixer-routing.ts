@@ -85,7 +85,10 @@ export function resolveMasterOutputRouting(
     routing?.channelOffset != null &&
     Number.isFinite(routing.channelOffset)
   ) {
-    channelOffset = Math.max(0, Math.min(62, Math.floor(routing.channelOffset)));
+    channelOffset = Math.max(
+      0,
+      Math.min(62, Math.floor(routing.channelOffset)),
+    );
   }
   // Prefer even start for stereo pairs (device CH 1–2, 3–4, …).
   if (channelMode === "stereo" && channelOffset % 2 === 1) {
@@ -228,10 +231,7 @@ export type BusEdge = {
 export function busGraphHasCycle(busses: readonly BusEdge[]): boolean {
   const edges = new Map<string, string | null>();
   for (const b of busses) {
-    edges.set(
-      b.id,
-      b.output?.kind === "bus" ? b.output.busId : null,
-    );
+    edges.set(b.id, b.output?.kind === "bus" ? b.output.busId : null);
   }
   const visiting = new Set<string>();
   const visited = new Set<string>();
@@ -290,8 +290,7 @@ export function isHwOutRepatchBlockedWhilePlaying(
   next: MixerOutputDest,
 ): boolean {
   if (!playing) return false;
-  const prevHw =
-    previous?.kind === "hw_out" ? previous.hwOutputId : null;
+  const prevHw = previous?.kind === "hw_out" ? previous.hwOutputId : null;
   const nextHw = next.kind === "hw_out" ? next.hwOutputId : null;
   if (prevHw == null && nextHw == null) return false;
   if (prevHw != null && nextHw != null && prevHw === nextHw) return false;
@@ -306,14 +305,12 @@ export function resolveTrackOutputDest(
 ): MixerOutputDest {
   if (output == null || output.kind === "master") return MASTER_OUTPUT;
   if (output.kind === "bus") {
-    const set =
-      busIds instanceof Set ? busIds : new Set(busIds);
+    const set = busIds instanceof Set ? busIds : new Set(busIds);
     if (set.has(output.busId)) return output;
   }
   if (output.kind === "hw_out") {
     if (!hwOutputIds) return MASTER_OUTPUT;
-    const set =
-      hwOutputIds instanceof Set ? hwOutputIds : new Set(hwOutputIds);
+    const set = hwOutputIds instanceof Set ? hwOutputIds : new Set(hwOutputIds);
     if (set.has(output.hwOutputId)) return output;
   }
   return MASTER_OUTPUT;
@@ -343,8 +340,7 @@ export function resolveBusOutputDest(
     return { kind: "master" };
   }
   if (output.kind === "bus") {
-    const set =
-      opts.busIds instanceof Set ? opts.busIds : new Set(opts.busIds);
+    const set = opts.busIds instanceof Set ? opts.busIds : new Set(opts.busIds);
     if (!set.has(output.busId) || output.busId === opts.fromBusId) {
       return { kind: "master" };
     }

@@ -54,7 +54,9 @@ function occupiedChannelSet(
   const mWidth = hardwarePatchChannelWidth(master.channelMode);
   for (let i = 0; i < mWidth; i++) occupied.add(master.channelOffset + i);
   for (const row of existing) {
-    const width = hardwarePatchChannelWidth(resolveChannelMode(row.channelMode));
+    const width = hardwarePatchChannelWidth(
+      resolveChannelMode(row.channelMode),
+    );
     for (let i = 0; i < width; i++) occupied.add(row.channelOffset + i);
   }
   return occupied;
@@ -136,8 +138,7 @@ export function addAudioHardwareOutput(
     );
   }
   const hwOutputId = crypto.randomUUID();
-  const name =
-    partial?.name?.trim() || nextHardwareOutputName(rows);
+  const name = partial?.name?.trim() || nextHardwareOutputName(rows);
   const channelOffset =
     partial?.channelOffset ??
     nextHardwareChannelOffset(
@@ -181,7 +182,8 @@ export function updateAudioHardwareOutput(
     audioHardwareOutputs: rows.map((r) => {
       if (r.id !== hwOutputId) return r;
       const next = { ...r };
-      if (patch.name != null) next.name = patch.name.trim().slice(0, 80) || r.name;
+      if (patch.name != null)
+        next.name = patch.name.trim().slice(0, 80) || r.name;
       if (patch.channelOffset != null) {
         next.channelOffset = Math.max(
           0,
@@ -259,10 +261,7 @@ export function setMasterOutputRouting(
   }
   const candidate = Object.keys(next).length === 0 ? null : next;
   if (
-    masterOutputOverlapsHwPatches(
-      candidate,
-      project.audioHardwareOutputs ?? [],
-    )
+    masterOutputOverlapsHwPatches(candidate, project.audioHardwareOutputs ?? [])
   ) {
     throw new RangeError(
       "Master output channels overlap a hardware output patch",

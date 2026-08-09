@@ -66,14 +66,20 @@ describe("setlist helpers", () => {
       {
         enabled: true,
         items: [
-          { type: "project", projectId: "11111111-1111-4111-8111-111111111111" },
+          {
+            type: "project",
+            projectId: "11111111-1111-4111-8111-111111111111",
+          },
           {
             type: "break",
             id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
             label: "Przerwa / Zapowiedź",
             durationMinutes: 10,
           },
-          { type: "project", projectId: "99999999-9999-4999-8999-999999999999" },
+          {
+            type: "project",
+            projectId: "99999999-9999-4999-8999-999999999999",
+          },
         ],
         projectIds: [
           "11111111-1111-4111-8111-111111111111",
@@ -85,10 +91,11 @@ describe("setlist helpers", () => {
       library,
     );
     expect(pruned.items).toHaveLength(2);
-    expect(pruned.projectIds).toEqual([
-      "11111111-1111-4111-8111-111111111111",
-    ]);
-    expect(pruned.items[1]).toMatchObject({ type: "break", durationMinutes: 10 });
+    expect(pruned.projectIds).toEqual(["11111111-1111-4111-8111-111111111111"]);
+    expect(pruned.items[1]).toMatchObject({
+      type: "break",
+      durationMinutes: 10,
+    });
   });
 
   it("resolve next after current (projects only)", () => {
@@ -138,14 +145,20 @@ describe("setlist helpers", () => {
         version: 1,
         enabled: true,
         items: [
-          { type: "project", projectId: "11111111-1111-4111-8111-111111111111" },
+          {
+            type: "project",
+            projectId: "11111111-1111-4111-8111-111111111111",
+          },
           {
             type: "break",
             id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
             label: "Przerwa / Zapowiedź",
             durationMinutes: 5,
           },
-          { type: "project", projectId: "99999999-9999-4999-8999-999999999999" },
+          {
+            type: "project",
+            projectId: "99999999-9999-4999-8999-999999999999",
+          },
         ],
         projectIds: [
           "11111111-1111-4111-8111-111111111111",
@@ -217,7 +230,10 @@ describe("setlist helpers", () => {
         version: 1,
         enabled: true,
         items: [
-          { type: "project", projectId: "99999999-9999-4999-8999-999999999999" },
+          {
+            type: "project",
+            projectId: "99999999-9999-4999-8999-999999999999",
+          },
         ],
         projectIds: ["99999999-9999-4999-8999-999999999999"],
         autoAdvance: { enabled: false },
@@ -228,9 +244,9 @@ describe("setlist helpers", () => {
     );
     // pruned items empty but original items non-empty → projectIds rebuild path
     expect(view.items).toEqual([]);
-    expect(view.warnings.some((w) => w.code === "SETLIST_MISSING_PROJECT")).toBe(
-      true,
-    );
+    expect(
+      view.warnings.some((w) => w.code === "SETLIST_MISSING_PROJECT"),
+    ).toBe(true);
   });
 
   it("formatSetDurationMs pads seconds and clamps negative", () => {

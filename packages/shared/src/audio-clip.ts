@@ -91,7 +91,6 @@ export function clampAudioFades(
   return { fadeInMs: fi, fadeOutMs: fo };
 }
 
-
 /** End exclusive tick of a clip. */
 export function audioClipEndTicks(
   clip: Pick<AudioClip, "startTicks" | "lengthTicks">,
@@ -198,7 +197,10 @@ export function maxAudioLengthTicks(
 ): number | null {
   const durationMs = asset?.durationMs;
   if (durationMs == null || !(durationMs > 0)) return null;
-  const playable = Math.max(0, durationMs - trimInMsOf(clip) - trimOutMsOf(clip));
+  const playable = Math.max(
+    0,
+    durationMs - trimInMsOf(clip) - trimOutMsOf(clip),
+  );
   return Math.max(1, elapsedToTicks(playable, ctx.bpm, ctx.meter, ppqOf(ctx)));
 }
 

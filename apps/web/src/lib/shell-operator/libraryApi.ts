@@ -74,9 +74,7 @@ export async function batchMidiProgramIds(
   return LibrarySchema.parse(await res.json());
 }
 
-export async function exportLibraryPack(
-  projectIds?: string[],
-): Promise<Blob> {
+export async function exportLibraryPack(projectIds?: string[]): Promise<Blob> {
   const res = await fetch("/api/library/export", {
     method: "POST",
     headers: mergeApiHeaders({ "Content-Type": "application/json" }),
@@ -131,7 +129,10 @@ function toPutBody(project: Project): PutProjectBody {
 }
 
 /** Full-document PUT (strict v3). */
-export async function putProject(id: string, project: Project): Promise<Project> {
+export async function putProject(
+  id: string,
+  project: Project,
+): Promise<Project> {
   if (!id.trim()) {
     throw new Error("Brak identyfikatora projektu");
   }

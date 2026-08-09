@@ -17,9 +17,9 @@ describe("joinTekstBlockTexts", () => {
   });
 
   it("keeps mid-word syllables glued when no spaces stored", () => {
-    expect(
-      joinTekstBlockTexts([{ text: "A" }, { text: "bout" }]),
-    ).toBe("About");
+    expect(joinTekstBlockTexts([{ text: "A" }, { text: "bout" }])).toBe(
+      "About",
+    );
   });
 });
 
@@ -31,12 +31,7 @@ describe("withTekstBlockWordSpaces", () => {
       { id: "3", text: "the" },
       { id: "4", text: "drums" },
     ]);
-    expect(blocks.map((b) => b.text)).toEqual([
-      "I ",
-      "hear ",
-      "the ",
-      "drums",
-    ]);
+    expect(blocks.map((b) => b.text)).toEqual(["I ", "hear ", "the ", "drums"]);
     expect(joinTekstBlockTexts(blocks)).toBe("I hear the drums");
   });
 
@@ -59,9 +54,7 @@ describe("withTekstBlockWordSpaces", () => {
   });
 
   it("is a no-op when join already equals line text", () => {
-    const input = [
-      { id: "1", text: "Solo" },
-    ];
+    const input = [{ id: "1", text: "Solo" }];
     expect(withTekstBlockWordSpaces("Solo", input).map((b) => b.text)).toEqual([
       "Solo",
     ]);

@@ -5,7 +5,13 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
 
 vi.mock("@lib/shell-operator/ultrastarImportApi.js", () => ({
@@ -91,9 +97,7 @@ describe("CombinedUsUgImportForm", () => {
       />,
     );
 
-    expect(
-      screen.getByText("Krok 1 z 4: Plik UltraStar (.txt)"),
-    ).toBeTruthy();
+    expect(screen.getByText("Krok 1 z 4: Plik UltraStar (.txt)")).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Tekst UltraStar"), {
       target: { value: us },
@@ -109,9 +113,7 @@ describe("CombinedUsUgImportForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
 
-    expect(
-      screen.getByText("Krok 3 z 4: Ścieżka Audio"),
-    ).toBeTruthy();
+    expect(screen.getByText("Krok 3 z 4: Ścieżka Audio")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Dalej bez audio" }));
 
     expect(
@@ -193,15 +195,12 @@ describe("CombinedUsUgImportForm", () => {
       target: { value: ug },
     });
 
-    expect(
-      await screen.findByText(/Zgodność z UltraStar:/i),
-    ).toBeTruthy();
+    expect(await screen.findByText(/Zgodność z UltraStar:/i)).toBeTruthy();
   });
 
   it("opens Konto USDB when search reports missing credentials", async () => {
-    const { searchUltrastarSongs } = await import(
-      "@lib/shell-operator/ultrastarImportApi.js"
-    );
+    const { searchUltrastarSongs } =
+      await import("@lib/shell-operator/ultrastarImportApi.js");
     vi.mocked(searchUltrastarSongs).mockRejectedValueOnce(
       new Error(
         "Brak konta USDB. Ustaw je w Import UltraStar → Konto USDB albo w Ustawieniach serwera.",
@@ -221,9 +220,7 @@ describe("CombinedUsUgImportForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /Szukaj w USDB/i }));
 
-    expect(
-      await screen.findByTestId("ultrastar-usdb-account"),
-    ).toBeTruthy();
+    expect(await screen.findByTestId("ultrastar-usdb-account")).toBeTruthy();
     expect(screen.getByText(/Brak konta USDB/i)).toBeTruthy();
   });
 
@@ -231,20 +228,38 @@ describe("CombinedUsUgImportForm", () => {
     const us = readFileSync(join(FIX, "song.txt"), "utf8");
     const ug = readFileSync(join(FIX, "chords.txt"), "utf8");
 
-    const { searchUgTabs, fetchUgTabFromServer } = await import("@lib/shell-operator/ugImportApi.js");
+    const { searchUgTabs, fetchUgTabFromServer } =
+      await import("@lib/shell-operator/ugImportApi.js");
     const searchUgTabsMock = vi.mocked(searchUgTabs);
     const fetchUgTabFromServerMock = vi.mocked(fetchUgTabFromServer);
 
     searchUgTabsMock.mockResolvedValueOnce({
       results: [
-        { id: 1, title: "Low Match Version", artist: "ABBA", type: "Chords", rating: 4, url: "https://ug.com/tab1" },
-        { id: 2, title: "High Match Version", artist: "ABBA", type: "Chords", rating: 5, url: "https://ug.com/tab2" },
+        {
+          id: 1,
+          title: "Low Match Version",
+          artist: "ABBA",
+          type: "Chords",
+          rating: 4,
+          url: "https://ug.com/tab1",
+        },
+        {
+          id: 2,
+          title: "High Match Version",
+          artist: "ABBA",
+          type: "Chords",
+          rating: 5,
+          url: "https://ug.com/tab2",
+        },
       ],
     });
 
     fetchUgTabFromServerMock.mockImplementation(async (url) => {
       if (url === "https://ug.com/tab1") {
-        return { content: "[Verse]\nRandom unrelated text", metadata: { title: "Low Match Version" } };
+        return {
+          content: "[Verse]\nRandom unrelated text",
+          metadata: { title: "Low Match Version" },
+        };
       }
       return { content: ug, metadata: { title: "High Match Version" } };
     });

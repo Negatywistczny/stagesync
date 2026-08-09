@@ -39,9 +39,7 @@ describe("SongImportWizard", () => {
     );
     expect(screen.getByText("Źródła importu")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
-    expect(
-      screen.getByText("Krok 1 z 4: Plik UltraStar (.txt)"),
-    ).toBeTruthy();
+    expect(screen.getByText("Krok 1 z 4: Plik UltraStar (.txt)")).toBeTruthy();
     expect(screen.getByRole("button", { name: /^Konto USDB$/i })).toBeTruthy();
   });
 
@@ -55,13 +53,9 @@ describe("SongImportWizard", () => {
         onApplyUg={() => {}}
       />,
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Ultimate Guitar" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Ultimate Guitar" }));
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
-    expect(
-      screen.getByText(/Szukaj na USDB, wklej link/i),
-    ).toBeTruthy();
+    expect(screen.getByText(/Szukaj na USDB, wklej link/i)).toBeTruthy();
   });
 
   it("routes to UG-only when UltraStar chip is off", () => {
@@ -74,13 +68,9 @@ describe("SongImportWizard", () => {
         onApplyUg={() => {}}
       />,
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "UltraStar / USDB" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "UltraStar / USDB" }));
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
-    expect(
-      screen.getByLabelText("Tytuł do wyszukiwania UG"),
-    ).toBeTruthy();
+    expect(screen.getByLabelText("Tytuł do wyszukiwania UG")).toBeTruthy();
   });
 
   it("skips audio step in US+UG when Audio chip is off", () => {
@@ -97,8 +87,6 @@ describe("SongImportWizard", () => {
       screen.getByRole("button", { name: "Audio (Smart Tempo)" }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Dalej" }));
-    expect(
-      screen.getByText("Krok 1 z 3: Plik UltraStar (.txt)"),
-    ).toBeTruthy();
+    expect(screen.getByText("Krok 1 z 3: Plik UltraStar (.txt)")).toBeTruthy();
   });
 });

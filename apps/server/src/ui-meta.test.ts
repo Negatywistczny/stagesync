@@ -52,7 +52,10 @@ describe("ui-meta / health (#692)", () => {
         assets: [{ path: "/index.html", hash: "aa", size: 28 }],
       }),
     );
-    await writeFile(join(staticDir, "ui-bundle.zip"), Buffer.from("PK\u0003\u0004fake"));
+    await writeFile(
+      join(staticDir, "ui-bundle.zip"),
+      Buffer.from("PK\u0003\u0004fake"),
+    );
     await writeFile(
       join(staticDir, "ui-role-hashes.json"),
       JSON.stringify({
@@ -149,5 +152,4 @@ describe("ui-meta / health (#692)", () => {
     expect(meta.uiHash).toBe(UI_UNAVAILABLE_HASH);
     expect(meta.assets).toEqual([]);
   });
-
 });

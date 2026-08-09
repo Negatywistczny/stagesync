@@ -15,12 +15,7 @@ export const DEFAULT_MIXER_ZONE_VISIBILITY: MixerZoneVisibility = {
   master: true,
 };
 
-const ZONE_IDS: readonly MixerZoneId[] = [
-  "audio",
-  "bus",
-  "hw",
-  "master",
-];
+const ZONE_IDS: readonly MixerZoneId[] = ["audio", "bus", "hw", "master"];
 
 function isMixerZoneId(value: string): value is MixerZoneId {
   return (ZONE_IDS as readonly string[]).includes(value);

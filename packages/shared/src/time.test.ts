@@ -209,7 +209,9 @@ describe("elapsedToTicks / ticksPerMs", () => {
     { bpm: Number.NaN },
     { bpm: Number.POSITIVE_INFINITY },
   ] as const)("ticksPerMs rejects bpm=$bpm", ({ bpm }) => {
-    expect(() => ticksPerMs(bpm, TS_4_4)).toThrow(/bpm must be a finite number > 0/);
+    expect(() => ticksPerMs(bpm, TS_4_4)).toThrow(
+      /bpm must be a finite number > 0/,
+    );
   });
 
   it.each([
@@ -220,9 +222,12 @@ describe("elapsedToTicks / ticksPerMs", () => {
       re: /elapsedMs must be finite/,
     },
     { elapsedMs: 500, bpm: 0, re: /bpm must be a finite number > 0/ },
-  ] as const)("elapsedToTicks rejects invalid input", ({ elapsedMs, bpm, re }) => {
-    expect(() => elapsedToTicks(elapsedMs, bpm, TS_4_4)).toThrow(re);
-  });
+  ] as const)(
+    "elapsedToTicks rejects invalid input",
+    ({ elapsedMs, bpm, re }) => {
+      expect(() => elapsedToTicks(elapsedMs, bpm, TS_4_4)).toThrow(re);
+    },
+  );
 
   it.each([
     { ticks: Number.NaN },
@@ -238,7 +243,9 @@ describe("ticksToBbt / display / quarters / absBeat guards", () => {
     { ticks: 1.5 },
     { ticks: Number.POSITIVE_INFINITY },
   ] as const)("ticksToBbt rejects non-int ticks ($ticks)", ({ ticks }) => {
-    expect(() => ticksToBbt(ticks, TS_4_4)).toThrow(/ticks must be a finite integer/);
+    expect(() => ticksToBbt(ticks, TS_4_4)).toThrow(
+      /ticks must be a finite integer/,
+    );
   });
 
   it.each([
@@ -251,33 +258,36 @@ describe("ticksToBbt / display / quarters / absBeat guards", () => {
     );
   });
 
-  it.each([
-    { bar: Number.NaN },
-    { bar: Number.POSITIVE_INFINITY },
-  ] as const)("toDisplayBar rejects non-finite bar ($bar)", ({ bar }) => {
-    expect(() => toDisplayBar(bar)).toThrow(/bar must be finite/);
-  });
+  it.each([{ bar: Number.NaN }, { bar: Number.POSITIVE_INFINITY }] as const)(
+    "toDisplayBar rejects non-finite bar ($bar)",
+    ({ bar }) => {
+      expect(() => toDisplayBar(bar)).toThrow(/bar must be finite/);
+    },
+  );
 
   it.each([
     { displayBar: Number.NaN },
     { displayBar: Number.NEGATIVE_INFINITY },
-  ] as const)("fromDisplayBar rejects non-finite ($displayBar)", ({
-    displayBar,
-  }) => {
-    expect(() => fromDisplayBar(displayBar)).toThrow(/displayBar must be finite/);
-  });
+  ] as const)(
+    "fromDisplayBar rejects non-finite ($displayBar)",
+    ({ displayBar }) => {
+      expect(() => fromDisplayBar(displayBar)).toThrow(
+        /displayBar must be finite/,
+      );
+    },
+  );
 
   it.each([
     { quarters: 1.5, ppq: DEFAULT_PPQ },
     { quarters: Number.NaN, ppq: DEFAULT_PPQ },
     { quarters: 1, ppq: 0 },
     { quarters: 1, ppq: 960.5 },
-  ] as const)("quartersToTicks rejects invalid quarters/ppq", ({
-    quarters,
-    ppq,
-  }) => {
-    expect(() => quartersToTicks(quarters, ppq)).toThrow(RangeError);
-  });
+  ] as const)(
+    "quartersToTicks rejects invalid quarters/ppq",
+    ({ quarters, ppq }) => {
+      expect(() => quartersToTicks(quarters, ppq)).toThrow(RangeError);
+    },
+  );
 
   it.each([
     { ticks: 1.5, ppq: DEFAULT_PPQ },
@@ -296,7 +306,10 @@ describe("ticksToBbt / display / quarters / absBeat guards", () => {
     },
     { absBeat: 1, ppq: 0, re: /ppq must be a positive integer/ },
     { absBeat: 1, ppq: 1.5, re: /ppq must be a positive integer/ },
-  ] as const)("absBeatToTicks rejects invalid input", ({ absBeat, ppq, re }) => {
-    expect(() => absBeatToTicks(absBeat, ppq)).toThrow(re);
-  });
+  ] as const)(
+    "absBeatToTicks rejects invalid input",
+    ({ absBeat, ppq, re }) => {
+      expect(() => absBeatToTicks(absBeat, ppq)).toThrow(re);
+    },
+  );
 });

@@ -5,19 +5,9 @@
 
 import type { ContextMenuItem } from "@stagesync/ui";
 
-export type ClipMenuLane =
-  | "forma"
-  | "tekst"
-  | "akordy"
-  | "cue"
-  | "audio";
+export type ClipMenuLane = "forma" | "tekst" | "akordy" | "cue" | "audio";
 
-export type EmptyLaneMenuKind =
-  | "forma"
-  | "tekst"
-  | "akordy"
-  | "cue"
-  | "audio";
+export type EmptyLaneMenuKind = "forma" | "tekst" | "akordy" | "cue" | "audio";
 
 export type AudioTrackMenuCallbacks = {
   canDuplicate: boolean;
@@ -210,9 +200,7 @@ export function audioTrackContextMenuLabel(selectionCount: number): string {
   const n = Number.isFinite(selectionCount)
     ? Math.max(1, Math.floor(selectionCount))
     : 1;
-  return n > 1
-    ? `Menu ścieżki audio (${n} zaznaczone)`
-    : "Menu ścieżki audio";
+  return n > 1 ? `Menu ścieżki audio (${n} zaznaczone)` : "Menu ścieżki audio";
 }
 
 /**

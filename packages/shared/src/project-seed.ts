@@ -43,9 +43,7 @@ export function createProjectV2Seed(
       ],
     },
     tempoMap: [{ id: "tempo-0", startTicks: 0, bpm: 120 }],
-    meterMap: [
-      { id: "meter-0", startTicks: 0, numerator: 4, denominator: 4 },
-    ],
+    meterMap: [{ id: "meter-0", startTicks: 0, numerator: 4, denominator: 4 }],
   };
 }
 
@@ -72,9 +70,7 @@ export const DEFAULT_TEMPLATE_PROJECT_ID =
   "00000000-0000-4000-8000-000000000001";
 
 /** Bundled wzór „Template” — Countdown + Intro, bez MIDI PC. */
-export function createDefaultTemplateProject(
-  updatedAt: string,
-): ProjectV6 {
+export function createDefaultTemplateProject(updatedAt: string): ProjectV6 {
   return createProjectV6Seed(
     DEFAULT_TEMPLATE_PROJECT_ID,
     "Template",
@@ -159,8 +155,7 @@ export function upgradeProjectV4ToV5(
     ...(isTemplate
       ? { isTemplate: true as const }
       : {
-          midiProgramId:
-            opts?.midiProgramId != null ? opts.midiProgramId : 0,
+          midiProgramId: opts?.midiProgramId != null ? opts.midiProgramId : 0,
         }),
   };
 }
@@ -178,9 +173,7 @@ export function wholeLineTekstBlock(
 }
 
 /** Attach a single whole-line block (UG / legacy / countdown / migrate). */
-export function withWholeLineTekstBlocks(
-  clip: TekstClipLine,
-): TekstClip {
+export function withWholeLineTekstBlocks(clip: TekstClipLine): TekstClip {
   return {
     ...clip,
     blocks: [wholeLineTekstBlock(clip)],

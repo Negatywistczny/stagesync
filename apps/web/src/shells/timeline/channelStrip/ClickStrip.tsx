@@ -74,14 +74,10 @@ export function ClickStrip({ state, callbacks }: ClickStripProps) {
           selected={state.muted}
           className={state.muted ? styles.tapBtnMute : undefined}
           title={
-            state.muted
-              ? "Włącz Click (metronom)"
-              : "Wycisz Click (metronom)"
+            state.muted ? "Włącz Click (metronom)" : "Wycisz Click (metronom)"
           }
           aria-label={
-            state.muted
-              ? "Włącz Click (metronom)"
-              : "Wycisz Click (metronom)"
+            state.muted ? "Włącz Click (metronom)" : "Wycisz Click (metronom)"
           }
           onClick={() => callbacks.onMuteClick()}
         >

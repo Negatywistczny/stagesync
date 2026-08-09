@@ -1,6 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
-import { access, mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises";
+import {
+  access,
+  mkdir,
+  readFile,
+  rm,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import {
   LibrarySchema,
@@ -169,7 +176,9 @@ function upgradeToV6(raw: unknown): Project {
     project = upgradeProjectV5ToV6(
       upgradeProjectV4ToV5(
         upgradeProjectV3ToV4(
-          upgradeProjectV2ToV3(upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw))),
+          upgradeProjectV2ToV3(
+            upgradeProjectV1ToV2(ProjectSchemaV1.parse(raw)),
+          ),
         ),
       ),
     );
@@ -181,9 +190,7 @@ function upgradeToV6(raw: unknown): Project {
     );
   } else if (isProjectV3(raw)) {
     project = upgradeProjectV5ToV6(
-      upgradeProjectV4ToV5(
-        upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw)),
-      ),
+      upgradeProjectV4ToV5(upgradeProjectV3ToV4(ProjectSchemaV3.parse(raw))),
     );
   } else if (isProjectV4(raw)) {
     project = upgradeProjectV5ToV6(
@@ -636,7 +643,10 @@ export function createStores(dataDir?: string) {
 
         if (onDisk) {
           try {
-            await rm(projectDir(paths, safeId), { recursive: true, force: true });
+            await rm(projectDir(paths, safeId), {
+              recursive: true,
+              force: true,
+            });
           } catch (err) {
             throw new StorageError(`Failed to delete project ${safeId}`, err);
           }
@@ -744,7 +754,10 @@ export function createStores(dataDir?: string) {
           await unlink(assetFilePath(paths, safeId, asset.storageName));
         } catch (err) {
           if (errCode(err) !== "ENOENT") {
-            throw new StorageError(`Failed to delete asset file ${assetId}`, err);
+            throw new StorageError(
+              `Failed to delete asset file ${assetId}`,
+              err,
+            );
           }
         }
         const next = ProjectSchema.parse({

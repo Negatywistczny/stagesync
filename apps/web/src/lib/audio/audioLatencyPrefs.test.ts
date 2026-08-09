@@ -59,5 +59,4 @@ describe("audioLatencyPrefs", () => {
     expect(getStoredLatencyCompensationMs()).toBe(0);
     expect(() => setStoredLatencyCompensationMs(40)).not.toThrow();
   });
-
 });

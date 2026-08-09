@@ -39,7 +39,11 @@ describe("Button", () => {
   });
 
   it("supports iconOnly class", () => {
-    render(<Button iconOnly aria-label="Close">×</Button>);
+    render(
+      <Button iconOnly aria-label="Close">
+        ×
+      </Button>,
+    );
     expect(screen.getByRole("button").className).toContain("ss-btn--icon");
   });
 

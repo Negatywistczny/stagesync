@@ -23,7 +23,10 @@ import {
   setStoredClockDisplayFormat,
   type ClockDisplayFormat,
 } from "@lib/client/clockDisplayPrefs.js";
-import { getMetronomeAudioContext, previewMetronomeClick } from "@lib/audio/metronome.js";
+import {
+  getMetronomeAudioContext,
+  previewMetronomeClick,
+} from "@lib/audio/metronome.js";
 import {
   getMetronomePrefs,
   setMetronomePrefs,
@@ -170,7 +173,10 @@ function ModalShell({
   );
 }
 
-export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) {
+export function ServerSettingsModal({
+  onClose,
+  initialTab = "general",
+}: Props) {
   const { latencyMs } = useTransport();
   const [tab, setTab] = useState<SettingsTab>(initialTab);
 
@@ -196,7 +202,9 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
   const [previewBusy, setPreviewBusy] = useState(false);
   const [server, setServer] = useState<ServerSettingsValues | null>(null);
   const serverSnap = useRef<ServerSettingsValues | null>(null);
-  const [serverMeta, setServerMeta] = useState<ServerSettingsResponse | null>(null);
+  const [serverMeta, setServerMeta] = useState<ServerSettingsResponse | null>(
+    null,
+  );
   const [restartNote, setRestartNote] = useState<string | null>(null);
   const [browseField, setBrowseField] = useState<string | null>(null);
   const [browseData, setBrowseData] = useState<BrowseResult | null>(null);
@@ -296,7 +304,9 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
         setServer({ ...res.values });
       } catch (err) {
         if (!cancelled) {
-          setMidiError(err instanceof Error ? err.message : "Błąd ustawień serwera");
+          setMidiError(
+            err instanceof Error ? err.message : "Błąd ustawień serwera",
+          );
         }
       }
     })();
@@ -367,7 +377,9 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           };
         } catch (err) {
           setAudioError(
-            err instanceof Error ? err.message : "Nie udało się zmienić wyjścia",
+            err instanceof Error
+              ? err.message
+              : "Nie udało się zmienić wyjścia",
           );
           setTab("audio");
           return;
@@ -535,9 +547,13 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           {tab === "general" && (
             <GeneralSettingsTab
               appearance={draft.appearance}
-              onAppearanceChange={(appearance) => setDraft((d) => ({ ...d, appearance }))}
+              onAppearanceChange={(appearance) =>
+                setDraft((d) => ({ ...d, appearance }))
+              }
               clockFormat={draft.clockFormat}
-              onClockFormatChange={(clockFormat) => setDraft((d) => ({ ...d, clockFormat }))}
+              onClockFormatChange={(clockFormat) =>
+                setDraft((d) => ({ ...d, clockFormat }))
+              }
               deviceName={draft.deviceName}
               onDeviceNameChange={(deviceName) => {
                 setDeviceNameError(null);
@@ -615,7 +631,11 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 const start =
                   serverMeta?.resolved?.backupsDir ||
                   serverMeta?.resolved?.dataDir ||
-                  String(server?.STAGESYNC_BACKUPS_DIR || server?.STAGESYNC_DATA_DIR || "");
+                  String(
+                    server?.STAGESYNC_BACKUPS_DIR ||
+                      server?.STAGESYNC_DATA_DIR ||
+                      "",
+                  );
                 void browseServerPath({
                   path: start,
                   mode: "file",
@@ -657,15 +677,14 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                 setPendingRestore({
                   paths: restoreSelected.map((s) => s.path),
                   label:
-                    n === 1
-                      ? restoreSelected[0]!.name
-                      : `${n} plików .bak`,
+                    n === 1 ? restoreSelected[0]!.name : `${n} plików .bak`,
                 });
               }}
               onRestoreDirClick={() => {
-                const baks = browseData?.entries.filter(
-                  (e) => e.type === "file" && isBakName(e.name),
-                ) ?? [];
+                const baks =
+                  browseData?.entries.filter(
+                    (e) => e.type === "file" && isBakName(e.name),
+                  ) ?? [];
                 if (baks.length === 0) {
                   setRestoreMsg(
                     "W tym katalogu nie ma plików .bak do przywrócenia",
@@ -690,13 +709,16 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
                   restoreSelected.some((s) => s.path === e.path);
                 return (
                   <li key={e.path}>
-                    <button type="button" className={styles.select} style={{
-                      width: "100%",
-                      textAlign: "left",
-                      ...(selected
-                        ? { outline: "2px solid var(--ss-color-primary)" }
-                        : {}),
-                    }}
+                    <button
+                      type="button"
+                      className={styles.select}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        ...(selected
+                          ? { outline: "2px solid var(--ss-color-primary)" }
+                          : {}),
+                      }}
                       onClick={() => {
                         if (e.type === "dir") {
                           void browseServerPath({
@@ -767,9 +789,7 @@ export function ServerSettingsModal({ onClose, initialTab = "general" }: Props) 
           setBrowseData(null);
           setRestoreSelected([]);
           const payload =
-            pending.paths.length === 1
-              ? pending.paths[0]!
-              : pending.paths;
+            pending.paths.length === 1 ? pending.paths[0]! : pending.paths;
           void postSystemRestore(payload)
             .then((res) => {
               setRestoreMsg(

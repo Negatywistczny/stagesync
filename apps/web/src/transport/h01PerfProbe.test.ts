@@ -46,7 +46,9 @@ describe("h01PerfProbe", () => {
     noteH01ConsumerRender();
     expect(getH01PerfSnapshot().rafCalls).toBe(0);
     expect(getH01PerfSnapshot().consumerRenders).toBe(0);
-    expect((window as { __stagesyncH01?: unknown }).__stagesyncH01).toBeUndefined();
+    expect(
+      (window as { __stagesyncH01?: unknown }).__stagesyncH01,
+    ).toBeUndefined();
   });
 
   it("enables via query ss_perf=h01", () => {

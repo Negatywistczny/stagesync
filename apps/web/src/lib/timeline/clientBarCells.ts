@@ -3,10 +3,7 @@
  * Reuses Timeline `iterBarBoundariesTicks` for song-body (≥ 0); pre-roll walks meter.
  */
 
-import {
-  type Project,
-  type TimeSignature,
-} from "@stagesync/shared";
+import { type Project, type TimeSignature } from "@stagesync/shared";
 import {
   iterBarBoundariesTicks,
   iterPreRollBarBoundariesTicks,
@@ -90,8 +87,7 @@ export function buildBarCellsForClip(
   const bounds = barsInTickRange(project, clipStart, clipEnd);
   return bounds.map((b, i) => {
     const past = displayTicks >= b.endTicks;
-    const current =
-      displayTicks >= b.startTicks && displayTicks < b.endTicks;
+    const current = displayTicks >= b.startTicks && displayTicks < b.endTicks;
     return {
       index: i + 1,
       barDisplay: b.bar > 0 ? b.bar : 0,

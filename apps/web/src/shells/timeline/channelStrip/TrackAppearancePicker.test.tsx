@@ -37,14 +37,14 @@ describe("TrackAppearancePicker", () => {
       screen.getByRole("dialog", { name: "Kolor i ikona ścieżki" }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Kolor #E74C3C" }).getAttribute(
-        "aria-pressed",
-      ),
+      screen
+        .getByRole("button", { name: "Kolor #E74C3C" })
+        .getAttribute("aria-pressed"),
     ).toBe("true");
     expect(
-      screen.getByRole("button", { name: "Mikrofon" }).getAttribute(
-        "aria-pressed",
-      ),
+      screen
+        .getByRole("button", { name: "Mikrofon" })
+        .getAttribute("aria-pressed"),
     ).toBe("true");
   });
 

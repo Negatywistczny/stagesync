@@ -20,10 +20,10 @@ describe("buildHtmlDesktopMenu", () => {
   });
 
   it("disables undo/redo from history flags and lists recent projects", () => {
-    const menus = buildHtmlDesktopMenu(
-      [{ id: "p1", name: "Demo" }],
-      { canUndo: true, canRedo: false },
-    );
+    const menus = buildHtmlDesktopMenu([{ id: "p1", name: "Demo" }], {
+      canUndo: true,
+      canRedo: false,
+    });
     const edit = menus.find((m) => m.id === "edit");
     const undo = edit?.items.find(
       (i) => i.kind === "action" && i.id === "edit_undo",

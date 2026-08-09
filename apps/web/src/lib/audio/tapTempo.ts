@@ -56,9 +56,7 @@ export function applyTapBpm(
   if (existing) {
     return {
       ...project,
-      tempoMap: events.map((e) =>
-        e.id === existing.id ? { ...e, bpm } : e,
-      ),
+      tempoMap: events.map((e) => (e.id === existing.id ? { ...e, bpm } : e)),
     };
   }
   // Update default-ish first event if tapping near song start with single map

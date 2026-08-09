@@ -83,8 +83,7 @@ function scoreInScope(
   let score = scoreHarmonicAccent(syl, ctx);
   const earlyCut = Math.max(1, Math.floor(ctx.scopeLength * EARLY_FRACTION));
   const isEarly = ctx.indexInScope < earlyCut && ctx.scopeLength > 1;
-  const isShort =
-    syl.durationTicks < Math.max(1, medianDur * SHORT_VS_MEDIAN);
+  const isShort = syl.durationTicks < Math.max(1, medianDur * SHORT_VS_MEDIAN);
   if (isEarly && isShort) {
     score -= W_EARLY_PICKUP * Math.max(1, medianDur - syl.durationTicks);
   }

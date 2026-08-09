@@ -289,10 +289,7 @@ const APK_FILENAMES: Record<ApkDownloadKind, string> = {
 };
 
 /** Absolute URL for sideload APK on the current host origin. */
-export function apkDownloadUrl(
-  origin: string,
-  kind: ApkDownloadKind,
-): string {
+export function apkDownloadUrl(origin: string, kind: ApkDownloadKind): string {
   const base = origin.replace(/\/$/, "");
   return `${base}/downloads/${APK_FILENAMES[kind]}`;
 }
@@ -468,7 +465,6 @@ function hostMutatingHeaders(extra?: HeadersInit): HeadersInit {
   });
 }
 
-
 export type ServerSettingsValues = {
   PORT: string;
   STAGESYNC_BIND_HOST: string;
@@ -488,17 +484,20 @@ export type ServerSettingsResponse = {
   values: ServerSettingsValues;
   envExists: boolean;
   secretsConfigured?: Record<string, boolean>;
-  schema: Record<string, {
-    section: string;
-    type: string;
-    label: string;
-    hint: string | null;
-    options: string[] | null;
-    defaultValue: string | boolean | null;
-    pathKind: "dir" | "file" | null;
-    restartRequired: boolean;
-    secret?: boolean;
-  }>;
+  schema: Record<
+    string,
+    {
+      section: string;
+      type: string;
+      label: string;
+      hint: string | null;
+      options: string[] | null;
+      defaultValue: string | boolean | null;
+      pathKind: "dir" | "file" | null;
+      restartRequired: boolean;
+      secret?: boolean;
+    }
+  >;
   restartRequired?: boolean;
   restartKeys?: string[];
   message?: string;

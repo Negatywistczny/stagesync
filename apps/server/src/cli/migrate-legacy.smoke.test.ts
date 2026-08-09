@@ -67,9 +67,7 @@ describe("migrate-legacy fixtures (M9)", () => {
   });
 
   it("loads v5 pack fixture", () => {
-    const raw = loadJson(
-      "docs/examples/v5/library.pack.sample.stagesync.json",
-    );
+    const raw = loadJson("docs/examples/v5/library.pack.sample.stagesync.json");
     expect(detectLibraryImportFormat(raw)).toEqual({ format: "v5-pack" });
     const result = normalizeLibraryImport(raw);
     expect(result.format).toBe("v5-pack");

@@ -118,8 +118,7 @@ export function setAppearance(
 ): AppearanceState {
   const next: AppearanceState = {
     profile:
-      normalizeAppearanceProfile(partial.profile) ??
-      readAppearance().profile,
+      normalizeAppearanceProfile(partial.profile) ?? readAppearance().profile,
   };
   try {
     localStorage.setItem(PROFILE_KEY, next.profile);

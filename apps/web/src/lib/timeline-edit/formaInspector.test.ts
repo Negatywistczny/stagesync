@@ -17,11 +17,7 @@ import {
 import { insertFormaSubsectionAt } from "./formaEdit.js";
 
 describe("formaInspector", () => {
-  const project = createProjectV6Seed(
-    "id",
-    "Demo",
-    "2026-07-20T00:00:00.000Z",
-  );
+  const project = createProjectV6Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
 
   it("renameFormaClip updates section name in draft shape", () => {
     const section = project.forma.clips.find((c) => c.kind === "section")!;
@@ -154,9 +150,7 @@ describe("formaInspector", () => {
         ...p,
         forma: {
           clips: p.forma.clips.map((c) =>
-            c.id === section.id
-              ? { ...c, lengthTicks: 7680 * 8 }
-              : c,
+            c.id === section.id ? { ...c, lengthTicks: 7680 * 8 } : c,
           ),
         },
       };
@@ -294,16 +288,15 @@ describe("formaInspector", () => {
       ...project,
       forma: {
         clips: project.forma.clips.map((c) =>
-          c.id === section.id
-            ? { ...c, subsections: [0] }
-            : c,
+          c.id === section.id ? { ...c, subsections: [0] } : c,
         ),
       },
     };
     const del = deleteFormaSubsection(p, section.id, 0);
     expect(del).not.toBeNull();
-    const subs = del!.project.forma.clips.find((c) => c.id === section.id)!
-      .subsections;
+    const subs = del!.project.forma.clips.find(
+      (c) => c.id === section.id,
+    )!.subsections;
     expect(subs == null || subs.length === 0).toBe(true);
   });
 });

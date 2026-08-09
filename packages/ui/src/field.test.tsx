@@ -62,7 +62,6 @@ describe("Field / Input", () => {
     expect(el).toHaveClass("ss-select");
     expect(el).toHaveClass("extra");
   });
-
 });
 describe("Badge", () => {
   it("renders ss-badge", () => {

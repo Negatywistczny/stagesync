@@ -5,7 +5,7 @@ import { analyzeAudioTempoAsync } from "../../src/lib/audio/audioTempoAnalysis.j
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
-  "apps/web/test/fixtures/smart-tempo-train-data"
+  "apps/web/test/fixtures/smart-tempo-train-data",
 );
 
 function parseTimecodeToMs(tc: string): number {
@@ -30,7 +30,10 @@ function parseRtf(rtfPath: string) {
   const points: { bar: number; bpm: number; timecodeMs: number }[] = [];
   for (const line of lines) {
     const cleanLine = line.replace(/\\$/g, "").trim();
-    const parts = cleanLine.split("\t").map((p) => p.trim()).filter(Boolean);
+    const parts = cleanLine
+      .split("\t")
+      .map((p) => p.trim())
+      .filter(Boolean);
     if (parts.length >= 2) {
       const firstCol = parts[0]!;
       const barMatch = firstCol.match(/^(\d+)/);
@@ -51,13 +54,26 @@ function parseRtf(rtfPath: string) {
 
 function loadAudio(mp3Path: string) {
   const tmpWav = path.join(process.cwd(), "node_modules/.cache/temp_dbg.wav");
-  try { execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, { stdio: "ignore" }); }
-  catch { execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, { stdio: "ignore" }); }
+  try {
+    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
+      stdio: "ignore",
+    });
+  } catch {
+    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
+      stdio: "ignore",
+    });
+  }
   const buf = fs.readFileSync(tmpWav);
-  try { fs.unlinkSync(tmpWav); } catch {
+  try {
+    fs.unlinkSync(tmpWav);
+  } catch {
     // ignore
   }
-  const floatData = new Float32Array(buf.buffer, buf.byteOffset + 44, Math.floor((buf.byteLength - 44) / 4));
+  const floatData = new Float32Array(
+    buf.buffer,
+    buf.byteOffset + 44,
+    Math.floor((buf.byteLength - 44) / 4),
+  );
   return {
     length: floatData.length,
     duration: floatData.length / 44100,
@@ -73,19 +89,30 @@ async function main() {
 
   for (const rtfFile of rtfFiles) {
     const baseName = rtfFile.replace(/\.rtf$/, "");
-    const mp3File = files.find((f) => f.endsWith(".mp3") && f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)));
+    const mp3File = files.find(
+      (f) =>
+        f.endsWith(".mp3") &&
+        f.toLowerCase().includes(baseName.toLowerCase().slice(0, 8)),
+    );
     if (!mp3File) continue;
 
     const points = parseRtf(path.join(FIXTURES_DIR, rtfFile));
     const audioBuf = loadAudio(path.join(FIXTURES_DIR, mp3File));
 
-    const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, { maxAnalysisSec: 300, fullTrackGrid: true });
+    const { result: analysis } = await analyzeAudioTempoAsync(audioBuf, {
+      maxAnalysisSec: 300,
+      fullTrackGrid: true,
+    });
 
     console.log(`\n🎵 TRACK: ${baseName}`);
-    console.log(`   StageSync beatMs[0]: ${analysis.beatMs[0]} ms | total beats: ${analysis.beatMs.length}`);
+    console.log(
+      `   StageSync beatMs[0]: ${analysis.beatMs[0]} ms | total beats: ${analysis.beatMs.length}`,
+    );
     console.log(`   Logic Pro First 5 Points:`);
     for (let i = 0; i < Math.min(5, points.length); i++) {
-      console.log(`     Bar ${points[i]!.bar}: ${points[i]!.timecodeMs} ms (${points[i]!.bpm} BPM)`);
+      console.log(
+        `     Bar ${points[i]!.bar}: ${points[i]!.timecodeMs} ms (${points[i]!.bpm} BPM)`,
+      );
     }
 
     // Find closest Logic Pro bar matching StageSync beatMs[0]
@@ -98,7 +125,9 @@ async function main() {
         closestBar = pt;
       }
     }
-    console.log(`   👉 StageSync beatMs[0] (${analysis.beatMs[0]} ms) matches Logic Pro Bar ${closestBar.bar} (${closestBar.timecodeMs} ms, diff: ${minDiff.toFixed(1)} ms)`);
+    console.log(
+      `   👉 StageSync beatMs[0] (${analysis.beatMs[0]} ms) matches Logic Pro Bar ${closestBar.bar} (${closestBar.timecodeMs} ms, diff: ${minDiff.toFixed(1)} ms)`,
+    );
   }
 }
 

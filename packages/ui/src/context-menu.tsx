@@ -24,9 +24,7 @@ export type ContextMenuActionItem = {
 
 export type ContextMenuSeparatorItem = { type: "separator" };
 
-export type ContextMenuItem =
-  | ContextMenuActionItem
-  | ContextMenuSeparatorItem;
+export type ContextMenuItem = ContextMenuActionItem | ContextMenuSeparatorItem;
 
 export type OpenContextMenuArgs = {
   x: number;

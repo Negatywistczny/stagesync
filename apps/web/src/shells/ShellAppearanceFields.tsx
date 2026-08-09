@@ -20,10 +20,7 @@ type Props = {
   onChange?: (next: AppearanceState) => void;
 };
 
-export function ShellAppearanceFields({
-  value,
-  onChange,
-}: Props = {}) {
+export function ShellAppearanceFields({ value, onChange }: Props = {}) {
   const controlled = value !== undefined && onChange !== undefined;
   const [uncontrolled, setUncontrolled] = useState<AppearanceState>(() =>
     readAppearance(),

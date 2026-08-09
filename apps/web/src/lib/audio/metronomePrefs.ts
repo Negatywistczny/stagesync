@@ -3,10 +3,7 @@
  * Volume + timbre + master click gain + on/off — does not affect server transport.
  */
 
-import {
-  clampFaderGainDb,
-  gainDbToLinear,
-} from "@stagesync/shared";
+import { clampFaderGainDb, gainDbToLinear } from "@stagesync/shared";
 
 export const METRONOME_ACCENT_VOLUME_KEY = "stagesync.metronome.accentVolume";
 export const METRONOME_BEAT_VOLUME_KEY = "stagesync.metronome.beatVolume";
@@ -16,7 +13,8 @@ export const METRONOME_ON_KEY = "stagesync.metronome.on";
 /** Mixer Click strip master gain (dB); scales accent+beat sum. */
 export const METRONOME_MASTER_GAIN_DB_KEY = "stagesync.metronome.masterGainDb";
 
-export const METRONOME_PREFS_CHANGED_EVENT = "stagesync:metronome-prefs-changed";
+export const METRONOME_PREFS_CHANGED_EVENT =
+  "stagesync:metronome-prefs-changed";
 
 export const METRONOME_VOLUME_MIN = 0;
 export const METRONOME_VOLUME_MAX = 100;
@@ -140,16 +138,16 @@ function writeVolume(key: string, value: number, defaultValue: number): void {
   }
 }
 
-export function setMetronomePrefs(partial: Partial<MetronomePrefs>): MetronomePrefs {
+export function setMetronomePrefs(
+  partial: Partial<MetronomePrefs>,
+): MetronomePrefs {
   const current = getMetronomePrefs();
   const next: MetronomePrefs = {
     accentVolume: clampMetronomeVolume(
       partial.accentVolume ?? current.accentVolume,
     ),
     beatVolume: clampMetronomeVolume(partial.beatVolume ?? current.beatVolume),
-    timbre: isMetronomeTimbre(partial.timbre)
-      ? partial.timbre
-      : current.timbre,
+    timbre: isMetronomeTimbre(partial.timbre) ? partial.timbre : current.timbre,
     masterGainDb: clampMasterClickGainDb(
       partial.masterGainDb ?? current.masterGainDb,
     ),

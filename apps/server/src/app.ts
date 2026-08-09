@@ -7,11 +7,11 @@ import {
   projectEndTicks,
   type HealthResponse,
 } from "@stagesync/shared";
-import { createClientPresence, type ClientPresence } from "./client-presence.js";
 import {
-  createFileLogger,
-  installConsoleFileMirror,
-} from "./file-logger.js";
+  createClientPresence,
+  type ClientPresence,
+} from "./client-presence.js";
+import { createFileLogger, installConsoleFileMirror } from "./file-logger.js";
 import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
 import { resolveHostDisplayName } from "./network-info.js";
 import { createMidiHost, type MidiHost } from "./midi/host.js";
@@ -197,8 +197,14 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   // CORS: Allow all origins for LAN/Stage usage (mobile clients, different IPs).
   app.use((_req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With",
+    );
     res.setHeader(
       "Content-Security-Policy",
       "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss: http: https:;",

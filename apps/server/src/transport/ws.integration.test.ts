@@ -41,14 +41,12 @@ describe("attachTransportWs integration", () => {
   let transport: TransportEngine;
   let wss: ReturnType<typeof attachTransportWs>;
 
-  async function startServer(
-    opts?: {
-      stageHub?: StageHub;
-      presence?: ReturnType<typeof createClientPresence>;
-      liveDesk?: LiveDeskStore;
-      setlistHub?: SetlistHub;
-    },
-  ): Promise<void> {
+  async function startServer(opts?: {
+    stageHub?: StageHub;
+    presence?: ReturnType<typeof createClientPresence>;
+    liveDesk?: LiveDeskStore;
+    setlistHub?: SetlistHub;
+  }): Promise<void> {
     transport = createTransportEngine();
     server = createServer();
     wss = attachTransportWs(
@@ -100,8 +98,14 @@ describe("attachTransportWs integration", () => {
     const bNext = waitForMessage(b);
     transport.seek(1920);
     const [tickA, tickB] = await Promise.all([aNext, bNext]);
-    expect(tickA).toMatchObject({ type: "transport_tick", positionTicks: 1920 });
-    expect(tickB).toMatchObject({ type: "transport_tick", positionTicks: 1920 });
+    expect(tickA).toMatchObject({
+      type: "transport_tick",
+      positionTicks: 1920,
+    });
+    expect(tickB).toMatchObject({
+      type: "transport_tick",
+      positionTicks: 1920,
+    });
 
     a.close();
     b.close();

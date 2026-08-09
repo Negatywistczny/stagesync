@@ -301,7 +301,8 @@ export function advanceMetronomeClicks(
 
   const now = ctx.currentTime;
 
-  const dtTicks = lastDisplayTicks !== null ? input.displayTicks - lastDisplayTicks : 0;
+  const dtTicks =
+    lastDisplayTicks !== null ? input.displayTicks - lastDisplayTicks : 0;
 
   const isBackwardSeek =
     (lastDisplayTicks !== null && dtTicks < -50) ||
@@ -326,17 +327,12 @@ export function advanceMetronomeClicks(
     beat += 1;
     advanced += 1;
     const beatStartTicks = beat * perBeat;
-    const aheadMs = aheadMsToBeat(
-      input.displayTicks,
-      beatStartTicks,
-      input,
-    );
+    const aheadMs = aheadMsToBeat(input.displayTicks, beatStartTicks, input);
     // Past the lateness window: advance cursor only (no stacked bang).
     if (aheadMs < -MAX_LATE_CLICK_MS) continue;
     const when = Math.max(now, now + aheadMs / 1000);
     const beatInBar =
-      ((beat % input.timeSignature.numerator) +
-        input.timeSignature.numerator) %
+      ((beat % input.timeSignature.numerator) + input.timeSignature.numerator) %
       input.timeSignature.numerator;
     scheduleClick(ctx, when, beatInBar === 0);
   }
@@ -353,11 +349,7 @@ export function advanceMetronomeClicks(
   let upcoming = Math.max(beat + 1, currentBeat + 1);
   while (advanced < MAX_BEATS_PER_ADVANCE) {
     const beatStartTicks = upcoming * perBeat;
-    const aheadMs = aheadMsToBeat(
-      input.displayTicks,
-      beatStartTicks,
-      input,
-    );
+    const aheadMs = aheadMsToBeat(input.displayTicks, beatStartTicks, input);
     if (aheadMs <= 1 || aheadMs > lookaheadMs) {
       break;
     }

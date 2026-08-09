@@ -53,9 +53,11 @@ describe("createStageRouter edges", () => {
 
     expect((await fetch(`${baseUrl}/api/stage/messages`)).status).toBe(200);
     expect(
-      ((await (await fetch(`${baseUrl}/api/stage/messages`)).json()) as {
-        messages: unknown[];
-      }).messages,
+      (
+        (await (await fetch(`${baseUrl}/api/stage/messages`)).json()) as {
+          messages: unknown[];
+        }
+      ).messages,
     ).toEqual([{ id: "m1" }]);
 
     expect((await fetch(`${baseUrl}/api/stage/clients`)).status).toBe(200);

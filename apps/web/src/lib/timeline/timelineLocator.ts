@@ -63,10 +63,7 @@ export function snapLoopRange(
  * Translate a loop range by delta ticks (Logic-style cycle body drag).
  * Duration is preserved; caller snaps via {@link snapMovedLoopRange}.
  */
-export function moveLoopRange(
-  range: LoopRange,
-  deltaTicks: number,
-): LoopRange {
+export function moveLoopRange(range: LoopRange, deltaTicks: number): LoopRange {
   return {
     startTicks: range.startTicks + deltaTicks,
     endTicks: range.endTicks + deltaTicks,

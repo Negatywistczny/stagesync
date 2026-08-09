@@ -56,10 +56,7 @@ function musicSections(project: Project): FormaClip[] {
   return project.forma.clips
     .filter((c) => c.kind === "section")
     .slice()
-    .sort(
-      (a, b) =>
-        a.startTicks - b.startTicks || a.id.localeCompare(b.id),
-    );
+    .sort((a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id));
 }
 
 function sectionFilter(scope: WandScope): Set<string> | null {
@@ -230,11 +227,7 @@ function placeInSpan(
   for (let i = 0; i < onsets.length; i++) {
     const maxStart = spanEnd - minDur;
     if (onsets[i]! > maxStart) {
-      onsets[i] = snapTicks(
-        project,
-        Math.max(spanStart, maxStart),
-        spanStart,
-      );
+      onsets[i] = snapTicks(project, Math.max(spanStart, maxStart), spanStart);
     }
     if (i > 0 && onsets[i]! < onsets[i - 1]!) {
       onsets[i] = snapTicks(
@@ -294,10 +287,7 @@ function detectContentGapSpans(
   if (!content.length || !gaps.length) return null;
   let alternating = true;
   for (let i = 0; i < classified.length - 1; i++) {
-    if (
-      classified[i]!.kind === "gap" &&
-      classified[i + 1]!.kind === "gap"
-    ) {
+    if (classified[i]!.kind === "gap" && classified[i + 1]!.kind === "gap") {
       alternating = false;
       break;
     }
@@ -460,11 +450,7 @@ function membershipAkordyBySection(
         if (hit) assignedSec = hit;
       }
       if (!assignedSec) {
-        assignedSec = containingSection(
-          sections,
-          line.startTicks,
-          project,
-        );
+        assignedSec = containingSection(sections, line.startTicks, project);
       }
     }
     if (!assignedSec) {
@@ -483,17 +469,13 @@ function membershipAkordyBySection(
   return buckets;
 }
 
-function sealTekstLengths(
-  clips: TekstClip[],
-  endTicks: number,
-): TekstClip[] {
+function sealTekstLengths(clips: TekstClip[], endTicks: number): TekstClip[] {
   if (clips.length === 0) return clips;
   const sorted = [...clips].sort(
     (a, b) => a.startTicks - b.startTicks || a.id.localeCompare(b.id),
   );
   return sorted.map((c, i) => {
-    const end =
-      i + 1 < sorted.length ? sorted[i + 1]!.startTicks : endTicks;
+    const end = i + 1 < sorted.length ? sorted[i + 1]!.startTicks : endTicks;
     const lengthTicks = Math.max(1, end - c.startTicks);
     const next = { ...c, lengthTicks };
     if ((next.blocks?.length ?? 0) !== 1) return next;
@@ -624,10 +606,7 @@ function placeSectionContent(
   return res;
 }
 
-function placeTekstFromForma(
-  project: Project,
-  scope: WandScope,
-): WandResult {
+function placeTekstFromForma(project: Project, scope: WandScope): WandResult {
   const sections = musicSections(project);
   if (!sections.length) {
     return {
@@ -707,10 +686,7 @@ type VocalSpan = {
   lengthTicks: number;
 };
 
-function getSectionVocalSpans(
-  project: Project,
-  sec: FormaClip,
-): VocalSpan[] {
+function getSectionVocalSpans(project: Project, sec: FormaClip): VocalSpan[] {
   const secStart = sec.startTicks;
   const secEnd = sec.startTicks + sec.lengthTicks;
   const secKey = normalizeSectionNameKey(sec.name);
@@ -810,10 +786,7 @@ function assignClipsToVocalSpans(
   return null;
 }
 
-function placeAkordyFromForma(
-  project: Project,
-  scope: WandScope,
-): WandResult {
+function placeAkordyFromForma(project: Project, scope: WandScope): WandResult {
   const sections = musicSections(project);
   if (!sections.length) {
     return {
@@ -855,12 +828,7 @@ function placeAkordyFromForma(
     const vocalSpans = getSectionVocalSpans(project, sec);
     const lineGroups =
       vocalSpans.length > 0
-        ? assignClipsToVocalSpans(
-            project,
-            clips,
-            vocalSpans,
-            sec.startTicks,
-          )
+        ? assignClipsToVocalSpans(project, clips, vocalSpans, sec.startTicks)
         : null;
 
     if (lineGroups) {
@@ -883,13 +851,7 @@ function placeAkordyFromForma(
       continue;
     }
 
-    const res = placeSectionContent(
-      project,
-      sec,
-      clips,
-      onsetById,
-      "akordy",
-    );
+    const res = placeSectionContent(project, sec, clips, onsetById, "akordy");
     placed += res.placed;
     if (res.approximate) approxN += 1;
   }

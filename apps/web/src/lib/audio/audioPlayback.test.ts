@@ -151,12 +151,12 @@ describe("audioPlayback helpers", () => {
     suppressAudioPlayback();
     expect(getAudioPlaybackDebugState().suppressed).toBe(true);
 
-    const project = createProjectV5Seed("p1", "Test", "2026-07-22T00:00:00.000Z");
-    syncAudioPlayback(
+    const project = createProjectV5Seed(
       "p1",
-      { project, playing: true, displayTicks: 0 },
-      ctx,
+      "Test",
+      "2026-07-22T00:00:00.000Z",
     );
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
 
     expect(getAudioPlaybackDebugState().activeCount).toBe(0);
     expect(ctx.createBufferSource).not.toHaveBeenCalled();
@@ -196,11 +196,7 @@ describe("audioPlayback helpers", () => {
     };
 
     await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback(
-      "p1",
-      { project, playing: true, displayTicks: 0 },
-      ctx,
-    );
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
     expect(source.start).toHaveBeenCalledOnce();
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
 
@@ -226,11 +222,7 @@ describe("audioPlayback helpers", () => {
     (ctx.createBufferSource as ReturnType<typeof vi.fn>).mockImplementation(
       () => source2,
     );
-    syncAudioPlayback(
-      "p1",
-      { project, playing: true, displayTicks: 0 },
-      ctx,
-    );
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
     expect(source2.start).toHaveBeenCalledOnce();
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
   });
@@ -265,11 +257,7 @@ describe("audioPlayback helpers", () => {
 
     const project = projectWithClipUnderPlayhead();
     await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback(
-      "p1",
-      { project, playing: true, displayTicks: 0 },
-      ctx,
-    );
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
     expect(source.buffer).toBe(fakeBuf);
     stopAudioPlayback();
     expect(source.stop).toHaveBeenCalled();
@@ -319,7 +307,11 @@ describe("audioPlayback helpers", () => {
       }),
     });
 
-    const project = createProjectV5Seed("p1", "Test", "2026-07-22T00:00:00.000Z");
+    const project = createProjectV5Seed(
+      "p1",
+      "Test",
+      "2026-07-22T00:00:00.000Z",
+    );
     syncAudioPlayback(
       "p1",
       { project, playing: false, displayTicks: 480 },
@@ -470,11 +462,7 @@ describe("audioPlayback helpers", () => {
     };
 
     await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback(
-      "p1",
-      { project, playing: true, displayTicks: 0 },
-      ctx,
-    );
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
 
     expect(source.loop).toBe(true);
     expect(source.loopStart).toBeCloseTo(0.1, 5);
@@ -528,18 +516,13 @@ describe("audioPlayback helpers", () => {
     };
 
     await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback(
-      "p1",
-      { project, playing: true, displayTicks: 0 },
-      ctx,
-    );
+    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
 
     expect(ctx.createStereoPanner).toHaveBeenCalled();
     // Master meter split + stereo→mono downmix splitter.
     expect(ctx.createChannelSplitter).toHaveBeenCalled();
     expect(
-      (ctx.createChannelSplitter as ReturnType<typeof vi.fn>).mock.calls
-        .length,
+      (ctx.createChannelSplitter as ReturnType<typeof vi.fn>).mock.calls.length,
     ).toBeGreaterThanOrEqual(2);
     expect(source.start).toHaveBeenCalledOnce();
   });
@@ -1245,7 +1228,11 @@ describe("audioPlayback helpers", () => {
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
     const clip = project.audioClips[0]!;
     const past = clip.startTicks + clip.lengthTicks + 5000;
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: past }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: past },
+      ctx,
+    );
     expect(getAudioPlaybackDebugState().activeCount).toBe(0);
     expect(source.stop).toHaveBeenCalled();
   });
@@ -1520,22 +1507,20 @@ describe("audioPlayback helpers", () => {
     await ensureAudioBuffered("p1", project, 0, ctx);
     syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-    const before = gainDisconnects.reduce(
-      (n, d) => n + d.mock.calls.length,
-      0,
-    );
+    const before = gainDisconnects.reduce((n, d) => n + d.mock.calls.length, 0);
 
     // Mute track → graphKey change → stopAll → releaseActiveSource.
     const muted = {
       ...project,
       audioTracks: [{ ...project.audioTracks[0]!, muted: true }],
     };
-    syncAudioPlayback("p1", { project: muted, playing: true, displayTicks: 0 }, ctx);
-
-    const after = gainDisconnects.reduce(
-      (n, d) => n + d.mock.calls.length,
-      0,
+    syncAudioPlayback(
+      "p1",
+      { project: muted, playing: true, displayTicks: 0 },
+      ctx,
     );
+
+    const after = gainDisconnects.reduce((n, d) => n + d.mock.calls.length, 0);
     // fadeGain + levelGain (at least) must disconnect even though source threw.
     expect(after).toBeGreaterThan(before);
     expect(getAudioPlaybackDebugState().activeCount).toBe(0);
@@ -1572,12 +1557,20 @@ describe("audioPlayback helpers", () => {
       ],
     };
     await ensureAudioBuffered("p1", withBuses, 0, ctx);
-    syncAudioPlayback("p1", { project: withBuses, playing: true, displayTicks: 0 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project: withBuses, playing: true, displayTicks: 0 },
+      ctx,
+    );
     expect(getAudioPlaybackDebugState().trackGainLinear["tr-1"]).toBe(1);
 
     syncAudioPlayback(
       "p1",
-      { project: { ...withBuses, audioBusses: [] }, playing: true, displayTicks: 0 },
+      {
+        project: { ...withBuses, audioBusses: [] },
+        playing: true,
+        displayTicks: 0,
+      },
       ctx,
     );
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
@@ -1632,14 +1625,22 @@ describe("audioPlayback helpers", () => {
       ...project,
       audioTracks: [{ ...project.audioTracks[0]!, muted: true }],
     };
-    syncAudioPlayback("p1", { project: muted, playing: true, displayTicks: 0 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project: muted, playing: true, displayTicks: 0 },
+      ctx,
+    );
     expect(getAudioPlaybackDebugState().activeCount).toBe(0);
 
     const unmuted = {
       ...project,
       audioTracks: [{ ...project.audioTracks[0]!, muted: false }],
     };
-    syncAudioPlayback("p1", { project: unmuted, playing: true, displayTicks: 0 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project: unmuted, playing: true, displayTicks: 0 },
+      ctx,
+    );
     expect(sources).toHaveLength(2);
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
 
@@ -1649,7 +1650,11 @@ describe("audioPlayback helpers", () => {
 
     // Sync must not re-start another BufferSource for a still-active clip.
     const startsBefore = sources.length;
-    syncAudioPlayback("p1", { project: unmuted, playing: true, displayTicks: 10 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project: unmuted, playing: true, displayTicks: 10 },
+      ctx,
+    );
     expect(sources).toHaveLength(startsBefore);
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
   });
@@ -1725,8 +1730,16 @@ describe("audioPlayback helpers", () => {
     staleEnded?.();
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
 
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 1920 }, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 2880 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 1920 },
+      ctx,
+    );
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 2880 },
+      ctx,
+    );
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
     expect(sources).toHaveLength(4);
     expect(sources[1]!.stop).toHaveBeenCalled();
@@ -1735,7 +1748,11 @@ describe("audioPlayback helpers", () => {
 
     // Small tick advance (no seek jump) must not start another voice.
     const n = sources.length;
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 2890 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 2890 },
+      ctx,
+    );
     expect(sources).toHaveLength(n);
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
   });
@@ -1758,7 +1775,8 @@ describe("audioPlayback helpers", () => {
     expect(gains.length).toBeGreaterThan(0);
     // Master is the first GainNode in ensureMasterBus.
     const masterParam = gains[0]!;
-    const cancelsAfterFirst = masterParam.cancelScheduledValues.mock.calls.length;
+    const cancelsAfterFirst =
+      masterParam.cancelScheduledValues.mock.calls.length;
     expect(cancelsAfterFirst).toBeGreaterThan(0);
 
     // Same master gain on later ticks must not cancel/re-ramp.
@@ -1822,7 +1840,10 @@ describe("audioPlayback helpers", () => {
     source.stop.mockClear();
     source.disconnect.mockClear();
 
-    const withoutClip = { ...project, audioClips: [] as typeof project.audioClips };
+    const withoutClip = {
+      ...project,
+      audioClips: [] as typeof project.audioClips,
+    };
     syncAudioPlayback(
       "p1",
       { project: withoutClip, playing: true, displayTicks: 0 },
@@ -1948,7 +1969,10 @@ describe("audioPlayback helpers", () => {
     syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
     expect(source.start).not.toHaveBeenCalled();
 
-    const withoutClip = { ...project, audioClips: [] as typeof project.audioClips };
+    const withoutClip = {
+      ...project,
+      audioClips: [] as typeof project.audioClips,
+    };
     syncAudioPlayback(
       "p1",
       { project: withoutClip, playing: true, displayTicks: 0 },

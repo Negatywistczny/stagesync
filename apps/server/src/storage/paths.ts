@@ -111,7 +111,9 @@ export function assetFilePath(
     storageName.includes("/") ||
     storageName.includes("\\")
   ) {
-    throw new InvalidProjectIdError(`Invalid asset storage name: ${storageName}`);
+    throw new InvalidProjectIdError(
+      `Invalid asset storage name: ${storageName}`,
+    );
   }
   const root = resolve(projectAssetsDir(paths, projectId));
   const file = resolve(root, storageName);

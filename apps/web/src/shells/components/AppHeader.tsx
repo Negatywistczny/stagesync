@@ -218,9 +218,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   const { pathname } = useLocation();
   const isCompactMobile = useMqMobileCompact();
-  const showOperatorNav = operatorApp
-    ? shouldShowOperatorNav(pathname)
-    : false;
+  const showOperatorNav = operatorApp ? shouldShowOperatorNav(pathname) : false;
   const operatorNavOnExternalBar = showOperatorNav && isCompactMobile;
   const resolvedAppJump =
     appJump.length > 0
@@ -229,8 +227,7 @@ export function AppHeader({
         ? getOperatorAppJumpLinks(operatorApp)
         : [];
   const showAppJumpNav =
-    resolvedAppJump.length > 0 &&
-    (!showOperatorNav || !isCompactMobile);
+    resolvedAppJump.length > 0 && (!showOperatorNav || !isCompactMobile);
 
   const isDesktopShell = hideOnDesktop && isOsMenuDesktopShell();
   if (operatorNavExternal && isCompactMobile) return null;

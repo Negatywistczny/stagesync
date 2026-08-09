@@ -161,10 +161,7 @@ export function ScorePane({
     const bar = scoreBarFromDisplayTicks(project, displayTicks);
     // Key on song bar (legacy parity): kotwice / voltas may keep scoreBar flat
     // while transport advances — still re-position the OSMD measure cursor.
-    if (
-      logicBar === lastLogicBarRef.current &&
-      bar === lastBarRef.current
-    ) {
+    if (logicBar === lastLogicBarRef.current && bar === lastBarRef.current) {
       return;
     }
     lastLogicBarRef.current = logicBar;
@@ -229,7 +226,11 @@ export function ScorePane({
     <div className={styles.scorePane}>
       <div className={styles.scoreWrap}>
         {!xmlAsset ? (
-          <div className={styles.scoreEmptyCard} role="status" aria-live="polite">
+          <div
+            className={styles.scoreEmptyCard}
+            role="status"
+            aria-live="polite"
+          >
             <p className={styles.scoreEmptyTitle}>Partytura</p>
             <p className={styles.scoreEmptyText}>
               Brak pliku MusicXML w projekcie — dodaj w Admin → Utwory → Wybrany
@@ -237,7 +238,11 @@ export function ScorePane({
             </p>
           </div>
         ) : loadError ? (
-          <div className={styles.scoreEmptyCard} role="status" aria-live="polite">
+          <div
+            className={styles.scoreEmptyCard}
+            role="status"
+            aria-live="polite"
+          >
             <p className={styles.scoreEmptyTitle}>Błąd partytury</p>
             <p className={styles.scoreEmptyText}>{loadError}</p>
           </div>
@@ -261,7 +266,11 @@ export function ScorePane({
           >
             <div ref={hostRef} className={styles.scoreHost} />
             {!ready ? (
-              <p className={styles.scoreLoading} role="status" aria-live="polite">
+              <p
+                className={styles.scoreLoading}
+                role="status"
+                aria-live="polite"
+              >
                 Wczytywanie MusicXML…
               </p>
             ) : null}

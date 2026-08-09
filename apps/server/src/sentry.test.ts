@@ -15,9 +15,8 @@ describe("initServerSentry", () => {
     vi.stubEnv("SENTRY_DSN", "");
     const init = vi.fn();
     vi.doMock("@sentry/node", () => ({ init, captureException: vi.fn() }));
-    const { initServerSentry, isServerSentryEnabled } = await import(
-      "./sentry.js"
-    );
+    const { initServerSentry, isServerSentryEnabled } =
+      await import("./sentry.js");
     expect(await initServerSentry()).toBe(false);
     expect(isServerSentryEnabled()).toBe(false);
     expect(init).not.toHaveBeenCalled();
@@ -27,9 +26,8 @@ describe("initServerSentry", () => {
     vi.stubEnv("SENTRY_DSN", "https://key@example.com/1");
     const init = vi.fn();
     vi.doMock("@sentry/node", () => ({ init, captureException: vi.fn() }));
-    const { initServerSentry, isServerSentryEnabled } = await import(
-      "./sentry.js"
-    );
+    const { initServerSentry, isServerSentryEnabled } =
+      await import("./sentry.js");
     expect(await initServerSentry()).toBe(true);
     expect(isServerSentryEnabled()).toBe(true);
     expect(init).toHaveBeenCalledOnce();
@@ -48,9 +46,8 @@ describe("initServerSentry", () => {
       captureException: vi.fn(),
     }));
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { initServerSentry, isServerSentryEnabled } = await import(
-      "./sentry.js"
-    );
+    const { initServerSentry, isServerSentryEnabled } =
+      await import("./sentry.js");
     expect(await initServerSentry()).toBe(false);
     expect(isServerSentryEnabled()).toBe(false);
     expect(warn).toHaveBeenCalled();

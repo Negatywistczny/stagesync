@@ -30,9 +30,9 @@ function measureHeroFlyMetrics(
   heroNameWrap: HTMLElement,
   heroName: HTMLElement,
 ): FlyMetrics | null {
-  const layout = heroNameWrap.closest("[data-grid-hero-layout]") as
-    | HTMLElement
-    | null;
+  const layout = heroNameWrap.closest(
+    "[data-grid-hero-layout]",
+  ) as HTMLElement | null;
   if (!layout) return null;
 
   const layoutRect = layout.getBoundingClientRect();
@@ -72,7 +72,10 @@ function measureHeroFlyMetrics(
   };
 }
 
-function clearLayers(heroNameWrap: HTMLElement | null, heroRoot: HTMLElement | null) {
+function clearLayers(
+  heroNameWrap: HTMLElement | null,
+  heroRoot: HTMLElement | null,
+) {
   heroNameWrap
     ?.querySelectorAll("[data-grid-hero-exit]")
     .forEach((el) => el.remove());
@@ -119,13 +122,7 @@ export function runHeroChordTransition(
     };
   },
 ): () => void {
-  const {
-    heroRoot,
-    heroName,
-    heroNameWrap,
-    heroNext,
-    heroNextName,
-  } = handles;
+  const { heroRoot, heroName, heroNameWrap, heroNext, heroNextName } = handles;
   if (!heroName || !heroNameWrap) return () => undefined;
 
   let cancelled = false;

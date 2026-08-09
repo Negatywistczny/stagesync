@@ -10,9 +10,9 @@ import {
 
 describe("timelineTouchGestures", () => {
   it("touchDistance is hypot of deltas", () => {
-    expect(touchDistance({ clientX: 0, clientY: 0 }, { clientX: 3, clientY: 4 })).toBe(
-      5,
-    );
+    expect(
+      touchDistance({ clientX: 0, clientY: 0 }, { clientX: 3, clientY: 4 }),
+    ).toBe(5);
   });
 
   it("pinchAnchorViewportX centers between fingers", () => {
@@ -41,7 +41,12 @@ describe("timelineTouchGestures", () => {
   it("isDoubleTap requires recent nearby tap", () => {
     expect(isDoubleTap(null, 1000, 0, 0)).toBe(false);
     expect(
-      isDoubleTap({ time: 1000, x: 0, y: 0 }, 1000 + TOUCH_DOUBLE_TAP_MS + 1, 0, 0),
+      isDoubleTap(
+        { time: 1000, x: 0, y: 0 },
+        1000 + TOUCH_DOUBLE_TAP_MS + 1,
+        0,
+        0,
+      ),
     ).toBe(false);
     expect(isDoubleTap({ time: 1000, x: 0, y: 0 }, 1100, 50, 0)).toBe(false);
     expect(isDoubleTap({ time: 1000, x: 0, y: 0 }, 1100, 5, 5)).toBe(true);

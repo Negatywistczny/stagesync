@@ -11,7 +11,8 @@ import {
 
 afterEach(() => {
   clearOperatorSession();
-  delete (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__;
+  delete (globalThis as { __STAGESYNC_UI_TARGET__?: string })
+    .__STAGESYNC_UI_TARGET__;
   window.StageSyncNative = undefined;
 });
 
@@ -30,8 +31,9 @@ describe("operatorSession", () => {
   });
 
   it("does not persist session on console shell", () => {
-    (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__ =
-      "console";
+    (
+      globalThis as { __STAGESYNC_UI_TARGET__?: string }
+    ).__STAGESYNC_UI_TARGET__ = "console";
     markOperatorSession();
     expect(hasOperatorSession()).toBe(false);
     expect(sessionStorage.getItem(OPERATOR_SESSION_KEY)).toBeNull();

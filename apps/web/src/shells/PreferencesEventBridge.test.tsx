@@ -1,7 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router";
 import {
@@ -18,7 +24,11 @@ vi.mock("./ServerSettingsModal.js", () => ({
     initialTab?: string;
     onClose: () => void;
   }) => (
-    <div role="dialog" aria-label="Ustawienia" data-tab={initialTab ?? "general"}>
+    <div
+      role="dialog"
+      aria-label="Ustawienia"
+      data-tab={initialTab ?? "general"}
+    >
       <button type="button" onClick={onClose}>
         Zamknij
       </button>
@@ -48,7 +58,9 @@ describe("PreferencesEventBridge", () => {
       openPreferences("midi");
     });
     expect(
-      screen.getByRole("dialog", { name: "Ustawienia" }).getAttribute("data-tab"),
+      screen
+        .getByRole("dialog", { name: "Ustawienia" })
+        .getAttribute("data-tab"),
     ).toBe("midi");
   });
 
@@ -60,7 +72,9 @@ describe("PreferencesEventBridge", () => {
       );
     });
     expect(
-      screen.getByRole("dialog", { name: "Ustawienia" }).getAttribute("data-tab"),
+      screen
+        .getByRole("dialog", { name: "Ustawienia" })
+        .getAttribute("data-tab"),
     ).toBe("audio");
   });
 

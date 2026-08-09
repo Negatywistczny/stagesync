@@ -81,7 +81,10 @@ export function syntheticCountdownDisplayFromProject(project: Project): {
 } {
   const cd = project.forma.clips.find((c) => c.kind === "countdown");
   if (!cd) return { tekst: [], akordy: [] };
-  const meter = resolveMeterAt(project, Math.max(0, cd.startTicks + cd.lengthTicks));
+  const meter = resolveMeterAt(
+    project,
+    Math.max(0, cd.startTicks + cd.lengthTicks),
+  );
   const barTicks = ticksPerBar(meter, project.ppq);
   const bars = Math.max(1, Math.round(cd.lengthTicks / barTicks));
   return {
@@ -110,8 +113,7 @@ export function scrubCountdownDigitClips(project: Project): Project {
   );
   const keepAkordy = project.akordy.clips.filter(
     (c) =>
-      !inCd(c.startTicks) &&
-      !(c.startTicks < 0 && isDigitSymbol(c.symbol)),
+      !inCd(c.startTicks) && !(c.startTicks < 0 && isDigitSymbol(c.symbol)),
   );
   const keepCue = project.cue.clips.filter((c) => !inCd(c.startTicks));
 

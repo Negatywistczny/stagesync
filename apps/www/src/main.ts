@@ -26,7 +26,10 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-function renderCard(offer: DownloadOffer, options?: { secondary?: DownloadOffer | null }): HTMLElement {
+function renderCard(
+  offer: DownloadOffer,
+  options?: { secondary?: DownloadOffer | null },
+): HTMLElement {
   const card = el("article", "dl-card reveal is-visible");
 
   const head = el("div", "dl-card__head");
@@ -82,14 +85,20 @@ function renderUnavailable(
   titles.append(el("p", "dl-card__subtitle", subtitle));
   head.append(titles);
   card.append(head);
-  card.append(el("p", "dl-card__detail", "Niedostępne w\u00A0najnowszym wydaniu."));
+  card.append(
+    el("p", "dl-card__detail", "Niedostępne w\u00A0najnowszym wydaniu."),
+  );
   const actions = el("div", "dl-card__actions");
   actions.append(createInstallHelpButton(help.label, help.tab));
   card.append(actions);
   return card;
 }
 
-function renderCategory(title: string, lead: string, cards: HTMLElement[]): HTMLElement {
+function renderCategory(
+  title: string,
+  lead: string,
+  cards: HTMLElement[],
+): HTMLElement {
   const block = el("div", "dl-group reveal is-visible");
   const head = el("div", "dl-group__head");
   head.append(el("h3", "dl-group__title", title));
@@ -107,28 +116,49 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (!root) return;
   root.replaceChildren();
 
-  const desktopMacHelp = { label: "Jak zainstalować na Macu", tab: "macos" as const };
-  const desktopWinHelp = { label: "Jak zainstalować na Windows", tab: "windows" as const };
-  const androidHelp = { label: "Jak zainstalować na Androidzie", tab: "android" as const };
+  const desktopMacHelp = {
+    label: "Jak zainstalować na Macu",
+    tab: "macos" as const,
+  };
+  const desktopWinHelp = {
+    label: "Jak zainstalować na Windows",
+    tab: "windows" as const,
+  };
+  const androidHelp = {
+    label: "Jak zainstalować na Androidzie",
+    tab: "android" as const,
+  };
 
   const desktopCards: HTMLElement[] = [];
   if (catalog.desktop.windows) {
     desktopCards.push(renderCard(catalog.desktop.windows));
   } else {
     desktopCards.push(
-      renderUnavailable("Windows", "Aplikacja główna (stacja robocza)", "windows", desktopWinHelp),
+      renderUnavailable(
+        "Windows",
+        "Aplikacja główna (stacja robocza)",
+        "windows",
+        desktopWinHelp,
+      ),
     );
   }
 
   if (catalog.desktop.macosArm) {
     desktopCards.push(
-      renderCard(catalog.desktop.macosArm, { secondary: catalog.desktop.macosIntel }),
+      renderCard(catalog.desktop.macosArm, {
+        secondary: catalog.desktop.macosIntel,
+      }),
     );
   } else if (catalog.desktop.macosIntel) {
     desktopCards.push(renderCard(catalog.desktop.macosIntel));
   } else {
     desktopCards.push(
-      renderUnavailable("macOS", "Aplikacja główna (stacja robocza)", "apple", desktopMacHelp),
+      renderUnavailable(
+        "macOS",
+        "Aplikacja główna (stacja robocza)",
+        "apple",
+        desktopMacHelp,
+      ),
     );
   }
 
@@ -144,12 +174,26 @@ function renderCatalog(catalog: DownloadCatalog): void {
   if (catalog.android.console) {
     androidCards.push(renderCard(catalog.android.console));
   } else {
-    androidCards.push(renderUnavailable("Console", "Realizator / Lider", "console", androidHelp));
+    androidCards.push(
+      renderUnavailable(
+        "Console",
+        "Realizator / Lider",
+        "console",
+        androidHelp,
+      ),
+    );
   }
   if (catalog.android.performer) {
     androidCards.push(renderCard(catalog.android.performer));
   } else {
-    androidCards.push(renderUnavailable("Performer", "Muzyk na scenie", "performer", androidHelp));
+    androidCards.push(
+      renderUnavailable(
+        "Performer",
+        "Muzyk na scenie",
+        "performer",
+        androidHelp,
+      ),
+    );
   }
 
   root.append(
@@ -185,7 +229,9 @@ function setStatus(message: string | null, releaseUrl?: string): void {
 
 async function hydrateDownloads(): Promise<void> {
   const channels = await loadChannels();
-  const fallback = document.querySelector<HTMLAnchorElement>("#download-fallback-link");
+  const fallback = document.querySelector<HTMLAnchorElement>(
+    "#download-fallback-link",
+  );
   if (fallback) fallback.href = channels.releases;
 
   try {

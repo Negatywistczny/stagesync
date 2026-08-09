@@ -31,7 +31,9 @@ describe("GridPane empty states", () => {
         prefs={prefs}
       />,
     );
-    expect(screen.getByRole("status").textContent).toMatch(/Oczekiwanie na utwór/);
+    expect(screen.getByRole("status").textContent).toMatch(
+      /Oczekiwanie na utwór/,
+    );
   });
 
   it("announces loading while project is null", () => {
@@ -44,7 +46,9 @@ describe("GridPane empty states", () => {
         prefs={prefs}
       />,
     );
-    expect(screen.getByRole("status").textContent).toMatch(/Wczytywanie utworu/);
+    expect(screen.getByRole("status").textContent).toMatch(
+      /Wczytywanie utworu/,
+    );
   });
 
   it("announces load failure when project missing after load", () => {

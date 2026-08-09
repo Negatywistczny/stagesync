@@ -27,11 +27,15 @@ const FALLBACK: SiteChannels = {
     "https://github.com/Negatywistczny/stagesync/releases/latest/download/android-latest.json",
   containerImage: "ghcr.io/negatywistczny/stagesync",
   docs: {
-    install: "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
-    desktop: "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/DESKTOP.md",
-    mobile: "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/MOBILE.md",
+    install:
+      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
+    desktop:
+      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/DESKTOP.md",
+    mobile:
+      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/MOBILE.md",
     api: "https://github.com/Negatywistczny/stagesync/blob/main/docs/api/README.md",
-    changelog: "https://github.com/Negatywistczny/stagesync/blob/main/CHANGELOG.md",
+    changelog:
+      "https://github.com/Negatywistczny/stagesync/blob/main/CHANGELOG.md",
   },
 };
 

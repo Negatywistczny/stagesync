@@ -35,9 +35,7 @@ export function operatorPinHeaders(): Record<string, string> {
   return pin ? { [OPERATOR_PIN_HEADER]: pin } : {};
 }
 
-export function mergeApiHeaders(
-  base?: HeadersInit,
-): Record<string, string> {
+export function mergeApiHeaders(base?: HeadersInit): Record<string, string> {
   const out: Record<string, string> = { ...operatorPinHeaders() };
   if (!base) return out;
   if (base instanceof Headers) {

@@ -36,7 +36,9 @@ export function DeviceNameGate({ children }: { children: ReactNode }) {
       const stored = setStoredDeviceDisplayName(draft);
       setName(stored);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się zapisać nazwy");
+      setError(
+        err instanceof Error ? err.message : "Nie udało się zapisać nazwy",
+      );
     }
   }
 

@@ -57,10 +57,7 @@ import {
   noteMemoryCheckpoint,
   registerMemoryContributor,
 } from "@lib/client/memoryPressure.js";
-import {
-  getMetronomeAudioContext,
-  resumeMetronomeAudio,
-} from "./metronome.js";
+import { getMetronomeAudioContext, resumeMetronomeAudio } from "./metronome.js";
 
 export type AudioPlaybackInput = {
   project: Project;
@@ -611,7 +608,10 @@ function applyBalanceOrPan(
   setParamDezippered(bus.gainR.gain, r, currentTime);
 }
 
-function ensureDestGraph(ctx: AudioContext, project: Project): DestGraph | null {
+function ensureDestGraph(
+  ctx: AudioContext,
+  project: Project,
+): DestGraph | null {
   refreshAudioHwCapability(ctx);
   const maxCh = getAudioMaxChannelCount();
   const needMulti = projectNeedsMultiOutDest(project, maxCh);
@@ -732,11 +732,7 @@ function ensureHwOutBus(
   if (row.channelOffset + width > graph.channelCount) return null;
 
   const hit = hwOutBuses.get(row.id);
-  if (
-    hit &&
-    hit.mode === mode &&
-    hit.channelOffset === row.channelOffset
-  ) {
+  if (hit && hit.mode === mode && hit.channelOffset === row.channelOffset) {
     return hit;
   }
   if (hit) {
@@ -781,7 +777,10 @@ function ensureHwOutBus(
 
 function connectRouteToDest(
   out: AudioNode,
-  dest: { kind: "master" } | { kind: "bus"; busId: string } | { kind: "hw_out"; hwOutputId: string },
+  dest:
+    | { kind: "master" }
+    | { kind: "bus"; busId: string }
+    | { kind: "hw_out"; hwOutputId: string },
   ctx: AudioContext,
   project: Project,
   master: MasterBus,
@@ -792,9 +791,7 @@ function connectRouteToDest(
       ctx,
       project,
       dest.busId,
-      resolveChannelMode(
-        busses.find((b) => b.id === dest.busId)?.channelMode,
-      ),
+      resolveChannelMode(busses.find((b) => b.id === dest.busId)?.channelMode),
     );
     out.connect(g.gain);
     return;
@@ -1622,12 +1619,7 @@ export function syncAudioPlayback(
   ctx: AudioContext = getMetronomeAudioContext(),
 ): void {
   lastSyncArgs = { projectId, input, ctx };
-  applyBusParams(
-    input.project,
-    ctx,
-    input.soloTrackIds,
-    input.soloBusIds,
-  );
+  applyBusParams(input.project, ctx, input.soloTrackIds, input.soloBusIds);
 
   if (
     playbackSuppressed ||
@@ -1701,13 +1693,7 @@ export function syncAudioPlayback(
     );
   }
 
-  syncCueSamples(
-    projectId,
-    input.project,
-    input.displayTicks,
-    prevTicks,
-    ctx,
-  );
+  syncCueSamples(projectId, input.project, input.displayTicks, prevTicks, ctx);
 
   // Live clip gainDb (not part of graphKey) — only write when changed.
   for (const a of active) {

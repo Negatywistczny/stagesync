@@ -4,7 +4,12 @@
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { Button } from "@stagesync/ui";
-import { emptyPeakHold, listMasterStereoPairOptions, resolveMasterOutputRouting, type Project } from "@stagesync/shared";
+import {
+  emptyPeakHold,
+  listMasterStereoPairOptions,
+  resolveMasterOutputRouting,
+  type Project,
+} from "@stagesync/shared";
 import type { TrackSelection } from "@lib/timeline/timelineSelection.js";
 import {
   AUDIO_HW_CAPABILITY_EVENT,
@@ -67,10 +72,7 @@ export type MixerSurfaceProps = {
   onHwContextMenu?: (hwOutputId: string, e: MouseEvent) => void;
   onHwGainChange?: (hwOutputId: string, gainDb: number) => void;
   onHwMuteToggle?: (hwOutputId: string) => void;
-  onHwChannelModeChange?: (
-    hwOutputId: string,
-    mode: "mono" | "stereo",
-  ) => void;
+  onHwChannelModeChange?: (hwOutputId: string, mode: "mono" | "stereo") => void;
   onEmptyDoubleClick?: (e: MouseEvent) => void;
 };
 
@@ -133,7 +135,10 @@ export function MixerSurface({
   onEmptyDoubleClick,
 }: MixerSurfaceProps) {
   const trackIds = project.audioTracks.map((t) => t.id);
-  const busses = useMemo(() => project.audioBusses ?? [], [project.audioBusses]);
+  const busses = useMemo(
+    () => project.audioBusses ?? [],
+    [project.audioBusses],
+  );
   const busIds = busses.map((b) => b.id);
   const hwOuts = useMemo(
     () => project.audioHardwareOutputs ?? [],
@@ -164,7 +169,12 @@ export function MixerSurface({
   const masterOutOptions: OutputSelectorOption[] = useMemo(() => {
     if (!hwCap.uiAllowed) return [];
     return listMasterStereoPairOptions(hwCap.maxChannelCount, hwOuts)
-      .filter((o) => !o.blocked || o.channelOffset === resolveMasterOutputRouting(project.masterOutput).channelOffset)
+      .filter(
+        (o) =>
+          !o.blocked ||
+          o.channelOffset ===
+            resolveMasterOutputRouting(project.masterOutput).channelOffset,
+      )
       .map((o) => ({
         value: `ch:${o.channelOffset}`,
         label: o.blocked ? `${o.label} (zajęte)` : o.label,
@@ -172,7 +182,6 @@ export function MixerSurface({
   }, [hwCap.uiAllowed, hwCap.maxChannelCount, hwOuts, project.masterOutput]);
 
   const masterOutValue = `ch:${resolveMasterOutputRouting(project.masterOutput).channelOffset}`;
-
 
   function setZoneVisible(zoneId: MixerZoneId) {
     setZoneVis((prev) => {
@@ -245,10 +254,7 @@ export function MixerSurface({
       <div className={styles.bank}>
         <div className={styles.scrollBank}>
           <section
-            className={[
-              styles.zone,
-              zoneVis.audio ? "" : styles.zoneCollapsed,
-            ]
+            className={[styles.zone, zoneVis.audio ? "" : styles.zoneCollapsed]
               .filter(Boolean)
               .join(" ")}
             aria-label="Ścieżki audio"

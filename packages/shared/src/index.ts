@@ -301,10 +301,7 @@ export {
   type PlaceUsUgBackingAudioOpts,
   type SparsifyTempoNodesOptions,
 } from "./smart-tempo.js";
-export {
-  projectEndTicks,
-  emptyProjectEndTicks,
-} from "./project-bounds.js";
+export { projectEndTicks, emptyProjectEndTicks } from "./project-bounds.js";
 
 export {
   STAGE_CUE_DEFAULT_LOOKAHEAD_MS,

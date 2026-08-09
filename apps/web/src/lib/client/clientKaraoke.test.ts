@@ -100,9 +100,7 @@ describe("clientKaraoke", () => {
     expect(intro?.useProgress).toBe(true);
     expect(intro?.bars.length).toBe(2);
     expect(intro?.bars.some((b) => b.current)).toBe(true);
-    expect(intro?.bars.find((b) => b.current)?.beatProgress).toBeGreaterThan(
-      0,
-    );
+    expect(intro?.bars.find((b) => b.current)?.beatProgress).toBeGreaterThan(0);
     expect(ctx?.sectionBars.length).toBe(2);
     expect(ctx?.currentBeat).toBeGreaterThanOrEqual(1);
   });
@@ -205,9 +203,7 @@ describe("clientKaraoke", () => {
   it("groupKaraokeSections assigns by lyric startTicks", () => {
     const clips = mergeTekstWithCountdownDigits(project, 0);
     const groups = groupKaraokeSections(project, clips, 0, null);
-    expect(groups.some((g) => g.name === "Intro" && g.useProgress)).toBe(
-      true,
-    );
+    expect(groups.some((g) => g.name === "Intro" && g.useProgress)).toBe(true);
   });
 
   it("assigns przedtakt (last-bar onset before next Forma) to next section", () => {
@@ -283,9 +279,9 @@ describe("clientKaraoke", () => {
     const verse = ctx!.sections.find((s) => s.name === "Zwrotka")!;
     const cd = ctx!.sections.find((s) => s.kind === "countdown")!;
     expect(verse.lines.map((l) => l.text)).toEqual(["Hello", "World"]);
-    expect(cd.lines.map((l) => l.text).filter((t) => t === "Stay on CD")).toEqual(
-      ["Stay on CD"],
-    );
+    expect(
+      cd.lines.map((l) => l.text).filter((t) => t === "Stay on CD"),
+    ).toEqual(["Stay on CD"]);
 
     // After CD: World active → Verse card highlighted via pickup affiliation path.
     const ctxInVerse = buildKaraokeLiveContext(withPickup, BEAT)!;
@@ -347,7 +343,9 @@ describe("clientKaraoke", () => {
       "orphan-1",
     );
     expect(groups.some((g) => g.id === "__orphan__")).toBe(true);
-    expect(groups.find((g) => g.id === "__orphan__")?.lines[0]?.text).toBe("Lost");
+    expect(groups.find((g) => g.id === "__orphan__")?.lines[0]?.text).toBe(
+      "Lost",
+    );
   });
 
   it("activeGroup is null when playhead is past all Forma clips", () => {
@@ -399,9 +397,9 @@ describe("clientKaraoke", () => {
       expect(resolveActiveBlockId(multiBlock.blocks, BEAT, 4 * BEAT)).toBe(
         "b-hello",
       );
-      expect(resolveActiveBlockId(multiBlock.blocks, 2 * BEAT - 1, 4 * BEAT)).toBe(
-        "b-hello",
-      );
+      expect(
+        resolveActiveBlockId(multiBlock.blocks, 2 * BEAT - 1, 4 * BEAT),
+      ).toBe("b-hello");
       expect(resolveActiveBlockId(multiBlock.blocks, 2 * BEAT, 4 * BEAT)).toBe(
         "b-world",
       );
@@ -415,7 +413,9 @@ describe("clientKaraoke", () => {
       const onHello = buildKaraokeLiveContext(withMulti, BEAT / 2)!;
       expect(onHello.lines[0]?.active).toBe(true);
       expect(onHello.activeBlockId).toBe("b-hello");
-      expect(onHello.lines[0]?.blocks?.map((b) => [b.id, b.active, b.past])).toEqual([
+      expect(
+        onHello.lines[0]?.blocks?.map((b) => [b.id, b.active, b.past]),
+      ).toEqual([
         ["b-hello", true, false],
         ["b-world", false, false],
       ]);
@@ -423,21 +423,21 @@ describe("clientKaraoke", () => {
       const inGap = buildKaraokeLiveContext(withMulti, BEAT + 10)!;
       expect(inGap.lines[0]?.active).toBe(true);
       expect(inGap.activeBlockId).toBe("b-hello");
-      expect(inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.active).toBe(
-        true,
-      );
-      expect(inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past).toBe(
-        false,
-      );
+      expect(
+        inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.active,
+      ).toBe(true);
+      expect(
+        inGap.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past,
+      ).toBe(false);
 
       const onWorld = buildKaraokeLiveContext(withMulti, 2 * BEAT + 10)!;
       expect(onWorld.activeBlockId).toBe("b-world");
-      expect(onWorld.lines[0]?.blocks?.find((b) => b.id === "b-world")?.active).toBe(
-        true,
-      );
-      expect(onWorld.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past).toBe(
-        true,
-      );
+      expect(
+        onWorld.lines[0]?.blocks?.find((b) => b.id === "b-world")?.active,
+      ).toBe(true);
+      expect(
+        onWorld.lines[0]?.blocks?.find((b) => b.id === "b-hello")?.past,
+      ).toBe(true);
     });
 
     it("1-tick syllables stay yellow until the next block", () => {
@@ -461,7 +461,9 @@ describe("clientKaraoke", () => {
       };
       const midA = buildKaraokeLiveContext(flashy, BEAT / 2)!;
       expect(midA.activeBlockId).toBe("a");
-      expect(midA.lines[0]?.blocks?.find((b) => b.id === "a")?.active).toBe(true);
+      expect(midA.lines[0]?.blocks?.find((b) => b.id === "a")?.active).toBe(
+        true,
+      );
       const midB = buildKaraokeLiveContext(flashy, BEAT + 10)!;
       expect(midB.activeBlockId).toBe("b");
     });
@@ -518,7 +520,12 @@ describe("clientKaraoke", () => {
             { id: "b1", text: "I", startTicks: 0, lengthTicks: BEAT },
             { id: "b2", text: "hear", startTicks: BEAT, lengthTicks: BEAT },
             { id: "b3", text: "the", startTicks: 2 * BEAT, lengthTicks: BEAT },
-            { id: "b4", text: "drums", startTicks: 3 * BEAT, lengthTicks: BEAT },
+            {
+              id: "b4",
+              text: "drums",
+              startTicks: 3 * BEAT,
+              lengthTicks: BEAT,
+            },
           ],
         },
         0,
@@ -587,11 +594,9 @@ describe("clientKaraoke", () => {
           lengthTicks: BEAT,
         },
       ];
-      expect(filterTekstBlocksByRole(mixed, "vocal_1").map((b) => b.id)).toEqual([
-        "b-v1",
-        "b-all",
-        "b-free",
-      ]);
+      expect(
+        filterTekstBlocksByRole(mixed, "vocal_1").map((b) => b.id),
+      ).toEqual(["b-v1", "b-all", "b-free"]);
     });
 
     it("buildKaraokeLiveContext filters blocks when ≥2 roles", () => {

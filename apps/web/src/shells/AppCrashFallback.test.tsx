@@ -8,9 +8,9 @@ vi.mock("react-router", () => ({
   isRouteErrorResponse: (error: unknown) =>
     Boolean(
       error &&
-        typeof error === "object" &&
-        "status" in error &&
-        "statusText" in error,
+      typeof error === "object" &&
+      "status" in error &&
+      "statusText" in error,
     ),
 }));
 
@@ -24,8 +24,12 @@ describe("AppCrashFallback", () => {
   it("exposes Polish navigation aria-labels", () => {
     render(<AppCrashFallback error={new Error("x")} />);
     expect(screen.getByRole("button", { name: "Odśwież stronę" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Przejdź do Client" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Przejdź do Admin" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Przejdź do Client" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Przejdź do Admin" }),
+    ).toBeTruthy();
   });
 
   it("renders string errors and custom title", () => {

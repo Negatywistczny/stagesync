@@ -8,7 +8,13 @@ import {
   useState,
 } from "react";
 import { createPortal, flushSync } from "react-dom";
-import { Link, useBlocker, useLocation, useNavigate, useParams } from "react-router";
+import {
+  Link,
+  useBlocker,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router";
 import { Button, Slider, Select, useContextMenu } from "@stagesync/ui";
 import {
   resolveMeterAt,
@@ -114,9 +120,7 @@ import {
   TOOLBAR_ALWAYS_VISIBLE,
   type ToolbarToolId,
 } from "@lib/timeline/timelineToolbarTools.js";
-import {
-  subsectionRanges,
-} from "@lib/timeline-edit/formaSubsections.js";
+import { subsectionRanges } from "@lib/timeline-edit/formaSubsections.js";
 import {
   deleteMapEvents,
   insertMapEventAt,
@@ -276,9 +280,7 @@ import {
   setMasterOutputRouting,
   updateAudioHardwareOutput,
 } from "@lib/audio/audioHwEdit.js";
-import {
-  getAudioHwCapability,
-} from "@lib/audio/audioHwCapability.js";
+import { getAudioHwCapability } from "@lib/audio/audioHwCapability.js";
 import {
   ChannelStripControls,
   TaperGainSlider,
@@ -332,7 +334,11 @@ import {
 } from "@lib/timeline/timelineTouchTier.js";
 import { APP_VERSION } from "@lib/client/appVersion.js";
 import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
-import { fetchLibrary, fetchProject, putProject } from "@lib/shell-operator/libraryApi.js";
+import {
+  fetchLibrary,
+  fetchProject,
+  putProject,
+} from "@lib/shell-operator/libraryApi.js";
 import {
   fetchSetlist,
   patchSetlistAutoAdvance,
@@ -455,9 +461,7 @@ import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import { ShellIconButton } from "./ShellIconButton.js";
 import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
 import { OperatorNav } from "./components/OperatorNav.js";
-import {
-  SongImportWizard,
-} from "./import/SongImportWizard.js";
+import { SongImportWizard } from "./import/SongImportWizard.js";
 import type { UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
 import {
   SONG_IMPORT_EVENT,
@@ -607,8 +611,8 @@ export function TimelineShell() {
   } = useTransport();
   const { openAt: openContextMenu, close: closeContextMenu } = useContextMenu();
   const wasPlayingRef = useRef(state.playing);
-  const [latencyCompMs, setLatencyCompMs] = useState(
-    () => getStoredLatencyCompensationMs(),
+  const [latencyCompMs, setLatencyCompMs] = useState(() =>
+    getStoredLatencyCompensationMs(),
   );
   const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
     getStoredClockDisplayFormat(),
@@ -821,7 +825,9 @@ export function TimelineShell() {
   const loopDraftRef = useRef(loopDraft);
   loopDraftRef.current = loopDraft;
   const [selectedAnchorId, setSelectedAnchorId] = useState<string | null>(null);
-  const [trackVisibility, setTrackVisibility] = useState<TrackVisibilityMap>(() => defaultTrackVisibility());
+  const [trackVisibility, setTrackVisibility] = useState<TrackVisibilityMap>(
+    () => defaultTrackVisibility(),
+  );
   const [eyeOpen, setEyeOpen] = useState(false);
   const [toolbarVisibleTools, setToolbarVisibleTools] = useState<
     ToolbarToolId[]
@@ -835,8 +841,9 @@ export function TimelineShell() {
   /** Forma/content multi-select (v4 selectedIds + primaryId). */
   const [clipSelection, setClipSelection] =
     useState<ClipSelection>(EMPTY_CLIP_SELECTION);
-  const [trackSelection, setTrackSelection] =
-    useState<TrackSelection>(EMPTY_TRACK_SELECTION);
+  const [trackSelection, setTrackSelection] = useState<TrackSelection>(
+    EMPTY_TRACK_SELECTION,
+  );
   const [soloAudioTrackIds, setSoloAudioTrackIds] = useState<string[]>([]);
   const [soloBusIds, setSoloBusIds] = useState<string[]>([]);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
@@ -990,12 +997,12 @@ export function TimelineShell() {
       );
       setFailedAudioAssetIds(getFailedAudioAssetIds(id));
       const first = project.forma.clips[0]?.id ?? null;
-      setClipSelection(
-        first ? selectSingle(first, "forma") : clearSelection(),
-      );
+      setClipSelection(first ? selectSingle(first, "forma") : clearSelection());
       setSelectedSubsectionIdx(null);
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Nie udało się wczytać");
+      setLoadError(
+        err instanceof Error ? err.message : "Nie udało się wczytać",
+      );
       setSavedProject(null);
       setDraftProject(null);
       setDraftHistory(null);
@@ -1020,16 +1027,13 @@ export function TimelineShell() {
     setSelectedSubsectionIdx(null);
   }, []);
 
-  const selectLaneClip = useCallback(
-    (lane: ClipSelectionLane, id: string) => {
-      setClipSelection(selectSingle(id, lane));
-      if (lane !== "forma") setSelectedSubsectionIdx(null);
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      setInspectorVisible(true);
-    },
-    [],
-  );
+  const selectLaneClip = useCallback((lane: ClipSelectionLane, id: string) => {
+    setClipSelection(selectSingle(id, lane));
+    if (lane !== "forma") setSelectedSubsectionIdx(null);
+    setSelectedAnchorId(null);
+    setSongMetaOpen(false);
+    setInspectorVisible(true);
+  }, []);
 
   const clearMapSelection = useCallback(() => {
     setSelectedMapIds([]);
@@ -1284,7 +1288,11 @@ export function TimelineShell() {
           const c = next.forma.clips.find((x) => x.id === id);
           return c?.kind === "countdown";
         });
-        if (hasCountdown && ids.length === 1 && clipSelection.items.length === 1) {
+        if (
+          hasCountdown &&
+          ids.length === 1 &&
+          clipSelection.items.length === 1
+        ) {
           return;
         }
         const filtered = ids.filter((id) => {
@@ -1378,7 +1386,9 @@ export function TimelineShell() {
     const clips = isAudioSelectionLane(lane)
       ? draft.audioClips.filter((c) => idSet.has(c.id))
       : lane === "forma"
-        ? draft.forma.clips.filter((c) => idSet.has(c.id) && c.kind === "section")
+        ? draft.forma.clips.filter(
+            (c) => idSet.has(c.id) && c.kind === "section",
+          )
         : lane === "tekst"
           ? draft.tekst.clips.filter((c) => idSet.has(c.id))
           : lane === "akordy"
@@ -1723,9 +1733,7 @@ export function TimelineShell() {
           setCycleFromSelectedAudioClip();
           return;
         case "toggle-mixer":
-          setTimelineSurface((s) =>
-            s === "mixer" ? "timeline" : "mixer",
-          );
+          setTimelineSurface((s) => (s === "mixer" ? "timeline" : "mixer"));
           return;
         case "toggle-inspector":
           toggleInspectorPanel();
@@ -1962,10 +1970,7 @@ export function TimelineShell() {
 
   const viewSpan = useMemo(() => {
     const clips = draftProject?.forma.clips ?? [];
-    if (
-      gesturePreview?.kind === "countdown-length" &&
-      gesturePreview.clipId
-    ) {
+    if (gesturePreview?.kind === "countdown-length" && gesturePreview.clipId) {
       return computeFormaViewSpan(
         clips.map((c) =>
           c.id === gesturePreview.clipId
@@ -2049,7 +2054,12 @@ export function TimelineShell() {
     if (queue.length === 0) return null;
     return queue[Math.min(tapLineIndex, queue.length - 1)]?.id ?? null;
   }, [tool, draftProject, tapLineIndex]);
-  const locatorPx = tickToPx(effectiveLocatorTicks, viewSpan, barTicks, effectiveZoomH);
+  const locatorPx = tickToPx(
+    effectiveLocatorTicks,
+    viewSpan,
+    barTicks,
+    effectiveZoomH,
+  );
   const locatorMeter = draftProject
     ? resolveMeterAt(draftProject, effectiveLocatorTicks)
     : state.timeSignature;
@@ -2085,8 +2095,7 @@ export function TimelineShell() {
   }, [state.playing, state.positionTicks]);
 
   const loopOn = Boolean(state.loop?.enabled);
-  const loopRange =
-    loopDraft ?? usableLoopRange(state.loop);
+  const loopRange = loopDraft ?? usableLoopRange(state.loop);
 
   const mapPreviewProject = useMemo(() => {
     if (!draftProject || !mapDragPreview) return draftProject;
@@ -2145,25 +2154,24 @@ export function TimelineShell() {
     draftProject?.cue.clips.find((c) => c.id === selectedCueClipId) ?? null;
   const selectedAudioClip =
     draftProject && selectedAudioClipId
-      ? draftProject.audioClips.find((c) => c.id === selectedAudioClipId) ?? null
+      ? (draftProject.audioClips.find((c) => c.id === selectedAudioClipId) ??
+        null)
       : null;
   const selectedDockAudioTrack =
     draftProject && primaryAudioTrackId(trackSelection)
-      ? draftProject.audioTracks.find(
+      ? (draftProject.audioTracks.find(
           (tr) => tr.id === primaryAudioTrackId(trackSelection),
-        ) ?? null
+        ) ?? null)
       : null;
   const selectedAnchor =
     draftProject && selectedAnchorId
-      ? scoreAnchors(draftProject).find((a) => a.id === selectedAnchorId) ??
-        null
+      ? (scoreAnchors(draftProject).find((a) => a.id === selectedAnchorId) ??
+        null)
       : null;
 
   /** Panel visibility — bare I (not Metadane ⓘ). Hidden in Mixer; absent on mobile preview. */
   const inspectorOpen =
-    !isMobilePreview &&
-    inspectorVisible &&
-    timelineSurface !== "mixer";
+    !isMobilePreview && inspectorVisible && timelineSurface !== "mixer";
 
   const meterAtPlayhead = draftProject
     ? resolveMeterAt(draftProject, displayTicks)
@@ -2282,7 +2290,9 @@ export function TimelineShell() {
   const audioAssetDecodeKey =
     draftProject?.assets
       .filter((a) => a.kind === "audio")
-      .map((a) => `${a.id}:${a.durationMs ?? 0}:${a.waveformPeaks?.length ?? 0}`)
+      .map(
+        (a) => `${a.id}:${a.durationMs ?? 0}:${a.waveformPeaks?.length ?? 0}`,
+      )
       .join("|") ?? "";
 
   // Decode assets missing duration/peaks (on-demand waveform).
@@ -2341,7 +2351,9 @@ export function TimelineShell() {
         h ? syncPresentAfterSave(h, next) : createDraftHistory(next),
       );
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Zapis nie powiódł się");
+      setLoadError(
+        err instanceof Error ? err.message : "Zapis nie powiódł się",
+      );
     } finally {
       setSavePending(false);
     }
@@ -2523,7 +2535,9 @@ export function TimelineShell() {
     requestAnimationFrame(() => {
       scrollCanvasToStart(
         canvasScrollRef.current ??
-          (document.querySelector("[data-canvas-scroll]") as HTMLElement | null),
+          (document.querySelector(
+            "[data-canvas-scroll]",
+          ) as HTMLElement | null),
       );
     });
   }
@@ -2726,14 +2740,14 @@ export function TimelineShell() {
         closeImportModals();
         setSongScreenOpen(false);
         setSongMetaOpen(false);
-        flashCanvasNotice(`Nowy utwór „${saved.name}”: Import US+UG (${summary})`);
+        flashCanvasNotice(
+          `Nowy utwór „${saved.name}”: Import US+UG (${summary})`,
+        );
         navigate(`/timeline/${saved.id}`);
       } catch (err) {
         setImportApplying(false);
         flashCanvasNotice(
-          err instanceof Error
-            ? err.message
-            : "Import US+UG nie powiódł się",
+          err instanceof Error ? err.message : "Import US+UG nie powiódł się",
         );
       }
       return;
@@ -2752,7 +2766,9 @@ export function TimelineShell() {
       smartTempoAudio: smartAudio,
     });
     if (pendingFile && projectId) {
-      next = await uploadProjectAudio(projectId, pendingFile, { startTicks: 0 });
+      next = await uploadProjectAudio(projectId, pendingFile, {
+        startTicks: 0,
+      });
       const asset = next.assets.at(-1);
       if (asset && smartAudio) {
         next = applyUsUgBridgeToProject(next, result, {
@@ -2764,7 +2780,10 @@ export function TimelineShell() {
       try {
         next = await putProject(projectId, next);
       } catch (err) {
-        console.warn("[TimelineShell] Auto-save on import failed, keeping draft:", err);
+        console.warn(
+          "[TimelineShell] Auto-save on import failed, keeping draft:",
+          err,
+        );
       }
     }
     commitDraft(next);
@@ -2786,7 +2805,10 @@ export function TimelineShell() {
     );
   }
 
-  function beginFormaGesture(session: FormaGestureSession, preview: FormaGesturePreview) {
+  function beginFormaGesture(
+    session: FormaGestureSession,
+    preview: FormaGesturePreview,
+  ) {
     gestureSessionRef.current = session;
     gesturePreviewRef.current = preview;
     setGestureSession(session);
@@ -2842,8 +2864,7 @@ export function TimelineShell() {
       setGesturePreview(preview);
       return;
     }
-    const n =
-      draft.forma.clips.filter((c) => c.kind === "section").length + 1;
+    const n = draft.forma.clips.filter((c) => c.kind === "section").length + 1;
     const preview = previewFromSession(
       draft,
       session,
@@ -2928,7 +2949,9 @@ export function TimelineShell() {
         setClipSelection((prev) =>
           setSelection(
             [
-              ...prev.items.filter((i) => i.lane !== lane && i.lane !== destLane),
+              ...prev.items.filter(
+                (i) => i.lane !== lane && i.lane !== destLane,
+              ),
               ...session.moveIds!.map((id) => ({ id, lane: destLane })),
             ],
             session.clipId,
@@ -2998,14 +3021,19 @@ export function TimelineShell() {
     } else if (session.kind === "subsection-boundary" && session.clipId) {
       selectLaneClip("forma", session.clipId);
       const clip = next.forma.clips.find((c) => c.id === session.clipId);
-      const ranges = subsectionRanges(clip?.subsections, clip?.lengthTicks ?? 1);
+      const ranges = subsectionRanges(
+        clip?.subsections,
+        clip?.lengthTicks ?? 1,
+      );
       const maxIdx = Math.max(0, ranges.length - 1);
-      const countBefore = session.originBoundaryRel != null
-        ? subsectionRanges(
-            draft.forma.clips.find((c) => c.id === session.clipId)?.subsections,
-            session.originClipLength,
-          ).length
-        : ranges.length;
+      const countBefore =
+        session.originBoundaryRel != null
+          ? subsectionRanges(
+              draft.forma.clips.find((c) => c.id === session.clipId)
+                ?.subsections,
+              session.originClipLength,
+            ).length
+          : ranges.length;
       if (ranges.length < countBefore && session.boundarySubIdx != null) {
         setSelectedSubsectionIdx(
           Math.max(0, Math.min(session.boundarySubIdx - 1, maxIdx)),
@@ -3047,7 +3075,13 @@ export function TimelineShell() {
       if (!gestureSessionRef.current) return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX, e.clientY);
+      updateFormaGesturePreview(
+        raw,
+        e.metaKey,
+        e.ctrlKey,
+        e.clientX,
+        e.clientY,
+      );
     }
 
     function onUp(e: PointerEvent) {
@@ -3064,7 +3098,12 @@ export function TimelineShell() {
       window.removeEventListener("pointercancel", onUp);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- session id gates; handlers use refs
-  }, [gestureSession?.pointerId, gestureSession?.kind, gestureSession?.clipId, gesturePreview]);
+  }, [
+    gestureSession?.pointerId,
+    gestureSession?.kind,
+    gestureSession?.clipId,
+    gesturePreview,
+  ]);
 
   function beginContentPencilDraw(
     e: React.PointerEvent<HTMLElement>,
@@ -3229,7 +3268,6 @@ export function TimelineShell() {
     beginFormaGesture(session, preview);
   }
 
-  
   function onAudioClipPointerDown(
     e: React.PointerEvent<HTMLButtonElement>,
     lane: AudioLaneId,
@@ -3309,7 +3347,7 @@ export function TimelineShell() {
         lane,
         originClientX: e.clientX,
         originFadeMs:
-          fadeKind === "fade-in" ? full.fadeInMs ?? 0 : full.fadeOutMs ?? 0,
+          fadeKind === "fade-in" ? (full.fadeInMs ?? 0) : (full.fadeOutMs ?? 0),
       };
       beginFormaGesture(
         session,
@@ -3373,7 +3411,9 @@ export function TimelineShell() {
       setSelectedAnchorId(null);
       setSongMetaOpen(false);
       const trackId = audioTrackIdFromLane(lane);
-      const laneClips = draftProject.audioClips.filter((c) => c.trackId === trackId);
+      const laneClips = draftProject.audioClips.filter(
+        (c) => c.trackId === trackId,
+      );
       setClipSelection((prev) => selectRangeTo(prev, clip.id, lane, laneClips));
       return;
     }
@@ -3397,7 +3437,11 @@ export function TimelineShell() {
     if (raw == null) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     const kind =
-      zone === "start" ? "resize-start" : zone === "end" ? "resize-end" : "move";
+      zone === "start"
+        ? "resize-start"
+        : zone === "end"
+          ? "resize-end"
+          : "move";
     const moveIds =
       kind === "move"
         ? inMulti
@@ -3421,7 +3465,7 @@ export function TimelineShell() {
     );
   }
 
-function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+  function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (e.button !== 0 || !draftProject) return;
     if (tool === "eraser") {
       e.preventDefault();
@@ -4211,10 +4255,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     }
   }
 
-  function zoomHorizontalBySteps(
-    steps: number,
-    anchorViewportX?: number,
-  ) {
+  function zoomHorizontalBySteps(steps: number, anchorViewportX?: number) {
     if (!steps) return;
     applyAbsoluteZoomH(
       zoomHBaseRef.current + steps * ZOOM_H_STEP,
@@ -4359,7 +4400,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     ) as HTMLElement | null;
     if (!scroll) return;
     const usable = Math.max(80, scroll.clientWidth - 48);
-    const bars = Math.max(1, viewSpanRef.current.end / Math.max(1, barTicksRef.current));
+    const bars = Math.max(
+      1,
+      viewSpanRef.current.end / Math.max(1, barTicksRef.current),
+    );
     const next = Math.round(usable / bars / Math.max(0.01, uiScaleRef.current));
     setZoomH(Math.min(ZOOM_H_MAX, Math.max(ZOOM_H_MIN, next)));
     requestAnimationFrame(() => {
@@ -4445,7 +4489,9 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       );
     } catch (err) {
       setLoadError(
-        err instanceof Error ? err.message : "Nie udało się zduplikować ścieżki",
+        err instanceof Error
+          ? err.message
+          : "Nie udało się zduplikować ścieżki",
       );
     }
   }
@@ -4502,10 +4548,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     setTrackRename(null);
   }
 
-  function onAudioTrackHeaderClick(
-    e: React.MouseEvent,
-    trackId: string,
-  ) {
+  function onAudioTrackHeaderClick(e: React.MouseEvent, trackId: string) {
     if ((e.target as HTMLElement).closest("button, label, input")) {
       return;
     }
@@ -4588,11 +4631,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       },
       onOutputChange: (output) => {
         if (!draftProject) return;
-        const prev = draftProject.audioTracks.find((t) => t.id === trackId)
-          ?.output;
-        if (
-          isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)
-        ) {
+        const prev = draftProject.audioTracks.find(
+          (t) => t.id === trackId,
+        )?.output;
+        if (isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)) {
           return;
         }
         commitDraft(setAudioTrackOutput(draftProject, trackId, output));
@@ -4624,9 +4666,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         if (!m) return;
         const channelOffset = Number(m[1]);
         try {
-          commitDraft(
-            setMasterOutputRouting(draftProject, { channelOffset }),
-          );
+          commitDraft(setMasterOutputRouting(draftProject, { channelOffset }));
         } catch (err) {
           setLoadError(
             err instanceof Error
@@ -4646,11 +4686,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
 
   function commitBusRename() {
     if (!draftProject || !busRename) return;
-    const next = setAudioBusName(
-      draftProject,
-      busRename.busId,
-      busRename.name,
-    );
+    const next = setAudioBusName(draftProject, busRename.busId, busRename.name);
     if (next !== draftProject) commitDraft(next);
     setBusRename(null);
   }
@@ -4772,13 +4808,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     );
   }
 
-  function onHwChannelModeChange(
-    hwOutputId: string,
-    mode: "mono" | "stereo",
-  ) {
+  function onHwChannelModeChange(hwOutputId: string, mode: "mono" | "stereo") {
     if (!draftProject) return;
     commitDraft(
-      updateAudioHardwareOutput(draftProject, hwOutputId, { channelMode: mode }),
+      updateAudioHardwareOutput(draftProject, hwOutputId, {
+        channelMode: mode,
+      }),
     );
   }
 
@@ -4827,9 +4862,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         e.stopPropagation();
         if (!draftProject) return;
         const bus = draftProject.audioBusses?.find((b) => b.id === busId);
-        commitDraft(
-          setAudioBusMuted(draftProject, busId, !bus?.muted),
-        );
+        commitDraft(setAudioBusMuted(draftProject, busId, !bus?.muted));
       },
       onGainChange: (v) => {
         if (!draftProject) return;
@@ -4858,9 +4891,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           bus?.output?.kind === "hw_out" || bus?.output?.kind === "bus"
             ? bus.output
             : ({ kind: "master" } as const);
-        if (
-          isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)
-        ) {
+        if (isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)) {
           return;
         }
         commitDraft(setAudioBusOutput(draftProject, busId, output));
@@ -4905,8 +4936,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           .filter((a) => a.kind === "audio")
           .at(-1);
         const uploadedClip = uploadedAsset
-          ? next.audioClips.find((c) => c.assetId === uploadedAsset.id) ??
-            next.audioClips[next.audioClips.length - 1]!
+          ? (next.audioClips.find((c) => c.assetId === uploadedAsset.id) ??
+            next.audioClips[next.audioClips.length - 1]!)
           : next.audioClips[next.audioClips.length - 1]!;
         lastClipId = uploadedClip.id;
         if (trackId && uploadedClip.trackId !== trackId) {
@@ -5175,7 +5206,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       selectedMapIds.length > 1;
 
     if (!inMulti) {
-      setMapSelection(lane, isDefault ? [] : [seg.eventId], isDefault ? null : seg.eventId);
+      setMapSelection(
+        lane,
+        isDefault ? [] : [seg.eventId],
+        isDefault ? null : seg.eventId,
+      );
     } else {
       setPrimaryMapId(seg.eventId);
     }
@@ -5217,7 +5252,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const mode = mapSnapMode(e.metaKey, e.ctrlKey);
     const unsnappedTarget =
       drag.originStartTicks + (raw - drag.originPointerTicks);
-    const snappedTarget = snapEditTicks(draftRef.current, unsnappedTarget, mode);
+    const snappedTarget = snapEditTicks(
+      draftRef.current,
+      unsnappedTarget,
+      mode,
+    );
     const deltaTicks = snappedTarget - drag.originStartTicks;
     drag.previewDeltaTicks = deltaTicks;
     setMapDragPreview({
@@ -5574,11 +5613,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   if (next !== draft) commitDraft(next);
                   return;
                 }
-                if (
-                  lane === "tekst" ||
-                  lane === "akordy" ||
-                  lane === "cue"
-                ) {
+                if (lane === "tekst" || lane === "akordy" || lane === "cue") {
                   const next = splitContentClipAt(
                     draft,
                     lane,
@@ -5682,17 +5717,23 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (isAudioLaneId(trackId)) {
       const lane = trackId;
       const trackUuid = audioTrackIdFromLane(lane);
-      const clips = draftProject.audioClips.filter((c) => c.trackId === trackUuid);
+      const clips = draftProject.audioClips.filter(
+        (c) => c.trackId === trackUuid,
+      );
       const assetById = new Map(draftProject.assets.map((a) => [a.id, a]));
       const trackColor = resolveTrackColor(
         draftProject.audioTracks.find((t) => t.id === trackUuid)?.color,
       );
 
       const isAudioMoving =
-        gestureSession?.kind === "move" && isAudioLaneId(gestureSession.lane ?? "");
-      const sourceAudioLane = isAudioMoving ? (gestureSession!.lane as AudioLaneId) : null;
+        gestureSession?.kind === "move" &&
+        isAudioLaneId(gestureSession.lane ?? "");
+      const sourceAudioLane = isAudioMoving
+        ? (gestureSession!.lane as AudioLaneId)
+        : null;
       const targetAudioLane = isAudioMoving
-        ? ((gesturePreview?.targetLane as AudioLaneId | undefined) ?? sourceAudioLane)
+        ? ((gesturePreview?.targetLane as AudioLaneId | undefined) ??
+          sourceAudioLane)
         : null;
       const moveIds = isAudioMoving
         ? gestureSession!.moveIds?.length
@@ -5706,7 +5747,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           ? gesturePreview.startTicks - gestureSession!.originClipStart
           : 0;
 
-      const isTargetLane = isAudioMoving && targetAudioLane === lane && targetAudioLane !== sourceAudioLane;
+      const isTargetLane =
+        isAudioMoving &&
+        targetAudioLane === lane &&
+        targetAudioLane !== sourceAudioLane;
       const ghostClips = isTargetLane
         ? moveIds
             .map((id) => draftProject.audioClips.find((c) => c.id === id))
@@ -5745,7 +5789,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   : gesturePreview!.lengthTicks
                 : clip.lengthTicks,
             };
-            const style = clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH);
+            const style = clipStylePx(
+              styleClip,
+              viewSpan,
+              barTicks,
+              effectiveZoomH,
+            );
             const widthPx = Number.parseFloat(String(style.width)) || 0;
             const peaks = asset?.waveformPeaks;
             const poly =
@@ -5843,7 +5892,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               startTicks: ghostClip.startTicks + moveDelta,
               lengthTicks: ghostClip.lengthTicks,
             };
-            const style = clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH);
+            const style = clipStylePx(
+              styleClip,
+              viewSpan,
+              barTicks,
+              effectiveZoomH,
+            );
             const widthPx = Number.parseFloat(String(style.width)) || 0;
             const peaks = asset?.waveformPeaks;
             const poly =
@@ -5990,10 +6044,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           </button>
         ));
       case "tonacja":
-        return (keySegments.length > 0
-          ? keySegments
-          : []
-        ).map((seg, i) => (
+        return (keySegments.length > 0 ? keySegments : []).map((seg, i) => (
           <button
             key={`key-${seg.eventId}-${i}`}
             type="button"
@@ -6067,10 +6118,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   setSelectedAnchorId(null);
                   return;
                 }
-                if (
-                  !toolAllowsClipHitZones(tool) &&
-                  tool !== "pointer"
-                ) {
+                if (!toolAllowsClipHitZones(tool) && tool !== "pointer") {
                   return;
                 }
                 (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -6144,7 +6192,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   selectedSubsectionIdx={
                     primaryId === clip.id ? selectedSubsectionIdx : null
                   }
-                  style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
+                  style={clipStylePx(
+                    styleClip,
+                    viewSpan,
+                    barTicks,
+                    effectiveZoomH,
+                  )}
                   pencilActive={toolIsPencilDraw(tool)}
                   allowHitZones={toolAllowsClipHitZones(tool)}
                   dimmed={Boolean(previewing)}
@@ -6178,14 +6231,15 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             gestureSession.kind === "move" &&
             gesturePreview &&
             (gestureSession.lane ?? "forma") === "forma"
-              ? (
-                  gestureSession.moveIds?.length
-                    ? gestureSession.moveIds
-                    : gestureSession.clipId
-                      ? [gestureSession.clipId]
-                      : []
+              ? (gestureSession.moveIds?.length
+                  ? gestureSession.moveIds
+                  : gestureSession.clipId
+                    ? [gestureSession.clipId]
+                    : []
                 ).map((id) => {
-                  const clip = draftProject.forma.clips.find((c) => c.id === id);
+                  const clip = draftProject.forma.clips.find(
+                    (c) => c.id === id,
+                  );
                   if (!clip) return null;
                   const delta =
                     gesturePreview.startTicks - gestureSession.originClipStart;
@@ -6249,8 +6303,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     ? (clip as { symbol: string }).symbol
                     : (clip as { label: string }).label;
               const moveIds =
-                gestureSession?.kind === "move" &&
-                gestureSession.lane === lane
+                gestureSession?.kind === "move" && gestureSession.lane === lane
                   ? gestureSession.moveIds?.length
                     ? gestureSession.moveIds
                     : gestureSession.clipId
@@ -6289,8 +6342,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     : gesturePreview!.lengthTicks
                   : clip.lengthTicks,
               };
-              const tapTarget =
-                lane === "tekst" && tapActiveClipId === clip.id;
+              const tapTarget = lane === "tekst" && tapActiveClipId === clip.id;
               return (
                 <FormaClipButton
                   key={clip.id}
@@ -6300,13 +6352,16 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     isClipSelected(clipSelection, clip.id, lane) || tapTarget
                   }
                   selectedSubsectionIdx={null}
-                  style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
+                  style={clipStylePx(
+                    styleClip,
+                    viewSpan,
+                    barTicks,
+                    effectiveZoomH,
+                  )}
                   pencilActive={toolIsPencilDraw(tool)}
                   allowHitZones={toolAllowsClipHitZones(tool)}
                   dimmed={Boolean(previewing)}
-                  onPointerDown={(e) =>
-                    onContentClipPointerDown(e, lane, clip)
-                  }
+                  onPointerDown={(e) => onContentClipPointerDown(e, lane, clip)}
                   onPointerMove={onFormaClipPointerMove}
                   onPointerUp={onFormaClipPointerUp}
                   onContextMenu={(e) => {
@@ -6335,12 +6390,11 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             gestureSession.kind === "move" &&
             gesturePreview &&
             gestureSession.lane === lane
-              ? (
-                  gestureSession.moveIds?.length
-                    ? gestureSession.moveIds
-                    : gestureSession.clipId
-                      ? [gestureSession.clipId]
-                      : []
+              ? (gestureSession.moveIds?.length
+                  ? gestureSession.moveIds
+                  : gestureSession.clipId
+                    ? [gestureSession.clipId]
+                    : []
                 ).map((id) => {
                   const clip = clips.find((c) => c.id === id);
                   if (!clip) return null;
@@ -6456,9 +6510,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         .join(" ")}
       data-tl-tier={touchTier}
       data-tl-touch-pan={
-        toolNeedsExclusiveTouchAction(heldZoom ? "zoom" : tool)
-          ? undefined
-          : ""
+        toolNeedsExclusiveTouchAction(heldZoom ? "zoom" : tool) ? undefined : ""
       }
     >
       <input
@@ -6606,66 +6658,166 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               onHwChannelModeChange={onHwChannelModeChange}
             />
           ) : (
-          <div
-            ref={canvasScrollRef}
-            className={styles.canvasScroll}
-            data-canvas-scroll
-          >
             <div
-              className={styles.canvasInner}
-              style={{
-                width: canvasInnerWidth,
-                /* Base px × --tl-zoom-ui — keeps grid / sticky / overlays in sync. */
-                ["--tl-dock-w" as string]: `calc(${dockWidthBase}px * var(--tl-zoom-ui))`,
-              }}
+              ref={canvasScrollRef}
+              className={styles.canvasScroll}
+              data-canvas-scroll
             >
-              <div className={styles.canvasBody}>
-                <div ref={markerOverlayRef} className={styles.markerOverlay}>
-                  {showMidiPlayhead ? (
+              <div
+                className={styles.canvasInner}
+                style={{
+                  width: canvasInnerWidth,
+                  /* Base px × --tl-zoom-ui — keeps grid / sticky / overlays in sync. */
+                  ["--tl-dock-w" as string]: `calc(${dockWidthBase}px * var(--tl-zoom-ui))`,
+                }}
+              >
+                <div className={styles.canvasBody}>
+                  <div ref={markerOverlayRef} className={styles.markerOverlay}>
+                    {showMidiPlayhead ? (
+                      <div
+                        className={styles.playheadMidi}
+                        style={{ left: `${playheadPx}px` }}
+                        aria-hidden
+                      />
+                    ) : null}
                     <div
-                      className={styles.playheadMidi}
-                      style={{ left: `${playheadPx}px` }}
-                      aria-hidden
-                    />
-                  ) : null}
-                  <div
-                    className={styles.locator}
-                    style={{ left: `${locatorPx}px` }}
-                    role="slider"
-                    aria-label="Locator wklejania"
-                    aria-valuemin={viewSpan.start}
-                    aria-valuemax={viewSpan.end}
-                    aria-valuenow={effectiveLocatorTicks}
-                    aria-valuetext={locatorLabel}
-                    tabIndex={-1}
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      onLocatorPointerDown(e, "locator");
-                    }}
-                    onPointerMove={onLocatorPointerMove}
-                    onPointerUp={onLocatorPointerUp}
-                  >
-                    <span className={styles.locatorLabel}>{locatorLabel}</span>
-                  </div>
-                </div>
-
-                <div className={styles.rulerRow}>
-                  <div className={styles.rulerDock}>
-                    <ShellIconButton
-                      ref={eyeBtnRef}
-                      label="Widoczność ścieżek"
-                      pressed={eyeOpen}
-                      aria-expanded={eyeOpen}
-                      aria-haspopup="menu"
-                      aria-controls={eyeOpen ? eyeMenuId : undefined}
-                      onClick={() => setEyeOpen((v) => !v)}
+                      className={styles.locator}
+                      style={{ left: `${locatorPx}px` }}
+                      role="slider"
+                      aria-label="Locator wklejania"
+                      aria-valuemin={viewSpan.start}
+                      aria-valuemax={viewSpan.end}
+                      aria-valuenow={effectiveLocatorTicks}
+                      aria-valuetext={locatorLabel}
+                      tabIndex={-1}
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        onLocatorPointerDown(e, "locator");
+                      }}
+                      onPointerMove={onLocatorPointerMove}
+                      onPointerUp={onLocatorPointerUp}
                     >
-                      <IconEye />
-                    </ShellIconButton>
+                      <span className={styles.locatorLabel}>
+                        {locatorLabel}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.rulerRow}>
+                    <div className={styles.rulerDock}>
+                      <ShellIconButton
+                        ref={eyeBtnRef}
+                        label="Widoczność ścieżek"
+                        pressed={eyeOpen}
+                        aria-expanded={eyeOpen}
+                        aria-haspopup="menu"
+                        aria-controls={eyeOpen ? eyeMenuId : undefined}
+                        onClick={() => setEyeOpen((v) => !v)}
+                      >
+                        <IconEye />
+                      </ShellIconButton>
+                      {touchTier !== "mobile" ? (
+                        <button
+                          type="button"
+                          className={styles.dockWidthResizeEdge}
+                          title="Przeciągnij — szerokość kolumny docku"
+                          aria-label="Zmień szerokość kolumny docku"
+                          onPointerDown={beginDockWidthResize}
+                          onPointerMove={onDockWidthResizePointerMove}
+                          onPointerUp={endDockWidthResize}
+                          onPointerCancel={endDockWidthResize}
+                        />
+                      ) : null}
+                    </div>
+                    <div className={styles.ruler}>
+                      <div
+                        className={styles.rulerLoopLane}
+                        onPointerDown={(e) =>
+                          onLocatorPointerDown(e, "ruler-loop")
+                        }
+                        onPointerMove={onLocatorPointerMove}
+                        onPointerUp={onLocatorPointerUp}
+                      >
+                        {loopRange ? (
+                          <div
+                            className={[
+                              styles.loopRegion,
+                              loopOn ? "" : styles.loopRegionOff,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                            style={{
+                              left: `${tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH)}px`,
+                              width: `${Math.max(
+                                tickToPx(
+                                  loopRange.endTicks,
+                                  viewSpan,
+                                  barTicks,
+                                  effectiveZoomH,
+                                ) -
+                                  tickToPx(
+                                    loopRange.startTicks,
+                                    viewSpan,
+                                    barTicks,
+                                    effectiveZoomH,
+                                  ),
+                                2,
+                              )}px`,
+                            }}
+                            aria-hidden
+                          />
+                        ) : null}
+                        {barMarks.map((mark) => (
+                          <span
+                            key={`bar-${mark.ticks}`}
+                            className={styles.rulerMark}
+                            style={{
+                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                            }}
+                          >
+                            {mark.label}
+                          </span>
+                        ))}
+                      </div>
+                      <div
+                        className={styles.rulerBeatLane}
+                        onPointerDown={(e) =>
+                          onLocatorPointerDown(e, "ruler-beat")
+                        }
+                        onPointerMove={onLocatorPointerMove}
+                        onPointerUp={onLocatorPointerUp}
+                      >
+                        {barMarks.map((mark) => (
+                          <span
+                            key={`bar-tick-${mark.ticks}`}
+                            className={styles.rulerBarTick}
+                            style={{
+                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                            }}
+                            aria-hidden
+                          />
+                        ))}
+                        {rulerBeatMarks.map((mark) => (
+                          <span
+                            key={`beat-${mark.ticks}`}
+                            className={styles.rulerBeatTick}
+                            style={{
+                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                            }}
+                            aria-hidden
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.trackRows} ref={bindTrackRowsRef}>
+                    {/* Continuous sticky dock paint (v4 `.timeline-dock`) — seals row seams. */}
+                    <div className={styles.dockColumnRail} aria-hidden />
                     {touchTier !== "mobile" ? (
                       <button
                         type="button"
-                        className={styles.dockWidthResizeEdge}
+                        className={styles.dockWidthResize}
                         title="Przeciągnij — szerokość kolumny docku"
                         aria-label="Zmień szerokość kolumny docku"
                         onPointerDown={beginDockWidthResize}
@@ -6674,596 +6826,576 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         onPointerCancel={endDockWidthResize}
                       />
                     ) : null}
-                  </div>
-                  <div
-                    className={styles.ruler}
-                  >
                     <div
-                      className={styles.rulerLoopLane}
-                      onPointerDown={(e) => onLocatorPointerDown(e, "ruler-loop")}
-                      onPointerMove={onLocatorPointerMove}
-                      onPointerUp={onLocatorPointerUp}
+                      className={styles.laneOverlay}
+                      ref={lanesCoordRef}
+                      aria-hidden
                     >
-                      {loopRange ? (
+                      <div className={styles.barGrid}>
+                        {barMarks.map((mark) => (
+                          <span
+                            key={`grid-${mark.ticks}`}
+                            className={styles.barLine}
+                            style={{
+                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                            }}
+                          />
+                        ))}
+                        {rulerBeatMarks.map((mark) => (
+                          <span
+                            key={`grid-beat-${mark.ticks}`}
+                            className={styles.beatLine}
+                            style={{
+                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                      {marqueeBox ? (
                         <div
-                          className={[
-                            styles.loopRegion,
-                            loopOn ? "" : styles.loopRegionOff,
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
+                          className={styles.marquee}
                           style={{
-                            left: `${tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH)}px`,
-                            width: `${Math.max(
-                              tickToPx(loopRange.endTicks, viewSpan, barTicks, effectiveZoomH) -
-                                tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH),
-                              2,
-                            )}px`,
+                            left: marqueeBox.left,
+                            top: marqueeBox.top,
+                            width: marqueeBox.width,
+                            height: marqueeBox.height,
                           }}
-                          aria-hidden
                         />
                       ) : null}
-                      {barMarks.map((mark) => (
-                        <span
-                          key={`bar-${mark.ticks}`}
-                          className={styles.rulerMark}
-                          style={{
-                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                          }}
+                    </div>
+
+                    {buildTrackList(draftProject?.audioTracks ?? [])
+                      .filter((t) => isTrackVisible(trackVisibility, t))
+                      .map((track) => (
+                        <div
+                          key={track.id}
+                          className={styles.trackRow}
+                          style={rowHeightStyle(track.id)}
+                          data-track={track.id}
                         >
-                          {mark.label}
-                        </span>
-                      ))}
-                    </div>
-                    <div
-                      className={styles.rulerBeatLane}
-                      onPointerDown={(e) => onLocatorPointerDown(e, "ruler-beat")}
-                      onPointerMove={onLocatorPointerMove}
-                      onPointerUp={onLocatorPointerUp}
-                    >
-                      {barMarks.map((mark) => (
-                        <span
-                          key={`bar-tick-${mark.ticks}`}
-                          className={styles.rulerBarTick}
-                          style={{
-                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                          }}
-                          aria-hidden
-                        />
-                      ))}
-                      {rulerBeatMarks.map((mark) => (
-                        <span
-                          key={`beat-${mark.ticks}`}
-                          className={styles.rulerBeatTick}
-                          style={{
-                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                          }}
-                          aria-hidden
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.trackRows} ref={bindTrackRowsRef}>
-                  {/* Continuous sticky dock paint (v4 `.timeline-dock`) — seals row seams. */}
-                  <div className={styles.dockColumnRail} aria-hidden />
-                  {touchTier !== "mobile" ? (
-                    <button
-                      type="button"
-                      className={styles.dockWidthResize}
-                      title="Przeciągnij — szerokość kolumny docku"
-                      aria-label="Zmień szerokość kolumny docku"
-                      onPointerDown={beginDockWidthResize}
-                      onPointerMove={onDockWidthResizePointerMove}
-                      onPointerUp={endDockWidthResize}
-                      onPointerCancel={endDockWidthResize}
-                    />
-                  ) : null}
-                  <div className={styles.laneOverlay} ref={lanesCoordRef} aria-hidden>
-                    <div className={styles.barGrid}>
-                      {barMarks.map((mark) => (
-                        <span
-                          key={`grid-${mark.ticks}`}
-                          className={styles.barLine}
-                          style={{
-                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                          }}
-                        />
-                      ))}
-                      {rulerBeatMarks.map((mark) => (
-                        <span
-                          key={`grid-beat-${mark.ticks}`}
-                          className={styles.beatLine}
-                          style={{
-                            left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                          }}
-                        />
-                      ))}
-                    </div>
-                    {marqueeBox ? (
-                      <div
-                        className={styles.marquee}
-                        style={{
-                          left: marqueeBox.left,
-                          top: marqueeBox.top,
-                          width: marqueeBox.width,
-                          height: marqueeBox.height,
-                        }}
-                      />
-                    ) : null}
-                  </div>
-
-                {buildTrackList(draftProject?.audioTracks ?? [])
-                  .filter((t) => isTrackVisible(trackVisibility, t))
-                  .map((track) => (
-                  <div
-                    key={track.id}
-                    className={styles.trackRow}
-                    style={rowHeightStyle(track.id)}
-                    data-track={track.id}
-                  >
-                    <div
-                      className={[
-                        styles.dockCell,
-                        track.group === "audio" ? styles.dockCellAudio : "",
-                        track.group === "special" ? styles.dockMuted : "",
-                        track.group === "audio" &&
-                        track.audioTrackId &&
-                        isAudioTrackSelected(trackSelection, track.audioTrackId)
-                          ? styles.dockSelected
-                          : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      onClick={(e) => {
-                        if (track.group !== "audio" || !track.audioTrackId) return;
-                        onAudioTrackHeaderClick(e, track.audioTrackId);
-                      }}
-                      onContextMenu={(e) => {
-                        // Always block native Look Up / Inspect on dock text;
-                        // ChannelStrip name handler may already have opened the menu.
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (track.group !== "audio" || !track.audioTrackId) return;
-                        openAudioTrackContextMenu(
-                          track.audioTrackId,
-                          e.clientX,
-                          e.clientY,
-                        );
-                      }}
-                    >
-                      {track.group === "audio" && track.audioTrackId ? (
-                        <>
-                          <ChannelStripControls
-                            layout="dock"
-                            compact={
-                              laneHeightEffective(
-                                laneHeightBase(track.id, laneHeights, zoomV),
-                                uiScale,
-                              ) <= DOCK_COMPACT_MAX_PX
-                            }
-                            strip={{
-                              trackId: track.audioTrackId,
-                              name: track.label,
-                              muted: Boolean(
-                                draftProject?.audioTracks.find(
-                                  (a) => a.id === track.audioTrackId,
-                                )?.muted,
-                              ),
-                              gainDb:
-                                draftProject?.audioTracks.find(
-                                  (a) => a.id === track.audioTrackId,
-                                )?.gainDb ?? 0,
-                              pan:
-                                draftProject?.audioTracks.find(
-                                  (a) => a.id === track.audioTrackId,
-                                )?.pan ?? 0,
-                              color: draftProject?.audioTracks.find(
-                                (a) => a.id === track.audioTrackId,
-                              )?.color,
-                              icon: draftProject?.audioTracks.find(
-                                (a) => a.id === track.audioTrackId,
-                              )?.icon,
-                              soloed: soloAudioTrackIds.includes(
-                                track.audioTrackId,
-                              ),
-                              selected: isAudioTrackSelected(
+                          <div
+                            className={[
+                              styles.dockCell,
+                              track.group === "audio"
+                                ? styles.dockCellAudio
+                                : "",
+                              track.group === "special" ? styles.dockMuted : "",
+                              track.group === "audio" &&
+                              track.audioTrackId &&
+                              isAudioTrackSelected(
                                 trackSelection,
                                 track.audioTrackId,
+                              )
+                                ? styles.dockSelected
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                            onClick={(e) => {
+                              if (
+                                track.group !== "audio" ||
+                                !track.audioTrackId
+                              )
+                                return;
+                              onAudioTrackHeaderClick(e, track.audioTrackId);
+                            }}
+                            onContextMenu={(e) => {
+                              // Always block native Look Up / Inspect on dock text;
+                              // ChannelStrip name handler may already have opened the menu.
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (
+                                track.group !== "audio" ||
+                                !track.audioTrackId
+                              )
+                                return;
+                              openAudioTrackContextMenu(
+                                track.audioTrackId,
+                                e.clientX,
+                                e.clientY,
+                              );
+                            }}
+                          >
+                            {track.group === "audio" && track.audioTrackId ? (
+                              <>
+                                <ChannelStripControls
+                                  layout="dock"
+                                  compact={
+                                    laneHeightEffective(
+                                      laneHeightBase(
+                                        track.id,
+                                        laneHeights,
+                                        zoomV,
+                                      ),
+                                      uiScale,
+                                    ) <= DOCK_COMPACT_MAX_PX
+                                  }
+                                  strip={{
+                                    trackId: track.audioTrackId,
+                                    name: track.label,
+                                    muted: Boolean(
+                                      draftProject?.audioTracks.find(
+                                        (a) => a.id === track.audioTrackId,
+                                      )?.muted,
+                                    ),
+                                    gainDb:
+                                      draftProject?.audioTracks.find(
+                                        (a) => a.id === track.audioTrackId,
+                                      )?.gainDb ?? 0,
+                                    pan:
+                                      draftProject?.audioTracks.find(
+                                        (a) => a.id === track.audioTrackId,
+                                      )?.pan ?? 0,
+                                    color: draftProject?.audioTracks.find(
+                                      (a) => a.id === track.audioTrackId,
+                                    )?.color,
+                                    icon: draftProject?.audioTracks.find(
+                                      (a) => a.id === track.audioTrackId,
+                                    )?.icon,
+                                    soloed: soloAudioTrackIds.includes(
+                                      track.audioTrackId,
+                                    ),
+                                    selected: isAudioTrackSelected(
+                                      trackSelection,
+                                      track.audioTrackId,
+                                    ),
+                                  }}
+                                  callbacks={buildChannelStripCallbacks(
+                                    track.audioTrackId,
+                                  )}
+                                  renaming={
+                                    trackRename?.trackId === track.audioTrackId
+                                  }
+                                  renameValue={
+                                    trackRename?.trackId === track.audioTrackId
+                                      ? trackRename.name
+                                      : track.label
+                                  }
+                                  soloActiveClassName={styles.tapBtnSolo}
+                                  muteActiveClassName={styles.tapBtnMute}
+                                  labelClassName={styles.dockLabel}
+                                  faderClassName={styles.dockFader}
+                                  renameInputClassName={styles.dockRenameInput}
+                                />
+                              </>
+                            ) : (
+                              <span className={styles.dockLabel}>
+                                {track.label}
+                              </span>
+                            )}
+                            {track.id === "forma" && !isMobilePreview ? (
+                              <Button
+                                variant="ghost"
+                                iconOnly
+                                selected={tool === "wand"}
+                                className={
+                                  tool === "wand"
+                                    ? styles.tapBtnSelected
+                                    : undefined
+                                }
+                                title="Różdżka — rozmieszcza Tekst/Akordy wg Formy (W)"
+                                aria-label="Różdżka — rozmieszcza Tekst/Akordy wg Formy"
+                                onClick={() => onTool("wand")}
+                              >
+                                <IconWand />
+                              </Button>
+                            ) : null}
+                            {track.id === "tekst" && !isMobilePreview ? (
+                              <Button
+                                variant="ghost"
+                                iconOnly
+                                selected={tool === "tap"}
+                                className={
+                                  tool === "tap"
+                                    ? styles.tapBtnSelected
+                                    : undefined
+                                }
+                                title="Tap — kolejka linii Tekstu; Spacja = start przy playheadzie"
+                                aria-label="Tap — kolejka linii Tekstu"
+                                onClick={() => onTool("tap")}
+                              >
+                                <IconTap />
+                              </Button>
+                            ) : null}
+                            {touchTier !== "mobile" ? (
+                              <button
+                                type="button"
+                                className={[
+                                  styles.laneResize,
+                                  laneResizeTrackId === track.id
+                                    ? styles.laneResizeActive
+                                    : "",
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                                title="Przeciągnij — wysokość ścieżki (dwuklik = domyślna)"
+                                aria-label={`Zmień wysokość ścieżki ${track.label}`}
+                                onPointerDown={(e) =>
+                                  beginLaneResize(e, track.id)
+                                }
+                                onPointerMove={onLaneResizePointerMove}
+                                onPointerUp={endLaneResize}
+                                onPointerCancel={endLaneResize}
+                                onDoubleClick={(e) =>
+                                  onLaneResizeDblClick(e, track.id)
+                                }
+                              />
+                            ) : null}
+                          </div>
+                          <div
+                            data-audio-lane={
+                              isAudioLaneId(track.id) ? track.id : undefined
+                            }
+                            onPointerDown={
+                              track.id === "forma"
+                                ? onFormaLanePointerDown
+                                : track.id === "kotwice"
+                                  ? (e) => {
+                                      if (e.button !== 0 || !draftProject)
+                                        return;
+                                      if (!toolIsPencilDraw(tool)) return;
+                                      if (!canEditKotwice(draftProject)) return;
+                                      const raw = rawTicksAtClientX(e.clientX);
+                                      if (raw == null) return;
+                                      const next = insertScoreAnchor(
+                                        draftProject,
+                                        raw,
+                                        1,
+                                      );
+                                      if (next !== draftProject)
+                                        commitDraft(next);
+                                    }
+                                  : isMapLaneId(track.id)
+                                    ? (e) =>
+                                        onMapLanePointerDown(
+                                          e,
+                                          track.id as MapLaneId,
+                                        )
+                                    : track.id === "tekst" ||
+                                        track.id === "akordy" ||
+                                        track.id === "cue"
+                                      ? (e) => {
+                                          if (e.button !== 0 || !draftProject)
+                                            return;
+                                          if (tool === "scissors") {
+                                            e.preventDefault();
+                                            const raw = rawTicksAtClientX(
+                                              e.clientX,
+                                            );
+                                            if (raw == null) return;
+                                            const lane =
+                                              track.id as ContentLaneId;
+                                            const hit =
+                                              contentClipCoveringTicks(
+                                                draftProject,
+                                                lane,
+                                                raw,
+                                              );
+                                            if (!hit) return;
+                                            clearMapSelection();
+                                            selectLaneClip(lane, hit.id);
+                                            const next = splitContentClipAt(
+                                              draftProject,
+                                              lane,
+                                              hit.id,
+                                              raw,
+                                            );
+                                            if (next !== draftProject)
+                                              commitDraft(next);
+                                            return;
+                                          }
+                                          if (!toolIsPencilDraw(tool)) {
+                                            if (
+                                              toolUsesMarqueeGesture(
+                                                tool,
+                                                e.pointerType,
+                                              )
+                                            ) {
+                                              beginMarquee(e);
+                                            } else if (
+                                              isTouchPointerType(
+                                                e.pointerType,
+                                              ) &&
+                                              tool === "pointer" &&
+                                              !heldZoomRef.current
+                                            ) {
+                                              beginTouchCanvasNav(e);
+                                            }
+                                            return;
+                                          }
+                                          beginContentPencilDraw(
+                                            e,
+                                            track.id as ContentLaneId,
+                                          );
+                                        }
+                                      : isAudioLaneId(track.id)
+                                        ? (e) => {
+                                            if (e.button !== 0) return;
+                                            if (toolIsPencilDraw(tool)) {
+                                              const raw = rawTicksAtClientX(
+                                                e.clientX,
+                                              );
+                                              if (
+                                                raw == null ||
+                                                !track.audioTrackId
+                                              ) {
+                                                return;
+                                              }
+                                              const draft = draftRef.current;
+                                              if (!draft) return;
+                                              const mode =
+                                                contentSnapModeFromModifiers(
+                                                  e.metaKey,
+                                                  e.ctrlKey,
+                                                );
+                                              const snapped = snapEditTicks(
+                                                draft,
+                                                raw,
+                                                mode,
+                                              );
+                                              laneImportTrackIdRef.current =
+                                                track.audioTrackId;
+                                              laneImportStartTicksRef.current =
+                                                snapped;
+                                              laneAudioFileRef.current?.click();
+                                              return;
+                                            }
+                                            if (
+                                              toolUsesMarqueeGesture(
+                                                tool,
+                                                e.pointerType,
+                                              )
+                                            ) {
+                                              beginMarquee(e);
+                                            } else if (
+                                              isTouchPointerType(
+                                                e.pointerType,
+                                              ) &&
+                                              tool === "pointer" &&
+                                              !heldZoomRef.current
+                                            ) {
+                                              beginTouchCanvasNav(e);
+                                            }
+                                          }
+                                        : undefined
+                            }
+                            onPointerMove={
+                              track.id === "forma" ||
+                              track.id === "tekst" ||
+                              track.id === "akordy" ||
+                              track.id === "cue"
+                                ? onFormaLanePointerMove
+                                : undefined
+                            }
+                            onPointerUp={
+                              track.id === "forma" ||
+                              track.id === "tekst" ||
+                              track.id === "akordy" ||
+                              track.id === "cue"
+                                ? onFormaLanePointerUp
+                                : undefined
+                            }
+                            role={
+                              track.id === "forma" ||
+                              track.id === "tekst" ||
+                              track.id === "akordy" ||
+                              track.id === "cue"
+                                ? "presentation"
+                                : undefined
+                            }
+                            className={[
+                              styles.laneCell,
+                              track.group === "special"
+                                ? styles.laneCellMuted
+                                : "",
+                              track.id === "forma" ? styles.formaLaneCell : "",
+                              track.id === "forma" && toolIsPencilDraw(tool)
+                                ? styles.formaLanePencil
+                                : "",
+                              (track.id === "tekst" ||
+                                track.id === "akordy" ||
+                                track.id === "cue") &&
+                              toolIsPencilDraw(tool)
+                                ? styles.formaLanePencil
+                                : "",
+                              isMapLaneId(track.id) &&
+                              (toolIsPencilDraw(tool) || tool === "scissors")
+                                ? styles.formaLanePencil
+                                : "",
+                              isMapLaneId(track.id) || track.id === "kotwice"
+                                ? styles.mapLaneCell
+                                : "",
+                              isAudioLaneId(track.id) && toolIsPencilDraw(tool)
+                                ? styles.formaLanePencil
+                                : "",
+                              isAudioLaneId(track.id) &&
+                              audioLaneDropId === track.audioTrackId
+                                ? styles.laneCellDropActive
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                            style={{
+                              cursor: cursorForTimelineTool(
+                                heldZoom ? "zoom" : tool,
                               ),
                             }}
-                            callbacks={buildChannelStripCallbacks(
-                              track.audioTrackId,
-                            )}
-                            renaming={
-                              trackRename?.trackId === track.audioTrackId
-                            }
-                            renameValue={
-                              trackRename?.trackId === track.audioTrackId
-                                ? trackRename.name
-                                : track.label
-                            }
-                            soloActiveClassName={styles.tapBtnSolo}
-                            muteActiveClassName={styles.tapBtnMute}
-                            labelClassName={styles.dockLabel}
-                            faderClassName={styles.dockFader}
-                            renameInputClassName={styles.dockRenameInput}
-                          />
-                        </>
-                      ) : (
-                        <span className={styles.dockLabel}>{track.label}</span>
-                      )}
-                      {track.id === "forma" && !isMobilePreview ? (
-                        <Button
-                          variant="ghost"
-                          iconOnly
-                          selected={tool === "wand"}
-                          className={
-                            tool === "wand" ? styles.tapBtnSelected : undefined
-                          }
-                          title="Różdżka — rozmieszcza Tekst/Akordy wg Formy (W)"
-                          aria-label="Różdżka — rozmieszcza Tekst/Akordy wg Formy"
-                          onClick={() => onTool("wand")}
-                        >
-                          <IconWand />
-                        </Button>
-                      ) : null}
-                      {track.id === "tekst" && !isMobilePreview ? (
-                        <Button
-                          variant="ghost"
-                          iconOnly
-                          selected={tool === "tap"}
-                          className={
-                            tool === "tap" ? styles.tapBtnSelected : undefined
-                          }
-                          title="Tap — kolejka linii Tekstu; Spacja = start przy playheadzie"
-                          aria-label="Tap — kolejka linii Tekstu"
-                          onClick={() => onTool("tap")}
-                        >
-                          <IconTap />
-                        </Button>
-                      ) : null}
-                      {touchTier !== "mobile" ? (
-                        <button
-                          type="button"
-                          className={[
-                            styles.laneResize,
-                            laneResizeTrackId === track.id
-                              ? styles.laneResizeActive
-                              : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                          title="Przeciągnij — wysokość ścieżki (dwuklik = domyślna)"
-                          aria-label={`Zmień wysokość ścieżki ${track.label}`}
-                          onPointerDown={(e) => beginLaneResize(e, track.id)}
-                          onPointerMove={onLaneResizePointerMove}
-                          onPointerUp={endLaneResize}
-                          onPointerCancel={endLaneResize}
-                          onDoubleClick={(e) =>
-                            onLaneResizeDblClick(e, track.id)
-                          }
-                        />
-                      ) : null}
-                    </div>
-                    <div
-                      data-audio-lane={isAudioLaneId(track.id) ? track.id : undefined}
-                      onPointerDown={
-                        track.id === "forma"
-                          ? onFormaLanePointerDown
-                          : track.id === "kotwice"
-                            ? (e) => {
-                                if (e.button !== 0 || !draftProject) return;
-                                if (!toolIsPencilDraw(tool)) return;
-                                if (!canEditKotwice(draftProject)) return;
-                                const raw = rawTicksAtClientX(e.clientX);
-                                if (raw == null) return;
-                                const next = insertScoreAnchor(
-                                  draftProject,
-                                  raw,
-                                  1,
-                                );
-                                if (next !== draftProject) commitDraft(next);
-                              }
-                            : isMapLaneId(track.id)
-                              ? (e) =>
-                                  onMapLanePointerDown(
-                                    e,
-                                    track.id as MapLaneId,
-                                  )
-                            : track.id === "tekst" ||
-                                track.id === "akordy" ||
-                                track.id === "cue"
-                              ? (e) => {
-                                  if (e.button !== 0 || !draftProject) return;
-                                  if (tool === "scissors") {
-                                    e.preventDefault();
-                                    const raw = rawTicksAtClientX(e.clientX);
-                                    if (raw == null) return;
-                                    const lane = track.id as ContentLaneId;
-                                    const hit = contentClipCoveringTicks(
-                                      draftProject,
-                                      lane,
-                                      raw,
-                                    );
-                                    if (!hit) return;
-                                    clearMapSelection();
-                                    selectLaneClip(lane, hit.id);
-                                    const next = splitContentClipAt(
-                                      draftProject,
-                                      lane,
-                                      hit.id,
-                                      raw,
-                                    );
-                                    if (next !== draftProject) commitDraft(next);
-                                    return;
-                                  }
-                                  if (!toolIsPencilDraw(tool)) {
-                                    if (
-                                      toolUsesMarqueeGesture(tool, e.pointerType)
-                                    ) {
-                                      beginMarquee(e);
-                                    } else if (
-                                      isTouchPointerType(e.pointerType) &&
-                                      tool === "pointer" &&
-                                      !heldZoomRef.current
-                                    ) {
-                                      beginTouchCanvasNav(e);
-                                    }
-                                    return;
-                                  }
-                                  beginContentPencilDraw(
-                                    e,
-                                    track.id as ContentLaneId,
-                                  );
-                                }
-                              : isAudioLaneId(track.id)
-                                ? (e) => {
-                                    if (e.button !== 0) return;
-                                    if (toolIsPencilDraw(tool)) {
-                                      const raw = rawTicksAtClientX(e.clientX);
-                                      if (raw == null || !track.audioTrackId) {
-                                        return;
-                                      }
-                                      const draft = draftRef.current;
-                                      if (!draft) return;
-                                      const mode = contentSnapModeFromModifiers(
-                                        e.metaKey,
-                                        e.ctrlKey,
-                                      );
-                                      const snapped = snapEditTicks(
-                                        draft,
-                                        raw,
-                                        mode,
-                                      );
-                                      laneImportTrackIdRef.current =
-                                        track.audioTrackId;
-                                      laneImportStartTicksRef.current = snapped;
-                                      laneAudioFileRef.current?.click();
-                                      return;
-                                    }
-                                    if (
-                                      toolUsesMarqueeGesture(tool, e.pointerType)
-                                    ) {
-                                      beginMarquee(e);
-                                    } else if (
-                                      isTouchPointerType(e.pointerType) &&
-                                      tool === "pointer" &&
-                                      !heldZoomRef.current
-                                    ) {
-                                      beginTouchCanvasNav(e);
-                                    }
-                                  }
-                                : undefined
-                      }
-                      onPointerMove={
-                        track.id === "forma" ||
-                        track.id === "tekst" ||
-                        track.id === "akordy" ||
-                        track.id === "cue"
-                          ? onFormaLanePointerMove
-                          : undefined
-                      }
-                      onPointerUp={
-                        track.id === "forma" ||
-                        track.id === "tekst" ||
-                        track.id === "akordy" ||
-                        track.id === "cue"
-                          ? onFormaLanePointerUp
-                          : undefined
-                      }
-                      role={
-                        track.id === "forma" ||
-                        track.id === "tekst" ||
-                        track.id === "akordy" ||
-                        track.id === "cue"
-                          ? "presentation"
-                          : undefined
-                      }
-                      className={[
-                        styles.laneCell,
-                        track.group === "special" ? styles.laneCellMuted : "",
-                        track.id === "forma" ? styles.formaLaneCell : "",
-                        track.id === "forma" && toolIsPencilDraw(tool)
-                          ? styles.formaLanePencil
-                          : "",
-                        (track.id === "tekst" ||
-                          track.id === "akordy" ||
-                          track.id === "cue") &&
-                        toolIsPencilDraw(tool)
-                          ? styles.formaLanePencil
-                          : "",
-                        isMapLaneId(track.id) &&
-                        (toolIsPencilDraw(tool) || tool === "scissors")
-                          ? styles.formaLanePencil
-                          : "",
-                        isMapLaneId(track.id) || track.id === "kotwice"
-                          ? styles.mapLaneCell
-                          : "",
-                        isAudioLaneId(track.id) && toolIsPencilDraw(tool)
-                          ? styles.formaLanePencil
-                          : "",
-                        isAudioLaneId(track.id) &&
-                        audioLaneDropId === track.audioTrackId
-                          ? styles.laneCellDropActive
-                          : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      style={{
-                        cursor: cursorForTimelineTool(
-                          heldZoom ? "zoom" : tool,
-                        ),
-                      }}
-                      data-track={track.id}
-                      onContextMenu={(e) => {
-                        // Clips stopPropagation; this handles empty lane area.
-                        if (
-                          (e.target as HTMLElement).closest(
-                            "button[data-clip-id]",
-                          )
-                        ) {
-                          return;
-                        }
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (track.group === "audio" && track.audioTrackId) {
-                          openEmptyLaneContextMenu({
-                            clientX: e.clientX,
-                            clientY: e.clientY,
-                            laneKind: "audio",
-                            audioTrackId: track.audioTrackId,
-                          });
-                          return;
-                        }
-                        if (
-                          track.id === "forma" ||
-                          track.id === "tekst" ||
-                          track.id === "akordy" ||
-                          track.id === "cue"
-                        ) {
-                          openEmptyLaneContextMenu({
-                            clientX: e.clientX,
-                            clientY: e.clientY,
-                            laneKind: track.id,
-                          });
-                        }
-                      }}
-                      onDragOver={
-                        track.group === "audio" && track.audioTrackId
-                          ? (e) => {
-                              e.preventDefault();
-                              e.dataTransfer.dropEffect = "copy";
-                              setAudioLaneDropId(track.audioTrackId!);
-                            }
-                          : undefined
-                      }
-                      onDragLeave={
-                        track.group === "audio" && track.audioTrackId
-                          ? (e) => {
+                            data-track={track.id}
+                            onContextMenu={(e) => {
+                              // Clips stopPropagation; this handles empty lane area.
                               if (
-                                e.currentTarget.contains(e.relatedTarget as Node)
+                                (e.target as HTMLElement).closest(
+                                  "button[data-clip-id]",
+                                )
                               ) {
                                 return;
                               }
-                              setAudioLaneDropId((id) =>
-                                id === track.audioTrackId ? null : id,
-                              );
-                            }
-                          : undefined
-                      }
-                      onDrop={
-                        track.group === "audio" && track.audioTrackId
-                          ? (e) => {
                               e.preventDefault();
-                              setAudioLaneDropId(null);
-                              const file = e.dataTransfer.files?.[0];
-                              if (file && track.audioTrackId) {
-                                void onUploadAudioToTrack(
-                                  track.audioTrackId,
-                                  file,
-                                );
+                              e.stopPropagation();
+                              if (
+                                track.group === "audio" &&
+                                track.audioTrackId
+                              ) {
+                                openEmptyLaneContextMenu({
+                                  clientX: e.clientX,
+                                  clientY: e.clientY,
+                                  laneKind: "audio",
+                                  audioTrackId: track.audioTrackId,
+                                });
+                                return;
                               }
+                              if (
+                                track.id === "forma" ||
+                                track.id === "tekst" ||
+                                track.id === "akordy" ||
+                                track.id === "cue"
+                              ) {
+                                openEmptyLaneContextMenu({
+                                  clientX: e.clientX,
+                                  clientY: e.clientY,
+                                  laneKind: track.id,
+                                });
+                              }
+                            }}
+                            onDragOver={
+                              track.group === "audio" && track.audioTrackId
+                                ? (e) => {
+                                    e.preventDefault();
+                                    e.dataTransfer.dropEffect = "copy";
+                                    setAudioLaneDropId(track.audioTrackId!);
+                                  }
+                                : undefined
                             }
-                          : undefined
-                      }
-                    >
-                      {renderLaneContent(track.id)}
+                            onDragLeave={
+                              track.group === "audio" && track.audioTrackId
+                                ? (e) => {
+                                    if (
+                                      e.currentTarget.contains(
+                                        e.relatedTarget as Node,
+                                      )
+                                    ) {
+                                      return;
+                                    }
+                                    setAudioLaneDropId((id) =>
+                                      id === track.audioTrackId ? null : id,
+                                    );
+                                  }
+                                : undefined
+                            }
+                            onDrop={
+                              track.group === "audio" && track.audioTrackId
+                                ? (e) => {
+                                    e.preventDefault();
+                                    setAudioLaneDropId(null);
+                                    const file = e.dataTransfer.files?.[0];
+                                    if (file && track.audioTrackId) {
+                                      void onUploadAudioToTrack(
+                                        track.audioTrackId,
+                                        file,
+                                      );
+                                    }
+                                  }
+                                : undefined
+                            }
+                          >
+                            {renderLaneContent(track.id)}
+                          </div>
+                        </div>
+                      ))}
+                    <div className={styles.rowsFill}>
+                      {isMobilePreview ? (
+                        <div className={styles.dockColumnFill} aria-hidden />
+                      ) : (
+                        <div
+                          className={styles.dockColumnFill}
+                          onDoubleClick={(e) => {
+                            if ((e.target as HTMLElement).closest("button"))
+                              return;
+                            onAddAudioTrack();
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className={styles.dockAddTrack}
+                            disabled={
+                              !draftProject ||
+                              draftProject.audioTracks.length >=
+                                MAX_AUDIO_TRACKS
+                            }
+                            title={
+                              !draftProject
+                                ? undefined
+                                : draftProject.audioTracks.length >=
+                                    MAX_AUDIO_TRACKS
+                                  ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
+                                  : "Dodaj pustą ścieżkę audio"
+                            }
+                            onClick={onAddAudioTrack}
+                          >
+                            + Dodaj Ścieżkę
+                          </button>
+                          <div
+                            className={styles.dockFillHit}
+                            title="Dwuklik — dodaj pustą ścieżkę"
+                          />
+                        </div>
+                      )}
+                      <div
+                        className={styles.laneFillHit}
+                        onPointerDown={(e) => {
+                          if (e.button !== 0) return;
+                          if (toolUsesMarqueeGesture(tool, e.pointerType)) {
+                            beginMarquee(e);
+                            return;
+                          }
+                          if (
+                            isTouchPointerType(e.pointerType) &&
+                            tool === "pointer" &&
+                            !heldZoomRef.current
+                          ) {
+                            beginTouchCanvasNav(e);
+                          }
+                        }}
+                      />
                     </div>
                   </div>
-                ))}
-                <div className={styles.rowsFill}>
-                  {isMobilePreview ? (
-                    <div className={styles.dockColumnFill} aria-hidden />
-                  ) : (
-                  <div
-                    className={styles.dockColumnFill}
-                    onDoubleClick={(e) => {
-                      if ((e.target as HTMLElement).closest("button")) return;
-                      onAddAudioTrack();
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className={styles.dockAddTrack}
-                      disabled={
-                        !draftProject ||
-                        draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
-                      }
-                      title={
-                        !draftProject
-                          ? undefined
-                          : draftProject.audioTracks.length >= MAX_AUDIO_TRACKS
-                            ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
-                            : "Dodaj pustą ścieżkę audio"
-                      }
-                      onClick={onAddAudioTrack}
-                    >
-                      + Dodaj Ścieżkę
-                    </button>
-                    <div
-                      className={styles.dockFillHit}
-                      title="Dwuklik — dodaj pustą ścieżkę"
-                    />
-                  </div>
-                  )}
-                  <div
-                    className={styles.laneFillHit}
-                    onPointerDown={(e) => {
-                      if (e.button !== 0) return;
-                      if (toolUsesMarqueeGesture(tool, e.pointerType)) {
-                        beginMarquee(e);
-                        return;
-                      }
-                      if (
-                        isTouchPointerType(e.pointerType) &&
-                        tool === "pointer" &&
-                        !heldZoomRef.current
-                      ) {
-                        beginTouchCanvasNav(e);
-                      }
-                    }}
-                  />
                 </div>
               </div>
-              </div>
             </div>
-          </div>
           )}
         </div>
 
         {!isMobilePreview ? (
-        <aside
-          className={[
-            styles.inspector,
-            inspectorOpen ? styles.inspectorOpen : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          aria-label="Właściwości"
-          aria-hidden={!inspectorOpen ? true : undefined}
-        >
+          <aside
+            className={[
+              styles.inspector,
+              inspectorOpen ? styles.inspectorOpen : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            aria-label="Właściwości"
+            aria-hidden={!inspectorOpen ? true : undefined}
+          >
             <div className={styles.inspHead}>
               <h2 className={styles.inspTitle}>Właściwości</h2>
               <span className={styles.inspClose}>
@@ -7276,11 +7408,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
               </span>
             </div>
             {clipSelection.items.length > 1 ? (
-              <p
-                className={styles.inspMulti}
-                role="status"
-                aria-live="polite"
-              >
+              <p className={styles.inspMulti} role="status" aria-live="polite">
                 Zaznaczono {clipSelection.items.length} klipów
                 {selectionLane
                   ? ` · ${
@@ -7346,7 +7474,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                         draftProject.defaultMeter,
                       );
                       if (
-                        parsed.numerator === draftProject.defaultMeter.numerator &&
+                        parsed.numerator ===
+                          draftProject.defaultMeter.numerator &&
                         parsed.denominator ===
                           draftProject.defaultMeter.denominator
                       ) {
@@ -7379,7 +7508,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       if (!Number.isFinite(n)) return;
                       commitDraft({
                         ...draftProject,
-                        midiProgramId: Math.max(0, Math.min(127, Math.round(n))),
+                        midiProgramId: Math.max(
+                          0,
+                          Math.min(127, Math.round(n)),
+                        ),
                       });
                     }}
                   />
@@ -7740,11 +7872,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       if (!draftProject) return;
                       const v = e.target.value === "alert" ? "alert" : "normal";
                       commitDraft(
-                        setCueClipPriority(
-                          draftProject,
-                          selectedCueClip.id,
-                          v,
-                        ),
+                        setCueClipPriority(draftProject, selectedCueClip.id, v),
                       );
                     }}
                   >
@@ -7800,7 +7928,8 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                           aria-label="Cue sample mode"
                           value={selectedCueClip.sample.mode ?? "one-shot"}
                           onChange={(e) => {
-                            if (!draftProject || !selectedCueClip.sample) return;
+                            if (!draftProject || !selectedCueClip.sample)
+                              return;
                             const mode =
                               e.target.value === "gated" ? "gated" : "one-shot";
                             commitDraft(
@@ -7829,19 +7958,21 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                                 : "master"
                           }
                           onChange={(e) => {
-                            if (!draftProject || !selectedCueClip.sample) return;
+                            if (!draftProject || !selectedCueClip.sample)
+                              return;
                             const v = e.target.value;
-                            const output = v.startsWith("hw:") && v.length > 3
-                              ? ({
-                                  kind: "hw_out" as const,
-                                  hwOutputId: v.slice(3),
-                                })
-                              : v.startsWith("bus:") && v.length > 4
-                                ? ({
-                                    kind: "bus" as const,
-                                    busId: v.slice(4),
-                                  })
-                                : ({ kind: "master" as const });
+                            const output =
+                              v.startsWith("hw:") && v.length > 3
+                                ? {
+                                    kind: "hw_out" as const,
+                                    hwOutputId: v.slice(3),
+                                  }
+                                : v.startsWith("bus:") && v.length > 4
+                                  ? {
+                                      kind: "bus" as const,
+                                      busId: v.slice(4),
+                                    }
+                                  : { kind: "master" as const };
                             commitDraft(
                               setCueClipSample(
                                 draftProject,
@@ -7869,11 +8000,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       <label className={styles.inspCheck}>
                         <input
                           type="checkbox"
-                          checked={Boolean(
-                            selectedCueClip.sample.playPostStop,
-                          )}
+                          checked={Boolean(selectedCueClip.sample.playPostStop)}
                           onChange={(e) => {
-                            if (!draftProject || !selectedCueClip.sample) return;
+                            if (!draftProject || !selectedCueClip.sample)
+                              return;
                             commitDraft(
                               setCueClipSample(
                                 draftProject,
@@ -8192,10 +8322,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       const f = e.target.files?.[0];
                       e.target.value = "";
                       if (f) {
-                        void onUploadAudioToTrack(
-                          selectedDockAudioTrack.id,
-                          f,
-                        );
+                        void onUploadAudioToTrack(selectedDockAudioTrack.id, f);
                       }
                     }}
                   />
@@ -8205,9 +8332,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                     disabled={audioUploadPending}
                     onClick={() => inspAudioFileRef.current?.click()}
                   >
-                    {audioUploadPending
-                      ? "Przesyłanie…"
-                      : "Importuj plik"}
+                    {audioUploadPending ? "Przesyłanie…" : "Importuj plik"}
                   </Button>
                 </div>
               </div>
@@ -8225,8 +8350,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                   </label>
                 ) : (
                   <p>
-                    <strong>{selectedClip.name}</strong> — zablokowany
-                    Countdown
+                    <strong>{selectedClip.name}</strong> — zablokowany Countdown
                   </p>
                 )}
                 {selectedClip.kind === "section" ? (
@@ -8272,8 +8396,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
                       ) : (
                         selectedSubsectionRows.map((row) => {
                           const canDelete = selectedSubsectionRows.length >= 2;
-                          const selected =
-                            selectedSubsectionIdx === row.index;
+                          const selected = selectedSubsectionIdx === row.index;
                           return (
                             <div
                               key={`sub-${row.index}`}
@@ -8410,41 +8533,41 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         </div>
         <div className={styles.zooms} role="group" aria-label="Zoom i snap">
           {!isMobilePreview ? (
-          <label className={styles.snapPicker}>
-            <span className={styles.snapPickerLab}>Snap</span>
-            <Select
-              className={styles.snapPickerSelect}
-              aria-label="Tryb snap"
-              value={snapModeToStorageKey(snapMode)}
-              onChange={(e) => {
-                const next = snapModeFromStorageKey(e.target.value);
-                if (next) setSnapMode(next);
-              }}
-            >
-              <option value="off">Wyłącz</option>
-              <option value="bar">Takt</option>
-              <option value="beat">Beat</option>
-              <option value="subdivision:2">1/2</option>
-              <option value="subdivision:4">1/4</option>
-              <option value="subdivision:8">1/8</option>
-              <option value="subdivision:16">1/16</option>
-            </Select>
-          </label>
+            <label className={styles.snapPicker}>
+              <span className={styles.snapPickerLab}>Snap</span>
+              <Select
+                className={styles.snapPickerSelect}
+                aria-label="Tryb snap"
+                value={snapModeToStorageKey(snapMode)}
+                onChange={(e) => {
+                  const next = snapModeFromStorageKey(e.target.value);
+                  if (next) setSnapMode(next);
+                }}
+              >
+                <option value="off">Wyłącz</option>
+                <option value="bar">Takt</option>
+                <option value="beat">Beat</option>
+                <option value="subdivision:2">1/2</option>
+                <option value="subdivision:4">1/4</option>
+                <option value="subdivision:8">1/8</option>
+                <option value="subdivision:16">1/16</option>
+              </Select>
+            </label>
           ) : null}
           {!isMobilePreview ? (
-          <label className={styles.zoomLab}>
-            UI
-            <input
-              className={styles.zoomRange}
-              type="range"
-              min={ZOOM_UI_MIN}
-              max={ZOOM_UI_MAX}
-              value={zoomUi}
-              onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
-              title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
-              aria-label="Zoom UI"
-            />
-          </label>
+            <label className={styles.zoomLab}>
+              UI
+              <input
+                className={styles.zoomRange}
+                type="range"
+                min={ZOOM_UI_MIN}
+                max={ZOOM_UI_MAX}
+                value={zoomUi}
+                onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
+                title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
+                aria-label="Zoom UI"
+              />
+            </label>
           ) : null}
           <label
             className={styles.zoomLab}
@@ -8494,7 +8617,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
         selectionLane,
         primaryId,
         draftProject,
-      ) && draftProject && selectionLane && primaryId ? (
+      ) &&
+      draftProject &&
+      selectionLane &&
+      primaryId ? (
         <TouchNudgeBar
           clipId={primaryId}
           lane={selectionLane}
@@ -8590,7 +8716,12 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
       ) : null}
 
       {helpOpen ? (
-        <div className={styles.overlay} role="dialog" aria-modal aria-labelledby="tl-help-title">
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal
+          aria-labelledby="tl-help-title"
+        >
           <button
             type="button"
             className={styles.backdrop}
@@ -8624,7 +8755,10 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           <div className={styles.overlayPanel}>
             <div className={styles.overlayHead}>
               <h2 id="song-screen-title">Wybierz utwór</h2>
-              <ShellIconButton label="Zamknij" onClick={() => setSongScreenOpen(false)}>
+              <ShellIconButton
+                label="Zamknij"
+                onClick={() => setSongScreenOpen(false)}
+              >
                 <IconClose />
               </ShellIconButton>
             </div>
@@ -8677,9 +8811,7 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
           >
             <div className={styles.usUgOverlayHead}>
               <h2 id="song-import-title">
-                {importAsNewSong
-                  ? "Importuj utwór — nowy"
-                  : "Importuj utwór"}
+                {importAsNewSong ? "Importuj utwór — nowy" : "Importuj utwór"}
               </h2>
               <ShellIconButton label="Zamknij" onClick={closeImportModals}>
                 <IconClose />
@@ -8688,16 +8820,14 @@ function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
             <div className={styles.usUgOverlayBody}>
               <SongImportWizard
                 applyLabel={
-                  importAsNewSong
-                    ? "Utwórz nowy utwór"
-                    : "Importuj do projektu"
+                  importAsNewSong ? "Utwórz nowy utwór" : "Importuj do projektu"
                 }
                 applying={importApplying}
-                projectId={importAsNewSong ? undefined : projectId ?? undefined}
-                importOptions={importPreviewOptions}
-                initialTitle={
-                  importAsNewSong ? undefined : draftProject?.name
+                projectId={
+                  importAsNewSong ? undefined : (projectId ?? undefined)
                 }
+                importOptions={importPreviewOptions}
+                initialTitle={importAsNewSong ? undefined : draftProject?.name}
                 initialArtist={
                   importAsNewSong ? undefined : draftProject?.artist
                 }
@@ -9154,7 +9284,9 @@ function FormaClipButton({
       onPointerMove={(e) => {
         if (allowHitZones) {
           const rect = e.currentTarget.getBoundingClientRect();
-          setHoverZone(hitTestClipZone(e.clientX - rect.left, rect.width, true));
+          setHoverZone(
+            hitTestClipZone(e.clientX - rect.left, rect.width, true),
+          );
         }
         onPointerMove(e);
       }}
@@ -9230,7 +9362,9 @@ function TouchNudgeBar({
       document.querySelector<HTMLElement>(
         `[data-clip-id="${CSS.escape(clipId)}"]`,
       );
-    const scrollEl = document.querySelector<HTMLElement>("[data-canvas-scroll]");
+    const scrollEl = document.querySelector<HTMLElement>(
+      "[data-canvas-scroll]",
+    );
     const pad = 4;
 
     if (!clipEl) {
@@ -9375,4 +9509,3 @@ function TouchNudgeBar({
     </div>
   );
 }
-

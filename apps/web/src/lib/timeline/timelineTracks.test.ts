@@ -89,7 +89,9 @@ describe("timelineTracks", () => {
     const next = ensureAudioTrackVisibility(vis, [{ id: "new", name: "N" }]);
     expect(next["audio:old"]).toBeUndefined();
     expect(next["audio:new"]).toBe(true);
-    expect(ensureAudioTrackVisibility(next, [{ id: "new", name: "N" }])).toBe(next);
+    expect(ensureAudioTrackVisibility(next, [{ id: "new", name: "N" }])).toBe(
+      next,
+    );
   });
 
   it("isCoreTrackVisible respects locked Forma", () => {
@@ -97,10 +99,8 @@ describe("timelineTracks", () => {
     expect(isCoreTrackVisible({}, "tempo")).toBe(true);
   });
 
-
   it("defaultTrackVisibility includes audio lanes", () => {
     const vis = defaultTrackVisibility([{ id: "a1", name: "A" }]);
     expect(vis["audio:a1"]).toBe(true);
   });
-
 });

@@ -29,8 +29,12 @@ describe("SetView", () => {
         screen.getByRole("toolbar", { name: "Akcje setlisty" }),
       ).toBeTruthy();
     });
-    expect(screen.getByRole("button", { name: "Wyczyść setlistę" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Zapisz setlistę" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Wyczyść setlistę" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Zapisz setlistę" }),
+    ).toBeTruthy();
     expect(screen.getByRole("region", { name: "Set" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Biblioteka" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Kolejność setu" })).toBeTruthy();

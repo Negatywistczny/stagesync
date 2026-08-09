@@ -32,9 +32,9 @@ describe("getDisplayTicks", () => {
 
   it("falls back when timestamps are non-finite", () => {
     expect(getDisplayTicks(anchor, Number.NaN, 1000, true)).toBe(1000);
-    expect(
-      getDisplayTicks(anchor, 1500, Number.POSITIVE_INFINITY, true),
-    ).toBe(1000);
+    expect(getDisplayTicks(anchor, 1500, Number.POSITIVE_INFINITY, true)).toBe(
+      1000,
+    );
   });
 
   it("wraps soft clock into an enabled loop range", () => {

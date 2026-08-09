@@ -11,10 +11,13 @@ import {
 import { DevLayoutMatrix } from "./DevLayoutMatrix.js";
 
 vi.mock("./devPreviewScreenshot.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./devPreviewScreenshot.js")>();
+  const actual =
+    await importOriginal<typeof import("./devPreviewScreenshot.js")>();
   return {
     ...actual,
-    requestDevPreviewScreenshot: vi.fn().mockResolvedValue(new Blob(["png"], { type: "image/png" })),
+    requestDevPreviewScreenshot: vi
+      .fn()
+      .mockResolvedValue(new Blob(["png"], { type: "image/png" })),
     downloadBlob: vi.fn(),
   };
 });
@@ -191,9 +194,7 @@ describe("DevLayoutMatrix", () => {
 
     expect(screen.queryByLabelText("Trasa")).toBeNull();
     expect(screen.queryByText("Sesja operatora")).toBeNull();
-    expect(
-      screen.getByText(/Podgląd Performer zawsze używa/),
-    ).toBeTruthy();
+    expect(screen.getByText(/Podgląd Performer zawsze używa/)).toBeTruthy();
 
     const iframe = screen.getByTitle("Podgląd 375×667");
     expect(iframe.getAttribute("src")).toContain("surface=performer");
@@ -220,15 +221,23 @@ describe("DevLayoutMatrix", () => {
 
     const buttons = screen.getAllByRole("button", { name: /Zrzut ekranu/i });
     expect(buttons).toHaveLength(3);
-    expect(screen.getByRole("button", { name: "Zrzut ekranu 375×667" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Zrzut ekranu 768×1024" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Zrzut ekranu 1280×800" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Zrzut ekranu 375×667" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Zrzut ekranu 768×1024" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Zrzut ekranu 1280×800" }),
+    ).toBeTruthy();
   });
 
   it("captures screenshot from the clicked preview iframe", async () => {
     render(<DevLayoutMatrix />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Zrzut ekranu 375×667" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Zrzut ekranu 375×667" }),
+    );
 
     await vi.waitFor(() => {
       expect(requestDevPreviewScreenshot).toHaveBeenCalledTimes(1);
@@ -248,10 +257,14 @@ describe("DevLayoutMatrix", () => {
     );
 
     render(<DevLayoutMatrix />);
-    fireEvent.click(screen.getByRole("button", { name: "Zrzut ekranu 375×667" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Zrzut ekranu 375×667" }),
+    );
 
     expect(
-      await screen.findByText(/Zrzut ekranu nie powiódł się: Tainted canvases may not be exported/),
+      await screen.findByText(
+        /Zrzut ekranu nie powiódł się: Tainted canvases may not be exported/,
+      ),
     ).toBeTruthy();
     expect(downloadBlob).not.toHaveBeenCalled();
   });

@@ -3,68 +3,64 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  OpenSheetMusicDisplayMock,
-  PointF2DMock,
-  renderSpy,
-  updateGraphicSpy,
-} = vi.hoisted(() => {
-  const renderSpy = vi.fn();
-  const updateGraphicSpy = vi.fn();
+const { OpenSheetMusicDisplayMock, PointF2DMock, renderSpy, updateGraphicSpy } =
+  vi.hoisted(() => {
+    const renderSpy = vi.fn();
+    const updateGraphicSpy = vi.fn();
 
-  class PointF2DMock {
-    constructor(
-      public x: number,
-      public y: number,
-    ) {}
-  }
+    class PointF2DMock {
+      constructor(
+        public x: number,
+        public y: number,
+      ) {}
+    }
 
-  class OpenSheetMusicDisplayMock {
-    EngravingRules = {
-      PageBackgroundColor: "",
-      RestoreCursorAfterRerender: true,
+    class OpenSheetMusicDisplayMock {
+      EngravingRules = {
+        PageBackgroundColor: "",
+        RestoreCursorAfterRerender: true,
+      };
+      Zoom = 1;
+      TransposeCalculator: unknown = null;
+      Sheet: {
+        SourceMeasures?: unknown[];
+        Instruments?: unknown[];
+        Transpose?: number;
+      } | null = null;
+      GraphicSheet: {
+        MeasureList?: unknown;
+        GetNearestNote?: (
+          pos: PointF2DMock,
+          max: PointF2DMock,
+        ) => {
+          sourceNote?: { SourceMeasure?: { MeasureNumber?: number } };
+        } | null;
+      } | null = null;
+      cursors: Array<{
+        reset: () => void;
+        show: () => void;
+        nextMeasure: () => void;
+        update: () => void;
+        adjustToBackgroundColor?: () => void;
+        cursorElement?: HTMLElement | null;
+      }> = [];
+      cursor: unknown;
+      constructor(
+        public container: HTMLElement,
+        public options: unknown,
+      ) {}
+      IsReadyToRender = vi.fn(() => false);
+      render = renderSpy;
+      updateGraphic = updateGraphicSpy;
+    }
+
+    return {
+      OpenSheetMusicDisplayMock,
+      PointF2DMock,
+      renderSpy,
+      updateGraphicSpy,
     };
-    Zoom = 1;
-    TransposeCalculator: unknown = null;
-    Sheet: {
-      SourceMeasures?: unknown[];
-      Instruments?: unknown[];
-      Transpose?: number;
-    } | null = null;
-    GraphicSheet: {
-      MeasureList?: unknown;
-      GetNearestNote?: (
-        pos: PointF2DMock,
-        max: PointF2DMock,
-      ) => {
-        sourceNote?: { SourceMeasure?: { MeasureNumber?: number } };
-      } | null;
-    } | null = null;
-    cursors: Array<{
-      reset: () => void;
-      show: () => void;
-      nextMeasure: () => void;
-      update: () => void;
-      adjustToBackgroundColor?: () => void;
-      cursorElement?: HTMLElement | null;
-    }> = [];
-    cursor: unknown;
-    constructor(
-      public container: HTMLElement,
-      public options: unknown,
-    ) {}
-    IsReadyToRender = vi.fn(() => false);
-    render = renderSpy;
-    updateGraphic = updateGraphicSpy;
-  }
-
-  return {
-    OpenSheetMusicDisplayMock,
-    PointF2DMock,
-    renderSpy,
-    updateGraphicSpy,
-  };
-});
+  });
 
 vi.mock("opensheetmusicdisplay", () => ({
   OpenSheetMusicDisplay: OpenSheetMusicDisplayMock,
@@ -391,7 +387,9 @@ describe("scoreOsmd", () => {
     it("returns null without GraphicSheet", () => {
       const osmd = makeOsmd();
       const container = document.createElement("div");
-      expect(scoreBarFromClientPoint(osmd as never, container, 0, 0)).toBeNull();
+      expect(
+        scoreBarFromClientPoint(osmd as never, container, 0, 0),
+      ).toBeNull();
     });
 
     it("uses GetNearestNote when available", () => {
@@ -493,12 +491,12 @@ describe("scoreOsmd", () => {
         ],
       };
       applyScorePartVisibility(osmd as never, ["A::0", "B::1"]);
-      expect((osmd.Sheet!.Instruments![0] as { Visible: boolean }).Visible).toBe(
-        true,
-      );
-      expect((osmd.Sheet!.Instruments![1] as { Visible: boolean }).Visible).toBe(
-        false,
-      );
+      expect(
+        (osmd.Sheet!.Instruments![0] as { Visible: boolean }).Visible,
+      ).toBe(true);
+      expect(
+        (osmd.Sheet!.Instruments![1] as { Visible: boolean }).Visible,
+      ).toBe(false);
     });
 
     it("applyScoreSheetTranspose updates and renders", () => {
@@ -584,21 +582,25 @@ describe("scoreOsmd", () => {
   describe("fetchScoreBlob", () => {
     it("returns blob bytes and throws on HTTP error", async () => {
       const blob = new Blob([new Uint8Array([1, 2])]);
-      const ok = await fetchScoreBlob("/x", async () =>
-        ({
-          ok: true,
-          status: 200,
-          blob: async () => blob,
-        }) as Response,
+      const ok = await fetchScoreBlob(
+        "/x",
+        async () =>
+          ({
+            ok: true,
+            status: 200,
+            blob: async () => blob,
+          }) as Response,
       );
       expect(ok).toBe(blob);
       await expect(
-        fetchScoreBlob("/x", async () =>
-          ({
-            ok: false,
-            status: 500,
-            blob: async () => blob,
-          }) as Response,
+        fetchScoreBlob(
+          "/x",
+          async () =>
+            ({
+              ok: false,
+              status: 500,
+              blob: async () => blob,
+            }) as Response,
         ),
       ).rejects.toThrow(/HTTP 500/);
     });

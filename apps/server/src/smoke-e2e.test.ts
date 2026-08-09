@@ -75,9 +75,9 @@ describe("smoke e2e API", () => {
       body: JSON.stringify({ projectId: project.id }),
     });
     expect(loadRes.status).toBe(200);
-    expect(TransportStateSchema.parse(await loadRes.json()).activeProjectId).toBe(
-      project.id,
-    );
+    expect(
+      TransportStateSchema.parse(await loadRes.json()).activeProjectId,
+    ).toBe(project.id);
 
     const playRes = await fetch(`${baseUrl}/api/transport/play`, {
       method: "POST",
@@ -96,7 +96,9 @@ describe("smoke e2e API", () => {
 
     const midiRes = await fetch(`${baseUrl}/api/midi`);
     expect(midiRes.status).toBe(200);
-    expect(MidiHostStatusSchema.parse(await midiRes.json()).backend).toBeTruthy();
+    expect(
+      MidiHostStatusSchema.parse(await midiRes.json()).backend,
+    ).toBeTruthy();
   });
 
   it("forma put → seek into section → play → stop", async () => {
@@ -158,6 +160,8 @@ describe("smoke e2e API", () => {
       method: "POST",
     });
     expect(stopRes.status).toBe(200);
-    expect(TransportStateSchema.parse(await stopRes.json()).playing).toBe(false);
+    expect(TransportStateSchema.parse(await stopRes.json()).playing).toBe(
+      false,
+    );
   });
 });

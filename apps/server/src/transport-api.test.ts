@@ -5,9 +5,7 @@ import { join } from "node:path";
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
-import {
-  TransportTickMessageSchema,
-} from "@stagesync/shared";
+import { TransportTickMessageSchema } from "@stagesync/shared";
 import { createApp } from "./app.js";
 import { attachTransportWs, TRANSPORT_WS_PATH } from "./transport/ws.js";
 import { createTransportEngine } from "./transport/engine.js";
@@ -32,7 +30,9 @@ async function rmWithRetry(path: string): Promise<void> {
       });
     }
   }
-  throw lastError instanceof Error ? lastError : new Error("Failed to remove temp dir");
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Failed to remove temp dir");
 }
 
 describe("transport REST + WS", () => {
@@ -205,8 +205,9 @@ describe("transport REST + WS", () => {
         id: string;
         forma: { clips: Array<{ kind: string; startTicks: number }> };
       };
-      const cdStart = project.forma.clips.find((c) => c.kind === "countdown")
-        ?.startTicks;
+      const cdStart = project.forma.clips.find(
+        (c) => c.kind === "countdown",
+      )?.startTicks;
       expect(cdStart).toBeLessThan(0);
 
       await fetch(`${url}/api/transport/play`, {

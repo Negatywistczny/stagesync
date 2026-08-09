@@ -48,7 +48,7 @@ describe("ChordName (#478)", () => {
     );
     expect(html).toContain("A&amp;B");
     expect(html).toContain("&lt;7&gt;");
-    expect(html).toContain('/C&quot;D');
+    expect(html).toContain("/C&quot;D");
     expect(html).not.toContain("<7>");
   });
 
@@ -67,5 +67,4 @@ describe("ChordName (#478)", () => {
     expect(markup).not.toContain("stack");
     expect(markup).toContain("/A");
   });
-
 });

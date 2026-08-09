@@ -169,8 +169,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
     return map;
   }, [library?.projects]);
 
-  const nameFor = (id: string) =>
-    projectsById.get(id)?.name ?? id.slice(0, 8);
+  const nameFor = (id: string) => projectsById.get(id)?.name ?? id.slice(0, 8);
 
   const draftProjectIds = useMemo(
     () =>
@@ -338,7 +337,11 @@ export function SetView({ library, selectedId }: SetViewProps) {
   };
 
   const setToolbar = (
-    <div className={styles.setToolbar} role="toolbar" aria-label="Akcje setlisty">
+    <div
+      className={styles.setToolbar}
+      role="toolbar"
+      aria-label="Akcje setlisty"
+    >
       <Button
         variant="secondary"
         disabled={pending}
@@ -465,9 +468,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
                 iconOnly
                 disabled={inSet || pending}
                 aria-label={
-                  inSet
-                    ? `${p.name} — już w secie`
-                    : `Dodaj ${p.name} do setu`
+                  inSet ? `${p.name} — już w secie` : `Dodaj ${p.name} do setu`
                 }
                 onClick={() => onAddOne(p.id)}
               >
@@ -495,216 +496,209 @@ export function SetView({ library, selectedId }: SetViewProps) {
 
   const setInner = (
     <>
-            <div className={styles.summaryBlock}>
-              <div className={styles.summaryRow}>
-                <strong className={shell.setColTitle}>
-                  Set ({draftItems.length})
-                </strong>
-                <label className={styles.budgetLabel}>
-                  <span className={shell.muted}>Czas</span>
-                  <input
-                    className={styles.budgetInput}
-                    type="number"
-                    min={1}
-                    max={24 * 60}
-                    value={timeBudgetMinutes}
-                    disabled={pending}
-                    aria-label="Czas w minutach"
-                    onChange={(e) => {
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n)) return;
-                      setTimeBudgetMinutes(
-                        Math.min(24 * 60, Math.max(1, Math.trunc(n))),
-                      );
-                      setDirty(true);
-                    }}
-                  />
-                  <span className={shell.muted}>min</span>
-                </label>
-              </div>
-              <div className={styles.budgetMeta}>
-                <span
-                  className={[
-                    styles.budgetTime,
-                    overBudget ? styles.budgetTimeOver : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
+      <div className={styles.summaryBlock}>
+        <div className={styles.summaryRow}>
+          <strong className={shell.setColTitle}>
+            Set ({draftItems.length})
+          </strong>
+          <label className={styles.budgetLabel}>
+            <span className={shell.muted}>Czas</span>
+            <input
+              className={styles.budgetInput}
+              type="number"
+              min={1}
+              max={24 * 60}
+              value={timeBudgetMinutes}
+              disabled={pending}
+              aria-label="Czas w minutach"
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                if (!Number.isFinite(n)) return;
+                setTimeBudgetMinutes(
+                  Math.min(24 * 60, Math.max(1, Math.trunc(n))),
+                );
+                setDirty(true);
+              }}
+            />
+            <span className={shell.muted}>min</span>
+          </label>
+        </div>
+        <div className={styles.budgetMeta}>
+          <span
+            className={[
+              styles.budgetTime,
+              overBudget ? styles.budgetTimeOver : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {formatSetDurationMs(totalMs)} / {formatSetDurationMs(budgetMs)}
+          </span>
+          <span className={shell.muted}>
+            {overBudget ? "Poza budżetem" : "W budżecie"}
+          </span>
+        </div>
+        <div
+          className={styles.budgetTrack}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={budgetPct}
+          aria-label={`Budżet czasu ${budgetPct}%`}
+        >
+          <div
+            className={[
+              styles.budgetFill,
+              overBudget ? styles.budgetFillOver : styles.budgetFillOk,
+            ].join(" ")}
+            style={{ width: `${budgetPct}%` }}
+          />
+        </div>
+      </div>
+
+      {setToolbar}
+
+      {draftItems.length === 0 ? (
+        <div className={styles.emptyState}>
+          <span className={styles.emptyIcon} aria-hidden>
+            ♪
+          </span>
+          <p className={styles.emptyText} role="status">
+            Przeciągnij utwory z biblioteki po lewej stronie lub użyj przycisku
+            &apos;+&apos;
+          </p>
+        </div>
+      ) : (
+        <ul className={styles.setList} aria-label="Pozycje setu">
+          {draftItems.map((item, index) => {
+            if (item.type === "break") {
+              return (
+                <li
+                  key={`break-${item.id}`}
+                  className={[styles.setTile, styles.breakRow].join(" ")}
+                  draggable
+                  onDragStart={() => setDragIndex(index)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => onDrop(index)}
                 >
-                  {formatSetDurationMs(totalMs)} /{" "}
-                  {formatSetDurationMs(budgetMs)}
-                </span>
-                <span className={shell.muted}>
-                  {overBudget ? "Poza budżetem" : "W budżecie"}
-                </span>
-              </div>
-              <div
-                className={styles.budgetTrack}
-                role="progressbar"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={budgetPct}
-                aria-label={`Budżet czasu ${budgetPct}%`}
-              >
-                <div
-                  className={[
-                    styles.budgetFill,
-                    overBudget ? styles.budgetFillOver : styles.budgetFillOk,
-                  ].join(" ")}
-                  style={{ width: `${budgetPct}%` }}
-                />
-              </div>
-            </div>
-
-            {setToolbar}
-
-            {draftItems.length === 0 ? (
-              <div className={styles.emptyState}>
-                <span className={styles.emptyIcon} aria-hidden>
-                  ♪
-                </span>
-                <p className={styles.emptyText} role="status">
-                  Przeciągnij utwory z biblioteki po lewej stronie lub użyj
-                  przycisku &apos;+&apos;
-                </p>
-              </div>
-            ) : (
-              <ul className={styles.setList} aria-label="Pozycje setu">
-                {draftItems.map((item, index) => {
-                  if (item.type === "break") {
-                    return (
-                      <li
-                        key={`break-${item.id}`}
-                        className={[styles.setTile, styles.breakRow].join(" ")}
-                        draggable
-                        onDragStart={() => setDragIndex(index)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => onDrop(index)}
-                      >
-                        <span
-                          className={styles.dragHandle}
-                          aria-hidden
-                          title="Przeciągnij"
-                        >
-                          ::
-                        </span>
-                        <span className={styles.tileIndex}>{index + 1}</span>
-                        <span className={styles.tileBody}>
-                          <span className={styles.tileName}>{item.label}</span>
-                          <label className={styles.breakDuration}>
-                            <input
-                              className={styles.budgetInput}
-                              type="number"
-                              min={1}
-                              max={180}
-                              value={item.durationMinutes}
-                              disabled={pending}
-                              aria-label="Czas przerwy w minutach"
-                              onChange={(e) => {
-                                const n = Number(e.target.value);
-                                if (!Number.isFinite(n)) return;
-                                const durationMinutes = Math.min(
-                                  180,
-                                  Math.max(1, Math.trunc(n)),
-                                );
-                                setDraftItems((items) =>
-                                  items.map((row, i) =>
-                                    i === index && row.type === "break"
-                                      ? { ...row, durationMinutes }
-                                      : row,
-                                  ),
-                                );
-                                setDirty(true);
-                              }}
-                            />
-                            <span className={shell.muted}>min</span>
-                          </label>
-                        </span>
-                        <MetaBadgeRow>
-                          <MetaBadge>
-                            {formatSetDurationMs(
-                              item.durationMinutes * 60 * 1000,
-                            )}
-                          </MetaBadge>
-                        </MetaBadgeRow>
-                        <Button
-                          variant="ghost"
-                          iconOnly
-                          className={styles.removeSlot}
-                          disabled={pending}
-                          aria-label="Usuń przerwę z setu"
-                          onClick={() => {
-                            setDraftItems((items) =>
-                              items.filter((_, i) => i !== index),
-                            );
-                            setDirty(true);
-                          }}
-                        >
-                          ×
-                        </Button>
-                      </li>
-                    );
-                  }
-
-                  const entry = projectsById.get(item.projectId);
-                  const durationMs = projectDurationMs(entry);
-                  const badges = entry ? catalogSongBadges(entry) : [];
-                  const metaBadges = badges.filter(
-                    (b) => b !== formatSetDurationMs(durationMs),
-                  );
-
-                  return (
-                    <li
-                      key={`${item.projectId}-${index}`}
-                      className={styles.setTile}
-                      draggable
-                      onDragStart={() => setDragIndex(index)}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={() => onDrop(index)}
-                    >
-                      <span
-                        className={styles.dragHandle}
-                        aria-hidden
-                        title="Przeciągnij"
-                      >
-                        ::
-                      </span>
-                      <span className={styles.tileIndex}>{index + 1}</span>
-                      <span className={styles.tileBody}>
-                        <span className={styles.tileName}>
-                          {nameFor(item.projectId)}
-                        </span>
-                      </span>
-                      <MetaBadgeRow>
-                        <MetaBadge>
-                          {formatSetDurationMs(durationMs)}
-                        </MetaBadge>
-                        {metaBadges.map((b, i) => (
-                          <MetaBadge key={`${b}-${i}`}>
-                            {b}
-                          </MetaBadge>
-                        ))}
-                      </MetaBadgeRow>
-                      <Button
-                        variant="ghost"
-                        iconOnly
-                        className={styles.removeSlot}
+                  <span
+                    className={styles.dragHandle}
+                    aria-hidden
+                    title="Przeciągnij"
+                  >
+                    ::
+                  </span>
+                  <span className={styles.tileIndex}>{index + 1}</span>
+                  <span className={styles.tileBody}>
+                    <span className={styles.tileName}>{item.label}</span>
+                    <label className={styles.breakDuration}>
+                      <input
+                        className={styles.budgetInput}
+                        type="number"
+                        min={1}
+                        max={180}
+                        value={item.durationMinutes}
                         disabled={pending}
-                        aria-label={`Usuń ${nameFor(item.projectId)} z setu`}
-                        onClick={() => {
+                        aria-label="Czas przerwy w minutach"
+                        onChange={(e) => {
+                          const n = Number(e.target.value);
+                          if (!Number.isFinite(n)) return;
+                          const durationMinutes = Math.min(
+                            180,
+                            Math.max(1, Math.trunc(n)),
+                          );
                           setDraftItems((items) =>
-                            items.filter((_, i) => i !== index),
+                            items.map((row, i) =>
+                              i === index && row.type === "break"
+                                ? { ...row, durationMinutes }
+                                : row,
+                            ),
                           );
                           setDirty(true);
                         }}
-                      >
-                        ×
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+                      />
+                      <span className={shell.muted}>min</span>
+                    </label>
+                  </span>
+                  <MetaBadgeRow>
+                    <MetaBadge>
+                      {formatSetDurationMs(item.durationMinutes * 60 * 1000)}
+                    </MetaBadge>
+                  </MetaBadgeRow>
+                  <Button
+                    variant="ghost"
+                    iconOnly
+                    className={styles.removeSlot}
+                    disabled={pending}
+                    aria-label="Usuń przerwę z setu"
+                    onClick={() => {
+                      setDraftItems((items) =>
+                        items.filter((_, i) => i !== index),
+                      );
+                      setDirty(true);
+                    }}
+                  >
+                    ×
+                  </Button>
+                </li>
+              );
+            }
+
+            const entry = projectsById.get(item.projectId);
+            const durationMs = projectDurationMs(entry);
+            const badges = entry ? catalogSongBadges(entry) : [];
+            const metaBadges = badges.filter(
+              (b) => b !== formatSetDurationMs(durationMs),
+            );
+
+            return (
+              <li
+                key={`${item.projectId}-${index}`}
+                className={styles.setTile}
+                draggable
+                onDragStart={() => setDragIndex(index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => onDrop(index)}
+              >
+                <span
+                  className={styles.dragHandle}
+                  aria-hidden
+                  title="Przeciągnij"
+                >
+                  ::
+                </span>
+                <span className={styles.tileIndex}>{index + 1}</span>
+                <span className={styles.tileBody}>
+                  <span className={styles.tileName}>
+                    {nameFor(item.projectId)}
+                  </span>
+                </span>
+                <MetaBadgeRow>
+                  <MetaBadge>{formatSetDurationMs(durationMs)}</MetaBadge>
+                  {metaBadges.map((b, i) => (
+                    <MetaBadge key={`${b}-${i}`}>{b}</MetaBadge>
+                  ))}
+                </MetaBadgeRow>
+                <Button
+                  variant="ghost"
+                  iconOnly
+                  className={styles.removeSlot}
+                  disabled={pending}
+                  aria-label={`Usuń ${nameFor(item.projectId)} z setu`}
+                  onClick={() => {
+                    setDraftItems((items) =>
+                      items.filter((_, i) => i !== index),
+                    );
+                    setDirty(true);
+                  }}
+                >
+                  ×
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </>
   );
 
@@ -761,11 +755,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
         {errorBlock}
         {switches}
         <div className={shell.setSplit}>
-          <div
-            className={shell.setCol}
-            role="region"
-            aria-label="Biblioteka"
-          >
+          <div className={shell.setCol} role="region" aria-label="Biblioteka">
             {libraryInner}
           </div>
           <div

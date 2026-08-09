@@ -12,8 +12,14 @@ import {
   type Project,
   type SnapMode,
 } from "@stagesync/shared";
-import { contentFloorTicks, snapEditTicks } from "@lib/timeline-edit/formaCanvas.js";
-import { countdownBars, setCountdownBars } from "@lib/timeline-edit/formaInspector.js";
+import {
+  contentFloorTicks,
+  snapEditTicks,
+} from "@lib/timeline-edit/formaCanvas.js";
+import {
+  countdownBars,
+  setCountdownBars,
+} from "@lib/timeline-edit/formaInspector.js";
 import { contentSnapModeFromModifiers } from "./timelineGesture.js";
 
 export type MapLaneId = "tempo" | "metrum" | "tonacja";
@@ -105,9 +111,7 @@ export function upsertTempoAt(
   bpm: number,
 ): Project {
   if (!Number.isFinite(bpm) || bpm < 20 || bpm > 400) return project;
-  const map = [...project.tempoMap].sort(
-    (a, b) => a.startTicks - b.startTicks,
-  );
+  const map = [...project.tempoMap].sort((a, b) => a.startTicks - b.startTicks);
   const existing = map.find((e) => e.startTicks === startTicks);
   const nextMap = existing
     ? map.map((e) => (e.startTicks === startTicks ? { ...e, bpm } : e))
@@ -126,15 +130,11 @@ export function upsertMeterAt(
   } catch {
     return project;
   }
-  const map = [...project.meterMap].sort(
-    (a, b) => a.startTicks - b.startTicks,
-  );
+  const map = [...project.meterMap].sort((a, b) => a.startTicks - b.startTicks);
   const existing = map.find((e) => e.startTicks === startTicks);
   const nextMap = existing
     ? map.map((e) =>
-        e.startTicks === startTicks
-          ? { ...e, numerator, denominator }
-          : e,
+        e.startTicks === startTicks ? { ...e, numerator, denominator } : e,
       )
     : [
         ...map,
@@ -174,13 +174,8 @@ export function upsertKeyAt(
   );
   const existing = map.find((e) => e.startTicks === startTicks);
   const nextMap = existing
-    ? map.map((e) =>
-        e.startTicks === startTicks ? { ...e, key } : e,
-      )
-    : [
-        ...map,
-        { id: `key-${crypto.randomUUID()}`, startTicks, key },
-      ];
+    ? map.map((e) => (e.startTicks === startTicks ? { ...e, key } : e))
+    : [...map, { id: `key-${crypto.randomUUID()}`, startTicks, key }];
   return { ...project, keyMap: nextMap };
 }
 
@@ -299,27 +294,19 @@ export function findMapEventAtTicks(
   return hit ? { id: hit.id, startTicks: hit.startTicks } : null;
 }
 
-export function mapSnapMode(
-  metaKey: boolean,
-  ctrlKey: boolean,
-): SnapMode {
+export function mapSnapMode(metaKey: boolean, ctrlKey: boolean): SnapMode {
   return contentSnapModeFromModifiers(metaKey, ctrlKey);
 }
 
 /** Ordered real map event ids on a lane (excludes synthetic *-default). */
-export function mapEventIds(
-  project: Project,
-  lane: MapLaneId,
-): string[] {
+export function mapEventIds(project: Project, lane: MapLaneId): string[] {
   const list =
     lane === "tempo"
       ? project.tempoMap
       : lane === "metrum"
         ? project.meterMap
         : (project.keyMap ?? []);
-  return [...list]
-    .sort((a, b) => a.startTicks - b.startTicks)
-    .map((e) => e.id);
+  return [...list].sort((a, b) => a.startTicks - b.startTicks).map((e) => e.id);
 }
 
 /**

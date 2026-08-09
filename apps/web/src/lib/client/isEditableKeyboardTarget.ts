@@ -2,9 +2,7 @@
  * True when keyboard shortcuts must yield to text entry
  * (INPUT / TEXTAREA / SELECT / contentEditable).
  */
-export function isEditableKeyboardTarget(
-  target: EventTarget | null,
-): boolean {
+export function isEditableKeyboardTarget(target: EventTarget | null): boolean {
   if (!target || typeof target !== "object") return false;
   const el = target as {
     tagName?: string;

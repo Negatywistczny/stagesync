@@ -18,11 +18,7 @@ import {
 
 describe("createProjectV2Seed", () => {
   it("seeds Countdown at -7680 (2 bars @ PPQ 960)", () => {
-    const p = createProjectV2Seed(
-      "id-1",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const p = createProjectV2Seed("id-1", "Demo", "2026-07-20T00:00:00.000Z");
     const cd = p.forma.clips.find((c) => c.kind === "countdown");
     expect(cd?.startTicks).toBe(-7680);
     expect(cd?.lengthTicks).toBe(7680);
@@ -32,11 +28,7 @@ describe("createProjectV2Seed", () => {
 
 describe("createProjectV3Seed", () => {
   it("includes empty assets arrays", () => {
-    const p = createProjectV3Seed(
-      "id-1",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const p = createProjectV3Seed("id-1", "Demo", "2026-07-20T00:00:00.000Z");
     expect(p.formatVersion).toBe(3);
     expect(p.assets).toEqual([]);
     expect(p.audioTracks).toEqual([]);
@@ -46,11 +38,7 @@ describe("createProjectV3Seed", () => {
 
 describe("createProjectV4Seed", () => {
   it("includes empty content lanes", () => {
-    const p = createProjectV4Seed(
-      "id-1",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const p = createProjectV4Seed("id-1", "Demo", "2026-07-20T00:00:00.000Z");
     expect(p.formatVersion).toBe(4);
     expect(p.tekst.clips).toEqual([]);
     expect(p.akordy.clips).toEqual([]);
@@ -72,11 +60,7 @@ describe("createDefaultTemplateProject", () => {
 
 describe("createProjectV5Seed", () => {
   it("includes keyMap and midiProgramId", () => {
-    const p = createProjectV5Seed(
-      "id-1",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const p = createProjectV5Seed("id-1", "Demo", "2026-07-20T00:00:00.000Z");
     expect(p.formatVersion).toBe(5);
     expect(p.keyMap[0]?.key).toEqual({ tonic: "C", mode: "major" });
     expect(p.midiProgramId).toBe(0);
@@ -85,11 +69,7 @@ describe("createProjectV5Seed", () => {
 
 describe("createProjectV6Seed", () => {
   it("includes empty melody and formatVersion 6", () => {
-    const p = createProjectV6Seed(
-      "id-1",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const p = createProjectV6Seed("id-1", "Demo", "2026-07-20T00:00:00.000Z");
     expect(p.formatVersion).toBe(6);
     expect(p.melody).toEqual({ clips: [] });
     expect(p.keyMap[0]?.key).toEqual({ tonic: "C", mode: "major" });

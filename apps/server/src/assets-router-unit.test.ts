@@ -3,7 +3,11 @@ import express from "express";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import multer from "multer";
-import { createAssetsRouter, assetsUploadForTests, uploadSingleFileForTests } from "./routes/assets.js";
+import {
+  createAssetsRouter,
+  assetsUploadForTests,
+  uploadSingleFileForTests,
+} from "./routes/assets.js";
 import { NotFoundError, type Stores } from "./storage/index.js";
 
 describe("createAssetsRouter error paths", () => {
@@ -19,10 +23,7 @@ describe("createAssetsRouter error paths", () => {
 
   async function listen(stores: Partial<Stores>): Promise<string> {
     const app = express();
-    app.use(
-      "/api/projects/:id/assets",
-      createAssetsRouter(stores as Stores),
-    );
+    app.use("/api/projects/:id/assets", createAssetsRouter(stores as Stores));
     server = await new Promise<Server>((resolve) => {
       const s = app.listen(0, "127.0.0.1", () => resolve(s));
     });
@@ -77,11 +78,7 @@ describe("createAssetsRouter error paths", () => {
     expect(((await missing.json()) as { ok: boolean }).ok).toBe(false);
 
     const form = new FormData();
-    form.append(
-      "file",
-      new Blob(["x"], { type: "text/plain" }),
-      "notes.txt",
-    );
+    form.append("file", new Blob(["x"], { type: "text/plain" }), "notes.txt");
     const badExt = await fetch(`${baseUrl}/api/projects/p1/assets`, {
       method: "POST",
       body: form,
@@ -137,11 +134,7 @@ describe("createAssetsRouter error paths", () => {
         cb(new multer.MulterError("LIMIT_FILE_SIZE"));
       });
 
-    uploadSingleFileForTests(
-      {} as import("express").Request,
-      res,
-      next,
-    );
+    uploadSingleFileForTests({} as import("express").Request, res, next);
     expect(statusCode).toBe(413);
     expect(body).toEqual({ ok: false, error: "File too large" });
     expect(next).not.toHaveBeenCalled();

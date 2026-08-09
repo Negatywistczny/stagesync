@@ -111,8 +111,7 @@ export function buildFormaLiveContext(
   const activeSeg = segments.find((s) => s.active) ?? null;
   const currentCell = activeSeg?.cells.find((c) => c.current) ?? null;
   const countdownNumber = resolveCountdownDigit(project, displayTicks);
-  const isCountdown =
-    active?.kind === "countdown" || countdownNumber != null;
+  const isCountdown = active?.kind === "countdown" || countdownNumber != null;
   const meterLabel = `${meter.numerator}/${meter.denominator}`;
   const bbtLabel = `${toDisplayBar(bbt.bar)}.${bbt.beat}`;
   const barInSection = currentCell?.index ?? null;
@@ -123,10 +122,7 @@ export function buildFormaLiveContext(
     segments.find((s) => s.kind === "section")?.name ??
     "—";
 
-  const heroMetaParts = [
-    `takt ${bbtLabel}`,
-    `beat ${bbt.beat}`,
-  ];
+  const heroMetaParts = [`takt ${bbtLabel}`, `beat ${bbt.beat}`];
   if (barInSection != null && activeSeg) {
     heroMetaParts.push(`${barInSection}. takt w części`);
   }

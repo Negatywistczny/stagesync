@@ -32,7 +32,9 @@ afterEach(() => {
 describe("DevPreviewApp", () => {
   it("renders timeline preview without nested Router errors", () => {
     setPreviewSearch("?surface=web&path=/timeline&projectId=dev-preview");
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
 
     expect(() => render(<DevPreviewApp />)).not.toThrow();
 

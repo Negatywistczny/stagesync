@@ -96,6 +96,9 @@ describe("routes/errors", () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.details).toHaveLength(32);
     expect(res.body.details?.[0]).toMatchObject({ path: "f.0", message: "m0" });
-    expect(res.body.details?.[31]).toMatchObject({ path: "f.31", message: "m31" });
+    expect(res.body.details?.[31]).toMatchObject({
+      path: "f.31",
+      message: "m31",
+    });
   });
 });

@@ -98,7 +98,8 @@ describe("projectAssetsApi", () => {
         json: async () => ({ error: "missing" }),
       }),
     );
-    await expect(deleteProjectAsset(project.id, "a1")).rejects.toThrow("missing");
+    await expect(deleteProjectAsset(project.id, "a1")).rejects.toThrow(
+      "missing",
+    );
   });
-
 });

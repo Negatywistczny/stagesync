@@ -48,7 +48,8 @@ describe("OperatorPinGate", () => {
   });
 
   it("renders children when PIN is not required", async () => {
-    const { fetchOperatorPinRequired } = await import("@lib/shell-operator/operatorPin.js");
+    const { fetchOperatorPinRequired } =
+      await import("@lib/shell-operator/operatorPin.js");
     vi.mocked(fetchOperatorPinRequired).mockResolvedValueOnce(false);
 
     render(

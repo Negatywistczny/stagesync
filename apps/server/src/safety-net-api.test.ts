@@ -155,5 +155,4 @@ describe("Safety Net API", () => {
       await new Promise<void>((r) => server.close(() => r()));
     }
   });
-
 });
