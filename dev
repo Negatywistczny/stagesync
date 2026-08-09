@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -e
+
+# StageSync Unix DX Launcher (dev)
+# For macOS and Linux
+
+# Check node
+if ! command -v node &> /dev/null; then
+    echo "[!] Node.js not found. Please install Node.js 22+."
+    exit 1
+fi
+
+# Check pnpm
+if ! command -v pnpm &> /dev/null; then
+    echo "[STEP] Enabling pnpm via corepack..."
+    corepack enable pnpm || true
+    corepack install || true
+    if ! command -v pnpm &> /dev/null; then
+        echo "[STEP] Installing pnpm globally via npm..."
+        npm install -g pnpm || true
+    fi
+fi
+
+# Fallback check for pnpm
+if ! command -v pnpm &> /dev/null; then
+    PNPM_CMD="npx pnpm"
+else
+    PNPM_CMD="pnpm"
+fi
+
+# Check node_modules
+if [ ! -d "node_modules" ] || [ ! -f "node_modules/.modules.yaml" ]; then
+    echo "[STEP] Installing Node dependencies (pnpm install)..."
+    $PNPM_CMD install
+fi
+
+export NODE_NO_WARNINGS=1
+
+# Run Dev Hub
+if [ $# -gt 0 ]; then
+    $PNPM_CMD dev:hub "$@"
+else
+    $PNPM_CMD dev:hub
+fi
