@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1260
+* **Liczba wszystkich plików:** 1261
 * **Liczba katalogów:** 195
-* **Data aktualizacji:** 2026-08-09T13:39:04.531Z
+* **Data aktualizacji:** 2026-08-09T13:39:34.382Z
 
 ### Kategorie
 
@@ -18,7 +18,7 @@
 | Docs | 214 |
 | Config | 115 |
 | Assety | 119 |
-| Inne | 26 |
+| Inne | 27 |
 
 ### Top rozszerzenia
 
@@ -34,7 +34,7 @@
 | `.json` | 34 |
 | `brak rozszerzenia` | 22 |
 | `.mjs` | 22 |
-| _(pozostałe)_ | 123 |
+| _(pozostałe)_ | 124 |
 
 ---
 
@@ -130,6 +130,7 @@
 - `compose.prod.yml`
 - `compose.yml`
 - `dev.cmd`
+- `dev.ps1`
 - `Dockerfile`
 - `knip.jsonc`
 - `LICENSE`
@@ -896,6 +897,7 @@ stagesync/
 ├── compose.prod.yml
 ├── compose.yml
 ├── dev.cmd
+├── dev.ps1
 ├── Dockerfile
 ├── knip.jsonc
 ├── LICENSE
