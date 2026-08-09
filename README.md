@@ -75,11 +75,12 @@ git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
 
 # 2. Uruchom natywny DX Suite
-# Windows (PowerShell):
-.\dev
-
-# Windows (CMD):
+# Windows (CMD / Wiersz Poleceń):
 dev
+
+# Windows (PowerShell - jeśli wystąpi blokada skryptów, użyj CMD lub odblokuj policy):
+# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+.\dev.ps1
 
 # macOS / Linux:
 ./dev

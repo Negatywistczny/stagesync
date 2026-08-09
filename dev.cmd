@@ -1,26 +1,21 @@
 @echo off
 setlocal
 
-:: StageSync DX Launcher for Windows
-:: Automatically adds Node.js and npm/pnpm paths to session PATH
-
+:: StageSync DX Launcher (Anti-recursion safe version)
 set "PATH=%PATH%;C:\Program Files\nodejs;%APPDATA%\npm"
 
-:: Check if pnpm is available
-where pnpm >nul 2>&1
-if %errorlevel% neq 0 (
-    :: Try enabling via corepack
-    call corepack enable pnpm >nul 2>&1
+if exist "%APPDATA%\npm\pnpm.cmd" (
+    call "%APPDATA%\npm\pnpm.cmd" dev:hub %*
+) else if exist "C:\Program Files\nodejs\pnpm.cmd" (
+    call "C:\Program Files\nodejs\pnpm.cmd" dev:hub %*
+) else (
     where pnpm >nul 2>&1
+    if %errorlevel% equ 0 (
+        pnpm dev:hub %*
+    ) else (
+        echo [!] pnpm not found. Running via npx...
+        npx pnpm dev:hub %*
+    )
 )
-
-if %errorlevel% neq 0 (
-    echo [!] pnpm not found in PATH. Please ensure Node.js and pnpm are installed.
-    echo You can install pnpm globally via: npm install -g pnpm
-    exit /b 1
-}
-
-echo StageSync DX Launcher
-pnpm dev:hub %*
 
 endlocal
