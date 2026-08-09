@@ -35,14 +35,22 @@ function Write-Warn {
 function Confirm-Choice {
     param([string]$Message)
     if ($AutoConfirm) { return $true }
-    $response = Read-Host "$Message [T/n]"
+    $response = Read-Host "$Message [t/n]"
     if ([string]::IsNullOrWhiteSpace($response) -or $response -match "^[tyTY]") {
         return $true
     }
     return $false
 }
 
-# 1. Check Node.js
+# 1. Refresh PATH and ensure common Node.js install directories are checked before testing existence
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+$nodePath = "C:\Program Files\nodejs"
+if (Test-Path $nodePath) {
+    if ($env:Path -notlike "*$nodePath*") {
+        $env:Path = "$nodePath;$env:Path"
+    }
+}
+
 $nodeCmd = Get-Command "node" -ErrorAction SilentlyContinue
 if (-not $nodeCmd) {
     Write-Warn "Nie znaleziono Node.js w systemie."
@@ -52,6 +60,11 @@ if (-not $nodeCmd) {
         
         Write-Host "Odswiezanie zmiennych srodowiskowych..."
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+        if (Test-Path $nodePath) {
+            if ($env:Path -notlike "*$nodePath*") {
+                $env:Path = "$nodePath;$env:Path"
+            }
+        }
         
         if (-not (Get-Command "node" -ErrorAction SilentlyContinue)) {
             Write-Warn "Node.js zostal zainstalowany, ale wymaga utworzenia nowego okna terminala."
@@ -64,14 +77,7 @@ if (-not $nodeCmd) {
     }
 }
 
-# 2. Check pnpm & corepack & ensure npm/node paths are fully reloaded
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-$nodePath = "C:\Program Files\nodejs"
-if (Test-Path $nodePath) {
-    if ($env:Path -notlike "*$nodePath*") {
-        $env:Path = "$nodePath;$env:Path"
-    }
-}
+# 2. Check pnpm & corepack
 
 try {
     $pnpmCmd = Get-Command "pnpm" -ErrorAction SilentlyContinue
