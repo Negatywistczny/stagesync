@@ -555,7 +555,36 @@ ${treeOutput}\`\`\`
 
 const outputPath = path.join(ROOT_DIR, OUTPUT_REL);
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-fs.writeFileSync(outputPath, markdownContent, 'utf8');
+
+/** Ignore the clock stamp so identical trees do not dirty git / block status. */
+const DATE_LINE_RE = /^\* \*\*Data aktualizacji:\*\*.*$/m;
+function structuralFingerprint(md) {
+  return md
+    .replace(/\r\n/g, '\n')
+    .replace(DATE_LINE_RE, '* **Data aktualizacji:** <stamp>');
+}
+
+let existing = '';
+if (fs.existsSync(outputPath)) {
+  existing = fs.readFileSync(outputPath, 'utf8');
+}
 
 const lineCount = markdownContent.split(/\r?\n/).length;
-console.log(`✅ Zaktualizowano ${OUTPUT_REL} (${totalFiles} plików, ${lineCount} linii mapy, tryb ${FULL_TREE ? 'full' : 'slim'})`);
+if (
+  existing &&
+  structuralFingerprint(existing) === structuralFingerprint(markdownContent)
+) {
+  console.log(
+    `⏭️  ${OUTPUT_REL} bez zmian strukturalnych — pomijam zapis (${totalFiles} plików, ${lineCount} linii, tryb ${FULL_TREE ? 'full' : 'slim'})`,
+  );
+} else {
+  const newline = existing.includes('\r\n') ? '\r\n' : '\n';
+  const toWrite =
+    newline === '\r\n'
+      ? markdownContent.replace(/\r?\n/g, '\r\n')
+      : markdownContent;
+  fs.writeFileSync(outputPath, toWrite, 'utf8');
+  console.log(
+    `✅ Zaktualizowano ${OUTPUT_REL} (${totalFiles} plików, ${lineCount} linii mapy, tryb ${FULL_TREE ? 'full' : 'slim'})`,
+  );
+}
