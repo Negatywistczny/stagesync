@@ -78,9 +78,10 @@ cd stagesync
 # Windows (CMD / Wiersz Poleceń):
 dev
 
-# Windows (PowerShell - jeśli wystąpi blokada skryptów, użyj CMD lub odblokuj policy):
-# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-.\dev.ps1
+# Windows (PowerShell):
+.\dev
+# Jeśli wystąpi blokada skryptów:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 # macOS / Linux:
 ./dev

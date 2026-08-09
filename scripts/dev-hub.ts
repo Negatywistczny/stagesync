@@ -29,7 +29,6 @@ function enableTerminalGuard() {
 enableTerminalGuard();
 
 async function waitReturn() {
-  console.log();
   await clack.select({
     message: 'Zadanie zakończone. Co chcesz zrobić?',
     options: [
@@ -253,9 +252,9 @@ async function runDoctorScan() {
     clack.log.warn('Rust / Cargo: Nie znaleziono (wymagany tylko dla Desktop/Tauri)');
   }
 
-  // 4. Docker
+  // 4. Docker (opcjonalny)
   try {
-    const dockerVer = execSync('docker -v', { encoding: 'utf8' }).trim();
+    const dockerVer = execSync('docker -v', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
     clack.log.success(`Docker: ${dockerVer}`);
   } catch {
     clack.log.warn('Docker: Brak klienta Docker (opcjonalny dla kontenerów)');
