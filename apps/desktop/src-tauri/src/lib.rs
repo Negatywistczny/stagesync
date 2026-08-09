@@ -2,8 +2,11 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+#[cfg(target_os = "macos")]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+use tauri::{Manager, RunEvent, WindowEvent};
+#[cfg(target_os = "macos")]
+use tauri::Emitter;
 use tauri_plugin_updater::UpdaterExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -343,6 +346,7 @@ pub(crate) fn reclaim_ui_port_orphan() -> usize {
     killed
 }
 
+#[cfg(target_os = "macos")]
 fn timeline_nav_url(state: &NavState) -> String {
     let id = state
         .timeline_project_id
@@ -355,11 +359,14 @@ fn timeline_nav_url(state: &NavState) -> String {
     }
 }
 
-/// Keep in sync with `apps/web/src/lib/docsLinks.ts`.
+/// Keep in sync with `apps/web/src/lib/client/docsLinks.ts`.
+#[cfg(target_os = "macos")]
 const DOCS_INSTALL_URL: &str =
     "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md";
+#[cfg(target_os = "macos")]
 const DOCS_ISSUES_URL: &str = "https://github.com/Negatywistczny/stagesync/issues";
 
+#[cfg(target_os = "macos")]
 fn navigate_main(app: &tauri::AppHandle, path: &str) {
     if window_url_is_launcher(app) {
         let Some(window) = app.get_webview_window("main") else {
@@ -374,6 +381,7 @@ fn navigate_main(app: &tauri::AppHandle, path: &str) {
 }
 
 /// True when the main webview still shows the bundled Launcher (cold-start), not host SPA.
+#[cfg(target_os = "macos")]
 fn window_url_is_launcher(app: &tauri::AppHandle) -> bool {
     let Some(window) = app.get_webview_window("main") else {
         return true;
@@ -388,6 +396,7 @@ fn window_url_is_launcher(app: &tauri::AppHandle) -> bool {
 }
 
 /// Desktop OS menu Faza A+B+C: StageSync | Plik | Widok | Odtwarzanie | Host | Pomoc (ADR 0010).
+#[cfg(target_os = "macos")]
 fn dispatch_menu_action(app: &tauri::AppHandle, action: &str) {
     let Some(window) = app.get_webview_window("main") else {
         return;
@@ -399,6 +408,7 @@ fn dispatch_menu_action(app: &tauri::AppHandle, action: &str) {
     let _ = window.eval(js);
 }
 
+#[cfg(target_os = "macos")]
 fn truncate_menu_label(name: &str, max_chars: usize) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
@@ -413,6 +423,7 @@ fn truncate_menu_label(name: &str, max_chars: usize) -> String {
     }
 }
 
+#[cfg(target_os = "macos")]
 fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Result<Menu<tauri::Wry>> {
     let about = MenuItem::with_id(app, "about", "O programie StageSync", true, None::<&str>)?;
     let preferences = MenuItem::with_id(
@@ -823,12 +834,24 @@ fn build_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) -> tauri::Re
 }
 
 fn refresh_desktop_menu(app: &tauri::AppHandle, nav_state: &NavState) {
+    // Windows/Linux use an in-app HTML menubar (#836); only macOS keeps the native menu bar.
+    #[cfg(target_os = "macos")]
     if let Ok(menu) = build_desktop_menu(app, nav_state) {
         let _ = app.set_menu(menu);
     }
+    #[cfg(not(target_os = "macos"))]
+    let _ = (app, nav_state);
 }
 
 fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::Result<()> {
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (app, nav_state);
+        return Ok(());
+    }
+
+    #[cfg(target_os = "macos")]
+    {
     let menu = build_desktop_menu(app, &nav_state)?;
     app.set_menu(menu)?;
 
@@ -915,6 +938,7 @@ fn install_desktop_menu(app: &tauri::AppHandle, nav_state: NavState) -> tauri::R
     });
 
     Ok(())
+    }
 }
 
 pub(crate) fn append_sidecar_log(log: &mut String, chunk: &str) {
@@ -1091,11 +1115,20 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_notification::init())
         .plugin(launcher::return_to_launcher_plugin())
         .manage(nav_state)
         .manage(sidecar_runtime)
         .manage(launcher_nav)
         .setup(move |app| {
+            // Handoff z stagesync-setup: tylko bootstrap-splash ma być widoczny.
+            // Drugi (Tauri) zamykamy natychmiast — bootstrap czeka na główne okno.
+            if std::env::args().any(|a| a == "--installer-handoff") {
+                if let Some(splash) = app.get_webview_window("splashscreen") {
+                    let _ = splash.close();
+                }
+            }
+
             let _ = install_desktop_menu(app.handle(), nav_state_setup.clone());
             // Capture Launcher origin before any navigate to sidecar/remote (return path).
             if let Some(window) = app.get_webview_window("main") {
@@ -1130,6 +1163,7 @@ pub fn run() {
             install_desktop_update,
             open_external_url,
             toggle_window_fullscreen,
+            quit_desktop_app,
             set_nav_timeline_project_id,
             set_nav_recent_projects,
             set_edit_history_state,
@@ -1242,6 +1276,17 @@ async fn check_desktop_update(app: tauri::AppHandle) -> Result<UpdateInfo, Strin
     }
 }
 
+/// Full quit from in-app Plik → Zakończ (Windows/Linux HTML title bar). Same as tray Quit.
+#[tauri::command]
+fn quit_desktop_app(
+    app: tauri::AppHandle,
+    runtime: tauri::State<'_, Arc<launcher::SidecarRuntime>>,
+) -> Result<(), String> {
+    runtime.kill_child();
+    app.exit(0);
+    Ok(())
+}
+
 /// Toggle native window expand (desktop shell — not HTML document fullscreen).
 /// macOS: maximize/unmaximize (green-button UX). Other platforms: true fullscreen.
 #[tauri::command]
@@ -1274,18 +1319,106 @@ fn open_external_url(url: String) -> Result<(), String> {
 
 /// Download and install a desktop update, then relaunch.
 /// Called from Admin UI via `invoke("install_desktop_update")`.
+///
+/// Windows: verified NSIS → local setup UI → exit (setup relaunches the app).
+/// Other platforms: stock Tauri `download_and_install` + `restart()`.
 #[tauri::command]
 async fn install_desktop_update(app: tauri::AppHandle) -> Result<(), String> {
     let updater = app.updater().map_err(|e| e.to_string())?;
     match updater.check().await {
         Ok(Some(update)) => {
-            update
-                .download_and_install(|_, _| {}, || {})
-                .await
-                .map_err(|e| e.to_string())?;
-            app.restart();
+            #[cfg(target_os = "windows")]
+            {
+                install_windows_update_via_setup(&app, &update).await?;
+                // Bootstrap przejmuje splash + NSIS + start nowej appki.
+                app.exit(0);
+                return Ok(());
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                update
+                    .download_and_install(|_, _| {}, || {})
+                    .await
+                    .map_err(|e| e.to_string())?;
+                app.restart();
+            }
         }
         Ok(None) => Err("No update available".into()),
         Err(e) => Err(e.to_string()),
     }
+}
+
+/// Windows hybrid: verified NSIS bytes → temp → detached stagesync-setup.
+#[cfg(target_os = "windows")]
+async fn install_windows_update_via_setup(
+    app: &tauri::AppHandle,
+    update: &tauri_plugin_updater::Update,
+) -> Result<(), String> {
+    use std::fs;
+    use std::process::{Command, Stdio};
+
+    let bytes = update
+        .download(|_, _| {}, || {})
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let temp_dir = std::env::temp_dir().join(format!(
+        "stagesync-update-{}",
+        std::process::id()
+    ));
+    fs::create_dir_all(&temp_dir).map_err(|e| format!("temp dir: {e}"))?;
+    let payload = temp_dir.join("StageSync-update-setup.exe");
+    fs::write(&payload, &bytes).map_err(|e| format!("write payload: {e}"))?;
+
+    let setup = resolve_stagesync_setup_bin(app)?;
+    let launch = std::env::current_exe().map_err(|e| format!("current_exe: {e}"))?;
+    let pid = std::process::id().to_string();
+
+    let mut cmd = Command::new(&setup);
+    cmd.arg("--payload")
+        .arg(&payload)
+        .arg("--update")
+        .arg("--wait-pid")
+        .arg(&pid)
+        .arg("--launch")
+        .arg(&launch)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+
+    // Odłącz od procesu appki, żeby bootstrap przeżył `app.exit`.
+    use std::os::windows::process::CommandExt;
+    const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+    const DETACHED_PROCESS: u32 = 0x0000_0008;
+    cmd.creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP);
+
+    cmd.spawn()
+        .map_err(|e| format!("Nie uruchomiono stagesync-setup: {e}"))?;
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn resolve_stagesync_setup_bin(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let mut candidates: Vec<PathBuf> = Vec::new();
+
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            candidates.push(dir.join("stagesync-setup.exe"));
+        }
+    }
+    if let Ok(resource) = app.path().resource_dir() {
+        candidates.push(resource.join("stagesync-setup.exe"));
+        candidates.push(resource.join("bin").join("stagesync-setup.exe"));
+    }
+
+    for c in &candidates {
+        if c.is_file() {
+            return Ok(c.clone());
+        }
+    }
+
+    Err(
+        "Brak stagesync-setup.exe obok aplikacji — przeinstaluj StageSync z pełnego instalatora."
+            .into(),
+    )
 }

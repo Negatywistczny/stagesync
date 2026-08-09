@@ -9,6 +9,68 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <header class="titleBar" id="titleBar" hidden data-tauri-drag-region>
+      <div class="titleBarMenuSlot">
+        <div class="titleBarMenu" id="launcherMenuRoot">
+          <button
+            type="button"
+            class="titleBarMenuBtn"
+            id="btnLauncherMenu"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-label="Menu Launchera"
+          >
+            Menu
+          </button>
+          <ul class="titleBarMenuDropdown" id="launcherMenuDropdown" hidden role="menu">
+            <li role="none">
+              <button type="button" role="menuitem" class="titleBarMenuItem" data-action="refresh">
+                Odśwież hosty
+              </button>
+            </li>
+            <li role="none">
+              <button type="button" role="menuitem" class="titleBarMenuItem" data-action="check-update">
+                Sprawdź aktualizacje…
+              </button>
+            </li>
+            <li role="separator" class="titleBarMenuSep"></li>
+            <li role="none">
+              <button type="button" role="menuitem" class="titleBarMenuItem" data-action="docs">
+                Dokumentacja
+              </button>
+            </li>
+            <li role="none">
+              <button type="button" role="menuitem" class="titleBarMenuItem" data-action="issues">
+                Zgłoś problem
+              </button>
+            </li>
+            <li role="separator" class="titleBarMenuSep"></li>
+            <li role="none">
+              <button type="button" role="menuitem" class="titleBarMenuItem" data-action="quit">
+                Zakończ
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="titleBarTitle" data-tauri-drag-region aria-hidden="true">StageSync</div>
+      <div class="titleBarControls" role="group" aria-label="Sterowanie oknem">
+        <button type="button" class="titleBarBtn" id="btnWinMin" aria-label="Minimalizuj">
+          <span class="titleBarIconMin" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="titleBarBtn" id="btnWinMax" aria-label="Maksymalizuj">
+          <span class="titleBarIconMax" aria-hidden="true"></span>
+        </button>
+        <button
+          type="button"
+          class="titleBarBtn titleBarBtnClose"
+          id="btnWinClose"
+          aria-label="Zamknij"
+        >
+          <span class="titleBarIconClose" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
     <main class="shell" id="app">
       <header class="hero">
         <div class="heroTop">

@@ -1,5 +1,5 @@
-// Prevents additional console window on Windows in release
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// GUI app — never allocate an extra console window on Windows (incl. debug smoke builds).
+#![windows_subsystem = "windows"]
 
 fn main() {
     stagesync_desktop_lib::run();

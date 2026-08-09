@@ -21,10 +21,228 @@ body {
   line-height: var(--ss-leading-normal);
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.titleBar {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  height: 2.25rem;
+  min-height: 2.25rem;
+  border-bottom: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+  color: var(--ss-color-text);
+  user-select: none;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.titleBarMenuSlot {
+  display: flex;
+  align-items: stretch;
+  justify-self: start;
+  min-width: 0;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.titleBarMenu {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.titleBarMenuBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 var(--ss-space-3);
+  border: none;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text);
+  font-family: var(--ss-font-sans);
+  font-size: var(--ss-text-control);
+  font-weight: var(--ss-font-weight-medium);
+  line-height: var(--ss-leading-compact);
+  cursor: default;
+}
+
+.titleBarMenuBtn:hover,
+.titleBarMenuBtn:focus-visible,
+.titleBarMenuBtn[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--ss-color-primary) 16%, transparent);
+  color: var(--ss-color-text);
+}
+
+.titleBarMenuBtn:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.titleBarMenuDropdown {
+  position: absolute;
+  z-index: var(--ss-z-dropdown);
+  top: 100%;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 14rem;
+  margin: 0;
+  padding: var(--ss-space-1);
+  list-style: none;
+  border: 1px solid var(--ss-color-border);
+  border-radius: var(--ss-radius-sm);
+  background: var(--ss-color-elevated);
+  box-shadow: 0 8px 28px
+    color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
+}
+
+.titleBarMenuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--ss-space-2) var(--ss-space-3);
+  border: none;
+  border-radius: var(--ss-radius-sm);
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  font-family: var(--ss-font-sans);
+  font-size: var(--ss-text-control);
+  font-weight: var(--ss-font-weight-medium);
+  text-align: left;
+  cursor: default;
+}
+
+.titleBarMenuItem:hover,
+.titleBarMenuItem:focus-visible {
+  color: var(--ss-color-text);
+  background: color-mix(in srgb, var(--ss-color-primary) 12%, transparent);
+}
+
+.titleBarMenuSep {
+  height: 1px;
+  margin: var(--ss-space-1) var(--ss-space-2);
+  background: var(--ss-color-border);
+  border: none;
+  list-style: none;
+}
+
+.titleBarTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--ss-space-3);
+  color: var(--ss-color-text-muted);
+  font-family: var(--ss-font-sans);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .titleBarTitle {
+    display: none;
+  }
+
+  .titleBar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.titleBarControls {
+  display: flex;
+  align-items: stretch;
+  justify-self: end;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.titleBarBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  cursor: default;
+}
+
+.titleBarBtn:hover,
+.titleBarBtn:focus-visible {
+  background: color-mix(in srgb, var(--ss-color-primary) 14%, transparent);
+  color: var(--ss-color-text);
+}
+
+.titleBarBtnClose:hover,
+.titleBarBtnClose:focus-visible {
+  background: var(--ss-color-danger);
+  color: var(--ss-color-on-primary);
+}
+
+.titleBarIconMin,
+.titleBarIconMax,
+.titleBarIconClose {
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+  position: relative;
+}
+
+.titleBarIconMin::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+}
+
+.titleBarIconMax::before {
+  content: "";
+  position: absolute;
+  inset: 0.1rem;
+  border: 1px solid currentColor;
+}
+
+.titleBarIconClose::before,
+.titleBarIconClose::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: currentColor;
+}
+
+.titleBarIconClose::before {
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.titleBarIconClose::after {
+  transform: translateX(-50%) rotate(-45deg);
+}
+
 .shell {
   box-sizing: border-box;
-  min-height: 100vh;
+  flex: 1 1 auto;
+  min-height: 0;
   max-width: 520px;
+  width: 100%;
   margin: 0 auto;
   padding: var(--ss-space-8) var(--ss-space-6);
   display: flex;

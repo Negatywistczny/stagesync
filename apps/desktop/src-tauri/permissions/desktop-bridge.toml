@@ -46,3 +46,8 @@ commands.allow = [
   "prepare_host_restart",
   "return_to_launcher",
 ]
+
+[[permission]]
+identifier = "allow-quit-desktop-app"
+description = "Full quit from in-app Plik → Zakończ (Windows/Linux custom title bar)."
+commands.allow = ["quit_desktop_app"]

@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1273
+* **Liczba wszystkich plików:** 1275
 * **Liczba katalogów:** 196
-* **Data aktualizacji:** 2026-08-09T20:55:01.865Z
+* **Data aktualizacji:** 2026-08-09T20:55:27.633Z
 
 ### Kategorie
 
@@ -16,7 +16,7 @@
 | :--- | ---: |
 | Kod | 793 |
 | Docs | 214 |
-| Config | 117 |
+| Config | 119 |
 | Assety | 120 |
 | Inne | 29 |
 
@@ -30,7 +30,7 @@
 | `.png` | 94 |
 | `.kt` | 69 |
 | `.css` | 51 |
-| `.json` | 35 |
+| `.json` | 37 |
 | `.xml` | 35 |
 | `.mjs` | 28 |
 | `brak rozszerzenia` | 23 |
@@ -40,9 +40,9 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (877) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (879) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (97) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (99) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (446) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -271,7 +271,9 @@ stagesync/
 │   │   │   ├── Cargo.lock
 │   │   │   ├── Cargo.toml
 │   │   │   ├── tauri.conf.json
-│   │   │   └── tauri.nsis-smoke.conf.json
+│   │   │   ├── tauri.linux.conf.json
+│   │   │   ├── tauri.nsis-smoke.conf.json
+│   │   │   └── tauri.windows.conf.json
 │   │   ├── ui-placeholder/
 │   │   │   └── index.html
 │   │   ├── package.json
