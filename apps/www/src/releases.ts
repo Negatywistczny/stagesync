@@ -88,7 +88,14 @@ function classifyAsset(name: string): DownloadKind | null {
   if (lower.endsWith(".dmg") && (lower.includes("x64") || lower.includes("x86_64"))) {
     return "macos-x64";
   }
-  if ((lower.endsWith(".msi") || lower.endsWith("-setup.exe")) && !lower.includes("_en-us")) {
+  // Ludzki instalator (splash) ma pierwszeństwo przed payloadem updatera *_x64-setup.exe.
+  if (lower === "stagesync-setup.exe") {
+    return "windows";
+  }
+  if (
+    (lower.endsWith(".msi") || /_x64-setup\.exe$/.test(lower)) &&
+    !lower.includes("_en-us")
+  ) {
     return "windows";
   }
   if (lower.includes("console") && lower.endsWith(".apk")) {
@@ -131,7 +138,12 @@ function toOffer(kind: DownloadKind, url: string): DownloadOffer {
 
 export function catalogFromRelease(release: GhRelease, channels: SiteChannels): DownloadCatalog {
   const byKind = new Map<DownloadKind, DownloadOffer>();
-  for (const asset of release.assets) {
+  // StageSync-Setup.exe przed *_x64-setup.exe (pierwszy trafiony kind wygrywa).
+  const assets = [...release.assets].sort((a, b) => {
+    const rank = (n: string) => (n.toLowerCase() === "stagesync-setup.exe" ? 0 : 1);
+    return rank(a.name) - rank(b.name);
+  });
+  for (const asset of assets) {
     const kind = classifyAsset(asset.name);
     if (!kind || byKind.has(kind)) continue;
     byKind.set(kind, toOffer(kind, asset.browser_download_url));

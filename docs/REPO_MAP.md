@@ -6,19 +6,19 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1265
-* **Liczba katalogów:** 195
-* **Data aktualizacji:** 2026-08-09T16:33:52.533Z
+* **Liczba wszystkich plików:** 1273
+* **Liczba katalogów:** 196
+* **Data aktualizacji:** 2026-08-09T20:55:01.865Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 789 |
+| Kod | 793 |
 | Docs | 214 |
-| Config | 115 |
-| Assety | 119 |
-| Inne | 28 |
+| Config | 117 |
+| Assety | 120 |
+| Inne | 29 |
 
 ### Top rozszerzenia
 
@@ -30,19 +30,19 @@
 | `.png` | 94 |
 | `.kt` | 69 |
 | `.css` | 51 |
+| `.json` | 35 |
 | `.xml` | 35 |
-| `.json` | 34 |
-| `.mjs` | 25 |
+| `.mjs` | 28 |
 | `brak rozszerzenia` | 23 |
-| _(pozostałe)_ | 124 |
+| _(pozostałe)_ | 128 |
 
 ---
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (869) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (877) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (89) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (97) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (446) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -244,21 +244,25 @@ stagesync/
 │   │   │   └── updateDialog.test.js
 │   │   ├── scripts/
 │   │   │   ├── build-desktop-sidecar.mjs
+│   │   │   ├── build-nsis-smoke.mjs
 │   │   │   ├── check-rust.mjs
 │   │   │   ├── generate-bmps.ps1
 │   │   │   ├── kill-zombies.mjs
+│   │   │   ├── pack-stagesync-setup.mjs
 │   │   │   ├── parse-schema.mjs
+│   │   │   ├── prepare-stagesync-setup-bin.mjs
 │   │   │   ├── sync-launcher-ui.mjs
 │   │   │   └── sync-sidecar-server.mjs
 │   │   ├── src-tauri/
 │   │   │   ├── assets/
-│   │   │   │   └── installer/  … (3 pliki)
+│   │   │   │   └── installer/  … (6 plików)
 │   │   │   ├── capabilities/
 │   │   │   │   └── default.json
 │   │   │   ├── icons/  … (56 plików: .png ×52, .xml ×2, .icns ×1, .ico ×1)
 │   │   │   ├── permissions/
 │   │   │   │   └── desktop-bridge.toml
 │   │   │   ├── src/
+│   │   │   │   ├── bin/  … (1 plik)
 │   │   │   │   ├── launcher.rs
 │   │   │   │   ├── lib.rs
 │   │   │   │   ├── main.rs
@@ -266,7 +270,8 @@ stagesync/
 │   │   │   ├── build.rs
 │   │   │   ├── Cargo.lock
 │   │   │   ├── Cargo.toml
-│   │   │   └── tauri.conf.json
+│   │   │   ├── tauri.conf.json
+│   │   │   └── tauri.nsis-smoke.conf.json
 │   │   ├── ui-placeholder/
 │   │   │   └── index.html
 │   │   ├── package.json

@@ -273,11 +273,40 @@ jobs:
             fi
           done
 
+      - name: Pack StageSync-Setup.exe (splash + NSIS)
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXE_DIR="apps/desktop/src-tauri/target/release/bundle/nsis"
+          BOOT="apps/desktop/src-tauri/target/release/stagesync-setup.exe"
+          shopt -s nullglob
+          PAYLOAD=$(ls "$EXE_DIR"/*-setup.exe | head -n1)
+          if [ ! -f "$BOOT" ]; then
+            echo "ERROR: missing $BOOT" >&2
+            exit 1
+          fi
+          if [ -z "${PAYLOAD:-}" ]; then
+            echo "ERROR: missing NSIS payload in $EXE_DIR" >&2
+            exit 1
+          fi
+          mkdir -p apps/desktop/src-tauri/target/release/nsis-packed
+          node apps/desktop/scripts/pack-stagesync-setup.mjs \
+            --bootstrap "$BOOT" \
+            --payload "$PAYLOAD" \
+            --out apps/desktop/src-tauri/target/release/nsis-packed/StageSync-Setup.exe
+
       - name: Upload exe artifact
         uses: actions/upload-artifact@v7
         with:
           name: windows-exe
           path: apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+
+      - name: Upload StageSync-Setup.exe artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-setup-splash
+          path: apps/desktop/src-tauri/target/release/nsis-packed/StageSync-Setup.exe
           if-no-files-found: error
 
   android-performer:
@@ -491,6 +520,12 @@ jobs:
           name: windows-exe
           path: dist/
 
+      - name: Download Windows splash Setup
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-setup-splash
+          path: dist-splash/
+
       - name: Download Performer APK
         continue-on-error: true
         uses: actions/download-artifact@v8
@@ -552,6 +587,13 @@ jobs:
             echo "ERROR: $EXE_NAME missing after rename" >&2
             ls -la *.exe || true
             exit 1
+          fi
+          # Manual download asset (updater stays on versioned NSIS in latest.json).
+          if [ -f ../dist-splash/StageSync-Setup.exe ]; then
+            gh release upload "$TAG" ../dist-splash/StageSync-Setup.exe -R "$REPO" --clobber
+            echo "Uploaded StageSync-Setup.exe"
+          else
+            echo "WARN: dist-splash/StageSync-Setup.exe missing" >&2
           fi
           # Point latest.json Windows updater URLs at the friendly EXE asset
           # (Tauri uploads locale-suffixed EXE first; rewrite after canonicalize).

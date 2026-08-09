@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StageSync</title>
+  <style>
+    :root {
+      --ss-amber: #FFB700;
+      --bg: #09090b;
+      --text: #F3F4F6;
+      --text-muted: #9CA3AF;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+    .splash-container {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .logo-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 40px;
+    }
+    .logo {
+      width: 240px;
+      max-height: 80px;
+    }
+    .text-container {
+      margin-top: 20px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .title {
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .progress-container {
+      width: 60%;
+      height: 4px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .progress-bar {
+      width: 30%;
+      height: 100%;
+      background-color: var(--ss-amber);
+      border-radius: 2px;
+      animation: indeterminate 1.5s infinite ease-in-out;
+    }
+    @keyframes indeterminate {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(150%); width: 50%; }
+      100% { transform: translateX(350%); }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <div class="logo-container">
+      <img class="logo" src="stagesync-logo.svg" alt="StageSync Logo" />
+    </div>
+    <div class="text-container">
+      <div class="title">Przygotowywanie StageSync...</div>
+      <div class="subtitle">Aplikacja uruchomi się po zakończeniu.</div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+</body>
+</html>

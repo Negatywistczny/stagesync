@@ -5,10 +5,20 @@ description = "StageSync thin desktop shell (ADR 0010)"
 authors = ["StageSync"]
 edition = "2021"
 rust-version = "1.77"
+# Required once [[bin]] stagesync-setup exists — `tauri dev` / `cargo run` need a default.
+default-run = "stagesync-desktop"
 
 [lib]
 name = "stagesync_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "stagesync-desktop"
+path = "src/main.rs"
+
+[[bin]]
+name = "stagesync-setup"
+path = "src/bin/stagesync-setup.rs"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -17,6 +27,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["tray-icon", "image-png"] }
 tauri-plugin-shell = "2"
 tauri-plugin-updater = "2"
+tauri-plugin-notification = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt", "net", "time", "io-util"] }
@@ -25,6 +36,9 @@ flume = "0.12"
 mdns-sd = "0.20"
 url = "2"
 arboard = "3"
+# Setup bootstrapper (immediate splash + silent NSIS)
+wry = "0.55"
+tao = "0.35"
 
 [profile.release]
 panic = "abort"
