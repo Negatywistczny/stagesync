@@ -1,6 +1,6 @@
 {
   "name": "stagesync",
-  "version": "5.4.8",
+  "version": "5.4.9",
   "private": true,
   "license": "BUSL-1.1",
   "scripts": {
