@@ -19,10 +19,15 @@ vi.mock("@lib/shell-operator/operatorPin.js", () => ({
   unlockOperatorPin: vi.fn(),
 }));
 
-vi.mock("@lib/client/desktopBridge.js", () => ({
-  canReturnToLauncher: () => false,
-  returnToLauncher: vi.fn(),
-}));
+vi.mock("@lib/client/desktopBridge.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@lib/client/desktopBridge.js")>();
+  return {
+    ...actual,
+    canReturnToLauncher: () => false,
+    returnToLauncher: vi.fn(),
+  };
+});
 
 afterEach(() => {
   cleanup();

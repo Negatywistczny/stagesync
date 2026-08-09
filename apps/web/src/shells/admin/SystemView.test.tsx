@@ -12,6 +12,10 @@ vi.mock("@lib/client/desktopBridge.js", () => ({
   openExternalUrl: vi.fn(),
   formatUnknownError: (e: unknown) => String(e),
   isDesktopShell: () => false,
+  // Keep sync (no importOriginal) — coverage races hang real fetch; stub
+  // exports used by pushNotifications / ShellNotificationFields.
+  tauriInvokeAvailable: () => false,
+  hasExplicitTauriShellMarker: () => false,
 }));
 
 /** Sync mock — async importOriginal can race under coverage and leave real fetch hanging. */

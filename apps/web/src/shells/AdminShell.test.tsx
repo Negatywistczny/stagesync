@@ -23,13 +23,18 @@ vi.mock("@lib/client/useAnnounceDevicePresence.js", () => ({
   useAnnounceDevicePresence: vi.fn(),
 }));
 
-vi.mock("@lib/client/desktopBridge.js", () => ({
-  prepareHostRestart: vi.fn(),
-  syncNavRecentProjects: vi.fn(),
-  syncNavTimelineProjectId: vi.fn(),
-  toggleAppFullscreen: vi.fn(),
-  canReturnToLauncher: vi.fn(() => false),
-}));
+vi.mock("@lib/client/desktopBridge.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@lib/client/desktopBridge.js")>();
+  return {
+    ...actual,
+    prepareHostRestart: vi.fn(),
+    syncNavRecentProjects: vi.fn(),
+    syncNavTimelineProjectId: vi.fn(),
+    toggleAppFullscreen: vi.fn(),
+    canReturnToLauncher: vi.fn(() => false),
+  };
+});
 
 vi.mock("@lib/client/nativeShell.js", () => ({
   getStageSyncNative: () => null,

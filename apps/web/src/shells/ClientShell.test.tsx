@@ -14,9 +14,14 @@ import {
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ClientShell } from "./ClientShell.js";
 
-vi.mock("@lib/client/desktopBridge.js", () => ({
-  toggleAppFullscreen: vi.fn(),
-}));
+vi.mock("@lib/client/desktopBridge.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@lib/client/desktopBridge.js")>();
+  return {
+    ...actual,
+    toggleAppFullscreen: vi.fn(),
+  };
+});
 
 vi.mock("@lib/client/nativeShell.js", () => ({
   canChangeServer: () => false,

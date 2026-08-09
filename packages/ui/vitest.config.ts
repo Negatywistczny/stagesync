@@ -10,6 +10,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
+    reporters: process.env.CI
+      ? ["default", "github-actions"]
+      : ["default"],
     coverage: {
       provider: "v8",
       // Repo-root SF paths so Codecov can map monorepo files.

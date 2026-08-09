@@ -12,10 +12,15 @@ vi.mock("../transport/useTransport.js", () => ({
   }),
 }));
 
-vi.mock("@lib/client/desktopBridge.js", () => ({
-  canReturnToLauncher: () => false,
-  returnToLauncher: vi.fn(),
-}));
+vi.mock("@lib/client/desktopBridge.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@lib/client/desktopBridge.js")>();
+  return {
+    ...actual,
+    canReturnToLauncher: () => false,
+    returnToLauncher: vi.fn(),
+  };
+});
 
 const getStored = vi.fn(() => null as string | null);
 const setStored = vi.fn((v: string) => v.trim());

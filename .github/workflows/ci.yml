@@ -75,7 +75,34 @@ jobs:
         run: pnpm check-types
 
       - name: Test
-        run: pnpm test
+        id: unit_test
+        run: |
+          set -o pipefail
+          pnpm test 2>&1 | tee "${RUNNER_TEMP}/unit-tests.log"
+
+      - name: Summarize unit test failures
+        if: failure() && steps.unit_test.outcome == 'failure'
+        run: |
+          log="${RUNNER_TEMP}/unit-tests.log"
+          if [ ! -f "$log" ]; then
+            echo "No unit-tests.log captured"
+            exit 0
+          fi
+          echo "::group::Failed Vitest summary"
+          # FAIL lines + Vitest mock/export errors + turbo package failure
+          grep -E 'FAIL |Failed Tests|Error: \[vitest\]|No ".+" export is defined|Failed: ' "$log" \
+            | sed 's/\x1b\[[0-9;]*m//g' \
+            | head -n 100 \
+            || true
+          echo "::endgroup::"
+          # Surface first distinct missing-export mock gaps as annotations
+          grep -oE 'No "[^"]+" export is defined on the "[^"]+" mock' "$log" \
+            | sed 's/\x1b\[[0-9;]*m//g' \
+            | sort -u \
+            | while IFS= read -r line; do
+                echo "::error title=Incomplete Vitest mock::${line}"
+              done \
+            || true
 
       - name: Coverage (shared + server + web + ui)
         run: pnpm test:coverage
