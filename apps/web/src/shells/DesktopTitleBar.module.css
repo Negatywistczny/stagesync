@@ -1,0 +1,135 @@
+.titleBar {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  height: 2.25rem;
+  min-height: 2.25rem;
+  border-bottom: 1px solid var(--ss-color-border);
+  background: var(--ss-color-surface);
+  color: var(--ss-color-text);
+  user-select: none;
+  overflow: visible;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.menuSlot {
+  display: flex;
+  align-items: stretch;
+  justify-self: start;
+  min-width: 0;
+  overflow: visible;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--ss-space-3);
+  color: var(--ss-color-text-muted);
+  font-family: var(--ss-font-sans);
+  font-size: var(--ss-text-sm);
+  font-weight: var(--ss-font-weight-semibold);
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .title {
+    display: none;
+  }
+
+  .titleBar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.controls {
+  display: flex;
+  align-items: stretch;
+  justify-self: end;
+  flex: 0 0 auto;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ss-color-text-muted);
+  cursor: default;
+}
+
+.control:hover,
+.control:focus-visible {
+  background: color-mix(in srgb, var(--ss-color-primary) 14%, transparent);
+  color: var(--ss-color-text);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--ss-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.controlClose:hover,
+.controlClose:focus-visible {
+  background: var(--ss-color-danger);
+  color: var(--ss-color-on-primary);
+}
+
+.iconMin,
+.iconMax,
+.iconClose {
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+  position: relative;
+}
+
+.iconMin::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+}
+
+.iconMax::before {
+  content: "";
+  position: absolute;
+  inset: 0.1rem;
+  border: 1px solid currentColor;
+}
+
+.iconClose::before,
+.iconClose::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: currentColor;
+}
+
+.iconClose::before {
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.iconClose::after {
+  transform: translateX(-50%) rotate(-45deg);
+}

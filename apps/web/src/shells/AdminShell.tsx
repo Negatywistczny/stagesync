@@ -28,8 +28,13 @@ import {
 import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
 import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
 import { postSystemRestart, postSystemShutdown } from "@lib/shell-operator/setlistApi.js";
-import { prepareHostRestart } from "@lib/client/desktopBridge.js";
-import { syncNavRecentProjects, syncNavTimelineProjectId, toggleAppFullscreen } from "@lib/client/desktopBridge.js";
+import {
+  canReturnToLauncher,
+  prepareHostRestart,
+  syncNavRecentProjects,
+  syncNavTimelineProjectId,
+  toggleAppFullscreen,
+} from "@lib/client/desktopBridge.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { useMqTablet } from "@lib/client/useMqTablet.js";
 import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
@@ -405,7 +410,11 @@ export function AdminShell() {
                 version={APP_VERSION}
                 iconOnly={isTablet}
                 onClick={() => navigate("/")}
-                title="Wróć do wyboru hosta"
+                title={
+                  canReturnToLauncher()
+                    ? "Wróć do wyboru hosta"
+                    : "Strona główna"
+                }
               />
             </div>
           ) : null}
@@ -471,7 +480,9 @@ export function AdminShell() {
                     Timeline
                   </span>
                 )}
-                <Link to="/client">Klient</Link>
+                <Link to="/client" onClick={() => markOperatorSession()}>
+                  Klient
+                </Link>
               </nav>
 
               <div className={styles.chromeAside}>

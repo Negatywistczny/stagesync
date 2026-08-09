@@ -22,10 +22,16 @@ import {
 import {
   isDesktopShell,
   prepareHostRestart,
+  quitDesktopApp,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
+  toggleAppFullscreen,
+  usesHtmlDesktopTitleBar,
 } from "@lib/client/desktopBridge.js";
+import { handleDesktopMenuShortcut } from "@lib/client/desktopMenuShortcuts.js";
 import { shouldAllowNativeTextClipboard } from "@lib/client/isEditableKeyboardTarget.js";
+import { getTimelineNavUrl } from "@lib/shell-operator/operatorNavRoutes.js";
+import { DesktopTitleBar } from "./DesktopTitleBar.js";
 import {
   downloadDiagnosticsExport,
   fetchNetworkInfo,
@@ -315,9 +321,19 @@ function RestartConfirmModal({
 export function DesktopMenuBridge() {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const showHtmlTitleBar = usesHtmlDesktopTitleBar();
+
   // Global fallback for Windows Tauri WebView2 where native accelerators are swallowed
   useOperatorNavShortcuts({ pathname: location.pathname });
+
+  useEffect(() => {
+    if (!showHtmlTitleBar) return;
+    const onKey = (ev: KeyboardEvent) => {
+      handleDesktopMenuShortcut(ev);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showHtmlTitleBar]);
 
   const { play, stop, state, commandPending } = useTransport();
   const [qrOpen, setQrOpen] = useState(false);
@@ -614,10 +630,34 @@ export function DesktopMenuBridge() {
             }
           }
           break;
+        case "edit-select-all":
+          try {
+            document.execCommand("selectAll");
+          } catch {
+            /* best-effort */
+          }
+          break;
+        case "view-fullscreen":
+          void toggleAppFullscreen().catch(() => {
+            /* menu is best-effort */
+          });
+          break;
+        case "check-updates":
+          navigate("/admin?section=host&action=check-update");
+          break;
+        case "app-quit":
+          void quitDesktopApp().catch(() => {
+            /* best-effort */
+          });
+          break;
         default:
           if (detail.action.startsWith("navigate:")) {
             const dest = detail.action.slice("navigate:".length);
-            navigate(dest);
+            if (dest === "/timeline") {
+              navigate(getTimelineNavUrl());
+            } else {
+              navigate(dest);
+            }
           }
           break;
       }
@@ -703,7 +743,12 @@ export function DesktopMenuBridge() {
 
   return (
     <ContextMenuProvider>
-      <Outlet />
+      <div className={showHtmlTitleBar ? styles.shellWithTitleBar : undefined}>
+        {showHtmlTitleBar ? <DesktopTitleBar /> : null}
+        <div className={showHtmlTitleBar ? styles.shellMain : undefined}>
+          <Outlet />
+        </div>
+      </div>
       <input
         ref={importInputRef}
         type="file"

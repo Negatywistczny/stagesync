@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1275
+* **Liczba wszystkich plików:** 1284
 * **Liczba katalogów:** 196
-* **Data aktualizacji:** 2026-08-09T20:55:27.633Z
+* **Data aktualizacji:** 2026-08-09T20:56:01.536Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 793 |
+| Kod | 802 |
 | Docs | 214 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,12 +24,12 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 461 |
+| `.ts` | 464 |
 | `.md` | 192 |
-| `.tsx` | 157 |
+| `.tsx` | 161 |
 | `.png` | 94 |
 | `.kt` | 69 |
-| `.css` | 51 |
+| `.css` | 53 |
 | `.json` | 37 |
 | `.xml` | 35 |
 | `.mjs` | 28 |
@@ -40,26 +40,26 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (879) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (888) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (99) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (446) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+  - **web/** (455) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
       - **brand/** (5) — Materiały brandingowe i logotypy StageSync
     - **scripts/** (10) — Skrypty pomocnicze builda i benchmarków webowych
       - **benchmark/** (8) — Skrypty benchmarków wydajnościowych UI/Audio
-    - **src/** (405) — Kod źródłowy UI i logiki klienta
+    - **src/** (414) — Kod źródłowy UI i logiki klienta
       - **dev/** (18) — Narzędzia i panele deweloperskie wewnątrz aplikacji
-      - **lib/** (182) — Biblioteki klienta (5 kategorii — bez plików w lib root)
+      - **lib/** (185) — Biblioteki klienta (5 kategorii — bez plików w lib root)
         - **audio/** (30) — DSP, AudioContext, tempo, waveform
-        - **client/** (57) — Preferencje, mostek desktop, i18n shell, utilities UI
+        - **client/** (60) — Preferencje, mostek desktop, i18n shell, utilities UI
         - **shell-operator/** (23) — Operatory CRUD API / aktywny projekt
         - **timeline/** (46) — Silnik renderowania timeline (bez mutacji treści)
         - **timeline-edit/** (26) — Mutacje treści klipów (akordy, cue, forma, tekst)
-      - **shells/** (184) — Powłoki Admin / Client / Timeline
+      - **shells/** (190) — Powłoki Admin / Client / Timeline
       - **transport/** (13) — Transport WS, playhead, probe wydajności
     - **test/** (9) — Testy jednostkowe i mocki aplikacji webowej
       - **benchmark/** (1) — Testy wydajnościowe struktur danych
@@ -494,7 +494,7 @@ stagesync/
 │   │   │   │   └── devSurfaceTypes.ts
 │   │   │   ├── lib/
 │   │   │   │   ├── audio/  … (30 plików)
-│   │   │   │   ├── client/  … (57 plików)
+│   │   │   │   ├── client/  … (60 plików)
 │   │   │   │   ├── shell-operator/  … (23 pliki)
 │   │   │   │   ├── timeline/  … (46 plików)
 │   │   │   │   └── timeline-edit/  … (26 plików)
@@ -532,10 +532,16 @@ stagesync/
 │   │   │   │   ├── ConnectionLostBanner.module.css
 │   │   │   │   ├── ConnectionLostBanner.test.tsx
 │   │   │   │   ├── ConnectionLostBanner.tsx
+│   │   │   │   ├── DesktopMenuBar.module.css
+│   │   │   │   ├── DesktopMenuBar.test.tsx
+│   │   │   │   ├── DesktopMenuBar.tsx
 │   │   │   │   ├── DesktopMenuBridge.module.css
 │   │   │   │   ├── DesktopMenuBridge.tsx
 │   │   │   │   ├── DesktopRootRedirect.test.tsx
 │   │   │   │   ├── DesktopRootRedirect.tsx
+│   │   │   │   ├── DesktopTitleBar.module.css
+│   │   │   │   ├── DesktopTitleBar.test.tsx
+│   │   │   │   ├── DesktopTitleBar.tsx
 │   │   │   │   ├── DeviceNameFields.module.css
 │   │   │   │   ├── DeviceNameFields.test.tsx
 │   │   │   │   ├── DeviceNameFields.tsx

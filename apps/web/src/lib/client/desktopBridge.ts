@@ -22,6 +22,12 @@ type TauriGlobal = {
   window?: {
     getCurrentWindow?: () => {
       toggleMaximize?: () => Promise<void>;
+      maximize?: () => Promise<void>;
+      unmaximize?: () => Promise<void>;
+      isMaximized?: () => Promise<boolean>;
+      minimize?: () => Promise<void>;
+      close?: () => Promise<void>;
+      startDragging?: () => Promise<void>;
       setFullscreen?: (fullscreen: boolean) => Promise<void>;
       isFullscreen?: () => Promise<boolean>;
     };
@@ -201,14 +207,115 @@ function tauriWindowLabel(): string {
   return tauriInternals()?.metadata?.currentWindow?.label ?? "main";
 }
 
-function isMacDesktop(): boolean {
+/** True when UA looks like macOS / iOS (native menubar path). */
+export function isMacDesktop(): boolean {
+  if (typeof navigator === "undefined") return false;
   return /Mac|iPhone|iPad/i.test(navigator.userAgent);
+}
+
+/**
+ * Marker injected only by the Tauri WebView init script (`return_to_launcher_plugin`).
+ * Unlike `__STAGESYNC_SHELL__` / meta `stagesync-shell`, this is NOT present when a
+ * normal browser loads sidecar HTML that injects the desktop static marker.
+ */
+export function hasTauriWebViewMarker(): boolean {
+  if (typeof window === "undefined") return false;
+  const w = window as unknown as Record<string, unknown>;
+  return w["__STAGESYNC_TAURI_SHELL__"] === true;
+}
+
+/**
+ * Real Tauri WebView — not a plain browser loading sidecar HTML that injects
+ * `__STAGESYNC_SHELL__=desktop` / meta `stagesync-shell`.
+ */
+export function isRealTauriWebView(): boolean {
+  if (getActiveDevSurface() === "tauri") return true;
+  if (tauriInvokeAvailable()) return true;
+  if (hasTauriWebViewMarker()) return true;
+  return false;
+}
+
+/**
+ * Windows/Linux desktop: custom HTML title bar + menubar (#836).
+ * macOS keeps the native system menu bar.
+ *
+ * Requires a real Tauri WebView (IPC or `__STAGESYNC_TAURI_SHELL__`).
+ * Sidecar HTML injects `__STAGESYNC_SHELL__=desktop` for every client — that alone
+ * must NOT show window chrome in a plain browser.
+ */
+export function usesHtmlDesktopTitleBar(): boolean {
+  if (isMacDesktop()) return false;
+  return isRealTauriWebView();
+}
+
+function currentTauriWindow() {
+  return tauriGlobal()?.window?.getCurrentWindow?.();
+}
+
+async function invokeWindowPlugin(
+  cmd: string,
+  args: Record<string, unknown> = {},
+): Promise<void> {
+  const label = tauriWindowLabel();
+  await tauriInvoke<void>(cmd, { label, ...args });
+}
+
+/** Minimize the main window (custom title bar). */
+export async function minimizeAppWindow(): Promise<void> {
+  if (!tauriInvokeAvailable()) return;
+  const win = currentTauriWindow();
+  if (win?.minimize) {
+    await win.minimize();
+    return;
+  }
+  await invokeWindowPlugin("plugin:window|minimize");
+}
+
+/** Toggle maximize / restore (custom title bar). */
+export async function toggleMaximizeAppWindow(): Promise<void> {
+  if (!tauriInvokeAvailable()) return;
+  const win = currentTauriWindow();
+  if (win?.toggleMaximize) {
+    await win.toggleMaximize();
+    return;
+  }
+  await invokeWindowPlugin("plugin:window|toggle_maximize");
+}
+
+/** Close window (hide-to-tray on desktop). */
+export async function closeAppWindow(): Promise<void> {
+  if (!tauriInvokeAvailable()) return;
+  const win = currentTauriWindow();
+  if (win?.close) {
+    await win.close();
+    return;
+  }
+  await invokeWindowPlugin("plugin:window|close");
+}
+
+/** Begin OS window drag from the custom title bar. */
+export async function startWindowDragging(): Promise<void> {
+  if (!tauriInvokeAvailable()) return;
+  const win = currentTauriWindow();
+  if (win?.startDragging) {
+    await win.startDragging();
+    return;
+  }
+  await invokeWindowPlugin("plugin:window|start_dragging");
+}
+
+/** Full quit (Plik → Zakończ) — kills host sidecar then exits the shell. */
+export function quitDesktopApp(): Promise<void> {
+  if (!tauriInvokeAvailable()) {
+    return Promise.reject(new Error("Tauri invoke not available"));
+  }
+  return tauriInvoke<void>("quit_desktop_app", {});
 }
 
 /** Native window expand via Tauri window plugin (remote localhost ACL). */
 async function toggleNativeWindowViaPlugin(): Promise<void> {
   const label = tauriWindowLabel();
-  const win = tauriGlobal()?.window?.getCurrentWindow?.();
+  const win = currentTauriWindow();
 
   if (isMacDesktop()) {
     if (win?.toggleMaximize) {
@@ -280,10 +387,24 @@ export function syncNavRecentProjects(
 }
 
 /** Sync Timeline draft undo/redo availability to native Edycja menu (Faza D). */
+export const EDIT_HISTORY_EVENT = "stagesync:edit-history";
+
+export type EditHistoryDetail = {
+  canUndo: boolean;
+  canRedo: boolean;
+};
+
 export function syncEditHistoryState(
   canUndo: boolean,
   canRedo: boolean,
 ): Promise<void> {
+  if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+    window.dispatchEvent(
+      new CustomEvent(EDIT_HISTORY_EVENT, {
+        detail: { canUndo, canRedo } satisfies EditHistoryDetail,
+      }),
+    );
+  }
   if (!isDesktopShell()) return Promise.resolve();
   return tauriInvoke<void>("set_edit_history_state", { canUndo, canRedo });
 }
@@ -311,9 +432,9 @@ export function openExternalUrl(url: string): Promise<void> {
   return Promise.resolve();
 }
 
-/** True when desktop can navigate back to the bundled Launcher. */
+/** True when desktop can navigate back to the bundled Launcher (real Tauri only). */
 export function canReturnToLauncher(): boolean {
-  return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
+  return isRealTauriWebView();
 }
 
 /** Desktop local host: mark intentional restart before POST /api/system/restart. */
@@ -322,10 +443,52 @@ export function prepareHostRestart(): Promise<void> {
   return tauriInvoke<void>("prepare_host_restart", {}).catch(() => {});
 }
 
+export type DesktopNotificationPermission =
+  | "granted"
+  | "denied"
+  | "default";
+
+/**
+ * Desktop toast permission via tauri-plugin-notification.
+ * On Windows/macOS/Linux the plugin grants without a browser-style dialog
+ * (WebView2 often reports sticky `denied` for the Web Notification API).
+ */
+export async function requestDesktopNotificationPermission(): Promise<DesktopNotificationPermission> {
+  if (!tauriInvokeAvailable()) return "denied";
+  try {
+    const state = await tauriInvoke<string>(
+      "plugin:notification|request_permission",
+    );
+    if (state === "granted" || state === "denied") return state;
+    if (state === "prompt" || state === "prompt-with-rationale") return "default";
+    return "granted";
+  } catch {
+    // Plugin missing / ACL — desktop consent is the StageSync toggle.
+    return "granted";
+  }
+}
+
+/** Show an OS toast from the Tauri shell (notify-rust / Windows toast). */
+export async function showDesktopNotification(opts: {
+  title: string;
+  body: string;
+}): Promise<boolean> {
+  if (!tauriInvokeAvailable()) return false;
+  try {
+    await tauriInvoke<void>("plugin:notification|notify", {
+      options: { title: opts.title, body: opts.body },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Kill local sidecar (if any) and return WebView to the host picker.
  * Prefers Tauri invoke; falls back to a navigation sentinel intercepted by the shell
  * when IPC is missing (remote LAN origin, or local :4000 without `__TAURI__` inject).
+ * Plain browser + sidecar `__STAGESYNC_SHELL__` must not offer this path.
  */
 export function returnToLauncher(): Promise<void> {
   if (tauriInvokeAvailable()) {
@@ -333,7 +496,7 @@ export function returnToLauncher(): Promise<void> {
       assignReturnToLauncherHref();
     });
   }
-  if (hasExplicitTauriShellMarker()) {
+  if (hasTauriWebViewMarker() || getActiveDevSurface() === "tauri") {
     assignReturnToLauncherHref();
     return Promise.resolve();
   }

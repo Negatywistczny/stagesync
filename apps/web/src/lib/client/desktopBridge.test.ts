@@ -14,7 +14,93 @@ import {
   syncNavTimelineProjectId,
   tauriInvokeAvailable,
   toggleAppFullscreen,
+  usesHtmlDesktopTitleBar,
+  minimizeAppWindow,
+  quitDesktopApp,
 } from "./desktopBridge.js";
+
+describe("usesHtmlDesktopTitleBar", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("is false when only sidecar HTML injects __STAGESYNC_SHELL__ (plain browser)", () => {
+    vi.stubGlobal("window", {
+      __STAGESYNC_SHELL__: "desktop",
+      location: { hostname: "127.0.0.1", port: "4000" },
+    });
+    vi.stubGlobal("navigator", { userAgent: "Windows NT 10.0" });
+    expect(isDesktopShell()).toBe(true);
+    expect(usesHtmlDesktopTitleBar()).toBe(false);
+  });
+
+  it("is true with Tauri WebView marker on Windows", () => {
+    vi.stubGlobal("window", {
+      __STAGESYNC_TAURI_SHELL__: true,
+    });
+    vi.stubGlobal("navigator", { userAgent: "Windows NT 10.0" });
+    expect(usesHtmlDesktopTitleBar()).toBe(true);
+  });
+
+  it("is true when Tauri invoke is available on Windows", () => {
+    vi.stubGlobal("window", {
+      __TAURI__: { core: { invoke: vi.fn() } },
+    });
+    vi.stubGlobal("navigator", { userAgent: "Windows NT 10.0" });
+    expect(usesHtmlDesktopTitleBar()).toBe(true);
+  });
+
+  it("is false on mac even with Tauri invoke", () => {
+    vi.stubGlobal("window", {
+      __STAGESYNC_TAURI_SHELL__: true,
+      __TAURI__: { core: { invoke: vi.fn() } },
+    });
+    vi.stubGlobal("navigator", { userAgent: "Macintosh; Intel Mac OS X" });
+    expect(usesHtmlDesktopTitleBar()).toBe(false);
+  });
+
+  it("is false on :4000 hostname heuristic alone", () => {
+    vi.stubGlobal("window", {
+      location: { hostname: "127.0.0.1", port: "4000" },
+    });
+    vi.stubGlobal("navigator", { userAgent: "Windows NT 10.0" });
+    expect(isDesktopShell()).toBe(true);
+    expect(usesHtmlDesktopTitleBar()).toBe(false);
+  });
+
+  it("is false in plain browser", () => {
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("navigator", { userAgent: "Windows NT 10.0" });
+    expect(usesHtmlDesktopTitleBar()).toBe(false);
+  });
+});
+
+describe("window chrome helpers", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("minimizeAppWindow uses getCurrentWindow.minimize", async () => {
+    const minimize = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("window", {
+      __TAURI__: {
+        core: { invoke: vi.fn() },
+        window: { getCurrentWindow: () => ({ minimize }) },
+      },
+    });
+    await minimizeAppWindow();
+    expect(minimize).toHaveBeenCalledOnce();
+  });
+
+  it("quitDesktopApp invokes quit_desktop_app", async () => {
+    const invoke = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("window", {
+      __TAURI__: { core: { invoke } },
+    });
+    await quitDesktopApp();
+    expect(invoke).toHaveBeenCalledWith("quit_desktop_app", {});
+  });
+});
 
 describe("isDesktopShell", () => {
   afterEach(() => {
@@ -358,10 +444,21 @@ describe("desktop update + nav sync + Tauri paths", () => {
     expect(invoke).toHaveBeenCalledWith("return_to_launcher", {});
   });
 
-  it("returnToLauncher uses navigation sentinel when shell marker exists without IPC", async () => {
+  it("returnToLauncher ignores sidecar __STAGESYNC_SHELL__ in plain browser", async () => {
     const assign = vi.fn();
     vi.stubGlobal("window", {
       __STAGESYNC_SHELL__: "desktop",
+      location: { hostname: "127.0.0.1", port: "4000", assign },
+    });
+    expect(canReturnToLauncher()).toBe(false);
+    await expect(returnToLauncher()).rejects.toThrow(/Launchera/i);
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it("returnToLauncher uses navigation sentinel when Tauri WebView marker exists without IPC", async () => {
+    const assign = vi.fn();
+    vi.stubGlobal("window", {
+      __STAGESYNC_TAURI_SHELL__: true,
       location: { assign },
     });
     expect(canReturnToLauncher()).toBe(true);

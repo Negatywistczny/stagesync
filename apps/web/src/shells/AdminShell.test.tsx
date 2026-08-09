@@ -28,6 +28,7 @@ vi.mock("@lib/client/desktopBridge.js", () => ({
   syncNavRecentProjects: vi.fn(),
   syncNavTimelineProjectId: vi.fn(),
   toggleAppFullscreen: vi.fn(),
+  canReturnToLauncher: vi.fn(() => false),
 }));
 
 vi.mock("@lib/client/nativeShell.js", () => ({
