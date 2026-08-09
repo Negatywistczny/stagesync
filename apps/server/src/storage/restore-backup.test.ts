@@ -1,6 +1,6 @@
 import { mkdtemp, writeFile, readFile, mkdir, rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildStoreZip } from "../diagnostics-zip.js";
 import {
@@ -65,19 +65,19 @@ describe("resolveLiveNameFromBak", () => {
 
 describe("resolveLivePathFromBak", () => {
   it("strips labeled .schema.bak", () => {
-    expect(resolveLivePathFromBak("/data/projects/p/project.json.schema.bak")).toBe(
-      "/data/projects/p/project.json",
+    expect(resolveLivePathFromBak(resolve("/data/projects/p/project.json.schema.bak"))).toBe(
+      resolve("/data/projects/p/project.json"),
     );
   });
 
   it("strips plain .bak", () => {
-    expect(resolveLivePathFromBak("/data/library.json.bak")).toBe(
-      "/data/library.json",
+    expect(resolveLivePathFromBak(resolve("/data/library.json.bak"))).toBe(
+      resolve("/data/library.json"),
     );
   });
 
   it("rejects non-bak", () => {
-    expect(() => resolveLivePathFromBak("/data/project.json")).toThrow(/\.bak/);
+    expect(() => resolveLivePathFromBak(resolve("/data/project.json"))).toThrow(/\.bak/);
   });
 });
 
@@ -275,11 +275,11 @@ describe("resolveBackupsDir", () => {
 
   it("defaults to {dataDir}/backups", () => {
     vi.stubEnv("STAGESYNC_BACKUPS_DIR", "");
-    expect(resolveBackupsDir("/data")).toBe(join("/data", "backups"));
+    expect(resolveBackupsDir("/data")).toBe(resolve("/data", "backups"));
   });
 
   it("honors STAGESYNC_BACKUPS_DIR", () => {
     vi.stubEnv("STAGESYNC_BACKUPS_DIR", "/custom/backups");
-    expect(resolveBackupsDir("/data")).toBe("/custom/backups");
+    expect(resolveBackupsDir("/data")).toBe(resolve("/custom/backups"));
   });
 });

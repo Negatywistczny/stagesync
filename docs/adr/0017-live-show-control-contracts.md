@@ -42,10 +42,11 @@ Sesja PO (dumpy `docs/analysis/inspiracje/specyfikacje/`, konfrontacja z ADR) do
 - [ADR 0008](./0008-timeline-clip-editing.md): Flex / Takes / recording / join bounce = permanent OUT 5.x (nie „później wg Logic”).
 - [ADR 0016](./0016-android-performer-console.md): pozycjonowanie hosta + reguły Apply mid-PLAY; PIN TTL / Panic — kontrakt tutaj, egzekucja w shellach + web.
 - Docs operatorskie (`MOBILE.md`, `DESKTOP.md`, www): bez obietnic Zero-Glitch HA; Safety Net = Operator-Assisted Hot Standby; bez Flex/Takes/recording w komunikacji 5.x.
-- **§5 vs major 6.0:** OUT pozostaje dla całej linii **5.x**; powrót rejestracji z prostymi narzędziami edycji = [ADR 0018](./0018-future-audio-architecture.md) (supersedes „permanent” poza 5.x).
+- **§5 vs major 6.0:** OUT pozostaje dla całej linii **5.x**; powrót rejestracji z prostymi narzędziami edycji = [ADR 0018](./0018-future-audio-architecture.md) §5 (supersedes „permanent” poza 5.x).
+- **Dual Engine (6.0+):** tryby Studio vs Live = [ADR 0019](./0019-dual-engine-studio-live.md); PIN w Live **reuse** §8a/§8b (bez zmiany TTL / Panic).
 - CHANGELOG **tylko** gdy zachowanie produktu się zmieni (złota zasada) — nie za sam ten ADR.
 
 ## Powiązane
 
-- [ADR 0002](./0002-timebase-ssot.md), [0008](./0008-timeline-clip-editing.md), [0015](./0015-daw-reference-and-product-decisions.md), [0016](./0016-android-performer-console.md), [0018](./0018-future-audio-architecture.md)
+- [ADR 0002](./0002-timebase-ssot.md), [0008](./0008-timeline-clip-editing.md), [0015](./0015-daw-reference-and-product-decisions.md), [0016](./0016-android-performer-console.md), [0018](./0018-future-audio-architecture.md), [0019](./0019-dual-engine-studio-live.md)
 - Inspiracje / triage: [`docs/analysis/inspiracje/specyfikacje/`](../analysis/inspiracje/specyfikacje/README.md)

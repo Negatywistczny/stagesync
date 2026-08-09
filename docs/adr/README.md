@@ -33,3 +33,4 @@ Decision log StageSync v5. Spec / praktyka: [adr.github.io](https://adr.github.i
 | [0016](./0016-android-performer-console.md) | Android Performer + Console (Kotlin WebView) | Zaakceptowany |
 | [0017](./0017-live-show-control-contracts.md) | Live Show Control — kontrakty produktowe 1–8 | Zaakceptowany |
 | [0018](./0018-future-audio-architecture.md) | Przyszła architektura audio (Live Processing, 6.0+) | Zaakceptowany |
+| [0019](./0019-dual-engine-studio-live.md) | Dual Engine: Studio vs Live (6.0+) | Zaakceptowany |

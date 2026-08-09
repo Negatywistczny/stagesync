@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import {
   InvalidProjectIdError,
   assertSafeProjectId,
@@ -115,7 +115,7 @@ describe("storage/paths", () => {
       join(paths.projectsDir, id, "assets"),
     );
     expect(assetFilePath(paths, id, "clip.wav")).toBe(
-      join(paths.projectsDir, id, "assets", "clip.wav"),
+      resolve(paths.projectsDir, id, "assets", "clip.wav"),
     );
 
     expect(() => assertSafeProjectId(paths, "../escape")).toThrow();

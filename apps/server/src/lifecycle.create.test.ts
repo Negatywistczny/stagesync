@@ -23,8 +23,8 @@ function mockServer(opts?: {
     opts?.closeImpl != null
       ? vi.fn(opts.closeImpl)
       : vi.fn((cb?: (err?: Error) => void) => {
-          cb?.();
-        });
+        cb?.();
+      });
   return { close } as unknown as Server & { close: ReturnType<typeof vi.fn> };
 }
 
@@ -124,10 +124,13 @@ describe("createLifecycle", () => {
     const server = mockServer();
     const life = createLifecycle(server, { log: (m) => logs.push(m) });
     life.gracefulShutdown("SIGTERM", { restart: true });
+    if (process.platform === "win32") {
+      vi.advanceTimersByTime(300);
+    }
 
     expect(logs.some((l) => l.includes("restart"))).toBe(true);
     expect(spawnMock).toHaveBeenCalledOnce();
-    expect(spawnMock.mock.calls[0]![0]).toBe(process.execPath);
+    expect((spawnMock.mock.calls as unknown as [string[]])[0]![0]).toBe(process.execPath);
     expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
@@ -157,10 +160,13 @@ describe("createLifecycle", () => {
     spawnMock.mockImplementationOnce(() => {
       throw new Error("spawn fail");
     });
-    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => { });
     const server = mockServer();
     const life = createLifecycle(server, { log: (m) => logs.push(m) });
     life.gracefulShutdown("SIGTERM", { restart: true });
+    if (process.platform === "win32") {
+      vi.advanceTimersByTime(300);
+    }
     expect(errSpy).toHaveBeenCalled();
     expect(exitSpy).toHaveBeenCalledWith(0);
     errSpy.mockRestore();
@@ -179,7 +185,7 @@ describe("createLifecycle", () => {
   });
 
   it("uses default console.log when log option omitted", () => {
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => { });
     const server = mockServer();
     const life = createLifecycle(server);
     life.gracefulShutdown("SIGTERM");

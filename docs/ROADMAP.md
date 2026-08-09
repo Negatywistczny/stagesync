@@ -32,7 +32,7 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 | **5.4.4** | Smart Tempo accuracy + YouTube download resilience | **Wydane 2026-08-05** — tag `v5.4.4` | [CHANGELOG](../CHANGELOG.md) |
 | **5.4.5** | Smart Tempo dev polish — Dev panel, benchmark history, chrome cleanup | **Wydane 2026-08-05** — tag `v5.4.5` | [CHANGELOG](../CHANGELOG.md) |
 | **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
-| **6.0** | **Live Suite** | Major: Input, Automation, Standalone VSTi Controller (+ Suite, recording + proste edit, MIDI Patch Matrix, STEM / mute lead) | [ADR 0018](./adr/0018-future-audio-architecture.md) · [TODO.md](./TODO.md) |
+| **6.0** | **Live Suite** + Dual Engine | Major: Input, Automation, Standalone VSTi Controller; sandboxed Plugin Host (Studio) + Freeze gate; Suite; recording + proste edit; MIDI Patch Matrix; STEM / mute lead | [ADR 0018](./adr/0018-future-audio-architecture.md) · [ADR 0019](./adr/0019-dual-engine-studio-live.md) · [TODO.md](./TODO.md) |
 | **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
 | **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [specyfikacje](./analysis/inspiracje/README.md) |
 
@@ -100,11 +100,12 @@ Hero: Szybkie i bezpieczne zarządzanie zawartością osi czasu.
 - Wyszukiwarka i zamiana fraz (Find & Replace dla tekstu i akordów)
 - Pakowanie projektu i zbieranie zasobów (Collect All and Save do folderu assets/)
 
-### 6.0.0 — **Dual Engine: Studio vs Live** (MAJOR RELEASE)
-Hero: Bezpieczny podział na pancerną Scenę i produkcyjne Studio z obsługą VST.
-- Dwa tryby pracy aplikacji – Live (Scena z blokadą PIN) vs Studio (Edycja)
-- Wtyczki VST/AU z funkcją automatycznego "Freeze" (wymóg renderu do WAV przed wejściem w Live)
-- Blokowanie warstw kłódką (Toggle Lock Lane przed przypadkową edycją)
+### 6.0.0 — **Live Suite + Dual Engine: Studio vs Live** (MAJOR RELEASE)
+Hero: Pancerna Scena i produkcyjne Studio — Live Suite z bezpiecznym podziałem trybów.
+- Dwa tryby SSOT: **Live** (scena, PIN, bez edycji warstw) vs **Studio** (edycja / rejestracja) — [ADR 0019](./adr/0019-dual-engine-studio-live.md)
+- Filary Live Suite: Input, Automation, Audio Suite, Standalone VSTi Controller, MIDI Patch Matrix, STEM / mute lead, recording + proste edit — [ADR 0018](./adr/0018-future-audio-architecture.md)
+- Sandboxowany Plugin Host (sidecar) **tylko w Studio**; wejście w Live wymaga Freeze (render ścieżek z wtyczkami → WAV)
+- Blokowanie warstw kłódką (Lock Lane w Studio; w Live edycja i tak wyłączona)
 
 ### 6.1.0 — **Live Show Automation & DMX**
 Hero: Pełna kontrola nad światłem i czasową mikro-synchronizacją.
@@ -137,7 +138,7 @@ Hero: Zaawansowany podgląd sygnałów, pełna diagnostyka i redundancja.
 1. **Jeden aktywny etap w TODO** — tylko otwarte Must / Should / Later; zamknięte → [CHANGELOG](../CHANGELOG.md), potem usuń z TODO ([todo-hygiene](../.cursor/rules/todo-hygiene.mdc)).
 2. **Scope report** przed kodem hero cutu (`docs/analysis/reports/current/report-scope-…`); ROADMAP trzyma hero + done na wysokim poziomie.
 3. **Parity vs v4** ([ADR 0011](./adr/0011-ui-parity-behavior.md)): zachowanie w `STAGESYNC-APP-LEGACY`; **nie** clone chrome; **zakaz stubów**. Audyt: [parity](./analysis/reports/milestones/report-v4-v5-parity-audit.md) · [ui-diff](./analysis/reports/milestones/report-v4-v5-ui-diff-inventory.md).
-4. **Audio 6.0+** ([ADR 0018](./adr/0018-future-audio-architecture.md)): sekwencja **5.5 Pitch & FX → 6.0 Live Suite → 6.1 Karaoke** (Syllables **5.4** wydane); **bez** recording/VSTi w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5).
+4. **Audio / Dual Engine 6.0+** ([ADR 0018](./adr/0018-future-audio-architecture.md), [ADR 0019](./adr/0019-dual-engine-studio-live.md)): sekwencja **5.5 Pitch & FX → 6.0 Live Suite + Dual Engine → 6.1 Karaoke** (Syllables **5.4** wydane); **bez** recording/VSTi/Plugin Host w 5.x ([ADR 0017](./adr/0017-live-show-control-contracts.md) §5). Numeracja dolnych cutów 6.1+ DMX / 7.x z dumpa strategicznego ≠ hero Karaoke w tabeli górnej — residual do osobnego align (nie mylić z Dual Engine).
 5. **G1–G10** — residual operatorski na HW; **bez claim green** bez dowodu ([report-beta-gate](./analysis/reports/milestones/report-beta-gate.md); [TODO](./TODO.md)).
 
 ## Granica 0

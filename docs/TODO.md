@@ -37,8 +37,8 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ### 6.0+ Live Suite & Dual Engine
 
-- [ ] **6.0.0 — Dual Engine (Studio vs Live):** Tryb Scena vs Studio, automatyczny "Freeze" wtyczek VST/AU przed koncertem, blokowanie warstw kłódką.
-- [ ] **6.1.0 — Live Show Automation & DMX:** Track Delays (ms), warstwa sterowania DMX / Art-Net (UDP 30 Hz).
+- [ ] **6.0.0 — Live Suite + Dual Engine (Studio vs Live):** Tryby SSOT Studio/Live ([ADR 0019](./adr/0019-dual-engine-studio-live.md)); sandboxowany Plugin Host (Studio) + Freeze → WAV przed Live; Lock Lane; filary Live Suite (Input, Automation, Standalone VSTi, recording + proste edit, MIDI Patch Matrix, STEM) — [ADR 0018](./adr/0018-future-audio-architecture.md).
+- [ ] **6.1.0 — Live Show Automation & DMX:** Track Delays (ms), warstwa sterowania DMX / Art-Net (UDP 30 Hz). *(Numeracja vs hero Karaoke w tabeli ROADMAP / ADR 0018 — residual align; nie mylić z Dual Engine.)*
 - [ ] **6.2.0 — Pre-flight & Hardware Setup:** Rig Manager (aliasy MIDI), MIDI Learn, Tuner instrumentalny w `/client`, Setlist Pre-flight Check.
 - [ ] **6.3.0 — Karaoke & Jukebox:** Moduł LAN `/karaoke` i `/request` z moderacją w Adminie.
 
