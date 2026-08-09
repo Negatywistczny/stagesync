@@ -64,31 +64,67 @@ if (-not $nodeCmd) {
     }
 }
 
-# 2. Check pnpm & corepack
+# 2. Check pnpm & corepack & ensure npm/node paths are fully reloaded
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+$nodePath = "C:\Program Files\nodejs"
+if (Test-Path $nodePath) {
+    if ($env:Path -notlike "*$nodePath*") {
+        $env:Path = "$nodePath;$env:Path"
+    }
+}
+
 try {
     $pnpmCmd = Get-Command "pnpm" -ErrorAction SilentlyContinue
     if (-not $pnpmCmd) {
         Write-Step "Wlaczanie pnpm przez corepack..."
-        corepack enable pnpm | Out-Null
-        corepack install | Out-Null
+        & corepack enable pnpm 2>&1 | Out-Null
+        & corepack install 2>&1 | Out-Null
+        
+        # Fallback to npm install -g pnpm if corepack fails or pnpm is still missing
+        $pnpmCmd = Get-Command "pnpm" -ErrorAction SilentlyContinue
+        if (-not $pnpmCmd) {
+            Write-Step "Instalacja pnpm przez npm..."
+            & npm install -g pnpm 2>&1 | Out-Null
+        }
     }
 }
 catch {
-    # kontynuuj
+    try {
+        & npm install -g pnpm 2>&1 | Out-Null
+    }
+    catch {}
+}
+
+# Refresh Path again after global pnpm install
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + "$env:APPDATA\npm"
+
+# Find pnpm executable path robustly
+$pnpmExec = (Get-Command "pnpm" -ErrorAction SilentlyContinue).Source
+if (-not $pnpmExec) {
+    # Common npm global bin path check
+    if (Test-Path "$env:APPDATA\npm\pnpm.cmd") {
+        $pnpmExec = "$env:APPDATA\npm\pnpm.cmd"
+    }
+    elseif (Test-Path "C:\Program Files\nodejs\pnpm.cmd") {
+        $pnpmExec = "C:\Program Files\nodejs\pnpm.cmd"
+    }
+    else {
+        $pnpmExec = "pnpm"
+    }
 }
 
 # 3. Check node_modules
 if (-not (Test-Path "$PSScriptRoot\node_modules") -or -not (Test-Path "$PSScriptRoot\node_modules\@clack\prompts")) {
     Write-Step "Instalacja zaleznosci Node (pnpm install)..."
-    pnpm install
+    & $pnpmExec install
 }
 
 $env:NODE_NO_WARNINGS = "1"
 
 # 4. Handoff do Dev Hub z opcjonalna flaga
 if ($Target -ne "") {
-    pnpm dev:hub $Target
+    & $pnpmExec dev:hub $Target
 }
 else {
-    pnpm dev:hub
+    & $pnpmExec dev:hub
 }
