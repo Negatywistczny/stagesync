@@ -17,7 +17,7 @@ import { markOperatorSession, clearOperatorSession } from "./operatorSession.js"
 vi.mock("@lib/client/desktopBridge.js", () => ({
   isDesktopShell: vi.fn(() => false),
   tauriInvokeAvailable: vi.fn(() => false),
-  hasExplicitTauriShellMarker: vi.fn(() => false),
+  isRealTauriWebView: vi.fn(() => false),
 }));
 
 vi.mock("@lib/client/nativeShell.js", () => ({
@@ -25,8 +25,8 @@ vi.mock("@lib/client/nativeShell.js", () => ({
 }));
 
 import {
-  hasExplicitTauriShellMarker,
   isDesktopShell,
+  isRealTauriWebView,
   tauriInvokeAvailable,
 } from "@lib/client/desktopBridge.js";
 import { getStageSyncNative } from "@lib/client/nativeShell.js";
@@ -35,7 +35,7 @@ afterEach(() => {
   clearOperatorSession();
   vi.mocked(isDesktopShell).mockReturnValue(false);
   vi.mocked(tauriInvokeAvailable).mockReturnValue(false);
-  vi.mocked(hasExplicitTauriShellMarker).mockReturnValue(false);
+  vi.mocked(isRealTauriWebView).mockReturnValue(false);
   vi.mocked(getStageSyncNative).mockReturnValue(null);
   delete (globalThis as { __STAGESYNC_UI_TARGET__?: string }).__STAGESYNC_UI_TARGET__;
 });
@@ -57,7 +57,7 @@ describe("shouldShowFullscreenControl", () => {
 
   it("hides on Tauri desktop", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
-    vi.mocked(tauriInvokeAvailable).mockReturnValue(true);
+    vi.mocked(isRealTauriWebView).mockReturnValue(true);
     expect(shouldShowFullscreenControl()).toBe(false);
   });
 
@@ -89,6 +89,7 @@ describe("shouldShowOperatorNav", () => {
   it("allows OperatorNav + phone compact chrome on Tauri (viewport gates compact UI)", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     vi.mocked(tauriInvokeAvailable).mockReturnValue(true);
+    vi.mocked(isRealTauriWebView).mockReturnValue(true);
     expect(isOsMenuDesktopShell()).toBe(true);
     expect(shouldShowOperatorNav("/admin")).toBe(true);
     expect(shouldShowOperatorNav("/timeline/p1")).toBe(true);
@@ -96,9 +97,9 @@ describe("shouldShowOperatorNav", () => {
     expect(shouldShowFullscreenControl()).toBe(false);
   });
 
-  it("allows OperatorNav on Tauri with explicit shell marker", () => {
+  it("allows OperatorNav on Tauri with WebView marker", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
-    vi.mocked(hasExplicitTauriShellMarker).mockReturnValue(true);
+    vi.mocked(isRealTauriWebView).mockReturnValue(true);
     expect(shouldShowOperatorNav("/timeline/p1")).toBe(true);
     expect(shouldUseMobileCompactChrome()).toBe(true);
   });
@@ -109,11 +110,13 @@ describe("shouldShowOperatorNav", () => {
     expect(shouldUseMobileCompactChrome()).toBe(true);
   });
 
-  it("hides OperatorNav on Tauri /client (no web operator session)", () => {
+  it("shows OperatorNav on Tauri /client (booth shell)", () => {
     vi.mocked(isDesktopShell).mockReturnValue(true);
     vi.mocked(tauriInvokeAvailable).mockReturnValue(true);
-    markOperatorSession();
-    expect(shouldShowOperatorNav("/client")).toBe(false);
+    vi.mocked(isRealTauriWebView).mockReturnValue(true);
+    expect(isOsMenuDesktopShell()).toBe(true);
+    expect(isWebBrowserSurface()).toBe(false);
+    expect(shouldShowOperatorNav("/client")).toBe(true);
   });
 
   it("shows operator nav on console /client without web session", () => {

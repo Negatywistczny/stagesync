@@ -9,8 +9,11 @@
   flex: 0 0 auto;
   display: grid;
   align-items: center;
+  box-sizing: border-box;
   gap: var(--ss-space-3) var(--ss-space-5);
   padding: var(--ss-space-3) var(--ss-space-5);
+  /* Same L1 floor as Admin `.chrome` / Client `.header`. */
+  min-height: calc(var(--ss-touch-min) + 2 * var(--ss-space-3));
   border-bottom: 1px solid var(--ss-color-border);
   background: color-mix(in srgb, var(--ss-color-surface) 88%, transparent);
   backdrop-filter: blur(10px);
@@ -40,13 +43,27 @@
   gap: var(--ss-space-2);
   min-width: 0;
   overflow-x: auto;
+  overflow-y: visible;
   scrollbar-width: none;
-  /* overflow-x:auto → overflow-y:auto; inset so icon borders aren't clipped. */
-  padding-block: 1px;
 }
 
 .actions::-webkit-scrollbar {
   display: none;
+}
+
+/* Tablet: match Admin / Client chrome density. */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .header {
+    gap: var(--ss-space-2) var(--ss-space-2);
+    padding: var(--ss-space-2) var(--ss-space-3);
+    min-height: calc(var(--ss-touch-min) + 2 * var(--ss-space-2));
+  }
+
+  .appJump a,
+  .appJumpMuted {
+    padding: var(--ss-space-1) var(--ss-space-2);
+    white-space: nowrap;
+  }
 }
 
 .appJump {

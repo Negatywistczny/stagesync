@@ -244,7 +244,13 @@ describe("AppHeader", () => {
     const actionsBlock = css.match(/\.actions\s*\{([^}]*)\}/)?.[1] ?? "";
     expect(actionsBlock).toContain("flex-wrap: nowrap");
     expect(actionsBlock).toContain("overflow-x: auto");
-    expect(actionsBlock).toMatch(/padding-block:\s*1px/);
+    expect(actionsBlock).toContain("overflow-y: visible");
+    /* No padding-block inset — it made Timeline L1 taller than Admin/Client. */
+    expect(actionsBlock).not.toMatch(/padding-block:\s*1px/);
+    const headerBlock = css.match(/^\.header\s*\{([^}]*)\}/m)?.[1] ?? "";
+    expect(headerBlock).toContain(
+      "min-height: calc(var(--ss-touch-min) + 2 * var(--ss-space-3))",
+    );
     const mobileAppJumpBlock =
       css.match(
         /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?\.appJump a,\s*\n\s*\.appJumpMuted\s*\{([^}]*)\}/,

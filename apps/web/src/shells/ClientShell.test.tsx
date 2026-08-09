@@ -310,6 +310,14 @@ describe("ClientShell chrome", () => {
     ).toBeTruthy();
   });
 
+  it("keeps Client L1 header on Tauri desktop with operator jumps", () => {
+    vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
+    vi.mocked(useMqMobileCompact).mockReturnValue(false);
+    renderClient();
+    expect(screen.getByLabelText("Aplikacje").textContent).toMatch(/Admin/);
+    expect(screen.getByRole("banner")).toBeTruthy();
+  });
+
   it("shows OperatorNav on compact mobile with operator session", () => {
     vi.mocked(shouldShowOperatorNav).mockReturnValue(true);
     vi.mocked(useMqMobileCompact).mockReturnValue(true);

@@ -1,9 +1,8 @@
 /** sessionStorage flag: operator reached Admin/Timeline in the web browser (LAN). */
 
 import {
-  hasExplicitTauriShellMarker,
   isDesktopShell,
-  tauriInvokeAvailable,
+  isRealTauriWebView,
 } from "@lib/client/desktopBridge.js";
 import { getActiveDevSurface } from "../../dev/devSurfaceState.js";
 import { getStageSyncNative } from "@lib/client/nativeShell.js";
@@ -25,9 +24,8 @@ function usesOperatorSessionStorage(): boolean {
   const shellKind = getStageSyncNative()?.shellKind?.();
   if (shellKind === "performer" || shellKind === "console") return false;
 
-  if (isDesktopShell()) {
-    if (tauriInvokeAvailable() || hasExplicitTauriShellMarker()) return false;
-  }
+  // Sidecar `__STAGESYNC_SHELL__` alone is not Tauri — keep web operator session.
+  if (isDesktopShell() && isRealTauriWebView()) return false;
 
   return true;
 }

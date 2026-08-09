@@ -4,6 +4,7 @@ import {
   getOperatorAppJumpLinks,
   type OperatorAppId,
 } from "@lib/shell-operator/operatorNavRoutes.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import {
   isOsMenuDesktopShell,
   shouldShowOperatorNav,
@@ -270,7 +271,11 @@ export function AppHeader({
                   {link.label}
                 </span>
               ) : (
-                <Link key={link.to} to={link.to}>
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => markOperatorSession()}
+                >
                   {link.label}
                 </Link>
               ),

@@ -11,8 +11,8 @@ import {
 } from "@lib/client/screenWakeLock.js";
 import { Button, Input } from "@stagesync/ui";
 import { getOperatorAppJumpLinks } from "@lib/shell-operator/operatorNavRoutes.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import {
-  isOsMenuDesktopShell,
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
 } from "@lib/shell-operator/operatorSurface.js";
@@ -344,7 +344,6 @@ export function ClientShell() {
     wsStatus,
     latencyMs,
     started,
-    pathname,
     songTitle,
     bbt: headerBbt,
     transportError,
@@ -758,7 +757,6 @@ type ClientHeaderProps = {
   songTitle: string;
   bbt: { bar: number; beat: number };
   transportError: string | null;
-  pathname: string;
   compact?: boolean;
   /** Tablet/desktop operator jump chips (Admin / Timeline). */
   showAppJump?: boolean;
@@ -780,7 +778,6 @@ function ClientChrome({
   songTitle,
   bbt,
   transportError,
-  pathname,
   compact = false,
   showAppJump = false,
   hideGlobalSettings = false,
@@ -794,7 +791,8 @@ function ClientChrome({
 }: ClientHeaderProps) {
   const appJump = showAppJump ? getOperatorAppJumpLinks("client") : [];
 
-  if (isOsMenuDesktopShell() && !shouldShowOperatorNav(pathname)) return null;
+  // Desktop Tauri: hide only duplicate chrome actions elsewhere (AppHeader); Client L1
+  // always stays — wordmark, song, Admin/Timeline jumps, Client settings (#836 / CHANGELOG).
 
   return (
     <header
@@ -835,7 +833,7 @@ function ClientChrome({
       <div className={styles.headerActions}>
         {appJump.length > 0 ? (
           <nav className={styles.appJump} aria-label="Aplikacje">
-            {appJump.map((link) =>
+                {appJump.map((link) =>
               link.disabled ? (
                 <span
                   key={link.label}
@@ -845,7 +843,11 @@ function ClientChrome({
                   {link.label}
                 </span>
               ) : (
-                <Link key={link.to} to={link.to}>
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => markOperatorSession()}
+                >
                   {link.label}
                 </Link>
               ),
@@ -944,7 +946,6 @@ function GlobalSettingsFields({
     <>
       <p className={styles.fieldLab}>Wygląd</p>
       <ShellAppearanceFields />
-      <p className={styles.fieldLab}>Powiadomienia</p>
       <ShellNotificationFields />
       <p className={styles.fieldLab}>Strój instrumentu</p>
       <div

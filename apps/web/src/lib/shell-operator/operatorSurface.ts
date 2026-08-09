@@ -1,7 +1,6 @@
 import {
-  hasExplicitTauriShellMarker,
   isDesktopShell,
-  tauriInvokeAvailable,
+  isRealTauriWebView,
 } from "@lib/client/desktopBridge.js";
 import { getStageSyncNative } from "@lib/client/nativeShell.js";
 import { getActiveDevSurface } from "../../dev/devSurfaceState.js";
@@ -51,14 +50,12 @@ export function isOperatorSurfaceRoute(pathname: string): boolean {
 
 /**
  * Real Tauri desktop (OS menu SSOT) — not `:4000` hostname heuristic alone,
- * and not Android Console / Performer.
+ * not sidecar HTML `__STAGESYNC_SHELL__` in a plain browser, and not Android.
  */
 export function isOsMenuDesktopShell(): boolean {
   if (!isDesktopShell()) return false;
   const devSurface = getActiveDevSurface();
-  if (devSurface === "tauri") return true;
-  // Real Tauri (invoke / shell marker) wins over DEV hostname heuristics.
-  if (tauriInvokeAvailable() || hasExplicitTauriShellMarker()) return true;
+  if (isRealTauriWebView()) return true;
   // Browser `pnpm dev` with desktop hostname alone is not OS-menu Tauri.
   if (import.meta.env.DEV && devSurface === null) return false;
   return false;
@@ -98,9 +95,13 @@ export function shouldShowFullscreenControl(): boolean {
 /**
  * OperatorNav visibility for operator routes (Admin / Timeline) and Client when allowed.
  * Shells show the compact bar only at ≤640px; at wider widths they keep desktop chrome
- * (Tauri OS menu still hides AppHeader via `isOsMenuDesktopShell`).
- * Performer / musician Client hide it. On /client, web shows nav only with an active
- * operator session; Console always shows it; Tauri Client has no web operator session.
+ * (Tauri still hides duplicate AppHeader chrome actions via `isOsMenuDesktopShell`).
+ *
+ * `/client` rules:
+ * - Performer — never (musician-only)
+ * - Console — always
+ * - Web browser — only with operator session (after Admin/Timeline)
+ * - Desktop Tauri — always (booth shell; wordmark + Admin/Timeline stay visible)
  */
 export function shouldShowOperatorNav(pathname: string): boolean {
   if (isPerformerShell()) return false;
@@ -108,7 +109,8 @@ export function shouldShowOperatorNav(pathname: string): boolean {
   if (isClientRoute(pathname)) {
     if (isConsoleShell()) return true;
     if (isWebBrowserSurface()) return hasOperatorSession();
-    return false;
+    // Real Tauri (and other non-web, non-performer shells): operator chrome on Client.
+    return true;
   }
 
   if (!isOperatorSurfaceRoute(pathname)) return false;
