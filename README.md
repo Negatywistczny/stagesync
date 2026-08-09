@@ -74,10 +74,11 @@ Wszystko w jednej komendzie (automatyczny setup środowiska + interaktywne centr
 git clone https://github.com/Negatywistczny/stagesync.git
 cd stagesync
 
-# 2. Uruchom natywny DX Suite (Windows: PowerShell / CMD)
-.\dev
+# 2. Uruchom natywny DX Suite
+# Windows (PowerShell / CMD):
+.\dev.cmd
 
-# Dla użytkowników macOS / Linux:
+# macOS / Linux:
 ./dev
 ```
 
