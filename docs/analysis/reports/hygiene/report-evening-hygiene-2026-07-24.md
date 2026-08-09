@@ -123,7 +123,7 @@ Closed misfire: [#503](https://github.com/Negatywistczny/stagesync/pull/503) (wr
 
 ## Ranked backlog (next)
 
-1. **Chord scenic relative `em` scales** — `ClientShell.module.css` chord superscripts (post-#478); keep relative to hero size unless PO wants `--ss-text-*` (visual parity risk).
+1. **Chord scenic relative `em` scales** — [`ClientShell.module.css`](../../../../apps/web/src/shells/ClientShell.module.css) chord superscripts (post-#478); keep relative to hero size unless PO wants `--ss-text-*` (visual parity risk).
 2. **prefsRange / zoomRange pattern** — already dual `:focus` + `:focus-visible`; document only if public/operator docs (skip CHANGELOG).
 3. **Post-merge smoke** — Mixer S/M + Click + Tryb mono/stereo; Server Settings; Admin Scena priority/TTL/dismiss; Timeline eye/tools; Launcher refresh.
 4. **i18n residual** — Beat/Snap product terms; inspector leftovers until #511 lands.
@@ -144,4 +144,4 @@ Closed misfire: [#503](https://github.com/Negatywistczny/stagesync/pull/503) (wr
 - Worked from `origin/main`; did not stage unrelated user WIP.
 - One parallel checkout briefly misnamed a branch (#503 → closed; #504 correct).
 - Most PRs are a11y/test/chore — **no CHANGELOG** per złota zasada (SR/label hygiene + tests).
-- Browse HTTP 400 is soft-fallback via `resolveBrowseStartPath`; unit coverage stays in `path-browser.test.ts`.
+- Browse HTTP 400 is soft-fallback via `resolveBrowseStartPath`; unit coverage stays in [`path-browser.test.ts`](../../../../apps/server/src/path-browser.test.ts).

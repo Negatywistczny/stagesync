@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1262
+* **Liczba wszystkich plików:** 1264
 * **Liczba katalogów:** 195
-* **Data aktualizacji:** 2026-08-09T14:32:02.854Z
+* **Data aktualizacji:** 2026-08-09T15:30:05.615Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 786 |
+| Kod | 788 |
 | Docs | 214 |
 | Config | 115 |
 | Assety | 119 |
@@ -32,8 +32,8 @@
 | `.css` | 51 |
 | `.xml` | 35 |
 | `.json` | 34 |
+| `.mjs` | 24 |
 | `brak rozszerzenia` | 23 |
-| `.mjs` | 22 |
 | _(pozostałe)_ | 124 |
 
 ---
@@ -46,13 +46,13 @@
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (446) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
-    - **e2e/** (2)
-    - **public/** (10)
-      - **brand/** (5)
-    - **scripts/** (10)
-      - **benchmark/** (8)
+    - **e2e/** (2) — Testy integracyjne E2E (Playwright)
+    - **public/** (10) — Zasoby statyczne i favicon
+      - **brand/** (5) — Materiały brandingowe i logotypy StageSync
+    - **scripts/** (10) — Skrypty pomocnicze builda i benchmarków webowych
+      - **benchmark/** (8) — Skrypty benchmarków wydajnościowych UI/Audio
     - **src/** (405) — Kod źródłowy UI i logiki klienta
-      - **dev/** (18)
+      - **dev/** (18) — Narzędzia i panele deweloperskie wewnątrz aplikacji
       - **lib/** (182) — Biblioteki klienta (5 kategorii — bez plików w lib root)
         - **audio/** (30) — DSP, AudioContext, tempo, waveform
         - **client/** (57) — Preferencje, mostek desktop, i18n shell, utilities UI
@@ -61,9 +61,9 @@
         - **timeline-edit/** (26) — Mutacje treści klipów (akordy, cue, forma, tekst)
       - **shells/** (184) — Powłoki Admin / Client / Timeline
       - **transport/** (13) — Transport WS, playhead, probe wydajności
-    - **test/** (9)
-      - **benchmark/** (1)
-      - **fixtures/** (8)
+    - **test/** (9) — Testy jednostkowe i mocki aplikacji webowej
+      - **benchmark/** (1) — Testy wydajnościowe struktur danych
+      - **fixtures/** (8) — Przykładowe dane testowe projektów i timeline
   - **www/** (29) — Strona domowa, portal informacyjny oraz aktualności StageSync
 - **data/** (10) — Lokalne dane uruchomieniowe, projekty, pakiety i logi systemowe
   - **downloads/** (3) — Lokalne pliki wyjściowe i instalatory APK
@@ -87,11 +87,11 @@
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (20) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
-  - **merge-train/** (4)
-  - **quality/** (3)
-  - **release/** (8)
-  - **setup/** (2)
+- **scripts/** (22) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+  - **merge-train/** (4) — Automatyzacja merge train i walidacji PR
+  - **quality/** (5) — Narzędzia jakości kodu, linków i generator mapy repozytorium
+  - **release/** (8) — Skrypty wydań SemVer, budowania paczek i release notes
+  - **setup/** (2) — Skrypty inicjalizacyjne i setupu środowiska deweloperskiego
 
 ---
 
@@ -105,7 +105,7 @@
   - **skills/** (3) — Umiejętności agentów (night-audit, triage-verify)
 - **.github/** (15) — Szablony zgłoszeń GitHub, wytyczne społeczności oraz workflows CI/CD
   - **ISSUE_TEMPLATE/** (3) — Szablony issue
-  - **codeql/** (1)
+  - **codeql/** (1) — Konfiguracja analizy statycznej CodeQL
   - **workflows/** (4) — Pipeline’y GitHub Actions (CI, release, codeql)
 - **.husky/** (2) — Haki Git (m.in. pre-commit sanity gate do walidacji typów i mapy)
 - **.vscode/** (1) — Ustawienia przestrzeni roboczej VS Code / Cursor (np. explorer file nesting)
@@ -114,32 +114,41 @@
 
 ## 📎 Pliki w root monorepo
 
-- `.clineignore`
-- `.clinerules`
-- `.cursorignore`
-- `.cursorindexingignore`
-- `.dockerignore`
-- `.editorconfig`
-- `.env.example`
-- `.gitignore`
-- `.npmrc`
-- `.nvmrc`
-- `CHANGELOG.md`
-- `codecov.yml`
-- `commitlint.config.js`
-- `compose.prod.yml`
-- `compose.yml`
-- `dev`
-- `dev.cmd`
-- `dev.ps1`
-- `Dockerfile`
-- `knip.jsonc`
-- `LICENSE`
-- `package.json`
-- `pnpm-lock.yaml`
-- `pnpm-workspace.yaml`
-- `README.md`
-- `turbo.json`
+### Repozytorium & Tooling
+- [`.clineignore`](../.clineignore)
+- [`.clinerules`](../.clinerules)
+- [`.cursorignore`](../.cursorignore)
+- [`.cursorindexingignore`](../.cursorindexingignore)
+- [`.dockerignore`](../.dockerignore)
+- [`.editorconfig`](../.editorconfig)
+- [`.gitignore`](../.gitignore)
+- [`.npmrc`](../.npmrc)
+- [`.nvmrc`](../.nvmrc)
+- [`codecov.yml`](../codecov.yml)
+- [`commitlint.config.js`](../commitlint.config.js)
+- [`knip.jsonc`](../knip.jsonc)
+- [`package.json`](../package.json)
+- [`pnpm-lock.yaml`](../pnpm-lock.yaml)
+- [`pnpm-workspace.yaml`](../pnpm-workspace.yaml)
+- [`turbo.json`](../turbo.json)
+
+### Dokumentacja
+- [`CHANGELOG.md`](../CHANGELOG.md)
+- [`LICENSE`](../LICENSE)
+- [`README.md`](../README.md)
+
+### Docker & Compose
+- [`compose.prod.yml`](../compose.prod.yml)
+- [`compose.yml`](../compose.yml)
+- [`Dockerfile`](../Dockerfile)
+
+### Skrypty
+- [`dev`](../dev)
+- [`dev.cmd`](../dev.cmd)
+- [`dev.ps1`](../dev.ps1)
+
+### Pozostałe
+- [`.env.example`](../.env.example)
 
 ---
 
@@ -865,6 +874,8 @@ stagesync/
 │   │   └── run-train-batch.sh
 │   ├── quality/
 │   │   ├── check-docs-links.mjs
+│   │   ├── check-unlinked.mjs
+│   │   ├── fix-unlinked-links.mjs
 │   │   ├── generate-repo-map.mjs
 │   │   └── lint-ss-css.mjs
 │   ├── release/

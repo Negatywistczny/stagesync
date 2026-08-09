@@ -33,7 +33,7 @@ Cues Sampler wykorzystuje ten sam kanoniczny pipeline zasobów co ścieżki wiel
 
 Zarządzanie pamięcią podręczną i dekodowaniem podlega ścisłym limitom eksploatacyjnym:
 
-* **Pula Pamięci Dekodowanej**: Sampler korzysta z globalnego bufora `bufferCache` w module `audioPlayback.ts`, posiadającego sztywny limit do 32 najczęściej używanych zdekodowanych obiektów `AudioBuffer` .
+* **Pula Pamięci Dekodowanej**: Sampler korzysta z globalnego bufora `bufferCache` w module [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts), posiadającego sztywny limit do 32 najczęściej używanych zdekodowanych obiektów `AudioBuffer` .
 * **Pre-buffering (Proaktywne Dekodowanie)**: Operacja `ensureAudioBuffered()` przed uruchomieniem odtwarzania skanuje nie tylko ścieżki audio, ale również klipy `CueClip` zawierające konfigurację samplera, co eliminuję opóźnienia cold-start podczas odpalania próbek .
 * **Limity Pamięciowe**: Pojedynczy plik audio nie może przekraczać 100 MB . Łączny przydział pamięci RAM dla buforów zdekodowanych w kontekście WebAudio samplera nie może przekraczać 256 MB na projekt.
 
@@ -138,7 +138,7 @@ Zgodnie z zapisami ADR 0011, interfejs StageSync utrzymuje ścisły podział na 
 
 ### Timeline Inspector (Admin / Host Editor)
 
-Gdy na ścieżce Cues zaznaczony zostanie klip `CueClip`, w panelu Inspectora (`TimelineShell.tsx`) aktywuje się dedykowana sekcja konfiguracji samplera .
+Gdy na ścieżce Cues zaznaczony zostanie klip `CueClip`, w panelu Inspectora ([`TimelineShell.tsx`](../../../../apps/web/src/shells/TimelineShell.tsx)) aktywuje się dedykowana sekcja konfiguracji samplera .
 
 Sekcja konfiguracyjna Inspectora zawiera następujące grupy pól:
 
@@ -208,12 +208,12 @@ Poniższa tabela wskazuje pliki źródłowe w strukturze StageSync odpowiedzialn
 
 | Moduł / Plik Repozytorium | Rola w Architekturze Cues Sampler |
 |---|---|
-| `packages/shared/src/schema.ts` | Rozszerzenie schematów Zod: dodanie `CueSampleConfigSchema`, aktualizacja `CueClipSchema` oraz definicja `ProjectSchemaV6` . |
-| `packages/shared/src/legacy-migrate.ts` | Implementacja funkcji migracyjnej przeliczającej dokumenty z formatu V5 do V6 . |
+| [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts) | Rozszerzenie schematów Zod: dodanie `CueSampleConfigSchema`, aktualizacja `CueClipSchema` oraz definicja `ProjectSchemaV6` . |
+| [`packages/shared/src/legacy-migrate.ts`](../../../../packages/shared/src/legacy-migrate.ts) | Implementacja funkcji migracyjnej przeliczającej dokumenty z formatu V5 do V6 . |
 | `apps/web/src/lib/audioPlayback.ts` | Rozbudowa silnika WebAudio: logika `syncAudioPlayback()`, obsługa `playPostStop`, funkcja `PANIC` oraz pre-buffering samplera . |
 | `apps/web/src/lib/cueEdit.ts` | Helpery edycyjne dla ścieżki Cues: modyfikacja parametrów samplera w szkicu projektu . |
 | `apps/web/src/components/TimelineShell.tsx` | Rozbudowa UI Inspectora o sekcję konfiguracji samplera oraz przycisk wyzwalacza operatorskiego GO . |
-| `packages/shared/src/stage-cue-banner.ts` | Utrzymanie spójności wyświetlania banerów tekstowych na scenie podczas odtwarzania próbek . |
+| [`packages/shared/src/stage-cue-banner.ts`](../../../../packages/shared/src/stage-cue-banner.ts) | Utrzymanie spójności wyświetlania banerów tekstowych na scenie podczas odtwarzania próbek . |
 | `apps/server/src/stage-hub.ts` | Rozsyłanie komunikatów o wyzwoleniu samplera do podłączonych węzłów przez WebSocket . |
 
 ---

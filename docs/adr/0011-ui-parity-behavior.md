@@ -127,7 +127,7 @@ PO smoke wg tej decyzji + [parity-blocker](../analysis/reports/milestones/report
 ## Konsekwencje
 
 - [ADR 0003](./0003-ui-direction-booth.md) zaktualizowany: inventarz nie rządzi review.
-- Reguła agenta `.cursor/rules/ui-parity.mdc` + konstytucja.
+- Reguła agenta [`.cursor/rules/ui-parity.mdc`](../../.cursor/rules/ui-parity.mdc) + konstytucja.
 - TODO = aktywny etap (**α9** po α8 code freeze): residual PO smoke + Client CL-P0 + migrator — nie „odhacz inventarz”.
 - Kod clone-chrome i atrapy mogą zostać usunięte / przebudowane w kolejnych PR —
   ten ADR ustala **kontrakt**, nie wymusza jednego mega-diffu.

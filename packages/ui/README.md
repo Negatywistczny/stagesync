@@ -6,13 +6,13 @@ Pakiet `@stagesync/ui` (lokalizowany w `packages/ui/`) to biblioteka graficzna o
 
 1. **Brak logiki biznesowej:** Wszystkie komponenty zawarte w tym pakiecie są komponentami prezentacyjnymi (tzw. "głupimi komponentami"). Nie mogą one zawierać specyficznych dla domen referencji ani logiki synchronizacji czasu.
 2. **Kategoryczny zakaz Tailwind CSS oraz inline-styles:** Stylizacja opiera się wyłącznie o **CSS Modules** (`*.module.css`). Inline-styles są dozwolone wyłącznie do dynamicznego pozycjonowania (np. playhead w %).
-3. **Tokeny `--ss-*` (Strict Spacing):** Wszystkie marginesy, paddingi, kolory i typografia są przypisywane ze zmiennych globalnych zdefiniowanych w `tokens.css`. Standardem jest siatka przestrzenna **4pt/8pt**.
+3. **Tokeny `--ss-*` (Strict Spacing):** Wszystkie marginesy, paddingi, kolory i typografia są przypisywane ze zmiennych globalnych zdefiniowanych w [`tokens.css`](../../apps/desktop/launcher/vendor/tokens.css). Standardem jest siatka przestrzenna **4pt/8pt**.
 4. **Zamknięte stany kontrolek:** Interfejsy przycisków i kontrolek posiadają dokładnie zdefiniowane stany interakcji: domyślny, hover, focus (zabezpieczony przed ucinaniem ramki focusa poprzez `outline-offset`), active, disabled, loading oraz selected.
 
 ## 📁 Struktura projektu
 
 - **`src/`** — Pliki komponentów React, arkusze stylów CSS Modules oraz pliki definicji tokenów systemowych.
-- **`vitest.setup.ts`** — Konfiguracja środowiska testowego.
+- **[`vitest.setup.ts`](./vitest.setup.ts)** — Konfiguracja środowiska testowego.
 
 ## ⚙️ Testy i budowanie
 

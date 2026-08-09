@@ -6,7 +6,7 @@ Aplikacja `apps/web` to główny projekt kliencki zrealizowany w technologii **R
 
 - **`src/`** — Kod źródłowy aplikacji klienckiej:
   - **`src/shells/`** — Shelle UI (Admin, Client, Timeline), wspólny chrome i strony w `shells/pages/`.
-  - **`src/lib/`** — Moduły pomocnicze w 5 kategoriach zgodnie z `.clinerules` / `lib-structure.mdc` (`@lib/audio`, `@lib/timeline`, `@lib/timeline-edit`, `@lib/client`, `@lib/shell-operator`). W root `src/lib/` obowiązuje zakaz umieszczania plików.
+  - **`src/lib/`** — Moduły pomocnicze w 5 kategoriach zgodnie z `.clinerules` / [`lib-structure.mdc`](../../.cursor/rules/lib-structure.mdc) (`@lib/audio`, `@lib/timeline`, `@lib/timeline-edit`, `@lib/client`, `@lib/shell-operator`). W root `src/lib/` obowiązuje zakaz umieszczania plików.
   - **`src/transport/`** — Klient transportu / WebSocket (playhead między tickami serwera).
   - **`src/dev/`** — Narzędzia deweloperskie (np. podgląd layoutów).
 - **`public/`** — Zasoby statyczne, w tym oficjalne logotypy, ikony i czcionki.

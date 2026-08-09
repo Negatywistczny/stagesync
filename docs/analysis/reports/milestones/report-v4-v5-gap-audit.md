@@ -72,7 +72,7 @@ Szacunek behawioru **~55–65%** w [report-v4-v5-parity-audit.md](./report-v4-v5
 
 ## 2. Keyboard (KB)
 
-Źródło v4: `timeline.js` ~9621–9889 · v5: `TimelineShell.tsx` keydown ~630–729.
+Źródło v4: `timeline.js` ~9621–9889 · v5: [`TimelineShell.tsx`](../../../../apps/web/src/shells/TimelineShell.tsx) keydown ~630–729.
 
 | ID | Shortcut / temat | v4 | v5 | Sev | Class |
 |----|------------------|----|----|-----|-------|

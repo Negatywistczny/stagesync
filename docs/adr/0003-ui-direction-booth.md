@@ -16,7 +16,7 @@ to **błąd procesu**; korekta w [ADR 0011](./0011-ui-parity-behavior.md).
 ## Decyzja
 
 1. **Paleta domyślna = Booth Amber (black / amber)** — tokeny `--ss-*` tylko w
-   `tokens.css`. Od **5.3** chrome = nazwane profile przez
+   [`tokens.css`](../../apps/desktop/launcher/vendor/tokens.css). Od **5.3** chrome = nazwane profile przez
    `html[data-theme="booth|daylight|midnight|matrix|neon"]` (bez osobnego
    `data-contrast`; Daylight = wariant pod słońce). Niezmienniki Solo / Mute /
    OSMD paper / rozłączność playhead≠locator — [colors.md](../ui/colors.md).
@@ -36,4 +36,4 @@ to **błąd procesu**; korekta w [ADR 0011](./0011-ui-parity-behavior.md).
 
 - Review UI: **gest / workflow → tokeny / gęstość → inventarz** (nie odwrotnie).
 - `TransportProvider` poza redesignem chrome.
-- Nowe skóry = bloki w `tokens.css` + ID w shared — bez forków komponentów.
+- Nowe skóry = bloki w [`tokens.css`](../../apps/desktop/launcher/vendor/tokens.css) + ID w shared — bez forków komponentów.

@@ -4,10 +4,10 @@
 
 message time: 2026-07-27 14:28:15
 
-Jesteś ekspertem od testów API assetów StageSync. Przeanalizuj `apps/server/src/routes/assets.ts` — upload/list/delete/stream plików audio i MusicXML per projekt.
+Jesteś ekspertem od testów API assetów StageSync. Przeanalizuj [`apps/server/src/routes/assets.ts`](../../../../apps/server/src/routes/assets.ts) — upload/list/delete/stream plików audio i MusicXML per projekt.
 
 CEL ANALIZY
-Uzupełnić pokrycie poza `assets-api.test.ts` (E2E) i `assets-router-unit.test.ts` (error paths).
+Uzupełnić pokrycie poza [`assets-api.test.ts`](../../../../apps/server/src/assets-api.test.ts) (E2E) i [`assets-router-unit.test.ts`](../../../../apps/server/src/assets-router-unit.test.ts) (error paths).
 
 PYTANIA BADAWCZE
 1. POST upload: audio vs musicxml kind, `trackId`/`startTicks` multipart fields — wszystkie kombinacje?
@@ -54,7 +54,7 @@ Testy API Assetów StageSync
 
 # Plan Testów i Analiza Pokrycia API Assetów StageSync
 
-Przegląd kodu źródłowego routera assetów w module `apps/server/src/routes/assets.ts` oraz istniejących zestawów testowych w `assets-api.test.ts` i `assets-router-unit.test.ts` wskazuje na konieczność rozbudowy obecnego zestawu weryfikacyjnego . Dotychczasowe testy end-to-end koncentrują się na weryfikacji głównych ścieżek sukcesu przy użyciu rzeczywistego systemu plików , natomiast testy jednostkowe routera skupiają się głównie na mapowaniu błędów zwracanych przez warstwę pamięci masowej `Stores` .
+Przegląd kodu źródłowego routera assetów w module [`apps/server/src/routes/assets.ts`](../../../../apps/server/src/routes/assets.ts) oraz istniejących zestawów testowych w [`assets-api.test.ts`](../../../../apps/server/src/assets-api.test.ts) i [`assets-router-unit.test.ts`](../../../../apps/server/src/assets-router-unit.test.ts) wskazuje na konieczność rozbudowy obecnego zestawu weryfikacyjnego . Dotychczasowe testy end-to-end koncentrują się na weryfikacji głównych ścieżek sukcesu przy użyciu rzeczywistego systemu plików , natomiast testy jednostkowe routera skupiają się głównie na mapowaniu błędów zwracanych przez warstwę pamięci masowej `Stores` .
 
 Poniższy raport przedstawia szczegółową analizę luki pokrycia, odpowiada na kluczowe pytania badawcze, definiuje wzorce mockowania i zabezpieczania testów asynchronicznych oraz dostarcza gotowe do wdrożenia zestawy testowe dla środowiska Vitest.
 
@@ -64,7 +64,7 @@ Poniższy raport przedstawia szczegółową analizę luki pokrycia, odpowiada na
 
 Router assetów odpowiada za obsługę operacji I/O dotyczących plików audio oraz dokumentów MusicXML przypisanych do konkretnych projektów . Przetwarzanie żądań obejmuje parsowanie formularzy multipart przez middleware Multer, walidację rozszerzeń plików, wyznaczanie odpowiednich typów MIME oraz integrację z interfejsem `Stores` w celu trwałego zapisania assetu na dysku lub utworzenia klipów na ścieżkach audio .
 
-| Komponent lub Ścieżka | Plik `assets-api.test.ts` (E2E) | Plik `assets-router-unit.test.ts` | Docelowy Plan Testowy |
+| Komponent lub Ścieżka | Plik [`assets-api.test.ts`](../../../../apps/server/src/assets-api.test.ts) (E2E) | Plik [`assets-router-unit.test.ts`](../../../../apps/server/src/assets-router-unit.test.ts) | Docelowy Plan Testowy |
 | :--- | :--- | :--- | :--- |
 | **Pure Helpers (`extFromName`, `mimeForExt`)** | Testowane pośrednio przez wysyłanie żądań HTTP . | Brak bezpośrednich testów . | Dedykowane testy jednostkowe bez uruchamiania serwera HTTP. |
 | **Kombinacje POST Multipart (`trackId`, `startTicks`)** | Podstawowa obsługa prawidłowych wartości `trackId` i `startTicks` . | Brak pokrycia parametrów formularza . | Pełna matryca kombinacji: zaokrąglanie wartości zmiennoprzecinkowych, ignorowanie wartości ujemnych i niepoprawnych typów. |
@@ -96,7 +96,7 @@ Dla plików audio flaga `createAudioClip` ustawiana jest na `true`, natomiast dl
 
 ### 2. Izolacja i Testowanie Czystych Funkcji Pomocniczych (`mimeForExt` oraz `extFromName`)
 
-Funkcje `extFromName` oraz `mimeForExt` nie posiadają efektów ubocznych i powinny zostać wyeksportowane z modułu `assets.ts` lub wydzielone do osobnego pliku pomocniczego . 
+Funkcje `extFromName` oraz `mimeForExt` nie posiadają efektów ubocznych i powinny zostać wyeksportowane z modułu [`assets.ts`](../../../../apps/server/src/routes/assets.ts) lub wydzielone do osobnego pliku pomocniczego . 
 
 Testy jednostkowe tych funkcji powinny weryfikować następujące przypadki krawędziowe:
 * `extFromName`: konwersja wielkich liter do małych (np. `"VOCAL.WAV"` na `".wav"`), pliki bez rozszerzenia (np. `"README"` na `".bin"`), pliki ukryte (np. `".gitignore"` na `".bin"`) oraz nazwy z wieloma kropkami (np. `"sample.v1.final.flac"` na `".flac"`) .
@@ -177,7 +177,7 @@ export function setupMidStreamErrorMock() {
 
 ## Kompleksowa Implementacja Zestawu Testowego
 
-### Plik 1: Testy Jednostkowe Funkcji Pomocniczych (`assets-helpers.test.ts`)
+### Plik 1: Testy Jednostkowe Funkcji Pomocniczych ([`assets-helpers.test.ts`](../../../../apps/server/src/routes/assets-helpers.test.ts))
 
 ```typescript
 import { describe, expect, it } from "vitest";

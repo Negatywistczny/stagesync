@@ -26,7 +26,7 @@
 | [#690](https://github.com/Negatywistczny/stagesync/pull/690) | fix(a11y): announce audio-track context-menu selection count | Multi track menu label + helper |
 | [#691](https://github.com/Negatywistczny/stagesync/pull/691) | test(server): system router network and logs/clear edges | GET /network mdns off + logs/clear |
 
-**Merge tip:** Prefer **#675**, **#676**, **#690** (include helpers) before closing **#679**. Launcher stack: **#677** → **#684** → **#689** (rebase if `index.html` / `app.js` conflicts). Tests #680–#686 / #691 independent.
+**Merge tip:** Prefer **#675**, **#676**, **#690** (include helpers) before closing **#679**. Launcher stack: **#677** → **#684** → **#689** (rebase if [`index.html`](../../../../apps/desktop/launcher/index.html) / [`app.js`](../../../../apps/desktop/launcher/app.js) conflicts). Tests #680–#686 / #691 independent.
 
 ## Ranked backlog (next)
 
@@ -35,7 +35,7 @@
 3. **Clip multi inspector UX** — #687 announces count; optional grey-out of conflicting primary fields when N>1.
 4. **OSMD / WebMidi `any` adapters** — still deferred (fail-soft boundary); no safe thin PR this window.
 5. **Dead CSS** — TimelineShell.module.css inventarz: 0 orphans; residual Client/Admin only with knip (#602).
-6. **HEX outside tokens** — only OSMD API fallbacks + theme-color meta + `tokens.css` (intentional).
+6. **HEX outside tokens** — only OSMD API fallbacks + theme-color meta + [`tokens.css`](../../../../apps/desktop/launcher/vendor/tokens.css) (intentional).
 7. **Perf observe-only** (TODO) — chord-hero reduced-motion; Mixer meter batch; OSMD cursor-only — skip until profiler.
 8. **Codecov thin routes** — store-failure catches preferred over volume; coverage already dense.
 9. **i18n residual** — keep English DAW jargon (Bus/Out/Snap/…); PL dialogs only.
@@ -52,7 +52,7 @@
 
 ## Notes
 
-- Worked in an **isolated git worktree** from `origin/main` so local user WIP on main (`CHANGELOG.md`, `docs/DESKTOP.md`, `docs/TODO.md`, hygiene report edits, `.cursor/rules/changelog.mdc`) was never staged.
+- Worked in an **isolated git worktree** from `origin/main` so local user WIP on main ([`CHANGELOG.md`](../../../../CHANGELOG.md), `docs/DESKTOP.md`, [`docs/TODO.md`](../../../TODO.md), hygiene report edits, [`.cursor/rules/changelog.mdc`](../../../../.cursor/rules/changelog.mdc)) was never staged.
 - **DAW jargon rule:** left Mixer/Out/Snap/Bus/Fade In/Out/Clip tool names in EN; PL used for dialogs (Wróć/Anuluj/Ponów), „klip(ów)” in inspector sentences, connection statuses, Launcher host copy.
 - **Tonika ≠ Tonacja:** no conflation (map lanes still Tempo / Metrum / Tonacja).
 - No commits or pushes to `main`; no merges.

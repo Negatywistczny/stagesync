@@ -103,7 +103,7 @@ przy starcie już ustawione process env wygrywa z plikiem `.env`. Zapis z UI akt
 | Metoda | Ścieżka | Opis |
 |--------|---------|------|
 | `POST` | `/api/projects` | Utwórz projekt v5 seed (`{ name, fromTemplateId?, isTemplate? }`) → **201** |
-| `GET` | `/api/projects/:id` | Pełny `project.json` (**v5**; auto-upgrade v1…v4→v5 przy odczycie) |
+| `GET` | `/api/projects/:id` | Pełny [`project.json`](../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) (**v5**; auto-upgrade v1…v4→v5 przy odczycie) |
 | `PUT` | `/api/projects/:id` | Pełny dokument bez `id`; `updatedAt` klienta = OCC → mismatch **409**; unknown keys → **400** |
 | `DELETE` | `/api/projects/:id` | Usuń projekt + wpis w indeksie; czyści `activeProjectId` jeśli ten sam → **204** |
 

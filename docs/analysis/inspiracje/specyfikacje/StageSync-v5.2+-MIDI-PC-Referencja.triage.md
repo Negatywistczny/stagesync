@@ -17,7 +17,7 @@
 |------------|------|---------|
 | PC-CH-01 Omni / single | `fixed` | Omni = `null` (default legacy); single = `0…15` |
 | PC-CH-02 schema | `fixed` | `MidiHostConfigSchema` + defaults migracji |
-| PC-CH-03 silent drop + debounce 50 ms | `fixed` | `host.ts` + testy |
+| PC-CH-03 silent drop + debounce 50 ms | `fixed` | [`host.ts`](../../../../apps/server/src/midi/host.ts) + testy |
 | PC-CH-04 Admin + SystemView | `fixed` | ServerSettingsModal + telemetria |
 | PC-CH-05 UT/IT | `fixed` | schema / host / midi-api / pc-load |
 | Multi-channel IN (lista) | `limit` | OUT of scope |

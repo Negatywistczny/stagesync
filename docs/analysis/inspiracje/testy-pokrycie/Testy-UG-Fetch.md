@@ -4,13 +4,13 @@
 
 message time: 2026-07-27 14:23:42
 
-Jesteś ekspertem od testów serwerowych StageSync. Przeanalizuj `apps/server/src/ug/ug-fetch.ts` — pobieranie zakładek Ultimate Guitar (HTML → js-store JSON → ChordPro-lite).
+Jesteś ekspertem od testów serwerowych StageSync. Przeanalizuj [`apps/server/src/ug/ug-fetch.ts`](../../../../apps/server/src/ug/ug-fetch.ts) — pobieranie zakładek Ultimate Guitar (HTML → js-store JSON → ChordPro-lite).
 
 CEL ANALIZY
 Zwiększyć pokrycie parserów HTML/JSON, normalizacji metadanych, wyszukiwania i ścieżek błędów sieciowych w `fetchUgTab` / `searchUgChords` / `resolveUgTabUrl`.
 
 PYTANIA BADAWCZE
-1. Co jest już pokryte w `ug-fetch.test.ts` (pure helpers) vs co wymaga mock `fetch` (async I/O)?
+1. Co jest już pokryte w [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) (pure helpers) vs co wymaga mock `fetch` (async I/O)?
 2. Jak testować: Cloudflare challenge, 403, timeout, 404, brak js-store, nieprawidłowy JSON, typ tab ≠ Chords?
 3. Czy `parseUgSearchResults` + `rankSearchHits` + filtr artist wymagają fixture HTML search?
 4. Jak mockować `fetchUgHtml` / `AbortSignal.timeout` deterministycznie w Vitest?
@@ -20,7 +20,7 @@ PYTANIA BADAWCZE
 KONTEKST
 - Server-side fetch (CORS/Cloudflare); admin tool, nie mass scraping.
 - Shared: `decodeHtmlEntities`, `cleanUgTabContent`, `importUgText`.
-- Vitest; fixture `ug-tab-sample.json` już istnieje.
+- Vitest; fixture [`ug-tab-sample.json`](../../../../apps/server/src/ug/fixtures/ug-tab-sample.json) już istnieje.
 
 OCZEKIWANY OUTPUT
 1. Priorytetowa lista testów unit (pure) + integration (mock fetch).
@@ -54,26 +54,26 @@ Plan Testów Ultimate Guitar
 
 # Analiza Pokrycia Testowego i Strategia Testowania Modułu ug-fetch w Środowisku StageSync
 
-Moduł pobierania i przetwarzania zakładek Ultimate Guitar umieszczony w pliku `apps/server/src/ug/ug-fetch.ts` pełni kluczową rolę w procesie zasilania systemu StageSync w metadane oraz struktury akordowo-tekstowe . Ze względu na wykonywanie operacji po stronie serwera w celu obejścia ograniczeń CORS oraz mechanizmów zabezpieczających Cloudflare, stabilność parsera HTML/JSON oraz odporność na błędy sieciowe ma bezpośredni wpływ na niezawodność całej aplikacji .
+Moduł pobierania i przetwarzania zakładek Ultimate Guitar umieszczony w pliku [`apps/server/src/ug/ug-fetch.ts`](../../../../apps/server/src/ug/ug-fetch.ts) pełni kluczową rolę w procesie zasilania systemu StageSync w metadane oraz struktury akordowo-tekstowe . Ze względu na wykonywanie operacji po stronie serwera w celu obejścia ograniczeń CORS oraz mechanizmów zabezpieczających Cloudflare, stabilność parsera HTML/JSON oraz odporność na błędy sieciowe ma bezpośredni wpływ na niezawodność całej aplikacji .
 
-Obecny zestaw testów w pliku `ug-fetch.test.ts` weryfikuje czyste funkcje pomocnicze oraz podstawową ścieżkę sukcesu z użyciem statycznego pliku fixture `ug-tab-sample.json` . Jednak złożona logika decyzyjna, reakcja na błędne odpowiedzi HTTP, detekcja wyzwań Cloudflare, automatyczne wyznaczanie alternatywnych adresów URL oraz asynchroniczne operacje wejścia/wyjścia pozostają niepokryte .
+Obecny zestaw testów w pliku [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) weryfikuje czyste funkcje pomocnicze oraz podstawową ścieżkę sukcesu z użyciem statycznego pliku fixture [`ug-tab-sample.json`](../../../../apps/server/src/ug/fixtures/ug-tab-sample.json) . Jednak złożona logika decyzyjna, reakcja na błędne odpowiedzi HTTP, detekcja wyzwań Cloudflare, automatyczne wyznaczanie alternatywnych adresów URL oraz asynchroniczne operacje wejścia/wyjścia pozostają niepokryte .
 
 ---
 
 ## Architektura i Podział Odpowiedzialności Testowej
 
-W architekturze systemu StageSync proces importu z Ultimate Guitar jest rozproszony pomiędzy trzy główne warstwy: logikę pobierania serwerowego (`ug-fetch.ts`), router HTTP Express (`routes/import.ts`) oraz moduły wspólnej logiki dziedzinowej (`@stagesync/shared`) . Aby zapewnić czytelność i uniknąć powielania asercji, konieczne jest precyzyjne rozgraniczenie zakresów testowania.
+W architekturze systemu StageSync proces importu z Ultimate Guitar jest rozproszony pomiędzy trzy główne warstwy: logikę pobierania serwerowego ([`ug-fetch.ts`](../../../../apps/server/src/ug/ug-fetch.ts)), router HTTP Express (`routes/import.ts`) oraz moduły wspólnej logiki dziedzinowej (`@stagesync/shared`) . Aby zapewnić czytelność i uniknąć powielania asercji, konieczne jest precyzyjne rozgraniczenie zakresów testowania.
 
-Logika serwerowa w `ug-fetch.ts` odpowiada za komunikację HTTP z serwisem Ultimate Guitar, wyciąganie surowego ciągu JSON z kontenera `js-store`, normalizację metadanych oraz wstępne czyszczenie zawartości . Router w `routes/import.ts` odpowiada wyłącznie za walidację schematów Zod żądań przychodzących, przekazywanie parametrów do `ug-fetch.ts` oraz mapowanie zgłoszonych błędów na odpowiednie kody statusu HTTP . Z kolei moduł `@stagesync/shared` realizuje czyszczenie znaczników wiki, dekodowanie encji HTML oraz konwersję tekstu na sekcje i klipy osi czasu .
+Logika serwerowa w [`ug-fetch.ts`](../../../../apps/server/src/ug/ug-fetch.ts) odpowiada za komunikację HTTP z serwisem Ultimate Guitar, wyciąganie surowego ciągu JSON z kontenera `js-store`, normalizację metadanych oraz wstępne czyszczenie zawartości . Router w `routes/import.ts` odpowiada wyłącznie za walidację schematów Zod żądań przychodzących, przekazywanie parametrów do [`ug-fetch.ts`](../../../../apps/server/src/ug/ug-fetch.ts) oraz mapowanie zgłoszonych błędów na odpowiednie kody statusu HTTP . Z kolei moduł `@stagesync/shared` realizuje czyszczenie znaczników wiki, dekodowanie encji HTML oraz konwersję tekstu na sekcje i klipy osi czasu .
 
-| Obszar Funkcjonalny | Zakres Testowy w `ug-fetch.test.ts` | Zakres Testowy w `routes/import.test.ts` | Zakres Testowy w `@stagesync/shared` |
+| Obszar Funkcjonalny | Zakres Testowy w [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) | Zakres Testowy w `routes/import.test.ts` | Zakres Testowy w `@stagesync/shared` |
 | :--- | :--- | :--- | :--- |
 | **Parsowanie HTML i JSON** | Wyciąganie `js-store`, obsługa odwrotnej kolejności atrybutów XML/HTML, walidacja błędnego JSON-a . | Brak (router zakłada poprawność zwracanych danych z `fetchUgTab`) . | Entity decoding (`decodeHtmlEntities`), czyszczenie znaczników wiki (`cleanUgTabContent`) . |
 | **Normalizacja Metadanych** | Hierarchiczne mapowanie tonacji, tempa, metrum, stroju instrumentu oraz identyfikatorów . | Przekazywanie uzyskanych metadanych w odpowiedzi JSON . | Kanonizacja symboli akordów (`canonicalizePolishH`, `toLiteralStorage`) . |
 | **Obsługa Sieci i Pętla Prób** | Timeouty, statusy 403, Cloudflare challenge, pętla fallback search w `resolveUgTabUrl` . | Mapowanie zgłoszonych błędów sieciowych na statusy HTTP (np. błąd Cloudflare/403 -> HTTP 502) . | Brak. |
 | **Walidacja Typu Tabulatura** | Weryfikacja typu zakładki (`Chords` vs `Pro`/`Guitar Pro`/`Bass`) i rzucenie wyjątku . | Walidacja schema Zod żądania wejściowego (`UgFetchBodySchema`, `UgSearchBodySchema`) . | Podział na sekcje Forma, przeliczanie miar i generowanie klipów (`importUgText`) . |
 
-Aanaliza istniejącego pliku `ug-fetch.test.ts` wykazuje, że pokryte są funkcje bezstanowe, takie jak `isValidUgTabUrl`, `extractTabId`, `parseUgUrlSlug`, `extractDataContentJson` (dla standardowej kolejności atrybutów), `hasUgTabPayload`, `isCloudflareChallenge`, `isUgNotFound` oraz podstawowy przypadek `normalizeUgMetadata` i `buildFetchResult` . Wszystkie funkcje asynchroniczne (`fetchUgHtml`, `resolveUgTabUrl`, `fetchUgTab`, `searchUgChords`) oraz ścieżki obsługi błędów sieciowych wymagają wprowadzenia atrapy (mocka) globalnej funkcji `fetch` .
+Aanaliza istniejącego pliku [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) wykazuje, że pokryte są funkcje bezstanowe, takie jak `isValidUgTabUrl`, `extractTabId`, `parseUgUrlSlug`, `extractDataContentJson` (dla standardowej kolejności atrybutów), `hasUgTabPayload`, `isCloudflareChallenge`, `isUgNotFound` oraz podstawowy przypadek `normalizeUgMetadata` i `buildFetchResult` . Wszystkie funkcje asynchroniczne (`fetchUgHtml`, `resolveUgTabUrl`, `fetchUgTab`, `searchUgChords`) oraz ścieżki obsługi błędów sieciowych wymagają wprowadzenia atrapy (mocka) globalnej funkcji `fetch` .
 
 ---
 
@@ -197,7 +197,7 @@ Funkcja `extractDataContentJson` zawiera dwa niezależne wyrażenia regularne: p
 
 ## Mapa Niepokrytych Gałęzi Kodowych
 
-Poniższa tabela przedstawia zestawienie gałęzi instrukcji warunkowych w `apps/server/src/ug/ug-fetch.ts`, które nie posiadają bezpośrednich asercji w istniejącym zestawie testów .
+Poniższa tabela przedstawia zestawienie gałęzi instrukcji warunkowych w [`apps/server/src/ug/ug-fetch.ts`](../../../../apps/server/src/ug/ug-fetch.ts), które nie posiadają bezpośrednich asercji w istniejącym zestawie testów .
 
 | ID Gałęzi | Funkcja / Obszar | Warunek w Kodzie Source | Przyczyna Braku Pokrycia | Oczekiwany Test Case |
 | :--- | :--- | :--- | :--- | :--- |
@@ -245,7 +245,7 @@ Poniższa tabela przedstawia zestawienie gałęzi instrukcji warunkowych w `apps
 Dla zachowania przejrzystości i szybkości wykonywania testów zaleca się podział fixture'ów na dwie kategorie:
 
 * **Pliki Statyczne (Katalog `fixtures/`)**:
-  * `ug-tab-sample.json`: Pełny plik JSON używany do testowania prawidłowego odczytu metadanych i zawartości akordów (już istnieje w projekcie) .
+  * [`ug-tab-sample.json`](../../../../apps/server/src/ug/fixtures/ug-tab-sample.json): Pełny plik JSON używany do testowania prawidłowego odczytu metadanych i zawartości akordów (już istnieje w projekcie) .
   * `ug-search-sample.json`: Plik JSON zawierający wymieszane wyniki wyszukiwania (`Chords`, `Pro`, wpisy z `marketing_type`, zróżnicowana liczba głosów) do weryfikacji funkcji `parseUgSearchResults` i `rankSearchHits` .
 
 * **Minimalne Stringi Inline (Bezpośrednio w Kodzie Testu)**:

@@ -134,7 +134,7 @@ był ten projekt.
 
 Admin → Host → **Sprawdź aktualizacje** → **Aktualizuj host**.
 
-Wymagane: `compose.prod.yml` z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WATCHTOWER_TOKEN` ustawione.
+Wymagane: [`compose.prod.yml`](../../compose.prod.yml) z Watchtower + zmienne `STAGESYNC_UPDATER_*` / `WATCHTOWER_TOKEN` ustawione.
 
 ~30s przerwy WS podczas restartu kontenera. Dane na volume bez zmian.
 
@@ -223,7 +223,7 @@ APK Performer/Console serwowane są automatycznie z bundla instalacji / monorepo
 ### Dev — dane w repo (domyślne)
 
 Lokalne środowisko dev trzyma dane w `<repo>/data` dzięki `STAGESYNC_REPO_DEV=1`
-w `.env` (ustawione domyślnie w `.env.example`). Nie trzeba nic zmieniać.
+w `.env` (ustawione domyślnie w [`.env.example`](../../.env.example)). Nie trzeba nic zmieniać.
 
 ### Sentry (opcjonalne)
 
@@ -243,10 +243,10 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 | `STAGESYNC_DATA_DIR` | `~/Documents/StageSync` (desktop) · `/app/data` (Compose) | Library + projects |
 | `STAGESYNC_DOWNLOADS_DIR` | (auto) | Nadpisanie katalogu APK; desktop lokalny host ustawia bundel / monorepo `data/downloads` |
 | `STAGESYNC_APK_BUNDLE_DIR` | obok seeda (`data/downloads`) | Read-only fallback APK (gdy brak w dataDir) |
-| `STAGESYNC_REPO_DEV` | `1` (z `.env.example`) | Wymusza `<repo>/data` w trybie dev |
+| `STAGESYNC_REPO_DEV` | `1` (z [`.env.example`](../../.env.example)) | Wymusza `<repo>/data` w trybie dev |
 | `STAGESYNC_STATIC_DIR` | `/app/web` (obraz) | Vite `dist` serwowany przez Node |
 | `STAGESYNC_URL` | `http://127.0.0.1:4000` | URL dla shella Tauri |
-| `STAGESYNC_VERSION` | — | Tag obrazu GHCR (`compose.prod.yml`) |
+| `STAGESYNC_VERSION` | — | Tag obrazu GHCR ([`compose.prod.yml`](../../compose.prod.yml)) |
 | `GHCR_USER` / `GHCR_TOKEN` | — | Poświadczenia Watchtower do GHCR |
 | `WATCHTOWER_TOKEN` | — | Shared secret Watchtower HTTP API |
 | `STAGESYNC_UPDATER_URL` | — | URL Watchtower (`http://watchtower:8080`) |
@@ -261,7 +261,7 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 | `SENTRY_DSN` | — | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII) |
 | `VITE_SENTRY_DSN` | — | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania) |
 
-Wzór: [`.env.example`](../../.env.example). Decyzja: [ADR 0012](../adr/0012-user-data-location.md).
+Wzór: [[`.env.example`](../../.env.example)](../../.env.example). Decyzja: [ADR 0012](../adr/0012-user-data-location.md).
 
 **Host restart/shutdown:** z `localhost` zawsze dozwolone (desktop / Tauri). Z innej maszyny w LAN —
 ustaw `STAGESYNC_HOST_TOKEN` (Admin: `localStorage.stagesync.hostToken`) albo świadomie

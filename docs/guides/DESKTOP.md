@@ -264,7 +264,7 @@ winget install -e --id Microsoft.EdgeWebView2Runtime
 winget install -e --id Rustlang.Rustup
 ```
 
-Weryfikacja: `rustc -V`, `cargo -V`, `node -v` oraz że w Installerze VS widać workload C++. Skrypt `apps/desktop/scripts/check-rust.mjs` (uruchamiany przy `pnpm --filter @stagesync/desktop dev`) przypomni o użyciu `setup.ps1` w razie braku Rusta.
+Weryfikacja: `rustc -V`, `cargo -V`, `node -v` oraz że w Installerze VS widać workload C++. Skrypt [`apps/desktop/scripts/check-rust.mjs`](../../apps/desktop/scripts/check-rust.mjs) (uruchamiany przy `pnpm --filter @stagesync/desktop dev`) przypomni o użyciu [`setup.ps1`](../../scripts/setup/setup.ps1) w razie braku Rusta.
 
 MSI: jeśli `light.exe` / VBSCRIPT pada przy buildzie instalatora — włącz funkcję opcjonalną VBSCRIPT (Ustawienia → Funkcje opcjonalne / „Więcej funkcji systemu Windows”); szczegóły w docs Tauri.
 

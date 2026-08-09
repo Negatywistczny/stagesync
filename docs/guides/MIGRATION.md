@@ -55,7 +55,7 @@ Co robi:
 3. Aktualizuje `data/library/library.json` (merge po `id`).
 4. Zapisuje `data/library/setlist.json` z zmapowanymi id.
 
-Istniejące `project.json` / `setlist.json` dostają `.bak` przed nadpisaniem.
+Istniejące [`project.json`](../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) / `setlist.json` dostają `.bak` przed nadpisaniem.
 
 ## Mapowanie (skrót)
 

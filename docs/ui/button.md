@@ -1,8 +1,8 @@
 # Button (`@stagesync/ui`)
 
 Kanoniczny przycisk StageSync. Źródło:
-[`packages/ui/src/button.tsx`](../../packages/ui/src/button.tsx),
-[`button.css`](../../packages/ui/src/button.css).
+[[`packages/ui/src/button.tsx`](../../packages/ui/src/button.tsx)](../../packages/ui/src/button.tsx),
+[[`button.css`](../../apps/desktop/launcher/vendor/button.css)](../../packages/ui/src/button.css).
 
 Zamknięty zbiór stanów — konstytucja; **nie** twórz `Button2` ani lokalnych
 przycisków CSS w shellach.
@@ -20,7 +20,7 @@ przycisków CSS w shellach.
 | … | atrybuty `<button>` | `type`, `onClick`, itd. (bez `children` w Omit) |
 
 **Desktop launcher (bez React):** te same klasy `ss-btn` / `ss-btn--*` z
-`pnpm sync:launcher-ui` → `apps/desktop/launcher/vendor/button.css`
+`pnpm sync:launcher-ui` → [`apps/desktop/launcher/vendor/button.css`](../../apps/desktop/launcher/vendor/button.css)
 ([ADR 0014](../adr/0014-desktop-launcher.md)).
 
 ## Stany (zamknięty zbiór)

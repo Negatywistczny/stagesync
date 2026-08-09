@@ -27,7 +27,7 @@ Merge order tip: **481 before 489/484** (tokens first); then a11y/tests; **#486 
 
 ## Ranked backlog (next)
 
-1. **OSMD cursor hex in JS** — `scoreOsmd.ts` still needs concrete `#fbbf24` / `#22d3ee` for OSMD API.
+1. **OSMD cursor hex in JS** — [`scoreOsmd.ts`](../../../../apps/web/src/lib/timeline-edit/scoreOsmd.ts) still needs concrete `#fbbf24` / `#22d3ee` for OSMD API.
 2. **Dead CSS audit** — purge unused Timeline/Client module classes (knip/purify pass).
 3. **Icon-only Timeline tool overflow** — verify tools-vis / eye / dock-add names on narrow widths.
 4. **i18n consistency** — PL a11y strings vs EN storage IDs (audit only).

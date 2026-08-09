@@ -29,7 +29,7 @@
 
 ## Confirmed vs hypothesis
 
-- **Confirmed (na dysku / MVP shell):** dwa APK apps, sideload endpoints, QR join/APK, dual wake-lock, role UI bundles, Offline-First gate + dialog „Zastosuj”, decyzja produktowa Console=pełny parytet + host IN, Console lokalny host (JNI/`libnode`/assets/host) w domyślnym `build-apk.sh`, JVM unit tests (SemVer / QR / UiSync / LocalHostRuntime).
+- **Confirmed (na dysku / MVP shell):** dwa APK apps, sideload endpoints, QR join/APK, dual wake-lock, role UI bundles, Offline-First gate + dialog „Zastosuj”, decyzja produktowa Console=pełny parytet + host IN, Console lokalny host (JNI/`libnode`/assets/host) w domyślnym [`build-apk.sh`](../../../../apps/console/scripts/build-apk.sh), JVM unit tests (SemVer / QR / UiSync / LocalHostRuntime).
 - **Residual gap:** H-01 **profil HW** (sonda gotowa; bez split/throttle); #692 delta; operatorskie smoke P-HW/C-HW **bez claim green**; native MIDI na Android Console host; signed release keystore gdy CI.
 - Issue [#674](https://github.com/Negatywistczny/stagesync/issues/674) / [#692](https://github.com/Negatywistczny/stagesync/issues/692) już w TODO — **nie** duplikować bulletów z dumpu.
 

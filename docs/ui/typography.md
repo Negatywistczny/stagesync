@@ -1,6 +1,6 @@
 # Typografia (`--ss-text-*` / weight / leading / tracking)
 
-Źródło: [`packages/ui/src/tokens.css`](../../packages/ui/src/tokens.css).  
+Źródło: [[`packages/ui/src/tokens.css`](../../packages/ui/src/tokens.css)](../../packages/ui/src/tokens.css).  
 **Zakaz** ad-hoc `font-size`, `font-weight`, `line-height`, `letter-spacing` w
 shellach i `@stagesync/ui` — tylko tokeny poniżej.
 
@@ -23,7 +23,7 @@ Alias: `--ss-font-size` → `var(--ss-text-control)` (domyślny rozmiar UI).
 
 ### Skala sceniczna (Client / PWA)
 
-Fluid `clamp()` **tylko** w `tokens.css` jako `--ss-text-stage-*` — shelly używają `var(...)`.
+Fluid `clamp()` **tylko** w [`tokens.css`](../../apps/desktop/launcher/vendor/tokens.css) jako `--ss-text-stage-*` — shelly używają `var(...)`.
 
 | Token | Rola |
 |-------|------|

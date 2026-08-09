@@ -151,7 +151,7 @@ Brak integracji sygnałów anulowania, takich jak `AbortSignal`, z asynchroniczn
 
 ## Testy Vitest (Turn-Red Tests)
 
-Poniższy pakiet testów jednostkowych został opracowany w celu ujawnienia wszystkich zidentyfikowanych luk bezpieczeństwa i błędów logicznych w dotychczasowej implementacji silnika `audioPlayback.ts` . Każdy z poniższych testów weryfikuje konkretną podatność opisaną w raporcie i w obecnym stanie bazy kodowej zakończy się niepowodzeniem (zwróci czerwony wynik). Testy te należy zintegrować z plikiem `audioPlayback.test.ts` .
+Poniższy pakiet testów jednostkowych został opracowany w celu ujawnienia wszystkich zidentyfikowanych luk bezpieczeństwa i błędów logicznych w dotychczasowej implementacji silnika [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) . Każdy z poniższych testów weryfikuje konkretną podatność opisaną w raporcie i w obecnym stanie bazy kodowej zakończy się niepowodzeniem (zwróci czerwony wynik). Testy te należy zintegrować z plikiem [`audioPlayback.test.ts`](../../../../apps/web/src/lib/audio/audioPlayback.test.ts) .
 
 ```typescript
 import { afterEach, describe, expect, it, vi } from "vitest";

@@ -63,7 +63,7 @@ open/partial/closed → superseded (gdy powstanie reports/report-…)
 ## Zasady
 
 1. **Nie** linkuj inspiracji z CHANGELOG / claimów „Done”.
-2. Do `TODO.md` / issue tylko hipotezy ze stanem **`confirmed`** (nie cały dump).
+2. Do [`TODO.md`](../../TODO.md) / issue tylko hipotezy ze stanem **`confirmed`** (nie cały dump).
 3. Workflow: dump → triage (`open` lub `archive`) → weryfikacja → `partial`/`closed` → opcjonalnie `reports/report-<temat>.md` (`superseded`).
 4. Nazwy plików: ASCII (`Sciezek` nie `Ścieżek`).
 5. Ocena w `*.triage.md`, nie w środku dumpa.
@@ -144,16 +144,16 @@ Plany testów (Gemini Deep Search, 2026-07-27). Epic coverage (2026-07-27): **4�
 
 | Raport | Moduł | Triage | Status |
 |--------|-------|--------|--------|
-| [Analiza-Walidacji-Zod-Schema.md](./testy-pokrycie/Analiza-Walidacji-Zod-Schema.md) | `packages/shared` `schema.ts` | [triage](./testy-pokrycie/Analiza-Walidacji-Zod-Schema.triage.md) | `closed` |
+| [Analiza-Walidacji-Zod-Schema.md](./testy-pokrycie/Analiza-Walidacji-Zod-Schema.md) | `packages/shared` [`schema.ts`](../../../packages/shared/src/schema.ts) | [triage](./testy-pokrycie/Analiza-Walidacji-Zod-Schema.triage.md) | `closed` |
 | [Analiza-Testow-System-Routes.md](./testy-pokrycie/Analiza-Testow-System-Routes.md) | `apps/server` `routes/system.ts` | [triage](./testy-pokrycie/Analiza-Testow-System-Routes.triage.md) | `closed` |
 | [Testy-WebSocket-Server.md](./testy-pokrycie/Testy-WebSocket-Server.md) | `apps/server` `transport/ws.ts` | [triage](./testy-pokrycie/Testy-WebSocket-Server.triage.md) | `partial` |
 | [Analiza-Testow-API-Assets.md](./testy-pokrycie/Analiza-Testow-API-Assets.md) | `apps/server` `routes/assets.ts` | [triage](./testy-pokrycie/Analiza-Testow-API-Assets.triage.md) | `partial` |
 | [Analiza-Testow-MIDI-Host.md](./testy-pokrycie/Analiza-Testow-MIDI-Host.md) | `apps/server` `midi/host.ts` | [triage](./testy-pokrycie/Analiza-Testow-MIDI-Host.triage.md) | `partial` |
 | [Testy-UG-Fetch.md](./testy-pokrycie/Testy-UG-Fetch.md) | `apps/server` `ug/ug-fetch.ts` | [triage](./testy-pokrycie/Testy-UG-Fetch.triage.md) | `partial` |
-| [Testowanie-Vitest-AudioPlayback.md](./testy-pokrycie/Testowanie-Vitest-AudioPlayback.md) | `apps/web` `audioPlayback.ts` | [triage](./testy-pokrycie/Testowanie-Vitest-AudioPlayback.triage.md) | `partial` |
-| [Analiza-Pokrycia-Audio-Lane-Edit.md](./testy-pokrycie/Analiza-Pokrycia-Audio-Lane-Edit.md) | `apps/web` `audioLaneEdit.ts` | [triage](./testy-pokrycie/Analiza-Pokrycia-Audio-Lane-Edit.triage.md) | `partial` |
-| [Testy-Desktop-File-Menu.md](./testy-pokrycie/Testy-Desktop-File-Menu.md) | `apps/web` `desktopFileMenu.ts` | [triage](./testy-pokrycie/Testy-Desktop-File-Menu.triage.md) | `closed` |
-| [Analiza-Importu-ChordProUG.md](./testy-pokrycie/Analiza-Importu-ChordProUG.md) | `packages/shared` `ug-import.ts` | [triage](./testy-pokrycie/Analiza-Importu-ChordProUG.triage.md) | `partial` |
-| [Analiza-Luki-Testow-Wand.md](./testy-pokrycie/Analiza-Luki-Testow-Wand.md) | `packages/shared` `wand.ts` | [triage](./testy-pokrycie/Analiza-Luki-Testow-Wand.triage.md) | `closed` |
+| [Testowanie-Vitest-AudioPlayback.md](./testy-pokrycie/Testowanie-Vitest-AudioPlayback.md) | `apps/web` [`audioPlayback.ts`](../../../apps/web/src/lib/audio/audioPlayback.ts) | [triage](./testy-pokrycie/Testowanie-Vitest-AudioPlayback.triage.md) | `partial` |
+| [Analiza-Pokrycia-Audio-Lane-Edit.md](./testy-pokrycie/Analiza-Pokrycia-Audio-Lane-Edit.md) | `apps/web` [`audioLaneEdit.ts`](../../../apps/web/src/lib/audio/audioLaneEdit.ts) | [triage](./testy-pokrycie/Analiza-Pokrycia-Audio-Lane-Edit.triage.md) | `partial` |
+| [Testy-Desktop-File-Menu.md](./testy-pokrycie/Testy-Desktop-File-Menu.md) | `apps/web` [`desktopFileMenu.ts`](../../../apps/web/src/lib/client/desktopFileMenu.ts) | [triage](./testy-pokrycie/Testy-Desktop-File-Menu.triage.md) | `closed` |
+| [Analiza-Importu-ChordProUG.md](./testy-pokrycie/Analiza-Importu-ChordProUG.md) | `packages/shared` [`ug-import.ts`](../../../packages/shared/src/ug-import.ts) | [triage](./testy-pokrycie/Analiza-Importu-ChordProUG.triage.md) | `partial` |
+| [Analiza-Luki-Testow-Wand.md](./testy-pokrycie/Analiza-Luki-Testow-Wand.md) | `packages/shared` [`wand.ts`](../../../packages/shared/src/wand.ts) | [triage](./testy-pokrycie/Analiza-Luki-Testow-Wand.triage.md) | `closed` |
 
-**Residual (partial):** `assets.ts` stream po `headersSent`, `routes/import.ts` UG errors, `audioPlayback` helper matrix, opcjonalne macierze MIDI/ug-import/audio lane.
+**Residual (partial):** [`assets.ts`](../../../apps/server/src/routes/assets.ts) stream po `headersSent`, `routes/import.ts` UG errors, `audioPlayback` helper matrix, opcjonalne macierze MIDI/ug-import/audio lane.

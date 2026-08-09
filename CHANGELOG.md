@@ -17,17 +17,17 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 #### 🔧 Infrastruktura
-- **Skrypty instalacyjne:** nowe w pełni interaktywne skrypty `setup.ps1` (Windows) oraz `setup.sh` (Linux/macOS) automatyzujące instalację środowiska dev (Node.js 22, pnpm, Rust, MSVC, WebView2) bez konieczności ręcznego restartu terminala i wpisywania komend. Skrypty te stają się zalecaną ścieżką startową opisaną w docs.
+- **Skrypty instalacyjne:** nowe w pełni interaktywne skrypty [`setup.ps1`](./scripts/setup/setup.ps1) (Windows) oraz [`setup.sh`](./scripts/setup/setup.sh) (Linux/macOS) automatyzujące instalację środowiska dev (Node.js 22, pnpm, Rust, MSVC, WebView2) bez konieczności ręcznego restartu terminala i wpisywania komend. Skrypty te stają się zalecaną ścieżką startową opisaną w docs.
 
 #### 🖥️ App Shell & Desktop
 - **Splashscreen:** dodano natywny ekran ładowania podczas startu launchera, który automatycznie chowa się po inicjalizacji, zapobiegając błyskaniu okna.
-- **Narzędzia pre-build:** dodano skrypty `check-rust.mjs` i `kill-zombies.mjs`, zapewniając odpowiednią wersję środowiska Rust i sprzątając osierocone procesy Tauri przed ponownym buildem (`pnpm dev` / `build`).
+- **Narzędzia pre-build:** dodano skrypty [`check-rust.mjs`](./apps/desktop/scripts/check-rust.mjs) i [`kill-zombies.mjs`](./apps/desktop/scripts/kill-zombies.mjs), zapewniając odpowiednią wersję środowiska Rust i sprzątając osierocone procesy Tauri przed ponownym buildem (`pnpm dev` / `build`).
 - **Dev Preview:** integracja globalnych skrótów klawiszowych (Alt+1/2/3 itd.) z iframe'ami preview za pomocą `postMessage`.
 
 ### Zmieniono
 
 #### 📚 Dokumentacja
-- **Desktop (dev):** w przewodniku DESKTOP oraz CONTRIBUTING wskazano zautomatyzowane skrypty instalacyjne (`setup.ps1` / `setup.sh`) jako główną (zalecaną) metodę przygotowania toolchainu Tauri, a ręczne komendy `winget` zostały przeniesione do sekcji alternatywnej. Odróżniono też `pnpm dev` (web) od kompilacji shella.
+- **Desktop (dev):** w przewodniku DESKTOP oraz CONTRIBUTING wskazano zautomatyzowane skrypty instalacyjne ([`setup.ps1`](./scripts/setup/setup.ps1) / [`setup.sh`](./scripts/setup/setup.sh)) jako główną (zalecaną) metodę przygotowania toolchainu Tauri, a ręczne komendy `winget` zostały przeniesione do sekcji alternatywnej. Odróżniono też `pnpm dev` (web) od kompilacji shella.
 
 #### 🖥️ App Shell & Desktop
 - **Instalator Windows:** zmieniono format budowania na zoptymalizowany instalator NSIS (.exe) działający w trybie szybkiej, cichej dekompresji ("Minimal Extraction Banner") z automatycznym startem aplikacji, co zastępuje dotychczasowy kreator WiX `.msi`.
@@ -476,7 +476,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
-- **Admin Host — aktualizacje:** przycisk **Aktualizuj host** pojawia się tylko gdy Watchtower jest skonfigurowany; bez `STAGESYNC_UPDATER_*` widać jasną wskazówkę (Docker: `compose.prod.yml`, inaczej instalator z Releases) zamiast błędu po kliknięciu.
+- **Admin Host — aktualizacje:** przycisk **Aktualizuj host** pojawia się tylko gdy Watchtower jest skonfigurowany; bez `STAGESYNC_UPDATER_*` widać jasną wskazówkę (Docker: [`compose.prod.yml`](./compose.prod.yml), inaczej instalator z Releases) zamiast błędu po kliknięciu.
 
 ## [5.2.7](https://github.com/Negatywistczny/stagesync/compare/v5.2.6...v5.2.7) - 2026-07-26
 
@@ -489,7 +489,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 - **Console (Android):** powiadomienie lokalnego hosta jest trwałe (nie da się go zrzucić gestem) — zatrzymanie tylko akcją **Zatrzymaj Host**, która bezpiecznie gasi silnik i zdejmuje foreground.
-- **Console (Android) — aktualizacje:** „Sprawdź aktualizacje” w Host nie sugeruje już Watchtower / `compose.prod.yml` ani „Desktop: pobierz instalator” — na tablecie / w APK aktualizacje to nowy APK (Releases / karta Połączenie & Sieć), także gdy mostek `StageSyncNative` nie złapie od razu.
+- **Console (Android) — aktualizacje:** „Sprawdź aktualizacje” w Host nie sugeruje już Watchtower / [`compose.prod.yml`](./compose.prod.yml) ani „Desktop: pobierz instalator” — na tablecie / w APK aktualizacje to nowy APK (Releases / karta Połączenie & Sieć), także gdy mostek `StageSyncNative` nie złapie od razu.
 
 ## [5.2.6](https://github.com/Negatywistczny/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
 
@@ -992,7 +992,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Naprawiono
 
-- **Desktop (Windows):** sidecar Node padał przy starcie z MSI z `EISDIR: lstat 'C:'` — Tauri `resource_dir()` zwraca ścieżki Win32 `\\?\C:\…`, a Node przy takim main module path zawodzi ([nodejs/node#62446](https://github.com/nodejs/node/issues/62446)). Shell spawnuje teraz względne `dist/index.js` + cwd bez prefiksu verbatim; assert ścieżek + self-test w `build-desktop-sidecar.mjs`.
+- **Desktop (Windows):** sidecar Node padał przy starcie z MSI z `EISDIR: lstat 'C:'` — Tauri `resource_dir()` zwraca ścieżki Win32 `\\?\C:\…`, a Node przy takim main module path zawodzi ([nodejs/node#62446](https://github.com/nodejs/node/issues/62446)). Shell spawnuje teraz względne `dist/index.js` + cwd bez prefiksu verbatim; assert ścieżek + self-test w [`build-desktop-sidecar.mjs`](./apps/desktop/scripts/build-desktop-sidecar.mjs).
 
 ## [5.0.0-alpha.12](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.11...v5.0.0-alpha.12) - 2026-07-21
 
@@ -1013,7 +1013,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **Desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ**; ostatni utwór Timeline w `localStorage` + sync do menu natywnego; deep link `/admin?section=host`.
-- **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed `library.template.json` + `seed-projects/`; parity z legacy v4).
+- **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed [`library.template.json`](./apps/desktop/src-tauri/resources/sidecar/seed/library.template.json) + `seed-projects/`; parity z legacy v4).
 - **Admin → O aplikacji:** przycisk „Zgłoś błąd lub pomysł” (GitHub Issues).
 
 ### Zmieniono
@@ -1026,7 +1026,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Naprawiono
 
 - **Desktop:** wykrywanie shella Tauri na `http://127.0.0.1:4000` (fallback hostname/port, meta `stagesync-shell`, marker na początku `<head>`, `Cache-Control: no-store` na HTML) — fullscreen / updater / `openExternalUrl` przy cache WebView bez injectu.
-- **Desktop sidecar:** Tauri rozwija symlinki pnpm w bundle ([tauri#13219](https://github.com/tauri-apps/tauri/issues/13219)) — host padał z `ERR_MODULE_NOT_FOUND` (`zod` / transitive deps), a UI pokazywał mylący komunikat o zajętym porcie `4000`. `build-desktop-sidecar.mjs` spłaszcza `node_modules` do realnych pakietów (bez `.pnpm`); assert + `--fix-app` / `--materialize-node-modules`.
+- **Desktop sidecar:** Tauri rozwija symlinki pnpm w bundle ([tauri#13219](https://github.com/tauri-apps/tauri/issues/13219)) — host padał z `ERR_MODULE_NOT_FOUND` (`zod` / transitive deps), a UI pokazywał mylący komunikat o zajętym porcie `4000`. [`build-desktop-sidecar.mjs`](./apps/desktop/scripts/build-desktop-sidecar.mjs) spłaszcza `node_modules` do realnych pakietów (bez `.pnpm`); assert + `--fix-app` / `--materialize-node-modules`.
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
 
 ## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21
@@ -1036,13 +1036,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **Standalone desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** Tauri spawnuje wbudowany Node sidecar (`stagesync-host`), czeka na `GET /api/health`, ładuje UI; shutdown przy zamknięciu okna; czytelny ekran błędu przy konflikcie portu `4000`; dev fallback przez `STAGESYNC_URL` gdy brak bundla sidecara.
-- **Desktop sidecar packaging:** `launch/scripts/build-desktop-sidecar.mjs` — Node runtime per architektura, `pnpm deploy --prod @stagesync/server`, web `dist`, seed `library.template.json`; `bundle.externalBin` + `bundle.resources` w Tauri; `STAGESYNC_SEED_DIR` w serwerze; CI `--smoke` (health + higiena docs).
-- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + `compose.yml`, volume `data/`); docs [INSTALL.md](./docs/guides/INSTALL.md) / [DESKTOP.md](./docs/guides/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
+- **Desktop sidecar packaging:** `launch/scripts/build-desktop-sidecar.mjs` — Node runtime per architektura, `pnpm deploy --prod @stagesync/server`, web `dist`, seed [`library.template.json`](./apps/desktop/src-tauri/resources/sidecar/seed/library.template.json); `bundle.externalBin` + `bundle.resources` w Tauri; `STAGESYNC_SEED_DIR` w serwerze; CI `--smoke` (health + higiena docs).
+- **β1 host / dystrybucja:** Docker Compose (`Dockerfile` + [`compose.yml`](./compose.yml), volume `data/`); docs [INSTALL.md](./docs/guides/INSTALL.md) / [DESKTOP.md](./docs/guides/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
 - **Folder danych użytkownika:** domyślny `STAGESYNC_DATA_DIR` = `~/Documents/StageSync` (desktop/host; macOS + Windows); dev: `STAGESYNC_REPO_DEV=1` zachowuje `<repo>/data`; Docker: jawne `/app/data` bez zmian ([ADR 0012](docs/adr/0012-user-data-location.md)).
-- **β1 release pipeline:** `release.yml` (GHCR private, Tauri mac/win, minisign updater, GitHub Release); `compose.prod.yml` + Watchtower HTTP-only (update na żądanie, bez auto-poll).
-- **β1 aktualizacje na żądanie (ADR 0004 amendement):** `GET /api/system/update-status` + `POST /api/system/apply-update` (Watchtower trigger); Admin → Sprawdź / Aktualizuj host; `desktopBridge.ts` + Tauri updater (minisign); Admin → Aktualizuj aplikację w shellu Tauri.
-- Pełny zestaw ikon Tauri (`icons/icon.icns`, `icon.ico`, `32x32.png` itd.) z marki [stagesync-mark.svg](apps/web/public/brand/stagesync-mark.svg).
-- **Dokumentacja in-app vs GitHub ([ADR 0013](docs/adr/0013-in-app-vs-github-docs.md)):** Timeline — skróty `?` / `Esc` dla overlay pomocy; Admin → O aplikacji — link „Pełna instrukcja na GitHubie”, bilan hosta, `open_external_url` w Tauri; `.gitignore` artefaktów sidecar; assert higieny docs w `build-desktop-sidecar.mjs`.
+- **β1 release pipeline:** `release.yml` (GHCR private, Tauri mac/win, minisign updater, GitHub Release); [`compose.prod.yml`](./compose.prod.yml) + Watchtower HTTP-only (update na żądanie, bez auto-poll).
+- **β1 aktualizacje na żądanie (ADR 0004 amendement):** `GET /api/system/update-status` + `POST /api/system/apply-update` (Watchtower trigger); Admin → Sprawdź / Aktualizuj host; [`desktopBridge.ts`](./apps/web/src/lib/client/desktopBridge.ts) + Tauri updater (minisign); Admin → Aktualizuj aplikację w shellu Tauri.
+- Pełny zestaw ikon Tauri (`icons/icon.icns`, [`icon.ico`](./apps/desktop/src-tauri/icons/icon.ico), [`32x32.png`](./apps/desktop/src-tauri/icons/32x32.png) itd.) z marki [stagesync-mark.svg](apps/web/public/brand/stagesync-mark.svg).
+- **Dokumentacja in-app vs GitHub ([ADR 0013](docs/adr/0013-in-app-vs-github-docs.md)):** Timeline — skróty `?` / `Esc` dla overlay pomocy; Admin → O aplikacji — link „Pełna instrukcja na GitHubie”, bilan hosta, `open_external_url` w Tauri; `.gitignore` artefaktów sidecar; assert higieny docs w [`build-desktop-sidecar.mjs`](./apps/desktop/scripts/build-desktop-sidecar.mjs).
 
 ### Zmieniono
 
@@ -1070,7 +1070,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline:** panel narzędzi pod **T** (menu przy kursorze + litery jak v4); **Alt/⌥+drag** = duplikat clipów (TE-07); live preview multi-drag; loop region **snap na podglądzie** (beat; Cmd/Ctrl = off).
 - Docs: playbook PO smoke P8 ([report-po-smoke-p8.md](docs/analysis/reports/milestones/report-po-smoke-p8.md)); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
 - **Client stage content (override ADR 0011 — treść tylko):** wizualny port Karaoke / Grid / Forma / Score stub z v4 `client.css` (fonty, kafelki, hero Formy + poziomy strip, pasek taktów karaoke); chrome (header, settings, role buttons) zostaje v5. CL-P0: progress `--beat-progress` w sekcjach bez tekstu, karuzela Grid + hero „nast.”, Forma past/current. Inventarz CL-R-* = content clone.
-- **Migrator M9:** fixture `docs/examples/legacy/database.typical.json` + pack v5 `docs/examples/v5/library.pack.sample.stagesync.json`; smoke testy + dry-run w CI.
+- **Migrator M9:** fixture [`docs/examples/legacy/database.typical.json`](./docs/examples/legacy/database.typical.json) + pack v5 [`docs/examples/v5/library.pack.sample.stagesync.json`](./docs/examples/v5/library.pack.sample.stagesync.json); smoke testy + dry-run w CI.
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
 - **Admin Utwory (pod Wybrany):** import legacy `database.json` z auto-detect (v5 pack vs 4.x `songs[]`) + migracja `migrateLegacy`* przy `POST /api/library/import`; ZIP odroczony (komunikat PL).
 - **Timeline:** marquee + multi-select (`items` id+lane / `primaryId`; zaznaczenie **cross-lane** jak v4) + multi-drag same lane (live preview całej grupy; po puścieniu zachowane zaznaczenie) + clipboard ⌘C/X/V/D (Forma/Tekst/Akordy/Cue; paste przy locatorze; copy = primary lane); hit-test `data-clip-lane`; pusty obszar pod trackami = marquee/clear — parity zachowania v4, nie clone CSS.
@@ -1183,7 +1183,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Client karaoke:** rola Tekst z live kontekstem projektu (sekcja Formy, BBT, tempo/metrum przy transporcie); placeholder braku linii wokalu (`KaraokePane`, `clientKaraoke.ts`).
+- **Client karaoke:** rola Tekst z live kontekstem projektu (sekcja Formy, BBT, tempo/metrum przy transporcie); placeholder braku linii wokalu (`KaraokePane`, [`clientKaraoke.ts`](./apps/web/src/lib/client/clientKaraoke.ts)).
 - **Client shell:** `useActiveProject`, `DrumsPane`; ikony kart ról na ekranie welcome (parity v4).
 - **Timeline:** tokeny warstw `--ss-z-`*; locator (bursztynowy) + playhead MIDI (cyjan) na linijce w stylu v4.
 
@@ -1196,9 +1196,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Timeline track grid:** wspólna siatka wierszy dock ↔ lane (`trackRow`, sticky dock); kolejność v4 (Specjalne nad treścią); eye menu per ślad (`timelineTracks.ts`).
-- **Lane Tempo/Metrum:** read-only segmenty z `tempoMap` / `meterMap` (`mapSegments.ts`).
-- **Inspector Formy:** rename sekcji + długość Countdown (takty) → draft → PUT (`formaInspector.ts`).
+- **Timeline track grid:** wspólna siatka wierszy dock ↔ lane (`trackRow`, sticky dock); kolejność v4 (Specjalne nad treścią); eye menu per ślad ([`timelineTracks.ts`](./apps/web/src/lib/timeline/timelineTracks.ts)).
+- **Lane Tempo/Metrum:** read-only segmenty z `tempoMap` / `meterMap` ([`mapSegments.ts`](./apps/web/src/lib/timeline/mapSegments.ts)).
+- **Inspector Formy:** rename sekcji + długość Countdown (takty) → draft → PUT ([`formaInspector.ts`](./apps/web/src/lib/timeline-edit/formaInspector.ts)).
 - **Dirty guard:** `beforeunload` + React Router `useBlocker` przy nawigacji z niezapisanym draftem.
 - `loadTransport` **w Timeline:** jawne ładowanie map przy otwarciu projektu.
 - **Admin:** przycisk ukrycia panelu na krawędzi splitu; empty state „Pliki projektu”.
@@ -1218,7 +1218,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **ProjectSchema v2** (strict): `forma.clips`, `tempoMap`, `meterMap`, seed Countdown
 −7680; resolvery `resolveTempoAt` / `resolveMeterAt` / `resolveFormaClipAt`; auto-upgrade v1→v2.
-- **API treści:** GET/PUT pełny `project.json`; transport z `activeProjectId`, play/seek z map
+- **API treści:** GET/PUT pełny [`project.json`](./apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json); transport z `activeProjectId`, play/seek z map
 projektu; `POST /api/transport/load`.
 - **Timeline α3:** route `/timeline/:projectId`, Forma z danych, pencil, Zapisz/Odrzuć;
 song picker z biblioteki; read-only lane Tempo/Metrum.
@@ -1272,7 +1272,7 @@ helpery `ticksToBbt` / `bbtToTicks`, `toDisplayBar` / `fromDisplayBar`
 (oraz `quartersToTicks` / `ticksToQuarters` pod migrator).
 - CRUD API projektów / biblioteki z persystencją w `data/` (`GET /api/library`,
 `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
-`library.template.json`, override `STAGESYNC_DATA_DIR` pod testy.
+[`library.template.json`](./apps/desktop/src-tauri/resources/sidecar/seed/library.template.json), override `STAGESYNC_DATA_DIR` pod testy.
 ([CONTRIBUTING.md](.github/CONTRIBUTING.md)).
 inventarz kontrolek = parity v4 (./docs/ui/ui-shell-inventory.md)).
 

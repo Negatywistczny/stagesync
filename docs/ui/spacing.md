@@ -1,7 +1,7 @@
 # Spacing (`--ss-space-*`)
 
-Źródło: [`packages/ui/src/tokens.css`](../../packages/ui/src/tokens.css).  
-Reguła egzekucji: [`.cursor/rules/ui-density.mdc`](../../.cursor/rules/ui-density.mdc).
+Źródło: [[`packages/ui/src/tokens.css`](../../packages/ui/src/tokens.css)](../../packages/ui/src/tokens.css).  
+Reguła egzekucji: [[`.cursor/rules/ui-density.mdc`](../../.cursor/rules/ui-density.mdc)](../../.cursor/rules/ui-density.mdc).
 
 **Zakaz** ad-hoc `px` / ułamkowych `rem` dla margin / padding / gap / wymiarów
 kontrolek — tylko siatka poniżej.
@@ -33,7 +33,7 @@ kontrolek — tylko siatka poniżej.
 
 ## Breakpointy layoutu (v5.0.0)
 
-Źródło JS: [`apps/web/src/lib/timeline/breakpoints.ts`](../../apps/web/src/lib/timeline/breakpoints.ts).
+Źródło JS: [[`apps/web/src/lib/timeline/breakpoints.ts`](../../apps/web/src/lib/timeline/breakpoints.ts)](../../apps/web/src/lib/timeline/breakpoints.ts).
 
 | Próg | Media query | Typowe użycie |
 |------|-------------|---------------|

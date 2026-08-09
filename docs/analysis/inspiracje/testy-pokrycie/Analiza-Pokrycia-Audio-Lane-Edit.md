@@ -7,7 +7,7 @@ message time: 2026-07-27 14:25:23
 Jesteś ekspertem od testów edycji Timeline StageSync. Przeanalizuj `apps/web/src/lib/audioLaneEdit.ts` (~1250 linii) — gesty Pointer/Smart na ścieżkach audio, import, bus CRUD, trim/fade/split/join.
 
 CEL ANALIZY
-Zmapować niepokryte funkcje edycji audio lane względem bogatego `audioLaneEdit.test.ts` i zaproponować uzupełnienia.
+Zmapować niepokryte funkcje edycji audio lane względem bogatego [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) i zaproponować uzupełnienia.
 
 PYTANIA BADAWCZE
 1. Które exported helpers (`commitAudioGesture`, `previewAudioFromSession`, bus cycle guards) mają zero lub słabe pokrycie?
@@ -16,7 +16,7 @@ PYTANIA BADAWCZE
 4. Bus routing: `wouldCreateBusCycle`, `MAX_AUDIO_BUSSES` — testy negatywne?
 5. Crossfade abut (`applyAbutCrossfadeForClip`) — parity z content lane?
 6. Gest preview vs commit — czy testować przez `FormaGestureSession` fixtures?
-7. Integracja z `timelineGesture.ts` / `formaCanvas.ts` — granice mocków.
+7. Integracja z [`timelineGesture.ts`](../../../../apps/web/src/lib/timeline/timelineGesture.ts) / [`formaCanvas.ts`](../../../../apps/web/src/lib/timeline-edit/formaCanvas.ts) — granice mocków.
 
 KONTEKST
 - Pure project transforms (immutable `{ ...project }`); czas przez `resolveTempoAt`/`elapsedToTicks` ze shared.
@@ -57,9 +57,9 @@ Audio Lane Editing Test Plan
 
 ## Analiza Luk w Pokryciu Funkcji Eksportowanych
 
-Analiza porównawcza modułu edycji ścieżek audio `apps/web/src/lib/audioLaneEdit.ts`  oraz odpowiadającego mu pakietu testów jednostkowych `audioLaneEdit.test.ts`  wykazuje wysokie ogólne pokrycie kodu, lecz jednocześnie ujawnia niepokryte ścieżki krytyczne, niedostatecznie przetestowane warunki brzegowe oraz brak testów negatywnych. Silnik edycji Timeline w StageSync opiera się na niezmienniczych transformacjach struktury projektu (`{ ...project }`) , co gwarantuje braki efektów ubocznych, ale wymaga precyzyjnego przetestowania asercji stanów i reguł biznesowych zawartych w ADR 0008 .
+Analiza porównawcza modułu edycji ścieżek audio `apps/web/src/lib/audioLaneEdit.ts`  oraz odpowiadającego mu pakietu testów jednostkowych [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts)  wykazuje wysokie ogólne pokrycie kodu, lecz jednocześnie ujawnia niepokryte ścieżki krytyczne, niedostatecznie przetestowane warunki brzegowe oraz brak testów negatywnych. Silnik edycji Timeline w StageSync opiera się na niezmienniczych transformacjach struktury projektu (`{ ...project }`) , co gwarantuje braki efektów ubocznych, ale wymaga precyzyjnego przetestowania asercji stanów i reguł biznesowych zawartych w ADR 0008 .
 
-Poniższa tabela przedstawia szczegółowe zmapowanie wszystkich funkcji eksportowanych z modułu `audioLaneEdit.ts` , ich aktualny stan pokrycia w zestawie testów  oraz dedykowane propozycje przypadków testowych w środowisku Vitest .
+Poniższa tabela przedstawia szczegółowe zmapowanie wszystkich funkcji eksportowanych z modułu [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) , ich aktualny stan pokrycia w zestawie testów  oraz dedykowane propozycje przypadków testowych w środowisku Vitest .
 
 | Eksportowana funkcja | Status pokrycia | Weryfikowane zachowanie i luki | Proponowany przypadek testowy (Vitest) |
 | :--- | :--- | :--- | :--- |
@@ -128,9 +128,9 @@ Ponadto usunięcie szyny za pomocą `removeAudioBus` musi wykonać czyszczenie k
 
 ### Mechanika Crossfade i Parzystość ze Ścieżkami Zawartości
 
-Ścieżki zawartości (`tekst`, `akordy`, `cue`) zarządzane w module `contentLaneEdit.ts` realizują operacje edycyjne w sposób dyskretny — krawędzie klipów są ze sobą stykane, a jakiekolwiek nakładanie jest zabronione przez politykę No Overlap .
+Ścieżki zawartości (`tekst`, `akordy`, `cue`) zarządzane w module [`contentLaneEdit.ts`](../../../../apps/web/src/lib/timeline-edit/contentLaneEdit.ts) realizują operacje edycyjne w sposób dyskretny — krawędzie klipów są ze sobą stykane, a jakiekolwiek nakładanie jest zabronione przez politykę No Overlap .
 
-Ścieżki audio wprowadzają cyfrową obsługę obwiedni głośności oraz nakładanych przejść (crossfade) . Funkcja `applyAbutCrossfadeForClip` w module `audioLaneEdit.ts` przeszukuje ścieżkę w poszukiwaniu stykającego się sąsiada (gdzie odległość w tickach `gap === 0`) przy użyciu `findAbutNeighbor` . Następnie aplikuje symetryczne obwiednie `fadeOutMs` dla klipu lewego oraz `fadeInMs` dla klipu prawego bez modyfikowania geometrii klipów na osi czasu .
+Ścieżki audio wprowadzają cyfrową obsługę obwiedni głośności oraz nakładanych przejść (crossfade) . Funkcja `applyAbutCrossfadeForClip` w module [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) przeszukuje ścieżkę w poszukiwaniu stykającego się sąsiada (gdzie odległość w tickach `gap === 0`) przy użyciu `findAbutNeighbor` . Następnie aplikuje symetryczne obwiednie `fadeOutMs` dla klipu lewego oraz `fadeInMs` dla klipu prawego bez modyfikowania geometrii klipów na osi czasu .
 
 Kluczowe różnice i wymagania parzystości pomiędzy ścieżkami zawartości a ścieżkami audio:
 * Na ścieżkach zawartości połączenie klipów (`joinAdjacentContentClips`) scala dwa klipy w jeden obiekt o sumarycznej długości .
@@ -147,7 +147,7 @@ Zgodnie z zapisami ADR 0008, żaden gest edycyjny nie może bezpośrednio modyfi
 2. Podczas `pointermove` wywoływana jest czysta funkcja `previewAudioFromSession`, która zwraca tymczasowy obiekt `FormaGesturePreview` (zawierający wyliczone na żywo wartości `startTicks`, `lengthTicks`, `fadeInMs`, `fadeOutMs` lub `gainDb`) .
 3. Podczas `pointerup` wywoływana jest funkcja `commitAudioGesture`, która przyjmuje stan sesji oraz wygenerowany podgląd, wykonując ostateczną modyfikację obiektu `Project` .
 
-Testowanie tych dwóch funkcji w `audioLaneEdit.test.ts` jest obecnie słabe i wybiórcze . Aby zapewnić pełne pokrycie interakcji użytkownika bez konieczności montowania komponentów React czy emulacji zdarzeń DOM, należy zbudować kompleksowe testy jednostkowe oparte na fabrykach obiektów `FormaGestureSession` .
+Testowanie tych dwóch funkcji w [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) jest obecnie słabe i wybiórcze . Aby zapewnić pełne pokrycie interakcji użytkownika bez konieczności montowania komponentów React czy emulacji zdarzeń DOM, należy zbudować kompleksowe testy jednostkowe oparte na fabrykach obiektów `FormaGestureSession` .
 
 ---
 
@@ -247,11 +247,11 @@ export function createGestureSessionFixture(
 
 ### Izolacja i Granice Mocków
 
-Wszystkie funkcje zawarte w module `audioLaneEdit.ts` są czystymi transformacjami matematycznymi operującymi na strukturze danych `Project` . Zgodnie z najlepszymi praktykami testowania oprogramowania domowego, **należy całkowicie zaniechać mockowania funkcji wewnętrznych** oraz modułów pomocniczych z pakietu `@stagesync/shared` .
+Wszystkie funkcje zawarte w module [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) są czystymi transformacjami matematycznymi operującymi na strukturze danych `Project` . Zgodnie z najlepszymi praktykami testowania oprogramowania domowego, **należy całkowicie zaniechać mockowania funkcji wewnętrznych** oraz modułów pomocniczych z pakietu `@stagesync/shared` .
 
 Wyjątki wymagające izolacji środowiskowej:
 
-1. **Elementy DOM i Zdarzenia Przeglądarki**: Funkcje przeliczające współrzędne pikselowe na ticki (np. `canvasPxFromPointer` czy `ticksFromPointer` w `formaCanvas.ts`) przyjmują obiekty `HTMLElement` i wywołują `getBoundingClientRect()` . Purytyczne transformacje w `audioLaneEdit.ts` nie przyjmują obiektów DOM, lecz gotowe wartości numeryczne (`rawTicks`, `clientY`), dzięki czemu nie wymagają mockowania środowiska DOM .
+1. **Elementy DOM i Zdarzenia Przeglądarki**: Funkcje przeliczające współrzędne pikselowe na ticki (np. `canvasPxFromPointer` czy `ticksFromPointer` w [`formaCanvas.ts`](../../../../apps/web/src/lib/timeline-edit/formaCanvas.ts)) przyjmują obiekty `HTMLElement` i wywołują `getBoundingClientRect()` . Purytyczne transformacje w [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) nie przyjmują obiektów DOM, lecz gotowe wartości numeryczne (`rawTicks`, `clientY`), dzięki czemu nie wymagają mockowania środowiska DOM .
 2. **Dekodowanie Plików i Web Audio API**: Testy funkcji `applyDecodedAudioMeta` oraz `placeImportedAudioClipAt` nie powinny ładować rzeczywistych plików `.wav` ani tworzyć instancji `AudioContext` . Przekazywane parametry metadanych (JSON z wartościami `durationMs`, `waveformPeaks`, `channelCount`) w zupełności wystarczają do pełnej weryfikacji logiki edycyjnej .
 3. **Generowanie UUID**: Moduł wykorzystuje natywną funkcję `crypto.randomUUID()` do tworzenia identyfikatorów ścieżek, szyn i klipów . Środowisko Vitest w Node.js dostarcza pełne wsparcie dla obiektu `crypto`, więc jego mockowanie nie jest wymagane, chyba że wymagane jest deterministyczne sprawdzanie wygenerowanych ciągów znaków .
 
@@ -267,7 +267,7 @@ Jedynym potencjalnym źródłem błędów w testach są **niedokładności zaokr
 
 ## Rekomendowana Architektura Zestawu Testów
 
-W celu zachowania czytelności i spójności z istniejącym plikiem `audioLaneEdit.test.ts`, proponowane nowe testy należy pogrupować w bloki `describe` podzielone według domen operacyjnych .
+W celu zachowania czytelności i spójności z istniejącym plikiem [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts), proponowane nowe testy należy pogrupować w bloki `describe` podzielone według domen operacyjnych .
 
 ```typescript
 describe("audioLaneEdit — rozszerzenie pokrycia", () => {

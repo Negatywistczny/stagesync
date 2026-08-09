@@ -33,7 +33,7 @@ Feature **Should** z wcześniejszego szkicu TODO (Help, wand, P1) → **β2 / 5.
 | # | Wycinek | Uwagi |
 |---|---------|--------|
 | H1 | Scope report (ten plik) + TODO/ROADMAP hygiene | Faza 0 |
-| H2 | `Dockerfile` + `compose.yml`; volume `./data` → `/app/data` — ścieżka drugorzędna (rack/server) | [ADR 0004](../../../adr/0004-updates-docker.md); [INSTALL.md](../../../guides/INSTALL.md) |
+| H2 | `Dockerfile` + [`compose.yml`](../../../../compose.yml); volume `./data` → `/app/data` — ścieżka drugorzędna (rack/server) | [ADR 0004](../../../adr/0004-updates-docker.md); [INSTALL.md](../../../guides/INSTALL.md) |
 | H3 | Serwer serwuje static `apps/web` w obrazie (`STAGESYNC_STATIC_DIR`) | Jeden proces HTTP/WS |
 | H4 | OCC: `PUT /api/projects/:id` z `updatedAt` klienta → mismatch **409** | Fail-fast; bez last-write-wins |
 | H5 | Shadow backup przed destrukcyjnym overwrite / migracją na volume | `.bak` / timestamped |
@@ -43,7 +43,7 @@ Feature **Should** z wcześniejszego szkicu TODO (Help, wand, P1) → **β2 / 5.
 | H9 | `apps/desktop` Tauri standalone: startuje **Node sidecar** → `http://127.0.0.1:<port>`; health-check przed WebView; przy konflikt portu 4000 pokazuje czytelny błąd; kill sidecara przy zamknięciu okna | [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) |
 | H10 | CI: build/packaging sidecara + Tauri smoke (mac lub docs manual Win) | Release tag tylko na prośbę |
 | H11 | Node runtime per architektura: build dociąga właściwy binary Node i pakuje go do `apps/desktop/src-tauri/bin/` | Unika problemów z cross-arch |
-| H12 | Read-only assets vs user storage: seed (`library.template.json`, web dist) pochodzi z resources (read-only), a dane runtime idą do `STAGESYNC_DATA_DIR` | Brak zapisu do katalogu instalacji |
+| H12 | Read-only assets vs user storage: seed ([`library.template.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/library.template.json), web dist) pochodzi z resources (read-only), a dane runtime idą do `STAGESYNC_DATA_DIR` | Brak zapisu do katalogu instalacji |
 
 ## IN (should — host only)
 
@@ -108,5 +108,5 @@ Szczegóły: [report-beta-gate.md](./report-beta-gate.md) · [report-scope-beta2
 ## Release
 
 1. Must H1–H12 green w CI / docs — **done** w α10–α13.
-2. Bump root `package.json` → `5.0.0-beta.1` + CHANGELOG + tag — **wydane 2026-07-21** (milestone dystrybucyjny).
+2. Bump root [`package.json`](../../../../package.json) → `5.0.0-beta.1` + CHANGELOG + tag — **wydane 2026-07-21** (milestone dystrybucyjny).
 3. Docs cut `5.0.0-beta.1.1` — residual jasno → must β2; TODO = sekcja β2.

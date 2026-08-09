@@ -13,7 +13,7 @@ Da się **wybrać utwór**, **załadować Formę w ticks (z Countdown ≤ 0)**, 
 | # | Wycinek | Kryterium done | Evidence |
 |---|---------|----------------|----------|
 | 1 | **ProjectSchema v2** + **`.strict()`** (lub reject unknown) | Zod: metadane + `forma.clips` (ticks) + `tempoMap`/`meterMap` + `ppq`; auto-upgrade v1→v2; **test strip→400** | `02`, `04` |
-| 2 | **GET/PUT pełny dokument** | Atomic `project.json`; create = seed v2 | `04` |
+| 2 | **GET/PUT pełny dokument** | Atomic [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json); create = seed v2 | `04` |
 | 3 | **Seed Countdown = 2 takty** | CD `startTicks: -7680`, `lengthTicks: 7680` @4/4 PPQ960 (nie −3840) | `02b` |
 | 4 | **Admin → `/timeline/:projectId`** | Link z `selected.id`; Timeline GET projektu | `01`, `01b` |
 | 5 | **Timeline Forma** | Canvas z GET; **pencil** mutuje; **Zapisz** → PUT; Odrzuć = reload | `01` |
@@ -77,7 +77,7 @@ Po smoke α3 potwierdzono: wiring treści OK, **layout Timeline niedokończony**
 - [x] Shared: Project v2 + strict + resolvery + testy (w tym strip→fail, CD@−7680, clip@0)
 - [x] Server: CRUD treści, transport load/play/seek z map + activeProjectId
 - [x] Web: route Timeline, Forma pencil+save, Admin link+sekcja; Client Forma jeśli timebox
-- [x] `docs/api/README.md` zaktualizowane
+- [x] [`docs/api/README.md`](../../../api/README.md) zaktualizowane
 - [x] CHANGELOG → alpha.3; wersja w shellach = package
 - [x] CI zielone
 

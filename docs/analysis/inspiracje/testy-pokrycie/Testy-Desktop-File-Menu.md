@@ -7,7 +7,7 @@ message time: 2026-07-27 14:26:29
 Jesteś ekspertem od testów integracji Desktop StageSync. Przeanalizuj `apps/web/src/lib/desktopFileMenu.ts` — menu Plik Tauri (create/save-as/import/export) z delegacją do `libraryApi`.
 
 CEL ANALIZY
-`desktopFileMenu.ts` ma minimalne pokrycie (tylko `currentTimelineProjectId` w `desktopMenuEvents.test.ts`). Zaproponuj pełną strategię testów dla async flows.
+[`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts) ma minimalne pokrycie (tylko `currentTimelineProjectId` w [`desktopMenuEvents.test.ts`](../../../../apps/web/src/lib/client/desktopMenuEvents.test.ts)). Zaproponuj pełną strategię testów dla async flows.
 
 PYTANIA BADAWCZE
 1. Jak mockować `createProject`, `fetchProject`, `putProject`, `importLibraryPack`, `exportLibraryPack`?
@@ -15,7 +15,7 @@ PYTANIA BADAWCZE
 3. `importLibraryFile`: limit 16MB, ZIP rejection (`looksLikeZipBytes`), invalid JSON — testy?
 4. `downloadLibraryExport`: mock `URL.createObjectURL`, anchor click — jsdom/happy-dom?
 5. `listTemplateIds`: filtrowanie `isTemplate` — unit z mock fetchLibrary?
-6. Integracja z `DesktopMenuBridge.tsx` — co testować w komponencie vs w lib?
+6. Integracja z [`DesktopMenuBridge.tsx`](../../../../apps/web/src/shells/DesktopMenuBridge.tsx) — co testować w komponencie vs w lib?
 
 KONTEKST
 - Tauri shell; web lib musi działać też w przeglądarce (fetch API).
@@ -26,7 +26,7 @@ OCZEKIWANY OUTPUT
 1. Lista testów unit per exported function.
 2. Mocki: libraryApi, pushRecentTimelineProject, DOM download, File/ArrayBuffer.
 3. Ryzyka flaky: brak przy mockach; uwaga na global URL APIs.
-4. Propozycja jednego pliku `desktopFileMenu.test.ts` vs rozszerzenie istniejącego.
+4. Propozycja jednego pliku [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) vs rozszerzenie istniejącego.
 5. Priorytety: import/save-as (data loss risk) > export > templates.
 
 ---
@@ -54,13 +54,13 @@ Strategia Testów Desktop File Menu
 
 # Strategia Testów Integracyjnych dla Modułu desktopFileMenu w Aplikacji StageSync
 
-W hybrydowej architekturze StageSync, łączącej powłokę desktopową Tauri z aplikacją internetową, moduł `desktopFileMenu.ts` pełni funkcję kluczowej warstwy pośredniczącej pomiędzy zdarzeniami systemowego menu a interfejsem programmatic API biblioteki `libraryApi.ts` . Odpowiada on za orkiestrację asynchronicznych operacji na projektach, walidację formatów i rozmiarów plików, obsługę specyficznych reguł biznesowych oraz interakcję z obiektami przeglądarkowego drzewa DOM . Dotychczasowy stan pokrycia testami kodu w tym obszarze ograniczał się wyłącznie do weryfikacji funkcji pomocniczej `currentTimelineProjectId` w pliku `desktopMenuEvents.test.ts` . Niniejszy raport przedstawia wyczerpującą strategię testowania asynchronicznych przepływów danych (async flows), precyzując mechanizmy mockowania, podział odpowiedzialności pomiędzy modułami oraz hierarchię priorytetów testowych.
+W hybrydowej architekturze StageSync, łączącej powłokę desktopową Tauri z aplikacją internetową, moduł [`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts) pełni funkcję kluczowej warstwy pośredniczącej pomiędzy zdarzeniami systemowego menu a interfejsem programmatic API biblioteki [`libraryApi.ts`](../../../../apps/web/src/lib/shell-operator/libraryApi.ts) . Odpowiada on za orkiestrację asynchronicznych operacji na projektach, walidację formatów i rozmiarów plików, obsługę specyficznych reguł biznesowych oraz interakcję z obiektami przeglądarkowego drzewa DOM . Dotychczasowy stan pokrycia testami kodu w tym obszarze ograniczał się wyłącznie do weryfikacji funkcji pomocniczej `currentTimelineProjectId` w pliku [`desktopMenuEvents.test.ts`](../../../../apps/web/src/lib/client/desktopMenuEvents.test.ts) . Niniejszy raport przedstawia wyczerpującą strategię testowania asynchronicznych przepływów danych (async flows), precyzując mechanizmy mockowania, podział odpowiedzialności pomiędzy modułami oraz hierarchię priorytetów testowych.
 
 ---
 
-## Analiza Architektoniczna i Zakres Odpowiedzialności `desktopFileMenu.ts`
+## Analiza Architektoniczna i Zakres Odpowiedzialności [`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts)
 
-Moduł `desktopFileMenu.ts` nie zawiera stanu lokalnego Reacta, lecz skupia w sobie czystą logikę orkiestracyjną i walidacyjną . Wykonuje on operacje asynchroniczne, które delegują zadania do zewnętrznych usług REST API (`libraryApi.ts`), zarządza historią otwartych projektów w pamięci lokalnej (`pushRecentTimelineProject`) oraz wykorzystuje niskopoziomowe interfejsy przeglądarki do obsługi strumieni binarnych i pobierania plików .
+Moduł [`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts) nie zawiera stanu lokalnego Reacta, lecz skupia w sobie czystą logikę orkiestracyjną i walidacyjną . Wykonuje on operacje asynchroniczne, które delegują zadania do zewnętrznych usług REST API ([`libraryApi.ts`](../../../../apps/web/src/lib/shell-operator/libraryApi.ts)), zarządza historią otwartych projektów w pamięci lokalnej (`pushRecentTimelineProject`) oraz wykorzystuje niskopoziomowe interfejsy przeglądarki do obsługi strumieni binarnych i pobierania plików .
 
 Moduł eksportuje sześć głównych funkcji, z których pięć realizuje operacje asynchroniczne podatne na błędy sieciowe, walidacyjne i sprzętowe . Funkcja `createSongAndOpen` tworzy nowy projekt w bibliotece i rejestruje go w pamięci podręcznej ostatnich projektów . Operacja `saveProjectAs` realizuje klonowanie istniejącego projektu z zachowaniem zasad spójności danych i optymistycznego blokowania wersji . Funkcja `listTemplateIds` odpowiada za pobieranie bazy projektów i wyodrębnianie z niej szablonów . Z kolei `importLibraryFile` przeprowadza inspekcję binarną bufora pliku, weryfikuje ograniczenia rozmiarowe i składniowe, po czym przekazuje spakowany obiekt do importu . Ostatnia z funkcji asynchronicznych, `downloadLibraryExport`, generuje eksport całej biblioteki do obiektu Blob i wyzwala jego pobranie poprzez dynamiczny element drzewa DOM .
 
@@ -68,7 +68,7 @@ Moduł eksportuje sześć głównych funkcji, z których pięć realizuje operac
 
 ## Strategia Mockowania Zależności i Środowiska Wykonawczego
 
-Skuteczne testowanie jednostkowe i integracyjne modułu `desktopFileMenu.ts` wymaga odizolowania kodu od rzeczywiście działającego serwera HTTP oraz od fizycznego systemu plików . W środowisku Vitest podstawowym wzorcem mockowania jest zastąpienie modułów zależnych za pomocą fabryk `vi.mock()` .
+Skuteczne testowanie jednostkowe i integracyjne modułu [`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts) wymaga odizolowania kodu od rzeczywiście działającego serwera HTTP oraz od fizycznego systemu plików . W środowisku Vitest podstawowym wzorcem mockowania jest zastąpienie modułów zależnych za pomocą fabryk `vi.mock()` .
 
 Podstawową zależnością sieciową modułu jest `libraryApi.js` . Należy go zablokować na poziomie modułu Vitest poprzez przechwycenie wywołań funkcji `createProject`, `fetchProject`, `putProject`, `fetchLibrary`, `importLibraryPack` oraz `exportLibraryPack` . Zastosowanie `vi.mocked()` wewnątrz poszczególnych bloków testowych umożliwia precyzyjne sterowanie zwracanymi wartościami (obietnicami rozwiązanymi pozytywnie lub odrzuconymi z konkretnym błędem HTTP) oraz analizę argumentów przekazywanych do API . Drugą zależnością do zreplikowania jest moduł `lastTimelineProject.js`, a w szczególności funkcja `pushRecentTimelineProject`, która w środowisku produkcyjnym modyfikuje wpisy w `localStorage` . Zastąpienie jej prostym mockiem `vi.fn()` zapobiega niepożądanym skutkom ubocznym w pamięci przeglądarki i pozwala na weryfikację, czy identyfikator oraz nazwa projektu zostały prawidłowo dopisane do listy niedawno otwieranych pozycji .
 
@@ -112,14 +112,14 @@ Funkcja `createSongAndOpen` weryfikuje poprawne przekazanie opcji opcjonalnych (
 
 ---
 
-## Podział Odpowiedzialności Testowej: Lib vs. Component (`DesktopMenuBridge.tsx`)
+## Podział Odpowiedzialności Testowej: Lib vs. Component ([`DesktopMenuBridge.tsx`](../../../../apps/web/src/shells/DesktopMenuBridge.tsx))
 
-Testowanie logiki interfejsu w aplikacji hybrydowej wymaga wyraźnego rozgraniczenia pomiędzy testami czystych funkcji orkiestracyjnych w `desktopFileMenu.ts` a testami integracyjnymi komponentu widoku `DesktopMenuBridge.tsx` . Komponent `DesktopMenuBridge.tsx` nasłuchuje zdarzeń globalnych `DESKTOP_MENU_EVENT` i zarządza stanem interfejsu (dialogi, modalne okna wprowadzania nazw, nakładki ładowania `fileBusy`) .
+Testowanie logiki interfejsu w aplikacji hybrydowej wymaga wyraźnego rozgraniczenia pomiędzy testami czystych funkcji orkiestracyjnych w [`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts) a testami integracyjnymi komponentu widoku [`DesktopMenuBridge.tsx`](../../../../apps/web/src/shells/DesktopMenuBridge.tsx) . Komponent [`DesktopMenuBridge.tsx`](../../../../apps/web/src/shells/DesktopMenuBridge.tsx) nasłuchuje zdarzeń globalnych `DESKTOP_MENU_EVENT` i zarządza stanem interfejsu (dialogi, modalne okna wprowadzania nazw, nakładki ładowania `fileBusy`) .
 
-| Obszar Funkcjonalny | Zakres Testów w `desktopFileMenu.test.ts` (Unit / Lib) | Zakres Testów w `DesktopMenuBridge.test.tsx` (Integration / UI) |
+| Obszar Funkcjonalny | Zakres Testów w [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) (Unit / Lib) | Zakres Testów w `DesktopMenuBridge.test.tsx` (Integration / UI) |
 | :--- | :--- | :--- |
 | **Walidacja Danych Wejściowych** | Weryfikacja pustych nazw, walidacja limitu 16MB, detekcja magii ZIP i błędów JSON . | Wyświetlanie dialogu powiadomień `window.alert` z komunikatem błędu zwróconym z biblioteki . |
-| **Komunikacja z API** | Poprawność wywołań `createProject`, `putProject`, `importLibraryPack`, `exportLibraryPack` . | Nie dotyczy – komponent nie wywołuje `libraryApi.ts` bezpośrednio, deleguje zadania do lib . |
+| **Komunikacja z API** | Poprawność wywołań `createProject`, `putProject`, `importLibraryPack`, `exportLibraryPack` . | Nie dotyczy – komponent nie wywołuje [`libraryApi.ts`](../../../../apps/web/src/lib/shell-operator/libraryApi.ts) bezpośrednio, deleguje zadania do lib . |
 | **Zarządzanie Stanem UI** | Brak – moduł lib nie posiada stanu i nie reaguje na cykl życia Reacta . | Przełączanie flagi `fileBusy`, wyświetlanie `ShellPromptDialog` dla akcji "Zapisz jako" i "Nowy" . |
 | **Nawigacja i Routing** | Weryfikacja poprawności wyciągania identyfikatora ze ścieżki w `currentTimelineProjectId` . | Reakcja na zwrócenie obiektu projektu i wywołanie `navigate('/timeline/:id')` lub `/admin` . |
 | **Interakcja z Drzewem DOM** | Generowanie Blobów, tworzenie obiektów URL, wywoływanie `a.click()` i `URL.revokeObjectURL` . | Wyzwalanie zdarzenia `.click()` na ukrytym elemencie `<input type="file">` po odebraniu `file-import` . |
@@ -142,7 +142,7 @@ Ostatnim ryzykiem jest alokacja i odczyt buforów binarnych w sztucznym środowi
 
 ### Rekomendacja Struktury Plików
 
-Zaleca się utworzenie **nowego, dedykowanego pliku testowego** `apps/web/src/lib/desktopFileMenu.test.ts`, zamiast dopisywania przypadków do istniejącego `desktopMenuEvents.test.ts` . Existing plik `desktopMenuEvents.test.ts` służy do weryfikacji czystego parsowania zdarzeń `CustomEvent` oraz sprawdzania dozwolonych akcji menu . Wprowadzenie do niego złożonych mocków modułów, atrap obiektów DOM oraz operacji na plikach obniżyłoby czytelność kodyfikacji i utrudniło maintenance . Nowy plik skupi się wyłącznie na przepływach asynchronicznych i integracji z API .
+Zaleca się utworzenie **nowego, dedykowanego pliku testowego** `apps/web/src/lib/desktopFileMenu.test.ts`, zamiast dopisywania przypadków do istniejącego [`desktopMenuEvents.test.ts`](../../../../apps/web/src/lib/client/desktopMenuEvents.test.ts) . Existing plik [`desktopMenuEvents.test.ts`](../../../../apps/web/src/lib/client/desktopMenuEvents.test.ts) służy do weryfikacji czystego parsowania zdarzeń `CustomEvent` oraz sprawdzania dozwolonych akcji menu . Wprowadzenie do niego złożonych mocków modułów, atrap obiektów DOM oraz operacji na plikach obniżyłoby czytelność kodyfikacji i utrudniło maintenance . Nowy plik skupi się wyłącznie na przepływach asynchronicznych i integracji z API .
 
 ### Priorytetyzacja Wdrożenia Scenariuszy Testowych
 
@@ -158,7 +158,7 @@ Priorytetyzacja opiera się na analizie ryzyka utraty danych użytkownika (Data 
 
 ---
 
-## Propozycja Pełnej Implementacji `desktopFileMenu.test.ts`
+## Propozycja Pełnej Implementacji [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts)
 
 Poniższy kod stanowi gotową do wdrożenia, kompletną implementację zestawu testów w pliku `apps/web/src/lib/desktopFileMenu.test.ts`, realizującą wszystkie postawione pytania badawcze.
 

@@ -155,5 +155,5 @@ v4 / parytet 5.0: Host MIDI I/O, clock, Program Change, odtwarzanie audio, Mixer
 
 - [ADR 0002](./0002-timebase-ssot.md), [0005](./0005-domain-axioms.md), [0008](./0008-timeline-clip-editing.md), [0010](./0010-desktop-shell-tauri.md), [0011](./0011-ui-parity-behavior.md), [0015](./0015-daw-reference-and-product-decisions.md), [0017](./0017-live-show-control-contracts.md), [0019](./0019-dual-engine-studio-live.md)
 - Spec źródłowy (sesja PO / plan): Future Architecture Spec 6.0 (ten ADR = kanon audio w repo)
-- Triage FOH / mixer: `docs/analysis/inspiracje/specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.triage.md`, `…/Specyfikacja-StageSync-dla-miksera-DAW.triage.md`
+- Triage FOH / mixer: [`docs/analysis/inspiracje/specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.triage.md`](../analysis/inspiracje/specyfikacje/Recenzja-Decyzji-Live-FOH-Audio.triage.md), `…/Specyfikacja-StageSync-dla-miksera-DAW.triage.md`
 - Align report: [report-adr-dual-engine-vst-align.md](../analysis/reports/current/report-adr-dual-engine-vst-align.md)

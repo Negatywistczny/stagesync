@@ -13,7 +13,7 @@ Na Timeline można **edytować geometrię Formy** (pencil drag, move/resize, Del
 | # | Wycinek | Kryterium done |
 |---|---------|----------------|
 | M1 | **Scope + plan** | Ten raport; ADR 0008 → Zaakceptowany |
-| M2 | **Shared no-overlap** | `clip-collision.ts`: move/resize/insert/delete; Countdown nietykalny; section `startTicks >= 0`; Vitest |
+| M2 | **Shared no-overlap** | [`clip-collision.ts`](../../../../packages/shared/src/clip-collision.ts): move/resize/insert/delete; Countdown nietykalny; section `startTicks >= 0`; Vitest |
 | M3 | **Pencil drag Forma** | Pointerdown→move→up: sekcja na zakres taktów; snap; overwrite; preview; clamp ≥ 0 |
 | M4 | **Pointer move/resize** | Body → `startTicks`; brzeg → `lengthTicks`; no-overlap; Countdown locked |
 | M5 | **Delete** | Select + Delete/Backspace; eraser = delete zaznaczonego; luki zostają; nie Countdown |

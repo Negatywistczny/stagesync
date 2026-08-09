@@ -4,7 +4,7 @@ Minimal browser smoke for Timeline shells (not Vitest mounts of `TimelineShell`)
 
 ## Forma drag / resize (P0)
 
-- Spec: [`forma-drag.spec.ts`](./forma-drag.spec.ts)
+- Spec: [[`forma-drag.spec.ts`](./forma-drag.spec.ts)](./forma-drag.spec.ts)
 - Flow: create seeded project via `/api/projects` → open `/timeline/:id` → assert Forma lane + Intro/Countdown clips → pointer drag move + right-edge resize → assert inspector tick readout.
 
 ## Run locally

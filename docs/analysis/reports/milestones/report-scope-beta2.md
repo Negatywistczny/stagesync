@@ -38,7 +38,7 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 | A3 | Sync playback z transportem SSOT | Scheduler klienta: `ticksToMs` między tickami serwera; **bez** własnego zegara muzycznego |
 | A4 | Trim / move w granicach pliku | `trimInMs` (+ `trimOutMs` jeśli potrzebne); no-overlap per lane |
 | A5 | Waveform peak/RMS | Precompute przy imporcie lub on-demand; nie live FFT |
-| A6 | Gain clip + fader track + mute clip/track | Persist w `project.json`; bez automatyzacji |
+| A6 | Gain clip + fader track + mute clip/track | Persist w [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json); bez automatyzacji |
 | A7 | Testy mapping ticks↔ms + smoke play/mute | Shared czyste funkcje; bez `Date.now()` w konwersji domenowej |
 | A8 | Issue [#42](https://github.com/Negatywistczny/stagesync/issues/42) — ścieżka Audio w warstwach | Must β2 (nie defer); lane eye-menu + clip na Timeline |
 

@@ -42,7 +42,7 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 | A3 | Copy PL + proporcje / gęstość | ✓ (+ help/i18n [#468](https://github.com/Negatywistczny/stagesync/pull/468)) |
 | A4 | Bez nowych wariantów `Button` | ✓ |
 
-**Powierzchnie (orientacja):** `TimelineShell.tsx` (+ module CSS), Admin (`SetView` / `StageView` / Host), Client shells, `packages/ui` tokeny.
+**Powierzchnie (orientacja):** [`TimelineShell.tsx`](../../../../apps/web/src/shells/TimelineShell.tsx) (+ module CSS), Admin (`SetView` / `StageView` / Host), Client shells, `packages/ui` tokeny.
 
 ## IN (must) — B: Timeline zoom / Help / snap picker — **done (kod)**
 
@@ -128,7 +128,7 @@ Zob. sekcja „Sekwencja weryfikacji” w [report-beta-gate.md](./report-beta-ga
 |----------|-------------------|
 | SSOT czasu = serwer; klient wygładza między tickami ([ADR 0002](../../../adr/0002-timebase-ssot.md)) | ✓ C2, D4 |
 | Kanon = integer ticks + PPQ; ms na krawędzi audio | ✓ C* |
-| Snap faza 2 = UI picker; default `bar`; nie w `project.json` ([ADR 0007](../../../adr/0007-snap-grid.md)) | ✓ B2, B4 |
+| Snap faza 2 = UI picker; default `bar`; nie w [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) ([ADR 0007](../../../adr/0007-snap-grid.md)) | ✓ B2, B4 |
 | Fade/crossfade/loop-region = 5.0.0; no pencil audio ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) | ✓ C* |
 | MIDI / clock nie w Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) | ✓ D4, OUT |
 | Faza D = 5.0.0 ([ROADMAP](../../../ROADMAP.md)) | ✓ D* |

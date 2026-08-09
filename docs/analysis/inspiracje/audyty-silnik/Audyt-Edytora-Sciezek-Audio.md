@@ -6,7 +6,7 @@ Audyt Silnika AudioLaneEdit
 
 # Audyt i analiza podatności silnika DAW audioLaneEdit.ts
 
-Niniejszy raport przedstawia rygorystyczną analizę techniczną i audyt bezpieczeństwa silnika edycji ścieżek audio na osi czasu (Timeline DAW) zaimplementowanego w module `audioLaneEdit.ts` . Choć wszystkie bazowe testy jednostkowe w `audioLaneEdit.test.ts` przechodzą pomyślnie , drobiazgowa weryfikacja kodu ujawniła krytyczne wady w matematyce konwersji jednostek czasu, anomalie w obsłudze gestów interfejsu użytkownika, a także błędy logiczne wywołujące nagłe awarie aplikacji (runtime crashes). 
+Niniejszy raport przedstawia rygorystyczną analizę techniczną i audyt bezpieczeństwa silnika edycji ścieżek audio na osi czasu (Timeline DAW) zaimplementowanego w module [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) . Choć wszystkie bazowe testy jednostkowe w [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) przechodzą pomyślnie , drobiazgowa weryfikacja kodu ujawniła krytyczne wady w matematyce konwersji jednostek czasu, anomalie w obsłudze gestów interfejsu użytkownika, a także błędy logiczne wywołujące nagłe awarie aplikacji (runtime crashes). 
 
 Poniższa tabela przedstawia skonsolidowany wykaz zidentyfikowanych podatności, precyzując mechanizm ich powstawania oraz bezpośredni wpływ na stabilność środowiska uruchomieniowego.
 
@@ -180,13 +180,13 @@ Jednakże algorytm ten pomija inne krytyczne powiązania:
 - **Szyny efektów i automatyzacja:** Jeżeli usunięty autobus posiadał przypisane łańcuchy wtyczek efektowych lub dedykowane linie automatyzacji głośności i panoramy, obiekty te pozostają osierocone w pamięci operacyjnej projektu. Ponieważ ich identyfikator nadrzędny przestał istnieć, silnik renderowania próbuje odwołać się do nieistniejących węzłów audio, co generuje błędy czasu wykonania podczas odtwarzania.
 - **Krosowanie sygnałów (Sidechaining):** Jeśli usunięty autobus stanowił źródło sterujące (Sidechain) dla efektów dynamicznych osadzonych na innych ścieżkach, powiązania te stają się puste, powodując nieprzewidywalne zachowanie kompresorów.
 
-W przypadku wywołania `removeAudioTrack` , silnik usuwa ścieżkę oraz powiązane z nią klipy z bazy danych . Jednakże, mapa widoczności ścieżek (`TrackVisibilityMap`), zarządzana przez moduł `timelineTracks.ts` , nie jest automatycznie oczyszczana wewnątrz tej funkcji. Klucz `audio:<trackId>` nadal figuruje w stanie aplikacji jako osierocony wpis . Oczyszczenie następuje dopiero przy wywołaniu zewnętrznej metody pomocniczej `ensureAudioTrackVisibility` , co oznacza, że bezpośrednie usunięcie ścieżki bez natychmiastowej synchronizacji widoczności prowadzi do wycieku pamięci konfiguracji interfejsu użytkownika .
+W przypadku wywołania `removeAudioTrack` , silnik usuwa ścieżkę oraz powiązane z nią klipy z bazy danych . Jednakże, mapa widoczności ścieżek (`TrackVisibilityMap`), zarządzana przez moduł [`timelineTracks.ts`](../../../../apps/web/src/lib/timeline/timelineTracks.ts) , nie jest automatycznie oczyszczana wewnątrz tej funkcji. Klucz `audio:<trackId>` nadal figuruje w stanie aplikacji jako osierocony wpis . Oczyszczenie następuje dopiero przy wywołaniu zewnętrznej metody pomocniczej `ensureAudioTrackVisibility` , co oznacza, że bezpośrednie usunięcie ścieżki bez natychmiastowej synchronizacji widoczności prowadzi do wycieku pamięci konfiguracji interfejsu użytkownika .
 
 ---
 
 ## Zestaw testów weryfikacyjnych (Vitest Unit Tests)
 
-Poniższy zestaw testów automatycznych został przygotowany w celu zdemaskowania wszystkich opisanych podatności. Dodanie tych testów do pliku `audioLaneEdit.test.ts` spowoduje, że zakończą się one niepowodzeniem (zaświecą na czerwono), co pozwoli na precyzyjną weryfikację poprawek programistycznych.
+Poniższy zestaw testów automatycznych został przygotowany w celu zdemaskowania wszystkich opisanych podatności. Dodanie tych testów do pliku [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) spowoduje, że zakończą się one niepowodzeniem (zaświecą na czerwono), co pozwoli na precyzyjną weryfikację poprawek programistycznych.
 
 ```typescript
 import { describe, expect, it } from "vitest";
@@ -417,7 +417,7 @@ describe("audioLaneEdit Audit Verification Tests", () => {
 
 ## Wnioski i zalecenia architektoniczne
 
-Przeprowadzony audyt jednoznacznie wykazuje, że silnik edycji ścieżek audio `audioLaneEdit.ts` , pomimo pomyślnego przechodzenia podstawowych testów regresyjnych , posiada luki zagrażające stabilności i spójności danych profesjonalnego środowiska DAW. Aby wyeliminować zidentyfikowane podatności, zaleca się natychmiastowe wdrożenie następujących działań naprawczych:
+Przeprowadzony audyt jednoznacznie wykazuje, że silnik edycji ścieżek audio [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) , pomimo pomyślnego przechodzenia podstawowych testów regresyjnych , posiada luki zagrażające stabilności i spójności danych profesjonalnego środowiska DAW. Aby wyeliminować zidentyfikowane podatności, zaleca się natychmiastowe wdrożenie następujących działań naprawczych:
 
 1. **Ujednolicenie matematyki czasowej:** Należy wyeliminować bezpośrednie, uproszczone konwersje `ticksToMs` i `elapsedToTicks` oparte na stałym tempie startowym w funkcjach manipulacji strukturą plików . Wszystkie kluczowe operacje, w tym `splitAudioClipAt` , muszą bezwzględnie korzystać z mapy tempa poprzez funkcje klasy `ticksToMsAlongTempoMap` .
 2. **Bezpieczna obsługa precyzji:** W celu uniknięcia powstawania mikroluk i deficytów jedno-tickowych przy podziale i scalaniu , operacje docięcia krawędzi powinny zachowywać natywną wartość pozycji w tickach jako nadrzędny stan (SSOT), a konwersje na milisekundowe ograniczenia plików powinny stosować bezpieczne zaokrąglenia matematyczne `Math.round` zamiast bezwarunkowego obcinania części ułamkowej `Math.floor` . Próg walidacji scalania klipów w `joinAdjacentAudioClips` powinien zostać uelastyczniony lub oparty bezpośrednio na analizie sąsiedztwa w tickach .

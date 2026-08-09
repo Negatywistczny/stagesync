@@ -104,7 +104,7 @@ W poniższej tabeli przedstawiono szczegółowy przebieg zdarzeń w czasie rzecz
 
 ### Wyścig Stanów i Mechanizmy Kolejkowania (Debounce/Throttle)
 
-W pierwotnej implementacji modułów `program-change.ts` oraz `program-change-out.ts` sterowanie przepływem opierało się na prostej fladze boolean `inFlight` . Audyt wykazał krytyczną podatność tej architektury na gwałtowne serie komunikatów .
+W pierwotnej implementacji modułów [`program-change.ts`](../../../../apps/server/src/midi/program-change.ts) oraz [`program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts) sterowanie przepływem opierało się na prostej fladze boolean `inFlight` . Audyt wykazał krytyczną podatność tej architektury na gwałtowne serie komunikatów .
 
 Jeśli użytkownik wciśnie nożny sterownik MIDI dwukrotnie w odstępie np. 5 ms (zmiana z PC #3 na PC #4), pierwszy komunikat ustawia flagę `inFlight = true` i rozpoczyna asynchroniczne czytanie z dysku . Drugi komunikat trafia na podniesioną flagę i zostaje odrzucony bez powiadomienia . W konsekwencji na serwerze ładuje się projekt dla PC #3, mimo że intencją artysty było wywołanie PC #4 .
 
@@ -168,13 +168,13 @@ W poniższej tabeli zestawiono zestawienie hipotez ryzyka zidentyfikowanych w au
 
 | ID Audytu | Opis Hipotezy | Kod / Miejsce | Weryfikacja Techniczna i Stan | Plan Działań Naprawczych |
 | :--- | :--- | :--- | :--- | :--- |
-| **RSK-MIDI-01** | Odrzucanie PC IN przez `inFlight = true`  | `program-change.ts`  | **Potwierdzone.** Brak kolejkowania powoduje gubienie komend przy szybkiej serii . | Wdrożenie bufora opóźniającego z zatrzymaniem ostatniego wyniku (Debounce 50ms) . |
-| **RSK-MIDI-02** | Wyścig flagi `inFlight` przy PC OUT  | `program-change-out.ts`  | **Potwierdzone.** Szybka zmiana projektu może pominąć wysłanie PC OUT . | Synchronizacja sekwencji zdarzeń z kolejką mikro-zadań transportu . |
-| **RSK-MIDI-03** | Jitter i dryf zegara z `setInterval`  | `host.ts` (`clockTimer`)  | **Potwierdzone.** `setInterval` narusza zasadę SSOT czasowego (ADR 0002) . | Usunięcie timera; generowanie ramek `clock` z przyrostu ticków w `onTransport` . |
-| **RSK-MIDI-04** | Wymuszony tryb Omni na wejściu PC  | `host.ts` (`onInputMessage`)  | **Potwierdzone.** Odbiornik ignoruje numer kanału z ramek wejściowych . | Dodanie pola `inputChannel` do konfiguracji i filtracja w `onInputMessage` . |
-| **RSK-MIDI-05** | Hardkodowany kanał 0 w `sendProgramChange` | `program-change-out.ts`  | **Potwierdzone.** Emisja zachodzi zawsze na Kanale 1 (index 0) . | Rozszerzenie konfiguracyjne o `outputChannel` w strukturze `MidiHostConfig` . |
-| **RSK-MIDI-06** | Awarie I/O zrywają proces serwera  | `host.ts` (`backend.send`)  | **Potwierdzone.** Odłączenie USB generuje nieprzechwycony wyjątek natywny . | Otoczenie wywołań nadawczych funkcją pomocniczą `safeSend` z obsługą błędów . |
-| **RSK-MIDI-10** | Powielanie subskrypcji `transport.onChange` | `host.ts` (`applyPorts`)  | **Potwierdzone.** Ponowne wywołanie `setConfig` nie czyściło starych listenerów . | Rejestracja pojedynczego, odnawialnego dławika subskrypcji w cyklu życia hosta . |
+| **RSK-MIDI-01** | Odrzucanie PC IN przez `inFlight = true`  | [`program-change.ts`](../../../../apps/server/src/midi/program-change.ts)  | **Potwierdzone.** Brak kolejkowania powoduje gubienie komend przy szybkiej serii . | Wdrożenie bufora opóźniającego z zatrzymaniem ostatniego wyniku (Debounce 50ms) . |
+| **RSK-MIDI-02** | Wyścig flagi `inFlight` przy PC OUT  | [`program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts)  | **Potwierdzone.** Szybka zmiana projektu może pominąć wysłanie PC OUT . | Synchronizacja sekwencji zdarzeń z kolejką mikro-zadań transportu . |
+| **RSK-MIDI-03** | Jitter i dryf zegara z `setInterval`  | [`host.ts`](../../../../apps/server/src/midi/host.ts) (`clockTimer`)  | **Potwierdzone.** `setInterval` narusza zasadę SSOT czasowego (ADR 0002) . | Usunięcie timera; generowanie ramek `clock` z przyrostu ticków w `onTransport` . |
+| **RSK-MIDI-04** | Wymuszony tryb Omni na wejściu PC  | [`host.ts`](../../../../apps/server/src/midi/host.ts) (`onInputMessage`)  | **Potwierdzone.** Odbiornik ignoruje numer kanału z ramek wejściowych . | Dodanie pola `inputChannel` do konfiguracji i filtracja w `onInputMessage` . |
+| **RSK-MIDI-05** | Hardkodowany kanał 0 w `sendProgramChange` | [`program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts)  | **Potwierdzone.** Emisja zachodzi zawsze na Kanale 1 (index 0) . | Rozszerzenie konfiguracyjne o `outputChannel` w strukturze `MidiHostConfig` . |
+| **RSK-MIDI-06** | Awarie I/O zrywają proces serwera  | [`host.ts`](../../../../apps/server/src/midi/host.ts) (`backend.send`)  | **Potwierdzone.** Odłączenie USB generuje nieprzechwycony wyjątek natywny . | Otoczenie wywołań nadawczych funkcją pomocniczą `safeSend` z obsługą błędów . |
+| **RSK-MIDI-10** | Powielanie subskrypcji `transport.onChange` | [`host.ts`](../../../../apps/server/src/midi/host.ts) (`applyPorts`)  | **Potwierdzone.** Ponowne wywołanie `setConfig` nie czyściło starych listenerów . | Rejestracja pojedynczego, odnawialnego dławika subskrypcji w cyklu życia hosta . |
 
 ---
 
@@ -187,14 +187,14 @@ W codziennej pracy ze skomplikowanymi listami utworów (setlistami) ręczne edyt
 W procesie sortowania i przypisywania numerów PC kluczowe znaczenie ma separacja utworów wykonywalnych od szablonów . Wszystkie utwory wykonywalne (`isTemplate: false`) są rejestrowane w tabeli numeracji i otrzymują unikalny indeks z zakresu 0–127 . Wszelkie wzorce i szablony (`isTemplate: true`) są jawnie filtrowane i posiadają wartość `midiProgramId: undefined`, co uniemożliwia ich przypadkowe wywołanie za pośrednictwem zewnętrznego sterownika MIDI .
 
 Zgodnie z wymaganiami schematu `ProjectSchemaV5`:
-* **Szablony (`isTemplate: true`):** Bezpowrotnie tracą atrybut `midiProgramId` . Router biblioteki (`library.ts`) podczas operacji importu pakietu automatycznie wyczyszcza wartości numeryczne dla wszystkich pozycji stanowiących wzorce .
+* **Szablony (`isTemplate: true`):** Bezpowrotnie tracą atrybut `midiProgramId` . Router biblioteki ([`library.ts`](../../../../apps/server/src/routes/library.ts)) podczas operacji importu pakietu automatycznie wyczyszcza wartości numeryczne dla wszystkich pozycji stanowiących wzorce .
 * **Utwory Wykonywalne:** Otrzymują wartości numeryczne z przedziału $[0, 127]$ . W przypadku próby przypisania wartości spoza zakreślonego przedziału, Zod Schema odrzuca żądanie na poziomie walidacji HTTP .
 
 ### Algorytm Batch Renumbering i Endpoint API
 
-Operacja zbiorczego przemapowania numerów Program Change realizowana jest przez punkt końcowy `POST /api/library/batch-midi-pc` . Transakcja rozpoczyna się w panelu wywołaniem modala `BatchPcModal`. Interfejs wysyła żądanie HTTP z tablicą nowych przypisań. Router `library.ts` dokonuje walidacji struktury za pomocą parsera Zod (`BatchMidiPcBodySchema`). Po pomyślnej weryfikacji warstwa storage wykonuje metodę `batchMidiProgramIds`, która iteruje po plikach w bazie danych, ignoruje wpisy wzorcowe i zapisuje zaktualizowane wartości numeryczne. W odpowiedzi serwer zwraca zaktualizowaną strukturę biblioteki, co odświeża stan widoku u wszystkich podłączonych klientów.
+Operacja zbiorczego przemapowania numerów Program Change realizowana jest przez punkt końcowy `POST /api/library/batch-midi-pc` . Transakcja rozpoczyna się w panelu wywołaniem modala `BatchPcModal`. Interfejs wysyła żądanie HTTP z tablicą nowych przypisań. Router [`library.ts`](../../../../apps/server/src/routes/library.ts) dokonuje walidacji struktury za pomocą parsera Zod (`BatchMidiPcBodySchema`). Po pomyślnej weryfikacji warstwa storage wykonuje metodę `batchMidiProgramIds`, która iteruje po plikach w bazie danych, ignoruje wpisy wzorcowe i zapisuje zaktualizowane wartości numeryczne. W odpowiedzi serwer zwraca zaktualizowaną strukturę biblioteki, co odświeża stan widoku u wszystkich podłączonych klientów.
 
-Interfejs użytkownika w panelu Admina (`AdminShell.tsx`) udostępnia automatyczne przeliczenie sekwencyjne (*Renumber from Start*) . Użytkownik określa numer początkowy $PC_{\text{start}}$ (np. 0), po czym algorytm przypisuje kolejnym utworom z listy wartości $PC_{i} = PC_{\text{start}} + i$, z zachowaniem twardego ograniczenia górnego $\min(127, PC_{i})$ .
+Interfejs użytkownika w panelu Admina ([`AdminShell.tsx`](../../../../apps/web/src/shells/AdminShell.tsx)) udostępnia automatyczne przeliczenie sekwencyjne (*Renumber from Start*) . Użytkownik określa numer początkowy $PC_{\text{start}}$ (np. 0), po czym algorytm przypisuje kolejnym utworom z listy wartości $PC_{i} = PC_{\text{start}} + i$, z zachowaniem twardego ograniczenia górnego $\min(127, PC_{i})$ .
 
 ---
 
@@ -209,11 +209,11 @@ Oznaczenia statusów:
 
 | ID Zachowania | Opis Funkcjonalności Wzorcowej | Źródło Referencyjne | Realizacja w StageSync v5 | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **REF-PC-01** | Wyemitowanie wyjściowego PC przy zmianie projektu | MainStage / Gig Performer  | Subskrypcja `transport.onChange` w `program-change-out.ts` . | **IN** |
+| **REF-PC-01** | Wyemitowanie wyjściowego PC przy zmianie projektu | MainStage / Gig Performer  | Subskrypcja `transport.onChange` w [`program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts) . | **IN** |
 | **REF-PC-02** | Wywołanie ładowania projektu pod wpływem wejściowego PC | MainStage / Live  | Handler `createMidiProgramChangeHandler` . | **IN** |
 | **REF-PC-03** | Debounce i kolejkowanie przychodzących ramek PC IN | Wzorce FOH / Show-Control | Wdrożenie bufora opóźniającego 50ms z zatrzymaniem ostatniego stanu . | **IN** |
 | **REF-PC-04** | Zbiorcza renumeracja Program Change (Batch PC) | Gig Performer / Show-Control | Modal `BatchPcModal` oraz endpoint `POST /batch-midi-pc` . | **IN** |
-| **REF-PC-05** | Wykluczenie szablonów z numeracji PC | StageSync Domain Rules | Czyśczenie `midiProgramId` dla `isTemplate: true` w `library.ts` . | **IN** |
+| **REF-PC-05** | Wykluczenie szablonów z numeracji PC | StageSync Domain Rules | Czyśczenie `midiProgramId` dla `isTemplate: true` w [`library.ts`](../../../../apps/server/src/routes/library.ts) . | **IN** |
 | **REF-PC-06** | Reagowanie na przyciski MUTE ALL / Panic | MainStage / Hardware Mixers | Funkcja `panic()` wysyłająca CC 120, 121, 123 po 16 kanałach . | **IN** |
 | **REF-PC-07** | Ochrona przed awariami I/O (USB unplug recovery) | Native Hardware Failover | Wdrożenie otoczki `safeSend` przechwytującej wyjątki zapisu do portu . | **IN** |
 | **REF-PC-08** | Generowanie MIDI Clock na podstawie ticków transportu | ADR 0002 Timebase SSOT  | Emisja ramek zegara w oparciu o przyrost ticków silnika w `onTransport` . | **IN** |
@@ -233,12 +233,12 @@ Oznaczenia statusów:
 W celu zapewnienia bezawaryjnej pracy systemu StageSync v5 w warunkach koncertowych oraz pełnego dostosowania subsystemu MIDI do niezmienników Granicy 0, wyznacza się następujące priorytety wdrożeniowe:
 
 1. **Eliminacja Niezależnego Timera Zegara MIDI:**
-   Należy bezwzględnie usunąć funkcję `setInterval` z modułu `host.ts` . Generowanie ramek `clock` musi odbywać się w sposób całkowicie pasywny, napędzany przyrostem ticków silnika transportu SSOT przekazywanym w zdarzeniu `onTransport` . Wyliczenie liczby ramek do wyemitowania zachodzi według wzoru:
+   Należy bezwzględnie usunąć funkcję `setInterval` z modułu [`host.ts`](../../../../apps/server/src/midi/host.ts) . Generowanie ramek `clock` musi odbywać się w sposób całkowicie pasywny, napędzany przyrostem ticków silnika transportu SSOT przekazywanym w zdarzeniu `onTransport` . Wyliczenie liczby ramek do wyemitowania zachodzi według wzoru:
    $\Delta \text{Clocks} = \left\lfloor \frac{\text{positionTicks}_{\text{aktualny}}}{40} \right\rfloor - \left\lfloor \frac{\text{positionTicks}_{\text{poprzedni}}}{40} \right\rfloor$
    Dzięki temu wyjściowy sygnał MIDI Clock pozostaje w 100% zsynchronizowany z pozycją odtwarzacza audio bez jakiegokolwiek dryfu czasowego czy jittera .
 
 2. **Refaktoryzacja Handlera Program Change IN z Buforem Debounce:**
-   W pliku `program-change.ts` należy zastąpić prostą flagę `inFlight` buforem opóźniającym ze stałą czasową $50\text{ ms}$ . Otrzymanie nowego komunikatu PC IN podczas odliczania opóźnienia kasuje poprzedni timer i rejestruje najnowszy numer programu, gwarantując, że serwer wykona tylko jedną operację I/O i załaduje właściwy utwór .
+   W pliku [`program-change.ts`](../../../../apps/server/src/midi/program-change.ts) należy zastąpić prostą flagę `inFlight` buforem opóźniającym ze stałą czasową $50\text{ ms}$ . Otrzymanie nowego komunikatu PC IN podczas odliczania opóźnienia kasuje poprzedni timer i rejestruje najnowszy numer programu, gwarantując, że serwer wykona tylko jedną operację I/O i załaduje właściwy utwór .
 
 3. **Wdrożenie Bezpiecznego Interfejsu Zapisu `safeSend`:**
    Wszystkie operacje zapisu do natywnego backendu MIDI w klasie `MidiHost` muszą być realizowane przez otoczkę przechwytującą wyjątki I/O . Błędy wynikające z nagłego odłączenia kabla USB na scenie muszą być izolowane, zapisywane w stanie serwera (`lastError`) i nie mogą prowadzić do załamania procesu Node.js .

@@ -23,15 +23,15 @@
 
 | Plik | Zmiana |
 |------|--------|
-| `docs/adr/0019-dual-engine-studio-live.md` | **Nowy** — Dual Engine |
-| `docs/adr/0018-future-audio-architecture.md` | Amend Zero-Crash, filar 4, §5 IN/OUT, §6/§7 |
-| `docs/adr/README.md` | Indeks 0019 |
-| `docs/adr/0008-timeline-clip-editing.md` | Cross-link 6.0 / 0018 / 0019 |
-| `docs/adr/0015-daw-reference-and-product-decisions.md` | Cross-link |
-| `docs/adr/0017-live-show-control-contracts.md` | Dual Engine + PIN reuse |
-| `docs/ARCHITECTURE.md` | Wskaźnik 0019 |
-| `docs/ROADMAP.md` | Język 6.0 Live Suite + Dual Engine |
-| `docs/TODO.md` | Pozycja 6.0.0 + residual numeracji 6.1 |
+| [`docs/adr/0019-dual-engine-studio-live.md`](../../../adr/0019-dual-engine-studio-live.md) | **Nowy** — Dual Engine |
+| [`docs/adr/0018-future-audio-architecture.md`](../../../adr/0018-future-audio-architecture.md) | Amend Zero-Crash, filar 4, §5 IN/OUT, §6/§7 |
+| [`docs/adr/README.md`](../../../adr/README.md) | Indeks 0019 |
+| [`docs/adr/0008-timeline-clip-editing.md`](../../../adr/0008-timeline-clip-editing.md) | Cross-link 6.0 / 0018 / 0019 |
+| [`docs/adr/0015-daw-reference-and-product-decisions.md`](../../../adr/0015-daw-reference-and-product-decisions.md) | Cross-link |
+| [`docs/adr/0017-live-show-control-contracts.md`](../../../adr/0017-live-show-control-contracts.md) | Dual Engine + PIN reuse |
+| [`docs/ARCHITECTURE.md`](../../../ARCHITECTURE.md) | Wskaźnik 0019 |
+| [`docs/ROADMAP.md`](../../../ROADMAP.md) | Język 6.0 Live Suite + Dual Engine |
+| [`docs/TODO.md`](../../../TODO.md) | Pozycja 6.0.0 + residual numeracji 6.1 |
 | `…/analiza-produktowo-wdrozeniowa-stagesync-roadmap.triage.md` | RM-08/09 → `adr` |
 
 ## Poza zakresem

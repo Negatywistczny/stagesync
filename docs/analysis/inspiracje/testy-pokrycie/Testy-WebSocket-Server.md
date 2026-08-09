@@ -4,10 +4,10 @@
 
 message time: 2026-07-27 14:27:51
 
-Jesteś ekspertem od testów WebSocket w StageSync server. Przeanalizuj `apps/server/src/transport/ws.ts` — broadcast transport tick + stage/liveDesk/setlist hubs, client presence hello.
+Jesteś ekspertem od testów WebSocket w StageSync server. Przeanalizuj [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) — broadcast transport tick + stage/liveDesk/setlist hubs, client presence hello.
 
 CEL ANALIZY
-`transport-api.test.ts` pokrywa podstawy REST+WS; `attachTransportWs` ma luki w hub broadcast, presence, error handling, malformed messages.
+[`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts) pokrywa podstawy REST+WS; `attachTransportWs` ma luki w hub broadcast, presence, error handling, malformed messages.
 
 PYTANIA BADAWCZE
 1. Connection handshake: initial tick + liveDesk snapshot + setlist + stage cues — wszystkie kombinacje optional hubs?
@@ -20,7 +20,7 @@ PYTANIA BADAWCZE
 
 KONTEKST
 - Path `/ws/transport`; biblioteka `ws`.
-- Wzorzec testów: createServer + WebSocket client w `transport-api.test.ts`.
+- Wzorzec testów: createServer + WebSocket client w [`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts).
 - Vitest + prawdziwy WS na localhost.
 
 OCZEKIWANY OUTPUT
@@ -55,7 +55,7 @@ Plan Testów StageSync WebSocket
 
 # Architektura i Strategia Testów Integracyjnych WebSocket Transport w StageSync Server
 
-Moduł transportu WebSocket zlokalizowany w ścieżce `apps/server/src/transport/ws.ts` pełni funkcję centralnego węzła dystrybucji stanu w czasie rzeczywistym dla całego środowiska StageSync . Jego podstawowym zadaniem jest realizacja wzorca rozgłaszania jedno- do-wielokrotnego (fanout) dla zdarzeń generowanych przez silnik odtwarzacza (`TransportEngine`), sklepu ustawień konsolety (`LiveDeskStore`), dystrybutora migawek listy utworów (`SetlistHub`), komunikatora scenicznego (`StageHub`) oraz modułu śledzenia obecności klientów (`ClientPresence`) . Dotychczasowa pakietowa weryfikacja w `transport-api.test.ts` skupiała się na podstawowych operacjach interfejsu REST oraz pojedynczym połączeniu WebSocket . Zapewnienie pełnej niezawodności w warunkach koncertowych wymaga jednak głębokiej analizy wieloklienckiej, odporności na uszkodzone ramki danych, weryfikacji właściwego czyszczenia zasobów oraz eliminacji ryzyka nieobsłużonych wyjątków .
+Moduł transportu WebSocket zlokalizowany w ścieżce [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) pełni funkcję centralnego węzła dystrybucji stanu w czasie rzeczywistym dla całego środowiska StageSync . Jego podstawowym zadaniem jest realizacja wzorca rozgłaszania jedno- do-wielokrotnego (fanout) dla zdarzeń generowanych przez silnik odtwarzacza (`TransportEngine`), sklepu ustawień konsolety (`LiveDeskStore`), dystrybutora migawek listy utworów (`SetlistHub`), komunikatora scenicznego (`StageHub`) oraz modułu śledzenia obecności klientów (`ClientPresence`) . Dotychczasowa pakietowa weryfikacja w [`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts) skupiała się na podstawowych operacjach interfejsu REST oraz pojedynczym połączeniu WebSocket . Zapewnienie pełnej niezawodności w warunkach koncertowych wymaga jednak głębokiej analizy wieloklienckiej, odporności na uszkodzone ramki danych, weryfikacji właściwego czyszczenia zasobów oraz eliminacji ryzyka nieobsłużonych wyjątków .
 
 ---
 
@@ -248,7 +248,7 @@ export function waitForAllOpen(sockets: WebSocket[], timeoutMs = 1500): Promise<
 
 ## Rekomendacje Refaktoryzacji i Ekstrakcja Czystych Helperów
 
-Obecna struktura pliku `apps/server/src/transport/ws.ts` charakteryzuje się bezpośrednim nagromadzeniem efektów ubocznych wewnątrz procedury instalacji `attachTransportWs` . Przeniesienie czystej logiki przetwarzania do odrębnych funkcji pomocniczych znacząco zwiększy testowalność kodu na poziomie jednostkowym.
+Obecna struktura pliku [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) charakteryzuje się bezpośrednim nagromadzeniem efektów ubocznych wewnątrz procedury instalacji `attachTransportWs` . Przeniesienie czystej logiki przetwarzania do odrębnych funkcji pomocniczych znacząco zwiększy testowalność kodu na poziomie jednostkowym.
 
 ### Ekstrakcja Logiki Parsowania Wiadomości Powitalnych
 
@@ -330,7 +330,7 @@ W celu zapewnienia najwyższej sprawności i niezawodności systemu StageSync po
 | **P1 (Wysoki)** | Bezpieczeństwo Handshake i Rejestracja Obecności  | Poprawna inicjalizacja gwarantuje, że podłączający się klienci natychmiast otrzymują aktualny stan sceny, a ich obecność jest widoczna w konsolecie Admina . |
 | **P2 (Średni)** | Odporność na Błędy i Serwerowe Granice Danych  | Zabezpieczenie przed uszkodzonymi ramkami JSON, przekroczeniem limitu 8192 bajtów oraz błędami Zod chroni proces przed niekontrolowanym zatrzymaniem . |
 
-Przedstawiona strategia testów integracyjnych w połączeniu z proponowaną refaktoryzacją czystych funkcji pomocniczych eliminuje dotychczasowe luki w pokryciu kodu modułu `apps/server/src/transport/ws.ts` . Wdrożenie opisanych wzorców asynchronicznych i atrap obiektowych zagwarantuje pełną deterministyczność zestawu testowego Vitest oraz wysoką odporność serwera StageSync w warunkach produkcyjnych .
+Przedstawiona strategia testów integracyjnych w połączeniu z proponowaną refaktoryzacją czystych funkcji pomocniczych eliminuje dotychczasowe luki w pokryciu kodu modułu [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) . Wdrożenie opisanych wzorców asynchronicznych i atrap obiektowych zagwarantuje pełną deterministyczność zestawu testowego Vitest oraz wysoką odporność serwera StageSync w warunkach produkcyjnych .
 
 ---
 Powered by [AI Exporter](https://saveai.net)

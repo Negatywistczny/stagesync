@@ -4,7 +4,7 @@ Katalog `packages/` grupuje pakiety i moduły deweloperskie, które są współd
 
 ## 📁 Zawartość drugiego rzędu (Kategorie)
 
-Każdy z poniższych podkatalogów posiada własną konfigurację deweloperską (`package.json`, konfiguracje kompilatora TypeScript i narzędzi testowych):
+Każdy z poniższych podkatalogów posiada własną konfigurację deweloperską ([`package.json`](../package.json), konfiguracje kompilatora TypeScript i narzędzi testowych):
 
 1. **[`@stagesync/shared`](shared/README.md) (`packages/shared/`)**
    - **Rola:** Czysta logika biznesowa, helpery czasu muzycznego, schematy walidacyjne Zod.
@@ -14,14 +14,14 @@ Każdy z poniższych podkatalogów posiada własną konfigurację deweloperską 
    - **Rola:** Scentralizowany Design System i zestaw komponentów interfejsu użytkownika.
    - **Główna zasada:** Komponenty bez logiki biznesowej, stylizowane wyłącznie przy użyciu **CSS Modules** oraz zmiennych CSS (tokenów `--ss-*`).
 
-3. **`eslint-config` (`packages/eslint-config/`)**
+3. **[`eslint-config`](./eslint-config/README.md) (`packages/eslint-config/`)**
    - **Rola:** Współdzielona konfiguracja linterów (ESLint/Prettier) dla całego projektu, wymuszająca spójność stylu pisania kodu.
 
-4. **`typescript-config` (`packages/typescript-config/`)**
-   - **Rola:** Bazowe pliki konfiguracyjne TypeScript (`tsconfig.json`) dla różnych środowisk (aplikacje webowe, biblioteki, środowisko Node.js).
+4. **[`typescript-config`](./typescript-config/) (`packages/typescript-config/`)**
+   - **Rola:** Bazowe pliki konfiguracyjne TypeScript ([`base.json`](./typescript-config/base.json)) dla różnych środowisk (aplikacje webowe, biblioteki, środowisko Node.js).
 
-5. **[`android-keystore`](android-keystore/README.md) (`packages/android-keystore/`)**
-   - **Rola:** Stały klucz sideload (`sideload.keystore`) dla APK Console / Performer (Releases + lokalny `assembleDebug` / `assembleRelease`).
+5. **[`android-keystore`](./android-keystore/README.md) (`packages/android-keystore/`)**
+   - **Rola:** Stały klucz sideload ([`sideload.keystore`](./android-keystore/sideload.keystore)) dla APK Console / Performer (Releases + lokalny `assembleDebug` / `assembleRelease`).
    - **Główna zasada:** Wspólny certyfikat debug/release sideload — nie klucz Google Play.
 
 ## ⚙️ Wykorzystanie w monorepo

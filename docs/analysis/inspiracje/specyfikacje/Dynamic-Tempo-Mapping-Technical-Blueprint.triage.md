@@ -6,7 +6,7 @@
 **Data triage:** 2026-08-03  
 **Ostatnia aktualizacja:** 2026-08-03 (mapowanie na kod 5.4.2 + lukę free-run playback)  
 **Kąt:** referencja algorytmiczna + UX Logic dla **5.4.2 Smart Tempo** — nie SSOT; nie claim Done  
-**Companion:** [Implementacja-Smart-Tempo-w-Antigravity.triage.md](./Implementacja-Smart-Tempo-w-Antigravity.triage.md) (blueprint vs dysk 5.4.2) · [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md) § Smart Tempo · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) / [ADR 0017](../../../adr/0017-live-show-control-contracts.md) (Flex OUT 5.x) · `packages/shared/src/smart-tempo.ts` · `apps/web/src/lib/audioTempoAnalysis.ts` · `apps/web/src/lib/audioPlayback.ts` · [ROADMAP 5.4.2](../../../ROADMAP.md) · [TODO](../../../TODO.md)
+**Companion:** [Implementacja-Smart-Tempo-w-Antigravity.triage.md](./Implementacja-Smart-Tempo-w-Antigravity.triage.md) (blueprint vs dysk 5.4.2) · [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md) § Smart Tempo · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) / [ADR 0017](../../../adr/0017-live-show-control-contracts.md) (Flex OUT 5.x) · [`packages/shared/src/smart-tempo.ts`](../../../../packages/shared/src/smart-tempo.ts) · `apps/web/src/lib/audioTempoAnalysis.ts` · `apps/web/src/lib/audioPlayback.ts` · [ROADMAP 5.4.2](../../../ROADMAP.md) · [TODO](../../../TODO.md)
 
 ## Werdykt przydatności
 
@@ -14,9 +14,9 @@
 
 **Hard product conflict:** dump traktuje **Keep = agresywne time-stretch audio do sztywnej siatki** oraz Flex (Slicing / Phase Vocoder) jako integralną część architektury. W StageSync **5.x Flex / warp = permanent OUT** (ADR 0008 / 0017). Kanoniczny Smart Tempo **5.4.2** = mapa tempa **podąża za nagraniem** — to jest **Adapt**, nie Keep-with-stretch.
 
-**Hard SSOT conflict:** proponowany `ITempoMap` z `timeSeconds` / `sampleIndex` jako węzłami mapy. Kanon pozycji StageSync = **ticks**; ms/sample tylko na krawędzi audio. Na dysku: `TempoNode.wallMs` + tick anchors (`smart-tempo.ts`); Zod `tempoMap` = ticks + BPM.
+**Hard SSOT conflict:** proponowany `ITempoMap` z `timeSeconds` / `sampleIndex` jako węzłami mapy. Kanon pozycji StageSync = **ticks**; ms/sample tylko na krawędzi audio. Na dysku: `TempoNode.wallMs` + tick anchors ([`smart-tempo.ts`](../../../../packages/shared/src/smart-tempo.ts)); Zod `tempoMap` = ticks + BPM.
 
-**Kontrakt Adapt (z dumpu → StageSync):** przy mapie podążającej za nagraniem **wall-clock pliku = ground truth**. Playhead i UI (Forma/tekst) idą po TempoMap; WebAudio odtwarza PCM **1.0× bez warp**. Jeśli mapa źle opisuje rubato, MP3 i wskaźnik **dryfują w trakcie play**, a **seek/stop twardo re-seekuje** offset (`SEEK_JUMP_TICKS` w `audioPlayback.ts`) — wygląda jak „nagle znowu synchro”. To nie Flex; to wymóg jakości mapy + ewentualnie osobna decyzja o korekcji playbacku (nie z tego dumpu jako Keep-stretch).
+**Kontrakt Adapt (z dumpu → StageSync):** przy mapie podążającej za nagraniem **wall-clock pliku = ground truth**. Playhead i UI (Forma/tekst) idą po TempoMap; WebAudio odtwarza PCM **1.0× bez warp**. Jeśli mapa źle opisuje rubato, MP3 i wskaźnik **dryfują w trakcie play**, a **seek/stop twardo re-seekuje** offset (`SEEK_JUMP_TICKS` w [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts)) — wygląda jak „nagle znowu synchro”. To nie Flex; to wymóg jakości mapy + ewentualnie osobna decyzja o korekcji playbacku (nie z tego dumpu jako Keep-stretch).
 
 ## Macierz hipotez
 
@@ -41,8 +41,8 @@
 | Temat dumpu | Stan w v5 |
 |-------------|-----------|
 | Mapa tempa projektu (`tempoMap`) | Zod + ticks↔ms along map |
-| Smart Tempo = mapa za audio (Adapt) | `smart-tempo.ts`, ADR 0015 |
-| Onset / beat grid z PCM | `audioTempoAnalysis.ts` (energy flux + ACF + grid) |
+| Smart Tempo = mapa za audio (Adapt) | [`smart-tempo.ts`](../../../../packages/shared/src/smart-tempo.ts), ADR 0015 |
+| Onset / beat grid z PCM | [`audioTempoAnalysis.ts`](../../../../apps/web/src/lib/audio/audioTempoAnalysis.ts) (energy flux + ACF + grid) |
 | Drift Gate / rzadkie węzły | `evaluateDriftGate`, `sparsifyTempoNodesFromBeatGrid` |
 | Beat Mapper + offset Beat 1 | Import UI / `BeatMapperPane` |
 | Keep / Flex stretch | **OUT** |

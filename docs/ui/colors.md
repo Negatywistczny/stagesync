@@ -1,6 +1,6 @@
 # Kolory (`--ss-color-*`)
 
-Źródło: [`packages/ui/src/tokens.css`](../../packages/ui/src/tokens.css).  
+Źródło: [[`packages/ui/src/tokens.css`](../../packages/ui/src/tokens.css)](../../packages/ui/src/tokens.css).  
 **Zakaz** wpisywania surowych HEX / `rgb()` w shellach i komponentach UI — tylko tokeny.
 
 ## Profile chrome (5.3 Colors & Channels)

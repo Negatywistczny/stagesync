@@ -122,9 +122,9 @@ Proces weryfikacji oprogramowania opiera się na precyzyjnych kryteriach odbioru
 | Ścieżka Pliku / Modułu | Opis Roli i Odpowiedzialności w Architekturze Mobilnej |
 | :--- | :--- |
 | `apps/web/src/components/ClientShell.tsx` | Główna powłoka PWA klienta mobilnego; logika wyboru ról, nagłówek statusu, obsługa preferencji . |
-| `apps/web/src/transport/TransportProvider.tsx` | Dostawca kontekstu transportu; obsługa pętli rAF, odbiór ramek WS i kalkulacja latency . |
+| [`apps/web/src/transport/TransportProvider.tsx`](../../../../apps/web/src/transport/TransportProvider.tsx) | Dostawca kontekstu transportu; obsługa pętli rAF, odbiór ramek WS i kalkulacja latency . |
 | `apps/web/src/lib/scoreOsmd.ts` | Pomocnicze funkcje renderowania i kontroli kursora partytury OpenSheetMusicDisplay . |
-| `apps/desktop/launcher/app.js` | Logika discovery mDNS, obsługa list ostatnich hostów i prezentacja kodów QR . |
+| [`apps/desktop/launcher/app.js`](../../../../apps/desktop/launcher/app.js) | Logika discovery mDNS, obsługa list ostatnich hostów i prezentacja kodów QR . |
 | `apps/mobile-client/` | Dedykowany projekt natywnej powłoki Android (Kotlin, Android WebView Wrapper, Kiosk Mode) . |
 | `packages/shared/` | Schematy Zod protokołu transportu, typy ról, przeliczniki pozycji BBT i transpozycji . |
 | `packages/ui/` | Wspólne komponenty interfejsu użytkownika (przyciski, przełączniki, wskaźniki połączenia) . |

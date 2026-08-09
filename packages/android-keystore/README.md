@@ -1,6 +1,6 @@
 # Android sideload signing
 
-`sideload.keystore` is the **stable** signing key for StageSync Console / Performer
+[`sideload.keystore`](./sideload.keystore) is the **stable** signing key for StageSync Console / Performer
 sideload APKs (GitHub Releases + local `assembleDebug` / `assembleRelease`).
 
 It is **not** a Google Play upload key. Password and alias are intentional for

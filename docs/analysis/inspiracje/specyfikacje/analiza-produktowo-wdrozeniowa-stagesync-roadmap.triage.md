@@ -9,7 +9,7 @@
 
 ## Werdykt przydatności
 
-**Wysoka wartość strategiczna dla architektury i roadmapy StageSync.** Dokument wyznacza spójną ścieżkę ewolucji od wersji 5.5. Kluczowe koncepcje Dual Engine (Studio vs Live) oraz Freeze przed Live są **SSOT w ADR** — dump nadal nie-SSOT. Operacyjne Must-Have (Solo/Mute Panic, Chase MIDI) pozostają w backlogu (`docs/TODO.md`).
+**Wysoka wartość strategiczna dla architektury i roadmapy StageSync.** Dokument wyznacza spójną ścieżkę ewolucji od wersji 5.5. Kluczowe koncepcje Dual Engine (Studio vs Live) oraz Freeze przed Live są **SSOT w ADR** — dump nadal nie-SSOT. Operacyjne Must-Have (Solo/Mute Panic, Chase MIDI) pozostają w backlogu ([`docs/TODO.md`](../../../TODO.md)).
 
 **SSOT po align 2026-08-09:** [ADR 0019](../../../adr/0019-dual-engine-studio-live.md) (Dual Engine), [ADR 0018](../../../adr/0018-future-audio-architecture.md) (Plugin Host sidecar + Freeze + prosta edycja). Raport: [report-adr-dual-engine-vst-align.md](../../reports/current/report-adr-dual-engine-vst-align.md).
 
@@ -17,7 +17,7 @@
 
 | ID / temat | Stan | Notatka |
 |------------|------|---------|
-| RM-01 Solo / Mute Panic Button | `hypothesis` | Must-have dla linii 5.5.0; planowane w `TODO.md` |
+| RM-01 Solo / Mute Panic Button | `hypothesis` | Must-have dla linii 5.5.0; planowane w [`TODO.md`](../../../TODO.md) |
 | RM-02 Audition / PFL Routing | `hypothesis` | Dedykowana magistrala FOH w WebAudio |
 | RM-03 Chase MIDI Notes | `hypothesis` | Algorytm wstecznego skanowania nut na linii 5.5.0 |
 | RM-04 Multi-Window via Tauri | `hypothesis` | Okna pomocnicze w shellu desktopowym (v5.6.0) |
@@ -43,4 +43,4 @@
 
 - Dual Engine + Freeze = **SSOT w ADR 0018/0019** (2026-08-09); dump pozostaje inspiracją.
 - Residual: rozjazd numeracji **6.1 Karaoke (ADR / tabela ROADMAP)** vs **6.1 DMX (dolna ROADMAP/TODO z dumpa)** oraz linii 7.x — osobny align, nie mylić z Dual Engine.
-- Elementy operacyjne (v5.5) nadal w `docs/TODO.md`.
+- Elementy operacyjne (v5.5) nadal w [`docs/TODO.md`](../../../TODO.md).

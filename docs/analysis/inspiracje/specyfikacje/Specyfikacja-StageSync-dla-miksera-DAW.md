@@ -158,13 +158,13 @@ Współczesne przeglądarki umożliwiają przypisanie instancji `AudioContext` d
 3. Ustawienie trybu zliczania kanałów: `context.destination.channelCountMode = "explicit"` .
 4. Ustawienie dyskretnej interpretacji kanałów: `context.destination.channelInterpretation = "discrete"` .
 
-Kluczowym problemem w praktyce koncertowej jest zachowanie systemów operacyjnych macOS oraz Windows. Przeglądarka Chrome bardzo często raportuje `destination.maxChannelCount = 2` dla karty 8-kanałowej, dopóki użytkownik nie skonfiguruje w systemie operacyjnym wielokanałowego układu głośników (np. ustawienie konfiguracji Quadraphonic, 5.1 lub 7.1 w programie *Konfigurator Audio MIDI* na systemie macOS) . StageSync v5.2+ musi wykrywać tę rozbieżność w module `audioOutputPrefs.ts` i wyświetlać jasne ostrzeżenie operatorskie zamiast cichego kierowania sygnałów w próżnię .
+Kluczowym problemem w praktyce koncertowej jest zachowanie systemów operacyjnych macOS oraz Windows. Przeglądarka Chrome bardzo często raportuje `destination.maxChannelCount = 2` dla karty 8-kanałowej, dopóki użytkownik nie skonfiguruje w systemie operacyjnym wielokanałowego układu głośników (np. ustawienie konfiguracji Quadraphonic, 5.1 lub 7.1 w programie *Konfigurator Audio MIDI* na systemie macOS) . StageSync v5.2+ musi wykrywać tę rozbieżność w module [`audioOutputPrefs.ts`](../../../../apps/web/src/lib/audio/audioOutputPrefs.ts) i wyświetlać jasne ostrzeżenie operatorskie zamiast cichego kierowania sygnałów w próżnię .
 
 Równocześnie architektura StageSync odrzuca koncepcję tworzenia osobnych instancji `AudioContext` dla każdego wyjścia fizycznego należącego do osobnych urządzeń audio. Próba równoległego uruchomienia dwóch kontekstów audio powiązanych z różnymi kartami dźwiękowymi prowadzi do powstawania pływającego desynchronizmu zegarów sprzętowych (clock drift), co w warunkach scenicznych wywołuje trzaski, mikro-szybkie przesunięcia fazowe oraz dryfowanie podkładów audio . Multi-device jest realizowany wyłącznie na poziomie agregacji sterowników w systemie operacyjnym (np. macOS Aggregate Device) .
 
 ### Architektura Grafu WebAudio dla Out 3–4 i Bus-to-Bus
 
-Aby zagwarantować bezprzerwowy przesył audio oraz stabilność fazową, silnik `audioPlayback.ts` buduje jednolitą, wielopoziomową topologię grafu WebAudio .
+Aby zagwarantować bezprzerwowy przesył audio oraz stabilność fazową, silnik [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) buduje jednolitą, wielopoziomową topologię grafu WebAudio .
 
 Sygnał ze ścieżki audio przechodzi przez dedykowany węzeł `TrackBus` (mono lub stereo z obsługą True Balance), po czym jego węzeł wyjściowy (`track.route`) zostaje połączony z wejściem wybranej szyny grupy (`bus.input`), bezpośrednio z magistralą Master lub z wybranym wyjściem sprzętowym `HardwareOutputBus` . Szyna grupy przetwarza wzmocnienie i panoramę, po czym jej wyjście (`bus.route`) łączy się z inną szyną grupy, z Masterem lub z wyjściem HW .
 
@@ -221,7 +221,7 @@ Poniższa tabela precyzuje warunki walidacji oraz generowane błędy na krawędz
 
 ### Przełączenie Awaryjne w Runtime WebAudio (`Fail-Soft`)
 
-W wyjątkowych sytuacjach wyścigu stanów w czasie rzeczywistym (np. przy dynamicznym odebraniu niepełnego pakietu synchronizacji przez magistralę WebSocket), silnik WebAudio (`audioPlayback.ts`) nie może dopuścić do zawieszenia wątku odtwarzania ani przerwania pracy urządzenia na scenie .
+W wyjątkowych sytuacjach wyścigu stanów w czasie rzeczywistym (np. przy dynamicznym odebraniu niepełnego pakietu synchronizacji przez magistralę WebSocket), silnik WebAudio ([`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts)) nie może dopuścić do zawieszenia wątku odtwarzania ani przerwania pracy urządzenia na scenie .
 
 Zastosowano następującą procedurę ochronną w silniku audio:
 
@@ -278,8 +278,8 @@ Realizacja specyfikacji v5.2+ wymaga przebudowy i rozszerzenia konkretnych modu�
 
 | Ścieżka Pliku w Monorepo | Istniejące API / Stan Gotowy | Identyfikacja Luk (Gaps) do Wdrożenia w v5.2+ |
 | :--- | :--- | :--- |
-| `packages/shared/src/mixer-routing.ts`  | Schematy `ChannelModeSchema` , `MixerOutputDestSchema` , `BusOutputDestSchema` , funkcje pomocnicze `resolveTrackOutputDest`  i `resolveBusOutputDest` . | 1. Usunięcie ograniczonego `BusOutputDestSchema` .<br>2. Zaimplementowanie schematu `AudioHardwareOutputSchema` oraz ujednoliconego `MixerOutputTargetSchema`.<br>3. Rozbudowa funkcji `resolveTrackOutputDest` i `resolveBusOutputDest` o obsługę celów `hw_out` . |
-| `packages/shared/src/schema.ts`  | `ProjectSchemaV5` z regułami `superRefine` sprawdzającymi istnienie `busId` dla ścieżek audio . | 1. Dodanie opcjonalnej tablicy `audioHardwareOutputs` do schematu projektu .<br>2. Wdrożenie algorytmu DFS do detekcji cykli szyn w `superRefine` .<br>3. Dodanie walidacji spójności referencyjnej dla identyfikatorów `hwOutputId`. |
+| [`packages/shared/src/mixer-routing.ts`](../../../../packages/shared/src/mixer-routing.ts)  | Schematy `ChannelModeSchema` , `MixerOutputDestSchema` , `BusOutputDestSchema` , funkcje pomocnicze `resolveTrackOutputDest`  i `resolveBusOutputDest` . | 1. Usunięcie ograniczonego `BusOutputDestSchema` .<br>2. Zaimplementowanie schematu `AudioHardwareOutputSchema` oraz ujednoliconego `MixerOutputTargetSchema`.<br>3. Rozbudowa funkcji `resolveTrackOutputDest` i `resolveBusOutputDest` o obsługę celów `hw_out` . |
+| [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts)  | `ProjectSchemaV5` z regułami `superRefine` sprawdzającymi istnienie `busId` dla ścieżek audio . | 1. Dodanie opcjonalnej tablicy `audioHardwareOutputs` do schematu projektu .<br>2. Wdrożenie algorytmu DFS do detekcji cykli szyn w `superRefine` .<br>3. Dodanie walidacji spójności referencyjnej dla identyfikatorów `hwOutputId`. |
 | `apps/web/src/lib/audioPlayback.ts`  | Obsługa węzłów `TrackBus` , `GroupBusNode` , `MasterBus` , wygładzanie faderów `setParamDezippered` , miksowanie True Balance . | 1. Przebudowa `ensureMasterBus` na rzecz zbiorczego węzła dyskretnego `ChannelMergerNode` połączonego z `context.destination` .<br>2. Wdrożenie zarządcy węzłów wyjść sprzętowych `HardwareOutputBus`.<br>3. Rozbudowa funkcji `applyBusParams` o kaskadowe łączenie szyn oraz wsparcie przełączenia awaryjnego (`fail-soft`) . |
 | `apps/web/src/lib/audioOutputPrefs.ts`  | Stosowanie `setSinkId` w `applyAudioOutputSink` , pobieranie urządzeń w `listAudioOutputDevices` . | 1. Dodanie odczytu i weryfikacji parametru `context.destination.maxChannelCount` .<br>2. Wdrożenie funkcji wykrywania ograniczeń kanałowych narzucanych przez system operacyjny . |
 | `apps/web/src/components/mixer/OutputSelector.tsx`  | Komponent selektora wyjścia , funkcje `serializeOutputDest` oraz `parseOutputDest` . | 1. Obsługa prefiksu `hw:<id>` w funkcjach serializacji i parsowania .<br>2. Dynamiczne wykluczanie opcji powodujących cykle na podstawie grafu projektu . |

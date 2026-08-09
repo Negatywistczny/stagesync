@@ -458,7 +458,7 @@ async function menuTesting() {
       { value: 'server', label: '7. 🎼  Testy serwera transportu (@stagesync/server)' },
       { value: 'web', label: '8. 🎨  Testy UI Admin/Client (@stagesync/web)' },
       { value: 'benchmark', label: '9. 🎯  Smart Tempo DSP Benchmark' },
-      { value: 'fix', label: '10.🧹 Auto-Fixer (Format & Lint)' },
+      { value: 'fix', label: '10.🧹  Auto-Fixer (Format & Lint)' },
       { value: 'back', label: '0. ↩️   Powrót' },
     ],
   });

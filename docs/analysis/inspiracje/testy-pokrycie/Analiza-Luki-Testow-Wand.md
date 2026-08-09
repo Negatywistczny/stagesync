@@ -4,10 +4,10 @@
 
 message time: 2026-07-27 14:26:56
 
-Jesteś ekspertem od testów domeny muzycznej StageSync. Przeanalizuj `packages/shared/src/wand.ts` — Różdżka: placement Tekst/Akordy z Forma (v4 parity, pure functions).
+Jesteś ekspertem od testów domeny muzycznej StageSync. Przeanalizuj [`packages/shared/src/wand.ts`](../../../../packages/shared/src/wand.ts) — Różdżka: placement Tekst/Akordy z Forma (v4 parity, pure functions).
 
 CEL ANALIZY
-`wand.test.ts` jest obszerny, ale moduł ma >50 uncovered lines. Zidentyfikuj luki w algorytmach A–F (tekst) i A–E+L (akordy), scope, approximate layers.
+[`wand.test.ts`](../../../../packages/shared/src/wand.test.ts) jest obszerny, ale moduł ma >50 uncovered lines. Zidentyfikuj luki w algorytmach A–F (tekst) i A–E+L (akordy), scope, approximate layers.
 
 PYTANIA BADAWCZE
 1. Które gałęzie `placeContentFromForma` / `wandContentToForma` nie są trafiane (grep coverage)?
@@ -52,11 +52,11 @@ I've completed your research. Feel free to ask me follow-up questions or request
 
 Analiza Testów Modułu Wand
 
-# Analiza Pokrycia Testowego i Specyfikacja Testów Modułu Różdżki (`wand.ts`) w Systemie StageSync
+# Analiza Pokrycia Testowego i Specyfikacja Testów Modułu Różdżki ([`wand.ts`](../../../../packages/shared/src/wand.ts)) w Systemie StageSync
 
 ## Architektura i Niezmienniki Modułu Różdżki
 
-Moduł Różdżki zawarty w pliku `packages/shared/src/wand.ts` realizuje algorytmy rozmieszczania i dopasowywania klipów zawartości — śpiewalnego tekstu (`TekstClip`) oraz symboli akordów (`AkordClip`) — do istniejących sekcji struktury muzycznej `Forma` . Logika ta stanowi przeniesienie algorytmów z wersji v4 systemu z zachowaniem pełnej kompatybilności wstecznej (v4 parity) . W całości opiera się na czystych funkcjach (pure functions), co oznacza, że wyliczenia pozycji nie korzystają ze stanu zewnętrznego, zmiennych globalnych ani operacji wejścia/wyjścia, a jedynym źródłem prawdy dla czasu muzycznego jest oś dyskretnych jednostkach `ticks` oparta na stałej gęstości $PPQ = 960$ oraz mapie metrum (`meterMap`) .
+Moduł Różdżki zawarty w pliku [`packages/shared/src/wand.ts`](../../../../packages/shared/src/wand.ts) realizuje algorytmy rozmieszczania i dopasowywania klipów zawartości — śpiewalnego tekstu (`TekstClip`) oraz symboli akordów (`AkordClip`) — do istniejących sekcji struktury muzycznej `Forma` . Logika ta stanowi przeniesienie algorytmów z wersji v4 systemu z zachowaniem pełnej kompatybilności wstecznej (v4 parity) . W całości opiera się na czystych funkcjach (pure functions), co oznacza, że wyliczenia pozycji nie korzystają ze stanu zewnętrznego, zmiennych globalnych ani operacji wejścia/wyjścia, a jedynym źródłem prawdy dla czasu muzycznego jest oś dyskretnych jednostkach `ticks` oparta na stałej gęstości $PPQ = 960$ oraz mapie metrum (`meterMap`) .
 
 Architektura modułu gwarantuje dwa fundamentalne niezmienniki domenowe. Po pierwsze, struktura sekcji muzycznych zawarta w obiekcie `project.forma` nie podlega żadnym mutacjom . Operacje Różdżki modyfikują wyłącznie pozycje `startTicks` oraz długości `lengthTicks` klipów na ścieżkach `tekst` oraz `akordy` . Po drugie, klipy należące do strefy odliczania (pre-roll / countdown) są całkowicie chronione przed przesunięciem . Ochrona ta dotyczy zarówno klipów posiadających identyfikatory etykiet cyfrowych (`vl-cd-*`), jak i elementów umieszczonych w strefie ujemnych wartości czasu .
 
@@ -89,7 +89,7 @@ Poniższa macierz klasyfikuje zachowanie algorytmu Różdżki w zależności od 
 
 ### 1. Identyfikacja Nieprzetestowanych Gałęzi (Grep Coverage)
 
-Szczegółowa weryfikacja kodu źródłowego w zestawieniu z istniejącymi testami w `wand.test.ts` pozwala na precyzyjne wykazanie nieprzetestowanych ścieżek wykonania . 第一ą kluczową luką jest logicznie nieosiągalna gałąź sprawdzająca pusty filtr zakresu. W funkcjach `placeTekstFromForma` oraz `placeAkordyFromForma` umieszczono warunek `if (filter && filter.size === 0)` . Jednak funkcja pomocnicza `sectionFilter(scope)` zwraca wartość `null` w sytuacji, gdy tablica `sectionIds` po odfiltrowaniu pustych łańcuchów znaków nie zawiera elementów . W efekcie zmienna `filter` przyjmuje wartość `null` zamiast instancji `Set` o rozmiarze 0, co sprawia, że blok kodu dedykowany dla `filter.size === 0` stanowi martwy kod .
+Szczegółowa weryfikacja kodu źródłowego w zestawieniu z istniejącymi testami w [`wand.test.ts`](../../../../packages/shared/src/wand.test.ts) pozwala na precyzyjne wykazanie nieprzetestowanych ścieżek wykonania . 第一ą kluczową luką jest logicznie nieosiągalna gałąź sprawdzająca pusty filtr zakresu. W funkcjach `placeTekstFromForma` oraz `placeAkordyFromForma` umieszczono warunek `if (filter && filter.size === 0)` . Jednak funkcja pomocnicza `sectionFilter(scope)` zwraca wartość `null` w sytuacji, gdy tablica `sectionIds` po odfiltrowaniu pustych łańcuchów znaków nie zawiera elementów . W efekcie zmienna `filter` przyjmuje wartość `null` zamiast instancji `Set` o rozmiarze 0, co sprawia, że blok kodu dedykowany dla `filter.size === 0` stanowi martwy kod .
 
 Druga luka dotyczy obsługi spływu nadmiarowych klipów w podsekcjach wewnątrz funkcji `placeSectionContent` . Warunek `if (offset < lines.length && contentSpans.length)` odpowiada za umieszczenie klipów, które pozostały nieprzydzielone po proporcjonalnym rozdzieleniu elementów na przedziały typu Content . W obecnym zestawie testów brak scenariusza wymuszającego przejście przez tę ścieżkę .
 
@@ -135,19 +135,19 @@ Flaga przybliżenia `approximate` dla trybu `both` wyliczana jest jako alternaty
 
 Po zakończeniu wyliczania nowych pozycji `startTicks` dla klipów akordowych funkcja `placeAkordyFromForma` przekazuje przetworzoną tablicę do funkcji `sealAkordyLengths` pochodzącej z modułu `./ug-import.js` . Zadaniem `sealAkordyLengths` jest posortowanie klipów i przeliczenie ich właściwości `lengthTicks` tak, aby każdy akord trwał dokładnie do momentu rozpoczęcia kolejnego symbolu na osi czasu .
 
-Z punktu widzenia strategii testów pomocnicza funkcja `sealAkordyLengths` posiada dedykowane testy jednostkowe w pliku `ug-import.test.ts` . W zestawie `wand.test.ts` nie należy powielać testów jednostkowych samej logiki uszczelniania . Testy Różdżki powinny weryfikować integrację jako asercje stanu końcowego — sprawdzając, czy po przełożeniu akordów na nową strukturę `Forma` długość każdego akordu prawidłowo sięga do onsetu następnego elementu .
+Z punktu widzenia strategii testów pomocnicza funkcja `sealAkordyLengths` posiada dedykowane testy jednostkowe w pliku [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) . W zestawie [`wand.test.ts`](../../../../packages/shared/src/wand.test.ts) nie należy powielać testów jednostkowych samej logiki uszczelniania . Testy Różdżki powinny weryfikować integrację jako asercje stanu końcowego — sprawdzając, czy po przełożeniu akordów na nową strukturę `Forma` długość każdego akordu prawidłowo sięga do onsetu następnego elementu .
 
 ### 6. Analiza Ścieżek Fail-Soft i Bezpieczeństwo Wykonania
 
-Projekt modułu `wand.ts` w pełni realizuje wzorzec bezpiecznej obsługi błędów (fail-soft) . Funkcja `placeContentFromForma` nie zgłasza wyjątków (`throw`) podczas operowania na niekompletnych, pustych lub niezgodnych strukturalnie obiektach domenowych . Wszelkie odchylenia od stanu prawidłowego są przechwytywane przez instrukcje strażnicze (guard clauses) i zwracane jako `WandResult` z flagą `ok: false` oraz precyzyjnym komunikatem biznesowym w języku polskim .
+Projekt modułu [`wand.ts`](../../../../packages/shared/src/wand.ts) w pełni realizuje wzorzec bezpiecznej obsługi błędów (fail-soft) . Funkcja `placeContentFromForma` nie zgłasza wyjątków (`throw`) podczas operowania na niekompletnych, pustych lub niezgodnych strukturalnie obiektach domenowych . Wszelkie odchylenia od stanu prawidłowego są przechwytywane przez instrukcje strażnicze (guard clauses) i zwracane jako `WandResult` z flagą `ok: false` oraz precyzyjnym komunikatem biznesowym w języku polskim .
 
-Potencjalnym punktem awarii z punktu widzenia wykonywania kodu mogłyby być jedynie nieprawidłowe wartości w mapie metrum lub metrum domyślnym ($PPQ \le 0$ lub numerator/denominator $\le 0$), które wywołałyby wyjątek `RangeError` w dziedzinowych funkcjach pomocniczych pliku `time.ts` . Wszystkie przypadki użycia biznesowego na poziomie warstwy Różdżki są w pełni chronione .
+Potencjalnym punktem awarii z punktu widzenia wykonywania kodu mogłyby być jedynie nieprawidłowe wartości w mapie metrum lub metrum domyślnym ($PPQ \le 0$ lub numerator/denominator $\le 0$), które wywołałyby wyjątek `RangeError` w dziedzinowych funkcjach pomocniczych pliku [`time.ts`](../../../../packages/shared/src/time.ts) . Wszystkie przypadki użycia biznesowego na poziomie warstwy Różdżki są w pełni chronione .
 
 ---
 
 ## Specyfikacja Brakujących Testów Jednostkowych
 
-Dla zapewnienia pełnego pokrycia kodu modułu `wand.ts` należy rozbudować plik `wand.test.ts` o poniższe zestawy testowe.
+Dla zapewnienia pełnego pokrycia kodu modułu [`wand.ts`](../../../../packages/shared/src/wand.ts) należy rozbudować plik [`wand.test.ts`](../../../../packages/shared/src/wand.test.ts) o poniższe zestawy testowe.
 
 ### 1. Test Heurystyki Krótkiej Puenty (Layer F)
 Test weryfikuje aktywację rozkładu ważonego przy wystąpieniu krótkiej linii na końcu sekcji, gdzie liczba taktów nie jest podzielna przez liczbę linii.
@@ -333,7 +333,7 @@ describe("Różdżka — Property-Based Tests (fast-check)", () => {
 
 ## Ocena Potrzeby Atrap oraz Ryzyka Migania Testów
 
-Logika modułu `wand.ts` oraz wszystkie wywoływane przez nią funkcje pomocnicze mają charakter w pełni czysty (pure functions) . W konsekwencji tworzenie atrap (mocków) obiektów systemowych, zegarów czy modułów zewnętrznych jest zbędne . Wszystkie scenariusze testowe powinny być realizowane w oparciu o czyste struktury danych inicjalizowane przy użyciu zautomatyzowanej fabryki `createProjectV5Seed` .
+Logika modułu [`wand.ts`](../../../../packages/shared/src/wand.ts) oraz wszystkie wywoływane przez nią funkcje pomocnicze mają charakter w pełni czysty (pure functions) . W konsekwencji tworzenie atrap (mocków) obiektów systemowych, zegarów czy modułów zewnętrznych jest zbędne . Wszystkie scenariusze testowe powinny być realizowane w oparciu o czyste struktury danych inicjalizowane przy użyciu zautomatyzowanej fabryki `createProjectV5Seed` .
 
 Ryzyko wystąpienia testów niestabilnych (flaky tests) wynosi 0%. Wyliczenia pozycji w domenie StageSync opierają się na matematyce dyskretnej (całkowitoliczbowe wartości `ticks`), wykluczając operacje niedeterministyczne, losowość oraz zależności od czasu rzeczywistego (`Date.now`) . Zapewnia to pełną powtarzalność wyników w każdym środowisku wykonawczym i w potokach CI/CD.
 

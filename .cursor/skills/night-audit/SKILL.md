@@ -84,4 +84,4 @@ Nazewnictwo: [docs-analysis-naming.mdc](../../rules/docs-analysis-naming.mdc).
 ## Done vs docs
 
 - Nie oznaczaj Done / nie wypychaj do CHANGELOG bez realnego kodu + testów.
-- Domknięcie chore/docs/ci/test **bez** wpisu CHANGELOG (złota zasada w `changelog.mdc`).
+- Domknięcie chore/docs/ci/test **bez** wpisu CHANGELOG (złota zasada w [`changelog.mdc`](../../rules/changelog.mdc)).

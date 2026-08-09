@@ -4,10 +4,10 @@
 
 message time: 2026-07-27 14:27:34
 
-Jesteś ekspertem od testów MIDI i transportu StageSync. Przeanalizuj `apps/server/src/midi/host.ts` — MIDI I/O hosta, clock OUT z ticków SSOT, clock IN, Program Change debounce, panic.
+Jesteś ekspertem od testów MIDI i transportu StageSync. Przeanalizuj [`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts) — MIDI I/O hosta, clock OUT z ticków SSOT, clock IN, Program Change debounce, panic.
 
 CEL ANALIZY
-Uzupełnić pokrycie `createMidiHost` poza `host.test.ts` i testami midi-api/pc-*.
+Uzupełnić pokrycie `createMidiHost` poza [`host.test.ts`](../../../../apps/server/src/midi/host.test.ts) i testami midi-api/pc-*.
 
 PYTANIA BADAWCZE
 1. Clock OUT: `emitClocksThrough`, `MAX_CLOCK_BURST`, seek while playing → re-SPP+Continue — wszystkie edge?
@@ -15,7 +15,7 @@ PYTANIA BADAWCZE
 3. PC IN: debounce 50ms latest-wins, channel filter silent drop — testy z fake timers?
 4. Start/Continue/Stop ze `lastSppTicks` — seek + play na transporcie?
 5. `safeSend` / USB unplug — error w `lastError` bez crash procesu?
-6. `applyPorts` przy boot z persisted config — integracja `config-persist.ts`?
+6. `applyPorts` przy boot z persisted config — integracja [`config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts)?
 7. `panic()`: 16 channels × CC 120/121/123 — partial failure?
 
 KONTEKST
@@ -54,9 +54,9 @@ I've completed your research. Feel free to ask me follow-up questions or request
 
 Plan Testów MIDI Host
 
-# Analiza Pokrycia Testowego i Strategia Testowania Modułu Host MIDI (`apps/server/src/midi/host.ts`)
+# Analiza Pokrycia Testowego i Strategia Testowania Modułu Host MIDI ([`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts))
 
-Moduł Host MIDI (`apps/server/src/midi/host.ts`) odgrywa kluczową rolę w architekturze przesyłania sygnałów sterujących i chronometrażu w systemie StageSync . Odpowiada on za dwukierunkową komunikację MIDI I/O, synchroniczne generowanie sygnału zegarowego (Clock OUT) w oparciu o silnik transportu stanowiący pojedyncze źródło prawdy (SSOT – *Single Source of Truth*), odbiór i metrykowanie sygnałów wejściowych (Clock IN, SPP, Program Change), bezprzerwowe przełączanie utworów oraz realizację procedur awaryjnych (Panic) . 
+Moduł Host MIDI ([`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts)) odgrywa kluczową rolę w architekturze przesyłania sygnałów sterujących i chronometrażu w systemie StageSync . Odpowiada on za dwukierunkową komunikację MIDI I/O, synchroniczne generowanie sygnału zegarowego (Clock OUT) w oparciu o silnik transportu stanowiący pojedyncze źródło prawdy (SSOT – *Single Source of Truth*), odbiór i metrykowanie sygnałów wejściowych (Clock IN, SPP, Program Change), bezprzerwowe przełączanie utworów oraz realizację procedur awaryjnych (Panic) . 
 
 Poniższa analiza weryfikuje mechanizmy działania modułu, odpowiada na siedem szczegółowych pytań badawczych, identyfikuje luki w pokryciu kodu i definiuje deterministyczną strategię testową pozwalającą zabezpieczyć stabilność aplikacji w środowisku scenicznym.
 
@@ -66,7 +66,7 @@ Poniższa analiza weryfikuje mechanizmy działania modułu, odpowiada na siedem 
 
 Moduł `createMidiHost` nie korzysta z niezależnych interwałów czasowych `setInterval` do generowania impulsów zegarowych MIDI, lecz opiera się bezpośrednio na delcie ticków generowanej przez silnik transportu `TransportEngine` . Standard MIDI Clock definiuje $24$ impulsy na ćwierćnutę (PPQN – *Pulses Per Quarter Note*) . Przy domyślnej rozdzielczości domenowej $PPQ = 960$, jeden impuls zegara MIDI przypada dokładnie na każde $40$ ticków ($960 / 24 = 40$) .
 
-Wszelkie wyjścia MIDI są chronione przez mechanizm `isMidiOutAllowed()`, pochodzący z modułu `safety-net.ts` . W trybie Master emisja komunikatów jest dozwolona, natomiast w trybie Spare ruch wyjściowy jest całkowicie blokowany, co zapobiega nakładaniu się sygnałów sterujących z fizycznie zsynchronizowanych urządzeń zapasowych . Wszystkie operacje wysyłania pakietów przechodzą przez wewnętrzną funkcję wrapper `safeSend()`, która izoluje wyjątki zgłaszane przez warstwę I/O (np. nagłe odłączenie kabla USB) i wycisza awarię, zapobiegając załamaniu całego procesu Node.js .
+Wszelkie wyjścia MIDI są chronione przez mechanizm `isMidiOutAllowed()`, pochodzący z modułu [`safety-net.ts`](../../../../apps/server/src/safety-net.ts) . W trybie Master emisja komunikatów jest dozwolona, natomiast w trybie Spare ruch wyjściowy jest całkowicie blokowany, co zapobiega nakładaniu się sygnałów sterujących z fizycznie zsynchronizowanych urządzeń zapasowych . Wszystkie operacje wysyłania pakietów przechodzą przez wewnętrzną funkcję wrapper `safeSend()`, która izoluje wyjątki zgłaszane przez warstwę I/O (np. nagłe odłączenie kabla USB) i wycisza awarię, zapobiegając załamaniu całego procesu Node.js .
 
 ---
 
@@ -161,7 +161,7 @@ Do zagwarantowania deterministycznego wykonania testów bez dostępu do fizyczny
 
 ### Mock Backend MIDI (`createMockMidiBackend`)
 
-Istniejący moduł `mock-backend.ts` dostarcza pełną atrapę interfejsu hardware z obsługą kontrolowanych błędów I/O :
+Istniejący moduł [`mock-backend.ts`](../../../../apps/server/src/midi/mock-backend.ts) dostarcza pełną atrapę interfejsu hardware z obsługą kontrolowanych błędów I/O :
 
 ```typescript
 import type { MidiBackend, MidiPortInfo, MidiRealtimeMessage } from "./backend.js";
@@ -301,7 +301,7 @@ Strategia testowa priorytetyzuje obszary funkcjonalne pod kątem ich wpływu na 
 
 ## 6. Mapa Niepokrytych Linii Kodowych (Uncovered Lines) → Scenariusz Testowy
 
-Analiza porównawcza kodu `apps/server/src/midi/host.ts`  z istniejącym zestawem testów w `host.test.ts`  wykazuje specyficzne luki w pokryciu logicznym. Tabela wskazuje dokładnie fragmenty kodu wymagające uzupełnienia.
+Analiza porównawcza kodu [`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts)  z istniejącym zestawem testów w [`host.test.ts`](../../../../apps/server/src/midi/host.test.ts)  wykazuje specyficzne luki w pokryciu logicznym. Tabela wskazuje dokładnie fragmenty kodu wymagające uzupełnienia.
 
 | Linie Kodowe | Fragment Logiki | Opis Luki w Pokryciu | Proponowany Test Jednostkowy |
 | :--- | :--- | :--- | :--- |
@@ -320,7 +320,7 @@ Analiza porównawcza kodu `apps/server/src/midi/host.ts`  z istniejącym zestawe
 
 ## 7. Wnioski i Rekomendacje
 
-Przeanalizowany moduł `apps/server/src/midi/host.ts` wykazuje wysoki stopień dojrzałości architektonicznej . Izolacja błędów I/O wewnątrz `safeSend` oraz ścisłe powiązanie zegara wyjściowego z deltywicznym przeliczaniem ticków transportu gwarantują stabilność działania serwera . Udostępnienie dedykowanego pliku testowego `host-edges.test.ts` pokrywającego wykazane w powyższej tabeli luki logiczne pozwoli uzyskać bliskie 100% pokrycie gałęzi (*branch coverage*) przy zachowaniu pełnej deterministyczności pętli CI/CD.
+Przeanalizowany moduł [`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts) wykazuje wysoki stopień dojrzałości architektonicznej . Izolacja błędów I/O wewnątrz `safeSend` oraz ścisłe powiązanie zegara wyjściowego z deltywicznym przeliczaniem ticków transportu gwarantują stabilność działania serwera . Udostępnienie dedykowanego pliku testowego `host-edges.test.ts` pokrywającego wykazane w powyższej tabeli luki logiczne pozwoli uzyskać bliskie 100% pokrycie gałęzi (*branch coverage*) przy zachowaniu pełnej deterministyczności pętli CI/CD.
 
 ---
 Powered by [AI Exporter](https://saveai.net)

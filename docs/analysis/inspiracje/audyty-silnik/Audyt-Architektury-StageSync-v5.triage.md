@@ -26,5 +26,5 @@ Wszystkie priorytetowe ID rozstrzygnięte. H-02/H-04 wcześniej; H-05 trailing `
 
 ## Następny krok eng
 
-1. H-01 w [TODO.md](../../../TODO.md) § 5.2+: profil Grid/Karaoke @ 90–120 Hz ze sondą (`MOBILE.md` § H-01), potem dopiero split context / throttle.
+1. H-01 w [TODO.md](../../../TODO.md) § 5.2+: profil Grid/Karaoke @ 90–120 Hz ze sondą ([`MOBILE.md`](../../../guides/MOBILE.md) § H-01), potem dopiero split context / throttle.
 2. Smoke H-04 Live Desk ±300 ms (opcjonalnie).

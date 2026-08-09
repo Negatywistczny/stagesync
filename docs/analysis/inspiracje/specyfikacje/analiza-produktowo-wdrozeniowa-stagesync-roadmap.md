@@ -243,7 +243,7 @@ Paradygmat Dual Engine definiuje każdą funkcję w roadmapie 5.5.0 – 7.1.0 . 
 * **Wartość produktowa:** Must-Have dla niezawodności scenicznej i przenośności .
 * **Inspiracje rynkowe:** Ableton Live ("Collect All and Save"), Logic Pro ("Consolidate Project").
 * **Pułapki i ryzyka:** Niepotrzebne duplikowanie wielogigabajtowych archiwów audio; błędy uprawnień przy zapisie na napędach zewnętrznych .
-* **Pragmatyczne wdrożenie w StageSync:** Uruchamiana z menu operacja serwerowa, która skanuje ścieżki plików w `audioClips` . Wszystkie pliki spoza katalogu `data/projects/<id>/assets/` są kopiowane do wewnątrz folderu projektu, a ścieżki w pliku `project.json` zostają zaktualizowane do względnych .
+* **Pragmatyczne wdrożenie w StageSync:** Uruchamiana z menu operacja serwerowa, która skanuje ścieżki plików w `audioClips` . Wszystkie pliki spoza katalogu `data/projects/<id>/assets/` są kopiowane do wewnątrz folderu projektu, a ścieżki w pliku [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) zostają zaktualizowane do względnych .
 
 ---
 

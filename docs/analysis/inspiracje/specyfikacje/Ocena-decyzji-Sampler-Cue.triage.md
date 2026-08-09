@@ -8,7 +8,7 @@
 
 ## Werdykt przydatności
 
-**Wysoka — potwierdza model Cue+sample.** KEEP 1/2/4/5 zgodne z companion (`closed` MVP). REVISE routing HW Out w `CueSampleOutputSchema` — **confirmed gap vs ADR multi-out IN**: schema dziś tylko `master`\|`bus` (grep `schema.ts`). Polyphony w Zod bez pełnego UI — zgodne z ADR 0011 (nie stubować).
+**Wysoka — potwierdza model Cue+sample.** KEEP 1/2/4/5 zgodne z companion (`closed` MVP). REVISE routing HW Out w `CueSampleOutputSchema` — **confirmed gap vs ADR multi-out IN**: schema dziś tylko `master`\|`bus` (grep [`schema.ts`](../../../../packages/shared/src/schema.ts)). Polyphony w Zod bez pełnego UI — zgodne z ADR 0011 (nie stubować).
 
 ## Macierz
 

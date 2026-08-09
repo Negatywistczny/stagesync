@@ -18,7 +18,7 @@ dane produkcyjne użytkownika lądowały wewnątrz katalogu repozytorium.
 
 ## Decyzja
 
-`defaultDataDir()` (`apps/server/src/storage/paths.ts`) stosuje następujący priorytet:
+`defaultDataDir()` ([`apps/server/src/storage/paths.ts`](../../apps/server/src/storage/paths.ts)) stosuje następujący priorytet:
 
 | Priorytet | Warunek | Katalog |
 |-----------|---------|---------|
@@ -27,7 +27,7 @@ dane produkcyjne użytkownika lądowały wewnątrz katalogu repozytorium.
 | 3 | `HOME` lub `USERPROFILE` dostępne | `~/Documents/StageSync` |
 | 4 | fallback (brak HOME) | `<repo>/data` |
 
-`STAGESYNC_REPO_DEV=1` jest domyślnie ustawione w `.env.example` — deweloper
+`STAGESYNC_REPO_DEV=1` jest domyślnie ustawione w [`.env.example`](../../.env.example) — deweloper
 kopiuje plik jako `.env` i nie musi nic zmieniać. Docker i Compose zawsze ustawiają
 `STAGESYNC_DATA_DIR` jawnie (bez zmian).
 
@@ -55,7 +55,7 @@ kopiuje plik jako `.env` i nie musi nic zmieniać. Docker i Compose zawsze ustaw
   Application Support / AppData). Jednorazowa migracja z legacy `app_data_dir/StageSync`,
   jeśli Documents jeszcze nie mają projektów; meta Launchera zostaje w App Support.
 - Docker: bez zmian — `STAGESYNC_DATA_DIR=/app/data` w Compose.
-- Dev: bez zmian — `STAGESYNC_REPO_DEV=1` w `.env` (z `.env.example`).
+- Dev: bez zmian — `STAGESYNC_REPO_DEV=1` w `.env` (z [`.env.example`](../../.env.example)).
 - Windows: `USERPROFILE\Documents\StageSync` (`C:\Users\nazwa\Documents\StageSync`).
 - Migracja istniejących danych (jeśli ktoś miał dane w `repo/data`):
   `cp -a data ~/Documents/StageSync` (macOS/Linux) lub przenieś folder ręcznie.

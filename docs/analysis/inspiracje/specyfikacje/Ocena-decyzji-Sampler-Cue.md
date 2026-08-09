@@ -33,7 +33,7 @@ Na scenie komunikat tekstowy widoczny dla muzyka (na przykład baner „Wejście
 
 ### Decyzja 1: Sample jako Atrybut CueClip
 
-Rekomendacja dotycząca pierwszej decyzji to **KEEP**. Decyzja o przypisaniu sampla bezpośrednio do `CueClip` jest w pełni uzasadniona merytorycznie. Model danych w `schema.ts` poprawnie zagnieżdża `CueSampleConfigSchema` jako opcjonalny atrybut klipu Cue . Uniknięto w ten sposób sztucznego mnożenia warstw osi czasu i skomplikowanych mechanizmów grupowania znanych z oprogramowania teatralnego . Zarówno funkcje edycyjne (`setCueClipSample` w `cueEdit.ts`), jak i logiki prezentacyjne na scenie operują na wspólnym identyfikatorze `startTicks` .
+Rekomendacja dotycząca pierwszej decyzji to **KEEP**. Decyzja o przypisaniu sampla bezpośrednio do `CueClip` jest w pełni uzasadniona merytorycznie. Model danych w [`schema.ts`](../../../../packages/shared/src/schema.ts) poprawnie zagnieżdża `CueSampleConfigSchema` jako opcjonalny atrybut klipu Cue . Uniknięto w ten sposób sztucznego mnożenia warstw osi czasu i skomplikowanych mechanizmów grupowania znanych z oprogramowania teatralnego . Zarówno funkcje edycyjne (`setCueClipSample` w [`cueEdit.ts`](../../../../apps/web/src/lib/timeline-edit/cueEdit.ts)), jak i logiki prezentacyjne na scenie operują na wspólnym identyfikatorze `startTicks` .
 
 ### Decyzja 2: Zakres MVP (One-shot / Gated) vs Funkcje Odłożone
 
@@ -68,8 +68,8 @@ Rekomendacja dla zachowania post-stop i panic to **KEEP**. Opcja `playPostStop: 
 | **1** | Sample w `CueClip` | **KEEP** | Zachować jednolitą strukturę `CueClipSchema` z opcjonalnym polem `sample` . Brak osobnych ścieżek samplera . | Baza danych V5/V6 spójna; brak architektury dual-write . | Zgodne z ADR 0011 (prosta struktura IA) . |
 | **2** | MVP One-shot/Gated | **KEEP** | Ograniczyć interfejs użytkownika w 5.2 do trybów `one-shot` i `gated` . Polifonię `retrigger`/`choke` ukryć lub wdrożyć w silniku bez pokazania zablokowanych kontrolek . | Zachowane pola Zod; brak zablokowanych kontrolek w UI . | Zgodne z ADR 0011 (zakaz stubów UI) . |
 | **3** | Routing tylko Master\|Bus | **REVISE** | Odblokować modelowo routing HW Out. Unifikacja `CueSampleOutputSchema` z `MixerOutputDestSchema` . Wprowadzić bramkowanie warunkiem `hwOutputUiAllowed` w UI . | Rozszerzenie Zod `CueSampleOutputSchema` o `{ kind: "hw_out" }` . | **Naprawia konflikt z ADR 0015** (Multi-out IN) . |
-| **4** | Timing: Tick / Beat / Immediate | **KEEP** | Zachować pełną obsługę trzech trybów wyzwalania w silniku i interfejsie Inspectora/GO Pad . | Spójna obsługa w `syncAudioPlayback()` i `stage-hub.ts` . | Zgodne z ADR 0002 (Timebase SSOT) . |
-| **5** | Post-stop & Panic | **KEEP** | Bezwarunkowe zachowanie funkcji fire-and-forget z obligatoryjną rampą wyciszania 5 ms przy komendzie PANIC . | Poprawka w `audioPlayback.ts` dla natychmiastowej rampy głośności . | Zgodne z rygorem bezpieczeństwa estradowego FOH . |
+| **4** | Timing: Tick / Beat / Immediate | **KEEP** | Zachować pełną obsługę trzech trybów wyzwalania w silniku i interfejsie Inspectora/GO Pad . | Spójna obsługa w `syncAudioPlayback()` i [`stage-hub.ts`](../../../../apps/server/src/transport/stage-hub.ts) . | Zgodne z ADR 0002 (Timebase SSOT) . |
+| **5** | Post-stop & Panic | **KEEP** | Bezwarunkowe zachowanie funkcji fire-and-forget z obligatoryjną rampą wyciszania 5 ms przy komendzie PANIC . | Poprawka w [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) dla natychmiastowej rampy głośności . | Zgodne z rygorem bezpieczeństwa estradowego FOH . |
 
 ## Pytania Decyzyjne do Product Ownera
 

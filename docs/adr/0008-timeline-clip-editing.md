@@ -90,7 +90,7 @@ nie live FFT.
 | **Gain klipu** | region (np. Gain Tool w Smart zones) |
 | **Fader ścieżki** | lane (dock lub inspector) |
 
-Brak krzywych automatyzacji w alpha/beta. Wartości persist w `project.json` (schema v3+).
+Brak krzywych automatyzacji w alpha/beta. Wartości persist w [`project.json`](../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) (schema v3+).
 
 ### 6. Smart Tool
 

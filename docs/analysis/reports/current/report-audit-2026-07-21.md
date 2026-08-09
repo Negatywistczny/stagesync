@@ -98,7 +98,7 @@ Residual: brak UI na 409 → **A21-M43**.
 F83 · history F63–F69
 
 ### A21-H03 — `pnpm lint` — **FIXED** F83 (ACL + test ignores)
-F72 REOPEN → F83: `acl.js` `ignores: **/*.test.ts`; `pnpm lint --force` **PASS**.  
+F72 REOPEN → F83: [`acl.js`](../../../../packages/eslint-config/acl.js) `ignores: **/*.test.ts`; `pnpm lint --force` **PASS**.  
 F83 · F72
 
 ---

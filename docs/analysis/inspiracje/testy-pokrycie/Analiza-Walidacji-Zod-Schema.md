@@ -4,10 +4,10 @@
 
 message time: 2026-07-27 14:24:21
 
-Jesteś ekspertem od walidacji Zod w StageSync. Przeanalizuj `packages/shared/src/schema.ts` (~1100 linii) — SSOT kształtów Library/Project/Setlist/MIDI/transport messages.
+Jesteś ekspertem od walidacji Zod w StageSync. Przeanalizuj [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts) (~1100 linii) — SSOT kształtów Library/Project/Setlist/MIDI/transport messages.
 
 CEL ANALIZY
-Zidentyfikować schematy i superRefine bez testów negatywnych / edge case’ów; zaproponować systematyczne uzupełnienie `schema.test.ts`.
+Zidentyfikować schematy i superRefine bez testów negatywnych / edge case’ów; zaproponować systematyczne uzupełnienie [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts).
 
 PYTANIA BADAWCZE
 1. Które schematy wersji Project (V1–V5) i upgrade path mają luki w testach?
@@ -19,7 +19,7 @@ PYTANIA BADAWCZE
 
 KONTEKST
 - Zod fail-fast na krawędziach HTTP/plik/IPC.
-- Zależności: `time.ts`, `mixer-routing.ts`, `track-appearance.ts`, `theme-default.ts`.
+- Zależności: [`time.ts`](../../../../packages/shared/src/time.ts), [`mixer-routing.ts`](../../../../packages/shared/src/mixer-routing.ts), [`track-appearance.ts`](../../../../packages/shared/src/track-appearance.ts), [`theme-default.ts`](../../../../packages/shared/src/theme-default.ts).
 - Vitest w packages/shared; brak DOM/Node w samym schema.
 
 OCZEKIWANY OUTPUT
@@ -56,7 +56,7 @@ Analiza Walidacji Zod StageSync
 
 Podsystem walidacji danych w aplikacji StageSync opiera się na bibliotece Zod i stanowi pojedyncze źródło prawdy (SSOT – Single Source of Truth) dla struktur danych przesyłanych przez HTTP API, interfejsy IPC oraz gniazda WebSocket, a także zapisywanych w plikach projektów i biblioteki . Prawidłowe działanie reguł walidacyjnych zapobiega propagacji uszkodzonych stanów do silnika odtwarzania audio, cyklu zegara MIDI oraz interfejsu użytkownika .
 
-Plik `packages/shared/src/schema.ts` definiuje ponad 50 schematów oraz złożonych reguł rafinacji (`superRefine`), które determinują poprawność strukturalną i semantyczną całego systemu . Mimo obecności zestawu testów w `packages/shared/src/schema.test.ts`, znaczna część schematów, wartości granicznych oraz warunków brzegowych w logice cyklicznej i relacyjnej nie posiada negatywnych testów jednostkowych . Niniejszy raport przedstawia szczegółową inwentaryzację luk walidacyjnych, hierarchię priorytetów bezpieczeństwa oraz ustrukturyzowaną strategię rozbudowy pakietu testowego Vitest.
+Plik [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts) definiuje ponad 50 schematów oraz złożonych reguł rafinacji (`superRefine`), które determinują poprawność strukturalną i semantyczną całego systemu . Mimo obecności zestawu testów w [`packages/shared/src/schema.test.ts`](../../../../packages/shared/src/schema.test.ts), znaczna część schematów, wartości granicznych oraz warunków brzegowych w logice cyklicznej i relacyjnej nie posiada negatywnych testów jednostkowych . Niniejszy raport przedstawia szczegółową inwentaryzację luk walidacyjnych, hierarchię priorytetów bezpieczeństwa oraz ustrukturyzowaną strategię rozbudowy pakietu testowego Vitest.
 
 ---
 
@@ -66,7 +66,7 @@ Walidacja w StageSync realizuje koncepcję *fail-fast* na zewnętrznych krawędz
 
 Zaawansowane reguły rafinacji obejmują między innymi sprawdzanie spójności metrum i liczby impulsów na ćwierćnutę (PPQ) w logice czasowej , wykrywanie cykli w skierowanym grafie połączeń szyn miksera audio (`busGraphHasCycle`) , weryfikację relacji między klipami CUE a zasobami audio w projekcie , wymuszanie wykluczania identyfikatorów programu MIDI w szablonach projektów  oraz automatyczną koercję struktury setlisty pomiędzy formatem kanonicznym a formatem dziedziczonym .
 
-Dotychczasowy zestaw testów w `schema.test.ts` skupiał się głównie na weryfikacji ścieżek pozytywnych (happy paths) oraz wybranych asercjach negatywnych dla nagłówków API i podstawowych struktur komunikatów . Wiele kluczowych mechanizmów wyłapywania błędów pozostało nieprzetestowanych pod kątem danych wejściowych przekraczających limity lub naruszających spójność grafu .
+Dotychczasowy zestaw testów w [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) skupiał się głównie na weryfikacji ścieżek pozytywnych (happy paths) oraz wybranych asercjach negatywnych dla nagłówków API i podstawowych struktur komunikatów . Wiele kluczowych mechanizmów wyłapywania błędów pozostało nieprzetestowanych pod kątem danych wejściowych przekraczających limity lub naruszających spójność grafu .
 
 ---
 
@@ -88,7 +88,7 @@ Największy obszar nietestowanych reguł znajduje się w `ProjectSchemaV5` . Cho
 
 Funkcja `refineMeterForPpq` weryfikuje, czy zadana kombinacja licznika i mianownika metrum przy podstawowej rozdzielczości `DEFAULT_PPQ = 960` generuje całkowitą liczbę impulsów na takt (`ticksPerBar`) . Obecny test sprawdza ułamkowe metrum 5/7 . Brak jest testów dla mianowników niebędących potęgami dwójki powodujących błędy zaokrągleń ułamkowych (np. 7/11) oraz dla zerowych lub ujemnych wartości liczników i mianowników .
 
-Funkcja `busGraphHasCycle` chroni silnik audio przed pętlami nieskończonymi w grafie połączeń . Logika ta weryfikuje skierowane krawędzie zdefiniowane w obiekcie projektu . Żaden z istniejących testów w `schema.test.ts` nie uruchamia weryfikacji cykli w kontekście parsowania całego dokumentu projektu przez `ProjectSchemaV5` lub `PutProjectBodySchema` . Niezbędne jest przetestowanie cyklu własnego ($A \rightarrow A$), cyklu dwuelementowego ($A \rightarrow B \rightarrow A$) oraz cyklu wieloelementowego ($A \rightarrow B \rightarrow C \rightarrow A$) .
+Funkcja `busGraphHasCycle` chroni silnik audio przed pętlami nieskończonymi w grafie połączeń . Logika ta weryfikuje skierowane krawędzie zdefiniowane w obiekcie projektu . Żaden z istniejących testów w [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) nie uruchamia weryfikacji cykli w kontekście parsowania całego dokumentu projektu przez `ProjectSchemaV5` lub `PutProjectBodySchema` . Niezbędne jest przetestowanie cyklu własnego ($A \rightarrow A$), cyklu dwuelementowego ($A \rightarrow B \rightarrow A$) oraz cyklu wieloelementowego ($A \rightarrow B \rightarrow C \rightarrow A$) .
 
 Schemat `SetlistSchema` wykorzystuje `z.preprocess()` z funkcją `coerceSetlistInput` do automatycznego dostosowywania obiektów wejściowych . Istniejące testy sprawdzają konwersję z `projectIds` na `items` oraz zachowanie w przypadku obecności obu pól . Brakuje testów dla nieprawidłowych danych wejściowych, takich jak przekazanie wartości niebędących obiektami (`null`, liczby, ciągi znaków) czy obiektów z tablicami zawierającymi elementy o nieznanym polu `type`, braku pola `type` lub wartościach numerycznych w miejscu UUID .
 
@@ -157,7 +157,7 @@ Klasa priorytetu **P2 (Cosmetic & UI Formatting)** obejmuje walidację pól teks
 
 ### Organizacja i grupowanie zestawu testów
 
-Aby zapobiec duplikacji kodu oraz utrzymać przejrzystość przy ponad 50 schematach, testy w `schema.test.ts` należy pogrupować w siedem dedykowanych bloków `describe` odpowiadających domenom funkcjonalnym:
+Aby zapobiec duplikacji kodu oraz utrzymać przejrzystość przy ponad 50 schematach, testy w [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) należy pogrupować w siedem dedykowanych bloków `describe` odpowiadających domenom funkcjonalnym:
 
 1. `describe("Primitives & Time Schemas")` – testy dla `BpmSchema`, `DefaultMeterSchema`, `MeterEventSchema`, `ProjectIdSchema` .
 2. `describe("Project Schema Evolution & Upgrades")` – testy dla `ProjectSchemaV1` do `V5` oraz funkcji podnoszenia wersji `upgradeProjectVxToVy` .
@@ -248,7 +248,7 @@ Tworzenie minimalnych, surowych obiektów JSON (raw objects) należy stosować p
 
 ### Środowisko wykonawcze i bezkontekstowość testów
 
-Wszystkie schematy Zod zdefiniowane w `schema.ts` stanowią czyste funkcje weryfikacyjne . Ich uruchomienie w środowisku Vitest wewnątrz `packages/shared` odbywa się bez udziału drzewa DOM oraz modułów Node.js . W związku z tym w pakiecie testowym nie stosuje się żadnych atrap (mocków) sieciowych, bazodanowych ani zegarowych . Wyjątkiem od tej zasady jest weryfikacja funkcji pomocniczych, takich jak `normalizeKeyTonic`, gdzie test sprawdził domyślny fallback w ładowaniu modułu, co zostało zrealizowane bez użycia zewnętrznych bibliotek pozorujących .
+Wszystkie schematy Zod zdefiniowane w [`schema.ts`](../../../../packages/shared/src/schema.ts) stanowią czyste funkcje weryfikacyjne . Ich uruchomienie w środowisku Vitest wewnątrz `packages/shared` odbywa się bez udziału drzewa DOM oraz modułów Node.js . W związku z tym w pakiecie testowym nie stosuje się żadnych atrap (mocków) sieciowych, bazodanowych ani zegarowych . Wyjątkiem od tej zasady jest weryfikacja funkcji pomocniczych, takich jak `normalizeKeyTonic`, gdzie test sprawdził domyślny fallback w ładowaniu modułu, co zostało zrealizowane bez użycia zewnętrznych bibliotek pozorujących .
 
 ---
 
@@ -268,7 +268,7 @@ Przeprowadzona analiza wykazuje obecność istotnych luk w pokryciu testami nega
 
 1. Wdrożenie w pierwszej kolejności testów dla priorytetu **P0**, obejmujących blokadę cykli w szynach audio, weryfikację spójności typów zasobów w samplerze CUE, odwołania do wyjść sprzętowych oraz ścisłą walidację potwierdzenia w schemacie przywracania kopii zapasowej .
 2. Uzupełnienie testów z klasy **P1**, w tym weryfikacji przekroczenia maksymalnych rozmiarów tablic (`assets`, `audioTracks`, `audioClips`, `audioBusses`) oraz zakresów parametrów audio i kanałów MIDI .
-3. Ustrukturyzowanie pliku `schema.test.ts` według siedmiu zaproponowanych bloków domenowych z wyraźnym rozdzieleniem testów ziaren projektowych od minimalnych obiektów surowych .
+3. Ustrukturyzowanie pliku [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) według siedmiu zaproponowanych bloków domenowych z wyraźnym rozdzieleniem testów ziaren projektowych od minimalnych obiektów surowych .
 4. Włączenie wdrożonych testów do ciągłej integracji z nakazem weryfikacji komunikatów błędów za pomocą dopasowań wzorców tekstowych w `toThrow()` .
 
 ---

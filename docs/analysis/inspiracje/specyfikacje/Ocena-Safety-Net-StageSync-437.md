@@ -107,7 +107,7 @@ Po wciśnięciu przez realizatora przycisku „Przejmij” (Manual Promote), sys
 Przed ostatecznym zamknięciem etapu v5.2 i przekazaniem specyfikacji do zespołu wdrożeniowego, należy uzyskać odpowiedź od Product Ownera na poniższe pytania dotyczące komunikacji i granic produktu (ID: CRIT-SN-01):
 
 ### CRIT-SN-01-Q1: Nazewnictwo i Komunikacja Rynkowa (SLA vs Operational Safety)
-Czy Product Owner akceptuje wprowadzenie do oficjalnej dokumentacji dla użytkowników (`DESKTOP.md`, `INSTALL.md`) precyzyjnego pojęcia **„Manual Hot Standby”** w miejsce samego słowa „Safety Net”? Zapobiegnie to ewentualnym roszczeniom realizatorów, którzy mogliby oczekiwać bezobsługowej, automatycznej przełączalności bez udziału człowieka .
+Czy Product Owner akceptuje wprowadzenie do oficjalnej dokumentacji dla użytkowników ([`DESKTOP.md`](../../../guides/DESKTOP.md), [`INSTALL.md`](../../../guides/INSTALL.md)) precyzyjnego pojęcia **„Manual Hot Standby”** w miejsce samego słowa „Safety Net”? Zapobiegnie to ewentualnym roszczeniom realizatorów, którzy mogliby oczekiwać bezobsługowej, automatycznej przełączalności bez udziału człowieka .
 
 ### CRIT-SN-01-Q2: Rekomendacja Sprzętowa dla Toru Audio (Audio Redundancy Strategy)
 Czy w oficjalnym podręczniku użytkowania opisany zostanie rekomendowany schemat podłączenia audio ze sprzętowym przełącznikiem (np. Radial SW8 / iConnectivity PlayAudio12) lub prostym wyciszeniem kanałów na mikserze FOH? StageSync v5.2 rozwiązuje problem autorytetu czasu i magistrali MIDI, ale nie przełącza fizycznych kabli sygnałowych audio . Wyraźny diagram w dokumentacji podniesie profesjonalny wizerunek systemu w oczach realizatorów .

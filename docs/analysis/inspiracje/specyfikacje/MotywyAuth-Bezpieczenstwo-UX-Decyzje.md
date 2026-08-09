@@ -42,7 +42,7 @@ Decyzja podjęta w triage po wydaniu `5.2.0`, polegająca na całkowitym usunię
 
 ## Niezmienniki Domenowe Sygnałów Operacyjnych i System Motywów
 
-System tokenów CSS zawarty w `packages/ui/src/tokens.css` wprowadza ścisłą hierarchię zmiennych `--ss-*` . Upraszczanie warstwy wizualnej w kierunku dwóch głównych wariantów — ciemnego oraz jasnego z modyfikatorem wysokiego kontrastu (`data-contrast="high"`) — jest zgodne z zasadą minimalizmu marki StageSync . Zmiana motywu kolorystycznego nie może jednak w żadnym wypadku prowadzić do scalania lub zacierania odrębnych sygnałów operacyjnych DAW .
+System tokenów CSS zawarty w [`packages/ui/src/tokens.css`](../../../../packages/ui/src/tokens.css) wprowadza ścisłą hierarchię zmiennych `--ss-*` . Upraszczanie warstwy wizualnej w kierunku dwóch głównych wariantów — ciemnego oraz jasnego z modyfikatorem wysokiego kontrastu (`data-contrast="high"`) — jest zgodne z zasadą minimalizmu marki StageSync . Zmiana motywu kolorystycznego nie może jednak w żadnym wypadku prowadzić do scalania lub zacierania odrębnych sygnałów operacyjnych DAW .
 
 Zgodnie z ADR 0011 oraz ADR 0015, kluczowe wskaźniki operacyjne posiadają sztywno przypisaną semantykę kolorystyczną, która musi pozostać niezmienna niezależnie od aktywnej skórki . Wskaźnik odtwarzania MIDI (Playhead) jest powiązany z tokenem `--ss-color-info` (#38bdf8 / Cyjan) i reprezentuje pozycję odtwarzania w czasie rzeczywistym zarządaną przez serwer . Wskaźnik pętli i zaznaczenia (Locator) opiera się na tokenie `--ss-color-warning` (#fb923c / Żółty-Pomarańcz) i definiuje obszar roboczy edycji . Wyraźne rozróżnienie tych dwóch wskaźników zapobiega pomyłkom realizatorskim w trakcie trwania utworu .
 

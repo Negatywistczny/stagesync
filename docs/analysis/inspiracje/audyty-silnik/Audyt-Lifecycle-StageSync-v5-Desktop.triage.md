@@ -15,8 +15,8 @@
 | ID | Temat | Stan | Notatka |
 |----|--------|------|---------|
 | HW-LIF-06 | mDNS vs Docker `172.17` | `confirmed` | `cargo test pick_mdns_ipv4` — prywatny LAN przed mostem Docker; loopback/link-local tylko fallback. Smoke LAN na żywej sieci nadal opcjonalny. |
-| HW-LIF-11 | Remote lifecycle bez tokena → 401/403 | `confirmed` | Vitest `lifecycle-guard.test.ts`: remote IP bez tokena / ALLOW → **403** (nie 401); loopback OK; Bearer / `x-stagesync-host-token` / `ALLOW_REMOTE=1` OK. Brak LIVE cURL z drugiej maszyny LAN — ale ACL unit jest zielony. |
-| HW-LIF-12 | mDNS debounce 400 ms przy Play/Pause | `confirmed` | Vitest: 10× `refresh()` w <400 ms → 0 republish; po 400 ms → 1 (`mdns-advertise.test.ts`). |
+| HW-LIF-11 | Remote lifecycle bez tokena → 401/403 | `confirmed` | Vitest [`lifecycle-guard.test.ts`](../../../../apps/server/src/lifecycle-guard.test.ts): remote IP bez tokena / ALLOW → **403** (nie 401); loopback OK; Bearer / `x-stagesync-host-token` / `ALLOW_REMOTE=1` OK. Brak LIVE cURL z drugiej maszyny LAN — ale ACL unit jest zielony. |
+| HW-LIF-12 | mDNS debounce 400 ms przy Play/Pause | `confirmed` | Vitest: 10× `refresh()` w <400 ms → 0 republish; po 400 ms → 1 ([`mdns-advertise.test.ts`](../../../../apps/server/src/mdns-advertise.test.ts)). |
 
 ## Otwarte (HW / LIVE)
 

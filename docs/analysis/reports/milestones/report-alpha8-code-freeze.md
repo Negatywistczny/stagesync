@@ -1,7 +1,7 @@
 # Alpha.8 — code freeze (domknięcie cyklu α rebuild)
 
 **Data:** 2026-07-20  
-**Wersja w `package.json`:** `5.0.0-alpha.8` (bez bumpu / tagu w tej sesji)  
+**Wersja w [`package.json`](../../../../package.json):** `5.0.0-alpha.8` (bez bumpu / tagu w tej sesji)  
 **Polityka:** [ADR 0011](../../../adr/0011-ui-parity-behavior.md)  
 **Bramka β:** [report-parity-blocker-alpha8.md](./report-parity-blocker-alpha8.md) — **nadal open**
 

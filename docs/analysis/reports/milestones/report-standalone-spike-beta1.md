@@ -8,25 +8,25 @@
 ### 1. Packaging PoC: Node runtime + server JS + web resources
 
 - Dodano skrypt budujący i przygotowujący sidecara:
-  - `apps/desktop/scripts/build-desktop-sidecar.mjs`
+  - [`apps/desktop/scripts/build-desktop-sidecar.mjs`](../../../../apps/desktop/scripts/build-desktop-sidecar.mjs)
 - Skrypt tworzy:
   - `apps/desktop/src-tauri/bin/stagesync-host` (bundlowany Node)
   - `apps/desktop/src-tauri/resources/sidecar/server` (`pnpm deploy --prod @stagesync/server` + prune workspace)
   - `apps/desktop/src-tauri/resources/sidecar/web` (`apps/web/dist`)
-  - `apps/desktop/src-tauri/resources/sidecar/seed/library.template.json`
+  - [`apps/desktop/src-tauri/resources/sidecar/seed/library.template.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/library.template.json)
 - Flaga `--smoke`: uruchamia sidecara, sprawdza `GET /api/health` = `200`, oraz `assertNoRepoDocsInSidecar` (brak `docs/` w bundle).
 
 Weryfikacja lokalna wykonana dla targetu `aarch64-apple-darwin` (build + `--smoke`).
 
 ### 2. Tauri bundling: externalBin + zasoby
 
-- Zaktualizowano `apps/desktop/src-tauri/tauri.conf.json`:
+- Zaktualizowano [`apps/desktop/src-tauri/tauri.conf.json`](../../../../apps/desktop/src-tauri/tauri.conf.json):
   - `bundle.externalBin = ["bin/stagesync-host"]`
   - `bundle.resources` obejmuje `resources/sidecar/**` oraz katalogi Node runtime (`lib/**`, `share/**`)
 
 ### 3. Rust lifecycle: spawn → health-check → navigate → shutdown
 
-- Zaimplementowano standalone lifecycle w `apps/desktop/src-tauri/src/lib.rs`:
+- Zaimplementowano standalone lifecycle w [`apps/desktop/src-tauri/src/lib.rs`](../../../../apps/desktop/src-tauri/src/lib.rs):
   - start Node sidecara (`stagesync-host`) z argumentem do `resources/sidecar/server/dist/index.js`
   - ustawienie env:
     - `PORT=4000`
@@ -42,8 +42,8 @@ Weryfikacja lokalna wykonana dla targetu `aarch64-apple-darwin` (build + `--smok
 
 ### 4. Storage seed wbudowany w bundle
 
-- Zmieniono `apps/server/src/storage/paths.ts`:
-  - dodano `STAGESYNC_SEED_DIR` jako override lokalizacji `library.template.json`
+- Zmieniono [`apps/server/src/storage/paths.ts`](../../../../apps/server/src/storage/paths.ts):
+  - dodano `STAGESYNC_SEED_DIR` jako override lokalizacji [`library.template.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/library.template.json)
   - standalone może seedować z `resources/sidecar/seed/`
 
 ## Wynik lokalnego PoC (smoke-test)
@@ -88,7 +88,7 @@ Bazując na [report-beta-gate.md](./report-beta-gate.md), poniższe punkty nadal
 - Desktop updater w release pipeline — GitHub Secrets **skonfigurowane**:
   - `TAURI_SIGNING_PRIVATE_KEY`
   - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
-- `plugins.updater.pubkey` uzupełnione w `apps/desktop/src-tauri/tauri.conf.json`.
+- `plugins.updater.pubkey` uzupełnione w [`apps/desktop/src-tauri/tauri.conf.json`](../../../../apps/desktop/src-tauri/tauri.conf.json).
 
 ## Następny krok (operator — po push)
 

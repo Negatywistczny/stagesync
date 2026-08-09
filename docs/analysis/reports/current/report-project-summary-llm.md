@@ -60,10 +60,10 @@ Najważniejsze, niezmienne fundamenty systemu (ADR 0005). Zmiana któregokolwiek
 
 ## 4. Standardy UI, Gęstość i Ergonomia (Design System)
 
-Wysoko nasycony interfejs (estrada/DAW) rządzi się restrykcyjnymi zasadami (ADR 0011, `ui-density.mdc`):
+Wysoko nasycony interfejs (estrada/DAW) rządzi się restrykcyjnymi zasadami (ADR 0011, [`ui-density.mdc`](../../../../.cursor/rules/ui-density.mdc)):
 
 1. **Absolutny Zakaz Tailwind CSS i Inline-Styles:** Wszelkie style muszą być pisane w **CSS Modules** (`*.module.css`). Wyjątkiem są wartości wyliczane dynamicznie (np. pozycjonowanie playhead w %).
-2. **Tokeny `--ss-*`:** Kolory, typografia, marginesy i zaokrąglenia pochodzą wyłącznie ze zmiennych zdefiniowanych w `tokens.css`.
+2. **Tokeny `--ss-*`:** Kolory, typografia, marginesy i zaokrąglenia pochodzą wyłącznie ze zmiennych zdefiniowanych w [`tokens.css`](../../../../apps/desktop/launcher/vendor/tokens.css).
 3. **Siatka Przestrzenna:** Paddingi, marginesy i odstępy muszą być wielokrotnością 4px/8px (od `--ss-space-1` do `--ss-space-16`).
 4. **Kontrast sceniczny (APCA):** Kategoryczny zakaz czystego białego tekstu (`#ffffff`) na czarnym tle (`#000000`). Stosowane są tokeny: tekst główny `--ss-color-text` (#fafafa), pomocniczy `--ss-color-text-muted` (#a3a3a3).
 5. **Obsługa Focus (Focus Clip Prevention):** Przy `overflow: hidden` ramka focusa musi używać ujemnego offsetu (`outline-offset: -2px`) lub wewnętrznego cienia (`box-shadow`), aby uniknąć ucięcia.
@@ -88,8 +88,8 @@ Konsekwentnie stosowana jest zasada **Fail Fast** z walidacją na krawędziach s
 
 Pracując z tym kodem, pamiętaj o:
 1. **Trunk-based Development:** Domyślnie pracuj bezpośrednio na gałęzi `main`, wprowadzając małe, atomowe, przetestowane kroki.
-2. **Higienie TODO:** Plik `docs/TODO.md` zawiera wyłącznie aktywne zadania. Zadania wykonane są z niego usuwane (nie oznaczane jako `[x]`).
-3. **Higienie CHANGELOG:** Wpisy w `CHANGELOG.md` są przeznaczone dla użytkownika końcowego. Nie mogą zawierać żargonu technicznego (np. "G1-G10", "soft-gate", "residual"). Dodajemy wpis tylko wtedy, gdy zmiana jest bezpośrednio odczuwalna dla użytkownika.
+2. **Higienie TODO:** Plik [`docs/TODO.md`](../../../TODO.md) zawiera wyłącznie aktywne zadania. Zadania wykonane są z niego usuwane (nie oznaczane jako `[x]`).
+3. **Higienie CHANGELOG:** Wpisy w [`CHANGELOG.md`](../../../../CHANGELOG.md) są przeznaczone dla użytkownika końcowego. Nie mogą zawierać żargonu technicznego (np. "G1-G10", "soft-gate", "residual"). Dodajemy wpis tylko wtedy, gdy zmiana jest bezpośrednio odczuwalna dla użytkownika.
 4. **Testach:** Przed zakończeniem pracy uruchom pełny zestaw testów (`pnpm test`) oraz weryfikację typów i lintera (`pnpm check-types && pnpm lint`).
 5. **Nazewnictwie w Docs:** Raporty kanoniczne trafiają do `docs/analysis/reports/{current,milestones,hygiene}/report-<nazwa>.md` (są commitowane), a notatki robocze do `docs/analysis/working/working-<nazwa>.md` (są w `.gitignore`).
 

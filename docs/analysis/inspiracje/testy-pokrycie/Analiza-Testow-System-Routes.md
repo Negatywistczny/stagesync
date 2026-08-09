@@ -4,10 +4,10 @@
 
 message time: 2026-07-27 14:24:44
 
-Jesteś ekspertem od testów Express w StageSync server. Przeanalizuj `apps/server/src/routes/system.ts` — endpointy operatora: auth PIN, safety-net, logs SSE, network, settings, backup/restore, update status, lifecycle restart/shutdown.
+Jesteś ekspertem od testów Express w StageSync server. Przeanalizuj [`apps/server/src/routes/system.ts`](../../../../apps/server/src/routes/system.ts) — endpointy operatora: auth PIN, safety-net, logs SSE, network, settings, backup/restore, update status, lifecycle restart/shutdown.
 
 CEL ANALIZY
-Uzupełnić pokrycie tras systemowych poza istniejącymi `system-routes.test.ts`, `system-router-unit.test.ts`, `system-lifecycle-routes.test.ts`.
+Uzupełnić pokrycie tras systemowych poza istniejącymi [`system-routes.test.ts`](../../../../apps/server/src/system-routes.test.ts), [`system-router-unit.test.ts`](../../../../apps/server/src/system-router-unit.test.ts), [`system-lifecycle-routes.test.ts`](../../../../apps/server/src/system-lifecycle-routes.test.ts).
 
 PYTANIA BADAWCZE
 1. Które route handlers w `createSystemRouter` nie mają testów HTTP (GET/POST)?
@@ -55,15 +55,15 @@ Plan Testów Express StageSync
 
 # Analiza Pokrycia Testowego i Plan Rozbudowy Zestawu Testów Express dla Tras Systemowych StageSync Server
 
-Moduł tras systemowych `apps/server/src/routes/system.ts` w serwerze StageSync stanowi krytyczny komponent zarządzający infrastrukturą operacyjną aplikacji . Odpowiada on za autoryzację operatorską, sterowanie rolami w klastrze bezpieczeństwa (Safety Net), zarządzanie plikami konfiguracyjnymi `.env`, inspekcję i czyszczenie logów, odzyskiwanie stanów z kopii zapasowych, kontrolę cyklu życia procesu (restart oraz shutdown) oraz komunikację z zewnętrznym API w celu weryfikacji aktualizacji .
+Moduł tras systemowych [`apps/server/src/routes/system.ts`](../../../../apps/server/src/routes/system.ts) w serwerze StageSync stanowi krytyczny komponent zarządzający infrastrukturą operacyjną aplikacji . Odpowiada on za autoryzację operatorską, sterowanie rolami w klastrze bezpieczeństwa (Safety Net), zarządzanie plikami konfiguracyjnymi `.env`, inspekcję i czyszczenie logów, odzyskiwanie stanów z kopii zapasowych, kontrolę cyklu życia procesu (restart oraz shutdown) oraz komunikację z zewnętrznym API w celu weryfikacji aktualizacji .
 
-Mimo że w repozytorium istnieją pakiety testowe `system-routes.test.ts`, `system-router-unit.test.ts` oraz `system-lifecycle-routes.test.ts`, analiza kodu źródłowego wykazała szereg nieprzetestowanych ścieżek wykonania i warunków brzegowych . Wypełnienie tych luk jest kluczowe dla zagwarantowania stabilności serwera w warunkach produkcji scenicznej, gdzie awaria węzła lub nieoczekiwana zmiana stanu może doprowadzić do przerwania transmisji danych MIDI i sygnałów zegarowych .
+Mimo że w repozytorium istnieją pakiety testowe [`system-routes.test.ts`](../../../../apps/server/src/system-routes.test.ts), [`system-router-unit.test.ts`](../../../../apps/server/src/system-router-unit.test.ts) oraz [`system-lifecycle-routes.test.ts`](../../../../apps/server/src/system-lifecycle-routes.test.ts), analiza kodu źródłowego wykazała szereg nieprzetestowanych ścieżek wykonania i warunków brzegowych . Wypełnienie tych luk jest kluczowe dla zagwarantowania stabilności serwera w warunkach produkcji scenicznej, gdzie awaria węzła lub nieoczekiwana zmiana stanu może doprowadzić do przerwania transmisji danych MIDI i sygnałów zegarowych .
 
 ---
 
 ## Analiza Pokrycia Testowego i Identyfikacja Handlerów
 
-Obecne pokrycie testowe koncentruje się na podstawowych scenariuszach wywołania funkcji oraz wybranych stanach błędu . W pakiecie `system-router-unit.test.ts` przetestowano brak konfiguracji katalogu danych (`dataDir`) przy eksporcie diagnostyki, zachowanie flagi PM2 podczas wyłączania serwera oraz podstawowe odczyty sieciowe . Z kolei `system-routes.test.ts` weryfikuje nagłówki w odpowiedziach `/network`, czyszczenie bufora logów, wywołania aktualizacyjne Watchtower oraz filtrowanie rozszerzeń logów . Pakiet `system-lifecycle-routes.test.ts` skupia się na podstawowym wywołaniu procedur restartu i zamknięcia procesu z poziomu pętli zwrotnej .
+Obecne pokrycie testowe koncentruje się na podstawowych scenariuszach wywołania funkcji oraz wybranych stanach błędu . W pakiecie [`system-router-unit.test.ts`](../../../../apps/server/src/system-router-unit.test.ts) przetestowano brak konfiguracji katalogu danych (`dataDir`) przy eksporcie diagnostyki, zachowanie flagi PM2 podczas wyłączania serwera oraz podstawowe odczyty sieciowe . Z kolei [`system-routes.test.ts`](../../../../apps/server/src/system-routes.test.ts) weryfikuje nagłówki w odpowiedziach `/network`, czyszczenie bufora logów, wywołania aktualizacyjne Watchtower oraz filtrowanie rozszerzeń logów . Pakiet [`system-lifecycle-routes.test.ts`](../../../../apps/server/src/system-lifecycle-routes.test.ts) skupia się na podstawowym wywołaniu procedur restartu i zamknięcia procesu z poziomu pętli zwrotnej .
 
 Wiele punktów końcowych montowanych w ramach `createSystemRouter` pod ścieżką `/api/system` nie posiada jednak pełnych integracyjnych testów HTTP sprawdzających kompletny cykl żądania i odpowiedzi (statusy HTTP, nagłówki, struktury JSON) . Szególnie istotne braki obejmują endpointy autoryzacji PIN, ręcznego promowania węzła Safety Net z uwzględnieniem sprzęgu z silnikiem transportu (ADR 0017), walidację schematów Zod dla zarządzanych ustawień, przeglądanie katalogów systemowych, awaryjne przywracanie projektów z archiwów ZIP oraz skrajne odpowiedzi interfejsu API serwisu GitHub .
 
@@ -72,17 +72,17 @@ Wiele punktów końcowych montowanych w ramach `createSystemRouter` pod ścieżk
 | `/operator-auth` | `GET` / `POST` | Brak testów HTTP | Brak weryfikacji flaga `required`, walidacji niepoprawnego kodu PIN oraz obsługi pustego korpusu żądania . |
 | `/safety-net` | `GET` | Brak testów HTTP | Brak weryfikacji nagłówka `Cache-Control: no-store` oraz struktury roli w odpowiedzi JSON . |
 | `/promote` | `POST` | Brak testów HTTP | Brak integracji z `TransportEngine` — weryfikacji automatycznego wstrzymania odtwarzania (`pause`) w stanie `PLAYING` wg ADR 0017 §3 . |
-| `/logs` | `GET` | Pokryte (`system-routes.test.ts`) | Zweryfikowano odczyt linii z bufora logów . |
+| `/logs` | `GET` | Pokryte ([`system-routes.test.ts`](../../../../apps/server/src/system-routes.test.ts)) | Zweryfikowano odczyt linii z bufora logów . |
 | `/logs/stream` | `GET` | Częściowy | Przetestowano nagłówek `Content-Type`; brak testów odpornych na wyścigi (race conditions) i wycieki pamięci przy nagłym rozłączeniu klienta . |
-| `/logs/clear` | `POST` | Pokryte (`system-router-unit.test.ts`) | Zweryfikowano czyszczenie pierścieniowego bufora logów . |
-| `/network` | `GET` | Pokryte (`system-routes.test.ts`) | Pokryto podstawowe pola; brak weryfikacji parametrów `bindHost`, `updateChannel` oraz `autoUpdateDisabled` . |
+| `/logs/clear` | `POST` | Pokryte ([`system-router-unit.test.ts`](../../../../apps/server/src/system-router-unit.test.ts)) | Zweryfikowano czyszczenie pierścieniowego bufora logów . |
+| `/network` | `GET` | Pokryte ([`system-routes.test.ts`](../../../../apps/server/src/system-routes.test.ts)) | Pokryto podstawowe pola; brak weryfikacji parametrów `bindHost`, `updateChannel` oraz `autoUpdateDisabled` . |
 | `/settings` | `GET` / `PUT` | Brak testów HTTP | Brak walidacji schematu Zod `PutServerSettingsBodySchema`, braku kontroli ACL z sieci LAN, weryfikacji kluczy `restartRequired` oraz odświeżania mDNS . |
 | `/browse` | `GET` | Brak testów HTTP | Brak weryfikacji trybów `file` i `dir`, filtrowania po rozszerzeniu `ext`, zapobiegania wychodzeniu poza dozwolone ścieżki oraz obsługi błędów 400 . |
 | `/restore` | `POST` | Brak testów HTTP | Brak testowania walidacji Zod `RestoreBackupBodySchema`, przywracania pojedynczych i hurtowych `.bak`, rozpakowywania archiwów `.zip` oraz wykrywania ataków Directory Traversal . |
 | `/update-status` | `GET` | Częściowy | Pokryto przypadek z wyłączoną auto-aktualizacją; brak atrapowania GitHub API (401, 403, 404, timeout), weryfikacji kanałów (`beta`/`rc`) oraz trybów `desktop`/`console` . |
-| `/apply-update` | `POST` | Pokryte (`system-routes.test.ts`) | Zweryfikowano błędny korpus (400), brak środowiska (501) oraz odpowiedź Watchtower (200/502) . |
-| `/restart` | `POST` | Pokryte (`system-lifecycle-routes.test.ts`) | Pokryto wykonanie lifecycle; brak weryfikacji pełnej macierzy ACL dla adresów spoza loopbacku . |
-| `/shutdown` | `POST` | Pokryte (`system-lifecycle-routes.test.ts`) | Pokryto wykonanie lifecycle i flagę PM2; brak weryfikacji odmowy dostępu ACL z sieci LAN . |
+| `/apply-update` | `POST` | Pokryte ([`system-routes.test.ts`](../../../../apps/server/src/system-routes.test.ts)) | Zweryfikowano błędny korpus (400), brak środowiska (501) oraz odpowiedź Watchtower (200/502) . |
+| `/restart` | `POST` | Pokryte ([`system-lifecycle-routes.test.ts`](../../../../apps/server/src/system-lifecycle-routes.test.ts)) | Pokryto wykonanie lifecycle; brak weryfikacji pełnej macierzy ACL dla adresów spoza loopbacku . |
+| `/shutdown` | `POST` | Pokryte ([`system-lifecycle-routes.test.ts`](../../../../apps/server/src/system-lifecycle-routes.test.ts)) | Pokryto wykonanie lifecycle i flagę PM2; brak weryfikacji odmowy dostępu ACL z sieci LAN . |
 | `/diagnostics/export`| `GET` | Częściowy | Pokryto przypadek braku `dataDir` (501) oraz odrzucanie plików spoza wzorca `.log`; brak weryfikacji powstawania poprawnego pliku ZIP, nagłówka `Content-Disposition` i dołączania `meta.json` . |
 
 ---

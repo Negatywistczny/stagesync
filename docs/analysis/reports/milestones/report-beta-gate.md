@@ -93,7 +93,7 @@ Wykonane (2026-07-21):
    - konflikt portu `4000` daje czytelny komunikat → **G5**
 3. **G6 (desktop update):** zainstaluj **β2**, potem Admin → Aktualizuj aplikację → **5.0.0** (`latest.json` z Release; darwin+windows).
 4. Docker secondary:
-   - `compose.prod.yml` z `STAGESYNC_VERSION=…` → `/api/health` → **G7**
+   - [`compose.prod.yml`](../../../../compose.prod.yml) z `STAGESYNC_VERSION=…` → `/api/health` → **G7**
    - host update: starszy obraz → Admin → Aktualizuj host → `data/` bez zmian → **G8**
    - rollback do poprzedniego tagu → **G9**
 5. Przeczytaj INSTALL/DESKTOP — flow Faza A–D + updates + Windows EISDIR. → **G10**

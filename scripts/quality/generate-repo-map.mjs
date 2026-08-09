@@ -60,6 +60,7 @@ const FOLDER_MAP = {
     '.cursor/skills': 'Umiejętności agentów (night-audit, triage-verify)',
     '.github': 'Szablony zgłoszeń GitHub, wytyczne społeczności oraz workflows CI/CD',
     '.github/workflows': 'Pipeline’y GitHub Actions (CI, release, codeql)',
+    '.github/codeql': 'Konfiguracja analizy statycznej CodeQL',
     '.github/ISSUE_TEMPLATE': 'Szablony issue',
     '.husky': 'Haki Git (m.in. pre-commit sanity gate do walidacji typów i mapy)',
     '.vscode': 'Ustawienia przestrzeni roboczej VS Code / Cursor (np. explorer file nesting)',
@@ -75,7 +76,13 @@ const FOLDER_MAP = {
     'apps/performer': 'Android WebView shell dla interfejsu /client (ADR 0016)',
     'apps/server': 'Główny backend Node.js — SSOT Host, Master Clock, REST/WS API',
     'apps/web': 'Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)',
+    'apps/web/e2e': 'Testy integracyjne E2E (Playwright)',
+    'apps/web/public': 'Zasoby statyczne i favicon',
+    'apps/web/public/brand': 'Materiały brandingowe i logotypy StageSync',
+    'apps/web/scripts': 'Skrypty pomocnicze builda i benchmarków webowych',
+    'apps/web/scripts/benchmark': 'Skrypty benchmarków wydajnościowych UI/Audio',
     'apps/web/src': 'Kod źródłowy UI i logiki klienta',
+    'apps/web/src/dev': 'Narzędzia i panele deweloperskie wewnątrz aplikacji',
     'apps/web/src/lib': 'Biblioteki klienta (5 kategorii — bez plików w lib root)',
     'apps/web/src/lib/audio': 'DSP, AudioContext, tempo, waveform',
     'apps/web/src/lib/timeline': 'Silnik renderowania timeline (bez mutacji treści)',
@@ -84,6 +91,9 @@ const FOLDER_MAP = {
     'apps/web/src/lib/shell-operator': 'Operatory CRUD API / aktywny projekt',
     'apps/web/src/shells': 'Powłoki Admin / Client / Timeline',
     'apps/web/src/transport': 'Transport WS, playhead, probe wydajności',
+    'apps/web/test': 'Testy jednostkowe i mocki aplikacji webowej',
+    'apps/web/test/benchmark': 'Testy wydajnościowe struktur danych',
+    'apps/web/test/fixtures': 'Przykładowe dane testowe projektów i timeline',
     'apps/www': 'Strona domowa, portal informacyjny oraz aktualności StageSync',
 
     'data/downloads': 'Lokalne pliki wyjściowe i instalatory APK',
@@ -106,7 +116,12 @@ const FOLDER_MAP = {
     'packages/eslint-config': 'Wspólne reguły ESLint dla całego repozytorium',
     'packages/shared': 'Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów',
     'packages/typescript-config': 'Bazowe pliki tsconfig.json dla paczek i aplikacji',
-    'packages/ui': 'Biblioteka komponentów UI (przycisk, pole, menu, badge)'
+    'packages/ui': 'Biblioteka komponentów UI (przycisk, pole, menu, badge)',
+
+    'scripts/merge-train': 'Automatyzacja merge train i walidacji PR',
+    'scripts/quality': 'Narzędzia jakości kodu, linków i generator mapy repozytorium',
+    'scripts/release': 'Skrypty wydań SemVer, budowania paczek i release notes',
+    'scripts/setup': 'Skrypty inicjalizacyjne i setupu środowiska deweloperskiego'
 };
 
 /**
@@ -298,7 +313,33 @@ function getRootFilesSection(files) {
         .filter((f) => !f.includes('/'))
         .sort((a, b) => a.localeCompare(b));
     if (rootFiles.length === 0) return '';
-    return rootFiles.map((f) => `- \`${f}\``).join('\n');
+
+    const groups = {
+        'Repozytorium & Tooling': ['.clineignore', '.clinerules', '.cursorignore', '.cursorindexingignore', '.dockerignore', '.editorconfig', '.gitignore', '.npmrc', '.nvmrc', 'codecov.yml', 'commitlint.config.js', 'knip.jsonc', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'turbo.json'],
+        'Dokumentacja': ['CHANGELOG.md', 'LICENSE', 'README.md'],
+        'Docker & Compose': ['compose.prod.yml', 'compose.yml', 'Dockerfile'],
+        'Skrypty': ['dev', 'dev.cmd', 'dev.ps1']
+    };
+
+    let output = '';
+    const processed = new Set();
+
+    for (const [group, filesInGroup] of Object.entries(groups)) {
+        const filtered = rootFiles.filter(f => filesInGroup.includes(f));
+        if (filtered.length > 0) {
+            output += `\n### ${group}\n`;
+            output += filtered.map(f => `- [\`${f}\`](../${f})`).join('\n') + '\n';
+            filtered.forEach(f => processed.add(f));
+        }
+    }
+
+    const others = rootFiles.filter(f => !processed.has(f));
+    if (others.length > 0) {
+        output += `\n### Pozostałe\n`;
+        output += others.map(f => `- [\`${f}\`](../${f})`).join('\n') + '\n';
+    }
+
+    return output.trim();
 }
 
 /**

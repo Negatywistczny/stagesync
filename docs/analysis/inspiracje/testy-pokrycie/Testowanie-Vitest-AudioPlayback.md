@@ -10,7 +10,7 @@ CEL ANALIZY
 Zidentyfikować niepokryte gałęzie w schedulerze odtwarzania zsynchronizowanego z transportem SSOT serwera (ADR 0002): buforowanie assetów, graf Master/Bus/HW, solo/mute, fade/loop, cue samples, seek/jump, suppress przy Pause/Stop, soft-stop po końcu utworu.
 
 PYTANIA BADAWCZE
-1. Które ścieżki w `syncAudioPlayback`, `startClip`, `applyBusParams`, `ensureDestGraph` / `ensureHwOutBus` nie mają testów mimo istnienia mocków w `audioPlayback.test.ts`?
+1. Które ścieżki w `syncAudioPlayback`, `startClip`, `applyBusParams`, `ensureDestGraph` / `ensureHwOutBus` nie mają testów mimo istnienia mocków w [`audioPlayback.test.ts`](../../../../apps/web/src/lib/audio/audioPlayback.test.ts)?
 2. Jak testować WebAudio bez flaky (mock AudioContext vs happy-dom/jsdom)? Co już działa w istniejących testach?
 3. Jakie edge case’y routingu (bus→bus DAG, HW fail-soft, stereo True Balance, downmix mono) wymagają osobnych testów jednostkowych vs integracyjnych?
 4. Jak pokryć race: `loadAudioBuffer` in-flight + `clearAudioBufferCache` + `stopEpoch`?
@@ -21,7 +21,7 @@ KONTEKST ARCHITEKTURY
 - Serwer = SSOT czasu; klient wygładza tylko między tickami — bez własnego zegara muzycznego.
 - Zod na krawędziach API; helpery czasu w `@stagesync/shared` bez Date.now wewnątrz konwersji.
 - Vitest w monorepo; istniejące mocki: `mockAudioContext`, `mockAudioParam`, stub `metronome`.
-- Integracja: `TimelineShell.tsx` wywołuje sync przy tickach transportu.
+- Integracja: [`TimelineShell.tsx`](../../../../apps/web/src/shells/TimelineShell.tsx) wywołuje sync przy tickach transportu.
 
 OCZEKIWANY OUTPUT
 1. Lista testów priorytetowych (P0/P1/P2) z konkretnymi nazwami `describe`/`it` i asercjami.
@@ -59,13 +59,13 @@ Testy WebAudio StageSync Vitest
 
 W architekturze StageSync v5 serwer pełni rolę wyłącznego źródła prawdy (Single Source of Truth – SSOT) dla czasu muzycznego, operując na dyskretnej osi całkowitoliczbowych ticków ze stałą rozdzielczością PPQ (domyślnie 960 ticków na ćwierćnutę) . Klient WebAudio zlokalizowany w pliku `apps/web/src/lib/audioPlayback.ts` jest modułem wykonawczym, którego zadaniem jest płynna synchroniczna interpretacja zdarzeń transportu serwera bez utrzymywania własnego, niezależnego zegara muzycznego . Wytyczne zawarte w ADR 0002 bezwzględnie zabraniają stosowania pływających reprezentacji czasu w kanonie pozycji oraz wstrzykiwania poboru czasu rzeczywistego (np. `Date.now()`) wewnątrz konwersji domenowych .
 
-Moduł `audioPlayback.ts` liczy około 1500 linii kodu i odpowiada za kompleksowe zarządzanie cyklem życia grafu audio: od buforowania i dekodowania zasobów PCM, przez dynamiczną budowę topologii szyn (Master, Busses, Hardware Outputs), aż po precyzyjne odtwarzanie klipów audio oraz próbkowanych cue . Wdrożenie stabilnego zestawu testów w środowisku Vitest wymaga głębokiej analizy niepokrytych gałęzi kodu, eliminacji wyścigów asynchronicznych oraz stworzenia deterministycznych atrapek środowiska WebAudio API bez polegania na niedeterministycznych zegarach systemowych .
+Moduł [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) liczy około 1500 linii kodu i odpowiada za kompleksowe zarządzanie cyklem życia grafu audio: od buforowania i dekodowania zasobów PCM, przez dynamiczną budowę topologii szyn (Master, Busses, Hardware Outputs), aż po precyzyjne odtwarzanie klipów audio oraz próbkowanych cue . Wdrożenie stabilnego zestawu testów w środowisku Vitest wymaga głębokiej analizy niepokrytych gałęzi kodu, eliminacji wyścigów asynchronicznych oraz stworzenia deterministycznych atrapek środowiska WebAudio API bez polegania na niedeterministycznych zegarach systemowych .
 
 ---
 
 ## Identyfikacja Niepokrytych Gałęzi i Logiki Schedulera
 
-Szczegółowa inspekcja funkcji zawartych w `audioPlayback.ts` w zestawieniu z istniejącym plikiem `audioPlayback.test.ts` pozwala wyodrębnić szereg kluczowych ścieżek wykonania, które pozostają pozbawione weryfikacji asercjami .
+Szczegółowa inspekcja funkcji zawartych w [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) w zestawieniu z istniejącym plikiem [`audioPlayback.test.ts`](../../../../apps/web/src/lib/audio/audioPlayback.test.ts) pozwala wyodrębnić szereg kluczowych ścieżek wykonania, które pozostają pozbawione weryfikacji asercjami .
 
 ### Cykl Życia Odtwarzania i Wycinanie Klipów w `syncAudioPlayback` oraz `startClip`
 
@@ -171,7 +171,7 @@ Podczas testowania integracji routingu należy uwzględnić następujące specyf
 
 ## Priorytetyzowana Lista Testów (P0 / P1 / P2)
 
-Poniższa tabela przedstawia kompletny, priorytetyzowany plan testów jednostkowych i integracyjnych dla modułu `audioPlayback.ts` .
+Poniższa tabela przedstawia kompletny, priorytetyzowany plan testów jednostkowych i integracyjnych dla modułu [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) .
 
 | Priorytet | Nazwa `describe` | Nazwa `it` | Scenariusz Badawczy i Asercje |
 | :--- | :--- | :--- | :--- |
@@ -214,7 +214,7 @@ W sekcji `afterEach` każdego pliku testowego należy stosować następujący ze
 
 ## Szacunek Pokrycia Kodowego
 
-Wdrożenie proponowanego zestawu 26 testów priorytetowych pozwoli na znaczący wzrost pokrycia liniowego (line coverage) oraz pokrycia gałęzi (branch coverage) modułu `audioPlayback.ts` (~1500 linii) .
+Wdrożenie proponowanego zestawu 26 testów priorytetowych pozwoli na znaczący wzrost pokrycia liniowego (line coverage) oraz pokrycia gałęzi (branch coverage) modułu [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) (~1500 linii) .
 
 Poniższa tabela przedstawia szacowane wskaźniki przyrostu pokrycia w rozbiciu na poszczególne grupy testowe.
 
@@ -232,7 +232,7 @@ Poniższa tabela przedstawia szacowane wskaźniki przyrostu pokrycia w rozbiciu 
 
 ## Podsumowanie
 
-Przedstawiona strategia pozwala na podniesienie jakości i niezawodności klienta WebAudio w StageSync v5 . Poprzez wyeliminowanie niedeterministycznych zegarów, rygorystyczne stosowanie atrapek `AudioContext` oraz rozdzielenie czystych funkcji domenowych od stanowej integracji schedulera, moduł `audioPlayback.ts` uzyskuje odporność na błędy regresyjne przy jednoczesnym zachowaniu ścisłej zgodności z kanonem czasu SSOT serwera (ADR 0002) .
+Przedstawiona strategia pozwala na podniesienie jakości i niezawodności klienta WebAudio w StageSync v5 . Poprzez wyeliminowanie niedeterministycznych zegarów, rygorystyczne stosowanie atrapek `AudioContext` oraz rozdzielenie czystych funkcji domenowych od stanowej integracji schedulera, moduł [`audioPlayback.ts`](../../../../apps/web/src/lib/audio/audioPlayback.ts) uzyskuje odporność na błędy regresyjne przy jednoczesnym zachowaniu ścisłej zgodności z kanonem czasu SSOT serwera (ADR 0002) .
 
 ---
 Powered by [AI Exporter](https://saveai.net)

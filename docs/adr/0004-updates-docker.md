@@ -42,4 +42,4 @@ Oryginalna decyzja nr 3 mówiła „bez przycisku wykonującego update". Rozró�
 - Endpoint `POST /api/system/apply-update` wraca, ale **wyłącznie** jako proxy do Watchtower — bez logiki git.
 - Bez skonfigurowanego Watchtower (dev `pnpm dev`): endpoint zwraca `501`.
 - Migracje schematu przy starcie kontenera — osobny mechanizm, nie `git pull`.
-- Dokumentacja instalacji produkcyjnej wskazuje `compose.prod.yml` + Watchtower, nie `git clone` + apply.
+- Dokumentacja instalacji produkcyjnej wskazuje [`compose.prod.yml`](../../compose.prod.yml) + Watchtower, nie `git clone` + apply.

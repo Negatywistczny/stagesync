@@ -65,7 +65,7 @@ Payload DTO dla operacji modyfikacji konfiguracji (`PutMidiHostConfigBodySchema`
 | `inputChannel` | `z.number().int().min(0).max(15).nullable()` | `null` | Kanał wejściowy PC (`null` = Omni; `0` = Ch 1)  |
 | `outputChannel` | `z.number().int().min(0).max(15)` | `0` | Kanał wyjściowy PC (`0` = Ch 1)  |
 
-Podczas uruchamiania serwera funkcja `loadMidiHostConfigFile` zawarta w module `config-persist.ts` wczytuje plik konfiguracyjny `data/host/midi-config.json` . W przypadku napotkania pliku wygenerowanego przez wcześniejszą wersję oprogramowania (v5.0/v5.1), który nie zawiera pól `inputChannel` oraz `outputChannel`, proces parsowania Zod automatycznie nakłada wartości domyślne :
+Podczas uruchamiania serwera funkcja `loadMidiHostConfigFile` zawarta w module [`config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts) wczytuje plik konfiguracyjny `data/host/midi-config.json` . W przypadku napotkania pliku wygenerowanego przez wcześniejszą wersję oprogramowania (v5.0/v5.1), który nie zawiera pól `inputChannel` oraz `outputChannel`, proces parsowania Zod automatycznie nakłada wartości domyślne :
 
 1. W przypadku braku pól w pliku JSON, Zod uzupełnia brakujące wartości do postaci `{ ..., "inputChannel": null, "outputChannel": 0 }` .
 2. Zaktualizowana struktura jest utrzymywana w pamięci podręcznej hosta . Każda zmiana konfiguracji z poziomu Admin UI inicjuje zapis z użyciem pliku tymczasowego z identyfikatorem PID oraz operacją `renameSync`, co gwarantuje atomowość zapisu na dysku .
@@ -96,9 +96,9 @@ Wskaźnik `rates.pcPerSec` zwracany przez endpoint REST `/api/midi` raportuje na
 
 ## 5. Projekt Interfejsu Administratora Admin Host UI (PC-CH-04)
 
-Modyfikacje interfejsu użytkownika obejmują dwa komponenty konsoli administratora: modal ustawień globalnych `ServerSettingsModal.tsx` oraz panel telemetrii scenicznej `SystemView.tsx` .
+Modyfikacje interfejsu użytkownika obejmują dwa komponenty konsoli administratora: modal ustawień globalnych [`ServerSettingsModal.tsx`](../../../../apps/web/src/shells/ServerSettingsModal.tsx) oraz panel telemetrii scenicznej [`SystemView.tsx`](../../../../apps/web/src/shells/admin/SystemView.tsx) .
 
-W zakładce "MIDI" modalu `ServerSettingsModal.tsx` umieszczone są dwa nowe pola wyboru typu `select`, usytuowane bezpośrednio pod selektorami portów fizycznych . Rezygnuje się z jakichkolwiek elementów atrapowych (`stubs`) – każda zmiana wartości modyfikuje lokalny stan roboczy (`draft`), a kliknięcie przycisku "Zapisz" wysyła żądanie `PUT /api/midi/config` do serwera .
+W zakładce "MIDI" modalu [`ServerSettingsModal.tsx`](../../../../apps/web/src/shells/ServerSettingsModal.tsx) umieszczone są dwa nowe pola wyboru typu `select`, usytuowane bezpośrednio pod selektorami portów fizycznych . Rezygnuje się z jakichkolwiek elementów atrapowych (`stubs`) – każda zmiana wartości modyfikuje lokalny stan roboczy (`draft`), a kliknięcie przycisku "Zapisz" wysyła żądanie `PUT /api/midi/config` do serwera .
 
 Etykiety interfejsu łączą polską czytelność operacyjną z branżowym żargonem technicznym w języku angielskim:
 
@@ -107,7 +107,7 @@ Etykiety interfejsu łączą polską czytelność operacyjną z branżowym żarg
 | **Select IN Channel** | Kanał wejściowy Program Change | `Omni (wszystkie kanały)`<br>`Kanał 1`<br>`Kanał 2`<br>...<br>`Kanał 16` | `null`<br>`0`<br>`1`<br>...<br>`15` |
 | **Select OUT Channel** | Kanał wyjściowy Program Change | `Kanał 1`<br>`Kanał 2`<br>...<br>`Kanał 16` | `0`<br>`1`<br>...<br>`15` |
 
-Sekcja podglądu portów w karcie telemetrii komponentu `SystemView.tsx` została rozbudowana o wizualizację stanu filtrów kanałowych :
+Sekcja podglądu portów w karcie telemetrii komponentu [`SystemView.tsx`](../../../../apps/web/src/shells/admin/SystemView.tsx) została rozbudowana o wizualizację stanu filtrów kanałowych :
 
 - **Wejście**: Wyświetla nazwę fizycznego portu wejściowego oraz aktywny filtr, np. `USB MIDI Pedalboard (Kanał 1)` lub `Roland UM-ONE (Omni)` .
 - **Wyjście**: Wyświetla nazwę portu wyjściowego oraz skonfigurowany kanał nadawczy, np. `Korg sound module (Kanał 2)` .
@@ -118,7 +118,7 @@ Sekcja podglądu portów w karcie telemetrii komponentu `SystemView.tsx` został
 
 Dla zapewnienia bezawaryjnej pracy w warunkach koncertowych wdrożenie wymaga weryfikacji w oparciu o trójpoziomowy plan testów.
 
-### Testy Jednostkowe (Unit Tests: `host.test.ts`)
+### Testy Jednostkowe (Unit Tests: [`host.test.ts`](../../../../apps/server/src/midi/host.test.ts))
 Zestaw przypadków testowych weryfikujących logikę filtru wewnątrz modułu `createMidiHost` :
 
 | ID Testu | Stan Konfiguracji `inputChannel` | Przychodzący Komunikat MIDI | Oczekiwane Zachowanie Silnika |
@@ -159,13 +159,13 @@ Implementacja specyfikacji rozkłada się na poszczególne warstwy architektonic
 
 | Identyfikator Pliku | Ścieżka Pliku w Repozytorium | Zakres Wprowadzanych Zmian | Relewantne ID Ryzyka / Specyfikacji |
 | :--- | :--- | :--- | :--- |
-| `schema.ts` | `packages/shared/src/schema.ts` | Rozszerzenie `MidiHostConfigSchema` oraz `PutMidiHostConfigBodySchema` o pola `inputChannel` i `outputChannel` z walidacją Zod . | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-02** |
-| `config-persist.ts` | `apps/server/src/midi/config-persist.ts` | Aktualizacja funkcji parsowania i zapisu konfiguracji w celu nakładania domyślnych wartości kanałów przy migracji . | **PC-CH-02** |
-| `host.ts` | `apps/server/src/midi/host.ts` | Aplikacja filtru kanałowego w `onInputMessage` (Silent Drop) oraz wywoływanie `sendProgramChange` z `config.outputChannel` . | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-03** |
-| `program-change-out.ts` | `apps/server/src/midi/program-change-out.ts` | Użycie `config.outputChannel` z hosta podczas automatycznej emisji PC po zmianie projektu . | **RSK-MIDI-05**, **PC-CH-03** |
-| `midi.ts` | `apps/server/src/routes/midi.ts` | Obsługa zaktualizowanego schematu PUT w routerze Express `/api/midi/config` . | **PC-CH-02** |
-| `ServerSettingsModal.tsx` | `apps/desktop/src/components/ServerSettingsModal.tsx` | Wdrożenie kontrolek `Select` dla kanałów PC IN i OUT w zakładce MIDI . | **PC-CH-04** |
-| `SystemView.tsx` | `apps/desktop/src/components/views/SystemView.tsx` | Rozbudowa sekcji podglądu portów o wizualizację aktywnych kanałów MIDI . | **PC-CH-04** |
+| [`schema.ts`](../../../../packages/shared/src/schema.ts) | [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts) | Rozszerzenie `MidiHostConfigSchema` oraz `PutMidiHostConfigBodySchema` o pola `inputChannel` i `outputChannel` z walidacją Zod . | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-02** |
+| [`config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts) | [`apps/server/src/midi/config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts) | Aktualizacja funkcji parsowania i zapisu konfiguracji w celu nakładania domyślnych wartości kanałów przy migracji . | **PC-CH-02** |
+| [`host.ts`](../../../../apps/server/src/midi/host.ts) | [`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts) | Aplikacja filtru kanałowego w `onInputMessage` (Silent Drop) oraz wywoływanie `sendProgramChange` z `config.outputChannel` . | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-03** |
+| [`program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts) | [`apps/server/src/midi/program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts) | Użycie `config.outputChannel` z hosta podczas automatycznej emisji PC po zmianie projektu . | **RSK-MIDI-05**, **PC-CH-03** |
+| [`midi.ts`](../../../../apps/server/src/routes/midi.ts) | [`apps/server/src/routes/midi.ts`](../../../../apps/server/src/routes/midi.ts) | Obsługa zaktualizowanego schematu PUT w routerze Express `/api/midi/config` . | **PC-CH-02** |
+| [`ServerSettingsModal.tsx`](../../../../apps/web/src/shells/ServerSettingsModal.tsx) | `apps/desktop/src/components/ServerSettingsModal.tsx` | Wdrożenie kontrolek `Select` dla kanałów PC IN i OUT w zakładce MIDI . | **PC-CH-04** |
+| [`SystemView.tsx`](../../../../apps/web/src/shells/admin/SystemView.tsx) | `apps/desktop/src/components/views/SystemView.tsx` | Rozbudowa sekcji podglądu portów o wizualizację aktywnych kanałów MIDI . | **PC-CH-04** |
 
 Niniejsze opracowanie zamyka pozycje o stanie `limit` z audytu bezpieczeństwa silnika :
 

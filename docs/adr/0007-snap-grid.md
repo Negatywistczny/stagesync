@@ -29,7 +29,7 @@ Ten ADR dotyczy **snap grid** / **edit quantize** — siatki **czasu**, nie layo
 
 - **Kanon storage / transport:** ticks ([ADR 0002](./0002-timebase-ssot.md)).
 - **Snap:** polityka **edycji UI** — czyste funkcje w `@stagesync/shared`
-  (`snap-grid.ts`), bez DOM i bez `Date.now()`.
+  ([`snap-grid.ts`](../../packages/shared/src/snap-grid.ts)), bez DOM i bez `Date.now()`.
 - Wynik snapu = **integer ticks** przed zapisem do draftu / PUT.
 
 ### 2. Tryby snap (rozszerzalne)
@@ -42,7 +42,7 @@ Ten ADR dotyczy **snap grid** / **edit quantize** — siatki **czasu**, nie layo
 | `subdivision` | podział ćwierćnuty: 1/2, 1/4, 1/8, 1/16 | analog Logic „1/8 note” |
 
 Tryb snap to **stan sesji Timeline** (React + opcjonalnie localStorage później).
-**Nie** zapisujemy go w `project.json` w alpha.
+**Nie** zapisujemy go w [`project.json`](../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) w alpha.
 
 **Model kwantyzacji:** **absolutny** (pozycja → najbliższa linia siatki; offset względem
 siatki nie jest zachowywany). Relative snap jak w Logic — patrz OUT poniżej.
@@ -61,7 +61,7 @@ Opcjonalnie: `contentFloorTicks` (koniec Countdown) — clamp jak v4
 
 ### 4. Kontrakt API (shared)
 
-Publiczne typy i funkcje — patrz `packages/shared/src/snap-grid.ts`:
+Publiczne typy i funkcje — patrz [`packages/shared/src/snap-grid.ts`](../../packages/shared/src/snap-grid.ts):
 
 - `SnapMode`, `SnapContext`
 - `quantizeTicks(ticks, mode, ctx)` — jeden entry point dla narzędzi
@@ -102,7 +102,7 @@ chwilowy tryb **`off`** (brak kwantyzacji do siatki).
 
 - Testy Vitest w shared: 4/4, 5/8, 6/8; granice taktu; pre-roll; subdivision.
 - [ADR 0002](./0002-timebase-ssot.md): odsyłacz do tego ADR dla warstwy edycji.
-- Refactor `apps/web/src/lib/timeline-edit/formaCanvas.ts` → delegacja do `quantizeTicks` (faza 1).
+- Refactor [`apps/web/src/lib/timeline-edit/formaCanvas.ts`](../../apps/web/src/lib/timeline-edit/formaCanvas.ts) → delegacja do `quantizeTicks` (faza 1).
 - ROADMAP / TODO: fazy UI snap; semantyka tylko tutaj.
 
 ## Fazy implementacji

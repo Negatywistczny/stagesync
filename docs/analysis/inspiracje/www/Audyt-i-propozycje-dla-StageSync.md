@@ -14,15 +14,15 @@ Ocena stanu faktycznego serwisu `apps/www` została przeprowadzona na podstawie 
 
 | Obszar audytu | Identyfikowane uchybienie lub podatność | Poziom krytyczności | Plik źródłowy |
 | :--- | :--- | :--- | :--- |
-| **SEO & Dostępność** | Brak tekstowego nagłówka `H1` w strukturze DOM — zastosowanie wyłącznie znaku graficznego SVG . | Wysoki | `index.html`  |
-| **SEO & Social Share** | Całkowity brak metadanych Open Graph (`og:*`) oraz kart Twittera (`twitter:*`) . | Średni | `index.html`  |
-| **Brand Consistency** | Twardo zakodowane wartości kolorów HEX w pliku HTML zamiast użycia tokenów `--ss-*` . | Średni | `index.html`, `styles.css`  |
-| **Dojrzałość techniczna** | Sztywne adresy URL API w kodzie źródłowym TypeScript z pominięciem manifestu `channels.json` . | Średni | `releases.ts`, `channels.json`  |
-| **UX & Konwersja** | Brak kontekstowych odnośników do dokumentów instalacyjnych przy kartach pobierania . | Średni | `index.html`, `main.ts`  |
-| **Copywriting** | Stosowanie sformułowań opartych na marketingu absencji („bez serwera”, „bez chmury”) . | Niski | `index.html`  |
-| **Dostępność (A11y)** | Brak dynamicznego powiadamiania czytników ekranu (live region) o zmianie stanu katalogu . | Niski | `index.html`, `main.ts`  |
-| **UX Mobilny** | Ukrywanie kluczowych odnośników nawigacyjnych na małych ekranach zamiast płynnego menu . | Niski | `styles.css`  |
-| **Utrzymanie kodu** | Mieszanie logiki widoku z ręcznym generowaniem węzłów DOM w skrypcie `main.ts` . | Niski | `main.ts`  |
+| **SEO & Dostępność** | Brak tekstowego nagłówka `H1` w strukturze DOM — zastosowanie wyłącznie znaku graficznego SVG . | Wysoki | [`index.html`](../../../../apps/desktop/launcher/index.html)  |
+| **SEO & Social Share** | Całkowity brak metadanych Open Graph (`og:*`) oraz kart Twittera (`twitter:*`) . | Średni | [`index.html`](../../../../apps/desktop/launcher/index.html)  |
+| **Brand Consistency** | Twardo zakodowane wartości kolorów HEX w pliku HTML zamiast użycia tokenów `--ss-*` . | Średni | [`index.html`](../../../../apps/desktop/launcher/index.html), [`styles.css`](../../../../apps/desktop/launcher/styles.css)  |
+| **Dojrzałość techniczna** | Sztywne adresy URL API w kodzie źródłowym TypeScript z pominięciem manifestu [`channels.json`](../../../../apps/www/public/config/channels.json) . | Średni | [`releases.ts`](../../../../apps/www/src/releases.ts), [`channels.json`](../../../../apps/www/public/config/channels.json)  |
+| **UX & Konwersja** | Brak kontekstowych odnośników do dokumentów instalacyjnych przy kartach pobierania . | Średni | [`index.html`](../../../../apps/desktop/launcher/index.html), [`main.ts`](../../../../apps/www/src/main.ts)  |
+| **Copywriting** | Stosowanie sformułowań opartych na marketingu absencji („bez serwera”, „bez chmury”) . | Niski | [`index.html`](../../../../apps/desktop/launcher/index.html)  |
+| **Dostępność (A11y)** | Brak dynamicznego powiadamiania czytników ekranu (live region) o zmianie stanu katalogu . | Niski | [`index.html`](../../../../apps/desktop/launcher/index.html), [`main.ts`](../../../../apps/www/src/main.ts)  |
+| **UX Mobilny** | Ukrywanie kluczowych odnośników nawigacyjnych na małych ekranach zamiast płynnego menu . | Niski | [`styles.css`](../../../../apps/desktop/launcher/styles.css)  |
+| **Utrzymanie kodu** | Mieszanie logiki widoku z ręcznym generowaniem węzłów DOM w skrypcie [`main.ts`](../../../../apps/www/src/main.ts) . | Niski | [`main.ts`](../../../../apps/www/src/main.ts)  |
 
 ### Architektura informacji i struktura sekcji
 Nawigacja i struktura sekcji obecnej strony układają się w prostą ścieżkę liniową: górny pasek nawigacji, sekcja Hero, filary wartości (Pillars), podział ról scenicznych (Roles), instrukcja wdrożenia krok po kroku (Steps), katalog pobierania (Download) oraz stopka . Taki układ zapewnia przejrzysty przepływ informacji, jednak odseparowanie materiałów dokumentacyjnych od sekcji pobierania stwarza tarcie na ścieżce konwersji inżynierów i operatorów . Użytkownicy poszukujący szczegółowych wymogów instalacyjnych dla systemu macOS lub procedury sideloadu na platformie Android są zmuszeni do samodzielnego przeszukiwania zewnętrznego repozytorium GitHub .
@@ -37,7 +37,7 @@ Komunikacja tekstowa na stronie precyzyjnie rozgranicza zadania Operatora (Deskt
 Główny przycisk akcji w sekcji Hero płynnie przewija widok do sekcji pobierania `#download` . Proces dynamicznego pobierania danych o wydaniach z GitHub Releases API działa stabilnie, lecz w przypadku błędu sieciowego lub przekroczenia limitów zapytania serwowany jest zdawkowy komunikat błędu . W sytuacji braku gotowych artefaktów dla danej platformy strona wyświetla szary, nieaktywny element bez wskazania alternatywnej ścieżki (np. samodzielnej kompilacji ze źródeł lub przejścia do archiwum wydań) .
 
 ### Spójność marki i tokenów stylów
-Strona importuje zaimplementowane w monorepo tokeny stylów z pakietu `@stagesync/ui/tokens.css` i bazuje na zmiennych CSS `--ss-*` . Spójność ta jest jednak naruszona bezpośrednio w pliku `index.html`, gdzie wewnatrz grafiki SVG w sekcji Hero użyto sztywno zakodowanych wartości kolorów HEX (`#fbbf24`, `#3f3f46`, `#27272a`) . Uniemożliwia to dynamiczną zmianę palety barwowej Hero w przypadku modyfikacji motywu w globalnych tokenach UI .
+Strona importuje zaimplementowane w monorepo tokeny stylów z pakietu `@stagesync/ui/tokens.css` i bazuje na zmiennych CSS `--ss-*` . Spójność ta jest jednak naruszona bezpośrednio w pliku [`index.html`](../../../../apps/desktop/launcher/index.html), gdzie wewnatrz grafiki SVG w sekcji Hero użyto sztywno zakodowanych wartości kolorów HEX (`#fbbf24`, `#3f3f46`, `#27272a`) . Uniemożliwia to dynamiczną zmianę palety barwowej Hero w przypadku modyfikacji motywu w globalnych tokenach UI .
 
 ### Dostępność cyfrowa (A11y)
 Strona posiada poprawnie zintegrowany link bezpośredniego przejścia do treści (`skip-link`) oraz respektuje preferencje użytkowników dotyczące ograniczenia ruchu (`prefers-reduced-motion`), wyłączając zapętlone animacje osi czasu . Kontrast tekstów w trybie ciemnym spełnia normy WCAG . Brakuje natomiast atrybutu `aria-live="polite"` w kontenerze dynamicznie wczytywanego katalogu wydań (`#download-catalog`), co sprawia, że czytniki ekranu nie powiadamiają użytkownika o zakończeniu pobierania listy instalatorów .
@@ -49,7 +49,7 @@ Kaskadowe arkusze stylów sprawnie obsługują punkty załamania ekranu . Poniż
 Dokument posiada poprawnie skonfigurowane podstawowe znaczniki metadanych, w tym język `pl`, tytuł oraz opis . Strona jest jednak całkowicie pozbawiona tagów Open Graph (`og:*`) i Twitter Cards . W efekcie udostępnienie odnośnika do StageSync w komunikatorach branżowych (Slack, Discord, Telegram) nie generuje karty podglądu z grafiką i podsumowaniem, co obniża współczynnik klikalności (CTR) w kanałach społecznościowych i bezpośrednich.
 
 ### Dojrzałość techniczna kodu
-Aplikacja została zbudowana przy użyciu TypeScriptu i środowiska Vite . Logika klasyfikacji artefaktów w module `releases.ts` poprawnie rozpoznaje pliki `.dmg`, `.msi` oraz `.apk` . Kod ignoruje jednak istniejący w korzeniu repozytorium plik `channels.json`, zawierający zcentralizowane adresy URL dla aktualizacji i dokumentacji . Na skutek tego adresy API zostały na sztywno wpisane w kodzie TypeScript, co utrudnia późniejsze utrzymanie i zarządzanie kanałami wydań .
+Aplikacja została zbudowana przy użyciu TypeScriptu i środowiska Vite . Logika klasyfikacji artefaktów w module [`releases.ts`](../../../../apps/www/src/releases.ts) poprawnie rozpoznaje pliki `.dmg`, `.msi` oraz `.apk` . Kod ignoruje jednak istniejący w korzeniu repozytorium plik [`channels.json`](../../../../apps/www/public/config/channels.json), zawierający zcentralizowane adresy URL dla aktualizacji i dokumentacji . Na skutek tego adresy API zostały na sztywno wpisane w kodzie TypeScript, co utrudnia późniejsze utrzymanie i zarządzanie kanałami wydań .
 
 ---
 
@@ -60,13 +60,13 @@ Wszystkie proponowane działania opierają się wyłącznie na oficjalnie udost�
 ### Wymagania bezwzględne (Must)
 
 *   **Ujednolicenie semantyki nagłówka H1 i zastąpienie wartości HEX tokenami w SVG:** Wprowadzenie tekstowego nagłówka `H1` w połączeniu z logotypem oraz zamiana sztywnych wartości HEX w SVG na zmienne `var(--ss-color-primary)` i `var(--ss-color-surface)` . Działanie to podnosi wskaźniki dostępności oraz gwarantuje spójność wizualną z systemem tokenów . Sukces zostanie potwierdzony uzyskaniem wyniku 100/100 w audycie dostępności Lighthouse .
-*   **Powiązanie logiki pobierania wydań z manifestem `channels.json`:** Zastąpienie zahardkodowanych adresów URL w module `releases.ts` dynamicznym odczytem z pliku `channels.json` . Usprawnienie to zapobiega powstawaniu nieaktywnych odnośników w przypadku modyfikacji infrastruktury repozytorium . Sukces zostanie zmierzony poprawnym pobieraniem katalogu wydań w środowisku testowym bez obecności sztywnych ciągów znaków w kodzie źródłowym .
-*   **Wdrożenie pełnego zestawu metadanych Open Graph i Twitter Cards:** Dodanie tagów `og:title`, `og:description`, `og:image`, `og:type` oraz `twitter:card` do sekcji `<head>` pliku `index.html` . Zapewnia to profesjonalny podgląd wizualny serwisu podczas udostępniania linków w mediach społecznościowych i komunikatorach . Sukces zostanie potwierdzony bezbłędną weryfikacją podglądu karty w oficjalnym narzędziu Facebook Sharing Debugger .
+*   **Powiązanie logiki pobierania wydań z manifestem [`channels.json`](../../../../apps/www/public/config/channels.json):** Zastąpienie zahardkodowanych adresów URL w module [`releases.ts`](../../../../apps/www/src/releases.ts) dynamicznym odczytem z pliku [`channels.json`](../../../../apps/www/public/config/channels.json) . Usprawnienie to zapobiega powstawaniu nieaktywnych odnośników w przypadku modyfikacji infrastruktury repozytorium . Sukces zostanie zmierzony poprawnym pobieraniem katalogu wydań w środowisku testowym bez obecności sztywnych ciągów znaków w kodzie źródłowym .
+*   **Wdrożenie pełnego zestawu metadanych Open Graph i Twitter Cards:** Dodanie tagów `og:title`, `og:description`, `og:image`, `og:type` oraz `twitter:card` do sekcji `<head>` pliku [`index.html`](../../../../apps/desktop/launcher/index.html) . Zapewnia to profesjonalny podgląd wizualny serwisu podczas udostępniania linków w mediach społecznościowych i komunikatorach . Sukces zostanie potwierdzony bezbłędną weryfikacją podglądu karty w oficjalnym narzędziu Facebook Sharing Debugger .
 
 ### Rekomendowane usprawnienia (Should)
 
 *   **Eliminacja marketingu absencji na rzecz języka korzyści technicznych:** Przekształcenie zwrotów zawierających zaprzeczenia na opisy unikalnych cech architektury systemowej (np. „Zero-config LAN”, „W pełni autonomiczne środowisko lokalne”) . Przebudowa copywiritingu wzmacnia wiarygodność produktu w oczach profesjonalnych realizatorów koncertowych . Sukces zostanie zmierzony wzrostem średniego czasu spędzonego przez użytkowników w sekcji opisu ról scenicznych .
-*   **Kontekstowa integracja wydań z przewodnikami instalacji:** Dołączenie do kart pobierania bezpośrednich odnośników do dedykowanych instrukcji w dokumentacji (`DESKTOP.md`, `MOBILE.md`, `INSTALL.md`) . Działanie to eliminuje niepewność użytkownika związaną ze zdejmowaniem kwarantanny macOS Gatekeeper lub procedurą sideloadu na platformie Android . Sukces zostanie zmierzony przyrostem przejść z kart pobierania do odpowiednich plików dokumentacji w repozytorium .
+*   **Kontekstowa integracja wydań z przewodnikami instalacji:** Dołączenie do kart pobierania bezpośrednich odnośników do dedykowanych instrukcji w dokumentacji ([`DESKTOP.md`](../../../guides/DESKTOP.md), [`MOBILE.md`](../../../guides/MOBILE.md), [`INSTALL.md`](../../../guides/INSTALL.md)) . Działanie to eliminuje niepewność użytkownika związaną ze zdejmowaniem kwarantanny macOS Gatekeeper lub procedurą sideloadu na platformie Android . Sukces zostanie zmierzony przyrostem przejść z kart pobierania do odpowiednich plików dokumentacji w repozytorium .
 
 ### Rozwój długoterminowy (Later)
 
@@ -100,9 +100,9 @@ Nowa struktura strony marketingowej eliminuje zbędne rozpraszacze, kierując u�
    * Krok 3: Podłączenie urządzeń scenicznych przez zero-config LAN lub kod QR .
 6. **Sekcja Katalogu Pobierania (Interactive Download Hub)**
    * Wskaźnik stanu hydratacji wydań z obsługą komunikatów błędu i odnośnikiem do archiwum .
-   * Stacje robocze operatora: Instalatory Windows (MSI) oraz macOS (DMG dla Apple Silicon i Intel) wraz z linkiem do przewodnika `DESKTOP.md` .
-   * Aplikacje sceniczne: Pakiety APK dla Android Console oraz Android Performer wraz z linkiem do przewodnika `MOBILE.md` .
-   * Serwer rackowy: Instrukcja uruchomienia kontenera Docker Compose wraz z linkiem do przewodnika `INSTALL.md` .
+   * Stacje robocze operatora: Instalatory Windows (MSI) oraz macOS (DMG dla Apple Silicon i Intel) wraz z linkiem do przewodnika [`DESKTOP.md`](../../../guides/DESKTOP.md) .
+   * Aplikacje sceniczne: Pakiety APK dla Android Console oraz Android Performer wraz z linkiem do przewodnika [`MOBILE.md`](../../../guides/MOBILE.md) .
+   * Serwer rackowy: Instrukcja uruchomienia kontenera Docker Compose wraz z linkiem do przewodnika [`INSTALL.md`](../../../guides/INSTALL.md) .
 7. **Stopka (Footer)**
    * Identyfikacja marki i informacja o licencji źródłowej BUSL-1.1 .
    * Odnośniki bezpośrednie: Wykazy wydań na GitHubie, Dokumentacja API, Dziennik zmian (Changelog v5.2) .
@@ -145,24 +145,24 @@ W sekcji pobierania przełączanie pomiędzy dostępnymi wariantami architektur 
 
 ## 6. Uwagi techniczne dla aplikacji `apps/www`
 
-Wdrożenie zaleceń audytowych wymaga modyfikacji określonych plików w strukturze katalogu `apps/www` oraz wykorzystania wspólnego pliku konfiguracyjnego `channels.json` .
+Wdrożenie zaleceń audytowych wymaga modyfikacji określonych plików w strukturze katalogu `apps/www` oraz wykorzystania wspólnego pliku konfiguracyjnego [`channels.json`](../../../../apps/www/public/config/channels.json) .
 
-### Plik `apps/www/index.html`
+### Plik [`apps/www/index.html`](../../../../apps/www/index.html)
 *   **Poprawa semantyki H1:** Zastąpienie wyłącznego znacznika obrazu strukturą łączącą ukryty tekst dostępny dla czytników z graficznym logotypem marki :
     *   Wprowadzenie elementu `<span class="visually-hidden">StageSync — Live Show Control</span>` wewnątrz nagłówka `<h1 id="hero-title" class="hero__title">` .
 *   **Dodanie obszaru powiadomień A11y:** Uzupełnienie kontenera wydań o atrybut dynamicznego powiadamiania czytników ekranu :
     *   Dodanie atrybutu `aria-live="polite"` do elementu `<div class="download__catalog" id="download-catalog">` .
 *   **Uzupełnienie metadanych SEO:** Wstawienie kompletnego zestawu tagów Open Graph oraz Twitter Cards w sekcji `<head>` .
 
-### Plik `apps/www/src/releases.ts`
-*   **Integracja z manifestem kanałów:** Wyeliminowanie na sztywno wpisanych ciągów znaków i zaimportowanie konfiguracji z pliku `channels.json` zlokalizowanego w korzeniu monorepo :
+### Plik [`apps/www/src/releases.ts`](../../../../apps/www/src/releases.ts)
+*   **Integracja z manifestem kanałów:** Wyeliminowanie na sztywno wpisanych ciągów znaków i zaimportowanie konfiguracji z pliku [`channels.json`](../../../../apps/www/public/config/channels.json) zlokalizowanego w korzeniu monorepo :
     *   Odczyt adresu API wydań poprzez właściwość `channels.latestReleaseApi` oraz adresu strony wydań poprzez `channels.releases` .
 
-### Plik `apps/www/src/main.ts`
-*   **Kontekstowa integracja z dokumentacją:** Rozbudowa funkcji `renderCard` o automatyczne dołączanie bezpośrednich linków do plików przewodników (`DESKTOP.md`, `MOBILE.md`) odczytywanych z obietnicy konfiguracyjnej .
+### Plik [`apps/www/src/main.ts`](../../../../apps/www/src/main.ts)
+*   **Kontekstowa integracja z dokumentacją:** Rozbudowa funkcji `renderCard` o automatyczne dołączanie bezpośrednich linków do plików przewodników ([`DESKTOP.md`](../../../guides/DESKTOP.md), [`MOBILE.md`](../../../guides/MOBILE.md)) odczytywanych z obietnicy konfiguracyjnej .
 *   **Rozbudowana obsługa błędów:** Wzbogacenie funkcji `hydrateDownloads` o generowanie linku ratunkowego do archiwum wydań na GitHubie w sytuacji wystąpienia błędu sieciowego .
 
-### Plik `apps/www/src/styles.css`
+### Plik [`apps/www/src/styles.css`](../../../../apps/www/src/styles.css)
 *   **Refaktoryzacja wartości kolorów:** Zastąpienie bezpośrednich wartości HEX wewnątrz osadzonych grafik wektorowych SVG zmiennymi CSS opartymi na tokenach `--ss-*` :
     *   Zastosowanie właściwości `stroke: var(--ss-color-border-muted)` dla linii osi czasu oraz `fill: var(--ss-color-surface-elevated)` dla bloków klipów .
 

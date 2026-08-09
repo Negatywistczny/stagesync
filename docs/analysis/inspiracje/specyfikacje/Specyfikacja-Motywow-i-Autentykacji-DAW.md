@@ -14,7 +14,7 @@ Projektowanie motywów wizualnych (`data-theme`) nie może w żaden sposób ogra
 
 ## Specyfikacja THM-01: Zestaw Motywów Wizualnych MVP i Mapowanie Tokenów (`--ss-*`)
 
-Konstytucja Design Systemu StageSync zabrania wprowadzania surowych wartości HEX, RGB czy klas narzędziowych w komponentach UI i shellach aplikacji . Całość warstwy wizualnej opiera się na tokenach CSS `--ss-*` zlokalizowanych w pliku `packages/ui/src/tokens.css` . Zmiana motywu odbywa się poprzez modyfikację atrybutu `data-theme` oraz `data-contrast` w elemencie korzenia dokumentu (`:root` lub `html`), co gwarantuje natychmiastową przebudowę drzewa renderowania bez narzutu wydajnościowego w czasie wykonywania .
+Konstytucja Design Systemu StageSync zabrania wprowadzania surowych wartości HEX, RGB czy klas narzędziowych w komponentach UI i shellach aplikacji . Całość warstwy wizualnej opiera się na tokenach CSS `--ss-*` zlokalizowanych w pliku [`packages/ui/src/tokens.css`](../../../../packages/ui/src/tokens.css) . Zmiana motywu odbywa się poprzez modyfikację atrybutu `data-theme` oraz `data-contrast` w elemencie korzenia dokumentu (`:root` lub `html`), co gwarantuje natychmiastową przebudowę drzewa renderowania bez narzutu wydajnościowego w czasie wykonywania .
 
 Zestaw motywów MVP obejmuje cztery predefiniowane profile adaptacyjne:
 
@@ -118,9 +118,9 @@ Wdrożenie specyfikacji w linii 5.2+ wymaga spełnienia formalnych kryteriów ak
 
 | ID Zadania | Opis Kryterium Akceptacji | Metoda Weryfikacji | Moduły / Testy |
 | :--- | :--- | :--- | :--- |
-| `THM-01-AC1` | Zmiana atrybutu `data-theme="light"` w elemencie `<html>` przełącza paletę tła, powierzchni i tekstu bez modyfikacji kodu komponentów . | Test wizualny Playwright / Regresja screenshotów. | `packages/ui/src/tokens.css`  |
-| `THM-01-AC2` | Wskazania Playhead (`--ss-color-info`) oraz Locator (`--ss-color-warning`) zachowują odrębne odcienie w każdym z motywów . | Audyt tokenów CSS / Test spójności ADR 0011 . | `packages/ui/src/tokens.css`  |
-| `THM-02-AC1` | Zmiana motywu na tablecie klienta zapisuje wartość w `localStorage` i nie wpływa na wygląd szela na innych połączonych urządzeniach . | Test integracyjny multi-browser w Playwright. | `apps/web/src/shells/ClientShell.tsx`  |
+| `THM-01-AC1` | Zmiana atrybutu `data-theme="light"` w elemencie `<html>` przełącza paletę tła, powierzchni i tekstu bez modyfikacji kodu komponentów . | Test wizualny Playwright / Regresja screenshotów. | [`packages/ui/src/tokens.css`](../../../../packages/ui/src/tokens.css)  |
+| `THM-01-AC2` | Wskazania Playhead (`--ss-color-info`) oraz Locator (`--ss-color-warning`) zachowują odrębne odcienie w każdym z motywów . | Audyt tokenów CSS / Test spójności ADR 0011 . | [`packages/ui/src/tokens.css`](../../../../packages/ui/src/tokens.css)  |
+| `THM-02-AC1` | Zmiana motywu na tablecie klienta zapisuje wartość w `localStorage` i nie wpływa na wygląd szela na innych połączonych urządzeniach . | Test integracyjny multi-browser w Playwright. | [`apps/web/src/shells/ClientShell.tsx`](../../../../apps/web/src/shells/ClientShell.tsx)  |
 | `AUTH-01-AC1` | Przy ustawionej zmiennej `STAGESYNC_OPERATOR_PIN` próba wywołania edycji notatek bez prawidłowego nagłówka wywołuje błąd HTTP 403 . | Testy jednostkowe REST API w Vitest. | `apps/server/src/routes/` |
 | `AUTH-02-AC1` | Własności edycji lokalnej (`instrumentPitch`, skala tekstu) działają płynnie w trybie offline bez połączonego gniazda WS . | Test zachowania w stanie rozłączenia gniazda. | `apps/web/src/lib/clientDisplayPrefs.ts`  |
 
@@ -135,11 +135,11 @@ Wdrożenie specyfikacji w linii 5.2+ wymaga spełnienia formalnych kryteriów ak
 
 | Ścieżka do Pliku | Rola / Opis Modułu | Zakres Modyfikacji w 5.2+ |
 | :--- | :--- | :--- |
-| `packages/ui/src/tokens.css` | Definicje kanonicznych tokenów Design Systemu . | Dodanie reguł `[data-theme="light"]`, `[data-contrast="high"]` oraz delt kolorystycznych . |
+| [`packages/ui/src/tokens.css`](../../../../packages/ui/src/tokens.css) | Definicje kanonicznych tokenów Design Systemu . | Dodanie reguł `[data-theme="light"]`, `[data-contrast="high"]` oraz delt kolorystycznych . |
 | `packages/ui/src/colors.md` | Dokumentacja semantyki kolorów . | Aktualizacja specyfikacji niezmienników sygnałów i akcentów . |
 | `apps/web/src/lib/appearance.ts` | Obsługa stosowania motywów w DOM i persystencji . | Rozbudowa funkcji `applyAppearance` o obsługę wariantów wysokiego kontrastu . |
-| `apps/web/src/shells/ClientShell.tsx` | Shell interfejsu klienta wykonawcy . | Integracja przełącznika motywów w popoverze ustawień bez blokowania tożsamością . |
-| `apps/web/src/shells/ServerSettingsModal.tsx` | Modal ustawień serwera i preferencji globalnych . | Dodanie zakładek konfiguracji kodu PIN oraz domyślnego motywu stacji . |
+| [`apps/web/src/shells/ClientShell.tsx`](../../../../apps/web/src/shells/ClientShell.tsx) | Shell interfejsu klienta wykonawcy . | Integracja przełącznika motywów w popoverze ustawień bez blokowania tożsamością . |
+| [`apps/web/src/shells/ServerSettingsModal.tsx`](../../../../apps/web/src/shells/ServerSettingsModal.tsx) | Modal ustawień serwera i preferencji globalnych . | Dodanie zakładek konfiguracji kodu PIN oraz domyślnego motywu stacji . |
 | `apps/server/src/routes/settings.ts` | Konfiguracja parametrów serwera w REST API . | Obsługa flagi `STAGESYNC_OPERATOR_PIN` oraz walidacja ACL . |
 
 ---
