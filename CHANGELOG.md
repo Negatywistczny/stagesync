@@ -5,6 +5,29 @@ Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Dodano
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Windows:** jeden ekran startowy przy instalacji i przy aktualizacji z Launchera / Admina, potem od razu aplikacja.
+
+### Zmieniono
+
+#### 🖥️ App Shell & UI
+- **Powiadomienia:** w Ustawieniach tylko etykieta i przycisk **Włączone** / **Wyłączone** — bez opisu uprawnień i statusu Push.
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Desktop (Windows / Linux):** zintegrowany ciemny pasek menu w oknie (`Plik`…`Pomoc`) z przyciskami minimalizacji, maksymalizacji i zamknięcia; bez osobnego natywnego paska tytułu. W wąskim oknie sekcje są pod jednym **Menu**, a ich zawartość otwiera się obok w osobnym panelu. Menubar działa jak w aplikacjach desktop: po otwarciu najechanie przełącza sąsiednie menu, strzałki nawigują po pozycjach / submenu / top-level. Na macOS nadal natywny menubar systemowy. (#836)
+
+### Naprawiono
+
+#### 📦 Packaging & Desktop (Tauri / Docker)
+- **Powiadomienia (Windows):** włączenie w Ustawieniach nie kończy się już natychmiastową „odmową” WebView — desktop używa natywnych toastów Tauri (bez fałszywego dialogu przeglądarki).
+
+#### 🖥️ App Shell & UI
+- **Klient:** na desktopie Tauri wraca pełny pasek L1 z chipami **Admin / Timeline** (wcześniej cały nagłówek znikał); w przeglądarce po wejściu z Admina/Timeline sesja operatora znów pokazuje te skoki; wysokość paska L1 (Admin / Timeline / Client) wyrównana do wspólnego kontraktu.
+
 ## [5.4.9](https://github.com/Negatywistczny/stagesync/compare/v5.4.8...v5.4.9) - 2026-08-09
 
 ### Naprawiono

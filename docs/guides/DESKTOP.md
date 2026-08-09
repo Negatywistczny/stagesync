@@ -34,34 +34,64 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 
 **Domyślny widok po połączeniu:** Admin (`/admin`). Klient (`/client`) też w aplikacji desktop; w przeglądarce / Dockerze root `/` to Client.
 
-### Nawigacja L1 (OperatorNav vs menu OS)
+### Nawigacja L1 (OperatorNav vs menu aplikacji)
 
 | Powierzchnia | Admin / Timeline / Klient |
 |--------------|---------------------------|
-| **Tauri desktop** | Menu OS **Widok** (`⌘/Ctrl+1…3`, `Alt+1…4`) na szerokim oknie; w buildach DEV Admin ma też sekcję `Dev`; przy ≤640px ten sam chrome telefonu co Web / Console (**OperatorNav**) |
-| **Przeglądarka operatora (LAN)** | Pasek **OperatorNav** w aplikacji + te same skróty |
-| **Console Android** | Pasek **OperatorNav** (jak web operator) |
+| **Tauri desktop (szerokie okno)** | Menu aplikacji (**Widok**, skróty `⌘/Ctrl+1…3`, `Alt+1…4`) + pasek L1 z wordmarkiem i chipami Admin/Timeline/Klient; w buildach DEV Admin ma też sekcję `Dev`. Bez przycisku pełnego ekranu w chrome (jest w menu). |
+| **Tauri desktop (≤640px)** | Ten sam chrome telefonu co Web / Console: **OperatorNav** + kompaktowy L1 |
+| **Tauri `/client`** | Zawsze pełny L1 z chipami **Admin / Timeline** (booth); menu HTML/OS osobno |
+| **Przeglądarka operatora (LAN)** | Po wizycie w Admin/Timeline — sesja operatora: chipy (tablet/desktop) albo **OperatorNav** (≤640px) na `/client`; bez sesji = widok muzyka. Bez title bara okna. |
+| **Console Android** | **OperatorNav** / chipy jak web operator; na `/client` zawsze |
 | **Performer / muzyk `/client`** | Brak przełącznika aplikacji |
 
-## Menu systemowe
+### Title bar (Windows / Linux) — [#836](https://github.com/Negatywistczny/stagesync/issues/836)
 
-**StageSync** | **Plik** | **Edycja** | **Widok** | **Odtwarzanie** | **Host** | **Pomoc**
+Okno bez dekoracji OS (`decorations: false`). W WebView:
+
+- Ciemny pasek: menubar | tytuł „StageSync” | min / max / close
+- Szerokie okno: top-level **Plik | Edycja | Widok | Odtwarzanie | Host | Pomoc**
+- Wąskie (≤1024px): jedno **Menu** → kolumna sekcji + panel drugiego poziomu **obok** (nie w tym samym przewijanym okienku)
+- Przeciąganie: `data-tauri-drag-region` / mostek `start_dragging`
+- **macOS:** natywne dekoracje + natywny menubar (bez HTML title bara)
+
+**Przeglądarka / PWA:** title bar i window controls są ukryte. Detekcja to realny WebView Tauri (`__TAURI__` / `__STAGESYNC_TAURI_SHELL__` / surface `tauri`) — sam marker HTML sidecara `__STAGESYNC_SHELL__=desktop` **nie** włącza chrome okna ani „Wróć do wyboru hosta” w launcherze.
+
+## Menu aplikacji
+
+**macOS (pasek systemowy):** **StageSync** | **Plik** | **Edycja** | **Widok** | **Odtwarzanie** | **Host** | **Pomoc**
+
+**Windows / Linux (w oknie, ciemny title bar):** **Plik** | **Edycja** | **Widok** | **Odtwarzanie** | **Host** | **Pomoc**  
+(bez osobnej pozycji top-level z nazwą aplikacji — Preferencje / aktualizacje / Zakończ są w **Plik**, O programie w **Pomoc**).
+
+**Wąskie okno (≤1024px):** przycisk **Menu** → lista sekcji; po najechaniu/kliknięciu sekcji drugi poziom w **osobnym panelu obok**. Dalsze submenu (np. Otwórz ostatnie) jako panel fixed poza overflow.
+
+### Zachowanie menubara (Windows / Linux HTML)
+
+Jak w typowej aplikacji desktop:
+
+1. Samo najechanie **nie** otwiera menu.
+2. Po **kliknięciu** top-level (lub **Menu**) menubar jest „uzbrojony” — najechanie na sąsiednią pozycję / sekcję **przełącza** otwarte menu.
+3. Klawiatura: `↑`/`↓` pozycje; `→` otwiera submenu albo następne top-level; `←` zamyka submenu albo poprzednie top-level; `Enter`/`Space` aktywuje; `Escape` zamyka poziom / całe menu; `Home`/`End` w liście.
+4. Klik poza menu albo drugi klik w tę samą pozycję top-level zamyka.
 
 | Menu | Pozycje |
 |------|---------|
-| **StageSync** | O programie; Preferencje…; Sprawdź aktualizacje…; Zakończ |
-| **Plik** | Nowy (Utwór / Wzór / Z wzoru…); Otwórz…; Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zapisz jako…; Importuj / Eksportuj bibliotekę…; Zamknij projekt |
+| **StageSync** (tylko macOS) | O programie; Preferencje…; Sprawdź aktualizacje…; Zakończ |
+| **Plik** | Nowy (Utwór / Wzór / Z wzoru…); Otwórz…; Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zapisz jako…; Importuj / Eksportuj bibliotekę…; Zamknij projekt; *(Win/Linux: Preferencje…; Sprawdź aktualizacje…; Zakończ)* |
 | **Edycja** | Cofnij / Ponów; Wytnij / Kopiuj / Wklej (schowek klipów Timeline); Usuń; Zaznacz wszystko |
 | **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Powiększ / Pomniejsz / Rzeczywisty rozmiar; Wygląd…; Pełny ekran |
 | **Odtwarzanie** | Odtwórz; Stop; Poprzedni / Następny utwór (`⌥/Alt+←/→`) |
 | **Host** | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia… |
 | **Pomoc** | Skróty klawiszowe…; Dokumentacja online; Zgłoś problem; Eksport logów; O programie (Win/Linux) |
 
-### Szczegółowe działanie menu Tauri
+### Szczegółowe działanie menu
 
-Menu jest budowane natywnie w procesie desktop przy starcie aplikacji i instalowane w `setup`. Kliknięcia nie wykonują akcji bezpośrednio w Rust, tylko trafiają do głównego WebView jako event `stagesync:desktop-menu` albo przez nawigację do odpowiedniej trasy. Jeśli główne okno `main` nie istnieje, część akcji kończy się bez efektu.
+Na **macOS** menu buduje proces desktop (Tauri) i instaluje je w `setup`. Na **Windows / Linux** ten sam kontrakt pozycji działa w HTML title barze aplikacji (frameless); skróty klawiszowe (`Ctrl/⌘+S`, `Ctrl/⌘+1…3`, itd.) obsługuje WebView (`desktopMenuShortcuts`).
 
-#### StageSync
+Kliknięcia nie wykonują akcji bezpośrednio w Rust (poza fullscreen / zewnętrznymi URL na macOS), tylko trafiają do głównego WebView jako event `stagesync:desktop-menu` albo przez nawigację do odpowiedniej trasy. Jeśli główne okno `main` nie istnieje, część akcji kończy się bez efektu.
+
+#### StageSync (macOS) / Plik — Preferencje i wyjście (Windows/Linux)
 
 | Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
 |---------|-----------|--------------|------------------|
@@ -183,7 +213,7 @@ Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/N
 | Platforma | Plik |
 |-----------|------|
 | macOS | `StageSync_x.y.z_aarch64.dmg` lub `x64.dmg` |
-| Windows | `StageSync_x.y.z_x64-setup.exe` (NSIS) |
+| Windows | `StageSync-Setup.exe` |
 
 ### Instalacja bez podpisu cyfrowego
 

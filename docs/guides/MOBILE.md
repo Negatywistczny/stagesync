@@ -18,12 +18,13 @@ Performer pozostaje read-only Client-only ([ADR 0016](../adr/0016-android-perfor
 
 | Powierzchnia | Pasek L1 (Admin / Timeline / Klient) |
 |--------------|--------------------------------------|
-| **Console** (APK + przeglądarka LAN) | **Tak** na Admin i Timeline (≤640px); **nie** na `/client` |
+| **Console** (APK + przeglądarka LAN) | **Tak** — Admin/Timeline (≤640px OperatorNav; szerzej chipy); na `/client` zawsze |
 | **Performer** | **Nie** — tylko widok muzyka (`/client`) |
-| **PWA / Safari `/client`** (muzyk) | **Nie** |
-| **Desktop Tauri** | **Nie** — menu OS; legacy chrome na Admin |
+| **PWA / Safari `/client`** (muzyk) | **Nie** (bez sesji operatora) |
+| **Web LAN** (po Admin/Timeline) | **Tak** na `/client` — telefon: OperatorNav; tablet/desktop: chipy Admin/Timeline |
+| **Desktop Tauri** | **Tak** na `/client` — pełny L1 + Admin/Timeline (HTML menubar Win/Linux albo natywny macOS — osobno; bez fullscreen w chrome) |
 
-Skróty klawiaturowe (gdy podłączona klawiatura): `Ctrl/⌘+1…3` (aplikacje), `Alt+1…4` (zakładki Admina). Desktop Tauri używa menu OS — patrz [DESKTOP.md](./DESKTOP.md).
+Skróty klawiaturowe (gdy podłączona klawiatura): `Ctrl/⌘+1…3` (aplikacje), `Alt+1…4` (zakładki Admina). Desktop: menu OS (macOS) albo HTML menubar (Windows/Linux) — patrz [DESKTOP.md](./DESKTOP.md).
 
 ### Dev Layout Matrix (tylko DEV)
 
