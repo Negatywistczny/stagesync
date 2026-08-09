@@ -32,8 +32,8 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: stretch;
-  height: 2.25rem;
-  min-height: 2.25rem;
+  height: var(--ss-touch-min);
+  min-height: var(--ss-touch-min);
   border-bottom: 1px solid var(--ss-color-border);
   background: var(--ss-color-surface);
   color: var(--ss-color-text);
@@ -170,7 +170,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
+  width: var(--ss-touch-min-client);
   height: 100%;
   margin: 0;
   padding: 0;
@@ -196,8 +196,8 @@ body {
 .titleBarIconMax,
 .titleBarIconClose {
   display: block;
-  width: 0.75rem;
-  height: 0.75rem;
+  width: var(--ss-space-3);
+  height: var(--ss-space-3);
   position: relative;
 }
 
@@ -214,7 +214,7 @@ body {
 .titleBarIconMax::before {
   content: "";
   position: absolute;
-  inset: 0.1rem;
+  inset: 2px;
   border: 1px solid currentColor;
 }
 
