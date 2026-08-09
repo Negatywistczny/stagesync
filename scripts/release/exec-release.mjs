@@ -24,6 +24,11 @@ function run(cmd, args, { cwd = ROOT, stdio = "inherit" } = {}) {
   return r;
 }
 
+/** Sync sleep without spawning `node -e` (PowerShell mangles `{}` in -e scripts). */
+function sleepMs(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
 function runCapture(cmd, args) {
   const r = spawnSync(cmd, args, { cwd: ROOT, encoding: "utf8", shell: process.platform === "win32" });
   return (r.stdout ?? "").trim();
@@ -45,18 +50,56 @@ function monitorGitHubActions(tag) {
 
   try {
     console.log("🤖 Łączenie z runnerem GitHub Actions...");
-    run("node", ["-e", "setTimeout(() => {}, 3000)"]); // krótki bufor na webhook
+    sleepMs(3000); // krótki bufor na webhook
 
-    // Nasłuchiwanie workflow
-    run("gh", ["run", "watch", "--repo", GITHUB_REPO]);
+    // Prefer Release workflow for this tag (tag push), else latest in-progress run.
+    const runId =
+      runCapture("gh", [
+        "run",
+        "list",
+        "--repo",
+        GITHUB_REPO,
+        "--branch",
+        tag,
+        "--workflow",
+        "Release",
+        "--limit",
+        "1",
+        "--json",
+        "databaseId",
+        "-q",
+        ".[0].databaseId",
+      ]) ||
+      runCapture("gh", [
+        "run",
+        "list",
+        "--repo",
+        GITHUB_REPO,
+        "--limit",
+        "1",
+        "--json",
+        "databaseId",
+        "-q",
+        ".[0].databaseId",
+      ]);
 
-    // Pobranie wyniku
+    if (!runId) {
+      throw new Error("Brak runu do śledzenia");
+    }
+
+    console.log(`📡 Watch run ${runId}…`);
+    run("gh", ["run", "watch", runId, "--repo", GITHUB_REPO, "--exit-status"]);
+
     const lastRunStatus = runCapture("gh", [
-      "run", "list",
-      "--repo", GITHUB_REPO,
-      "--limit", "1",
-      "--json", "conclusion",
-      "-q", ".[0].conclusion"
+      "run",
+      "view",
+      runId,
+      "--repo",
+      GITHUB_REPO,
+      "--json",
+      "conclusion",
+      "-q",
+      ".conclusion",
     ]);
 
     if (lastRunStatus === "success") {
@@ -67,7 +110,7 @@ function monitorGitHubActions(tag) {
     } else {
       console.error("\n==================================================");
       console.error(`💥 BŁĄD CI/CD: Pipeline w chmurze zakończył się statusem: ${lastRunStatus}`);
-      console.error(`🔗 Logi błędu: https://github.com/${GITHUB_REPO}/actions`);
+      console.error(`🔗 Logi błędu: https://github.com/${GITHUB_REPO}/actions/runs/${runId}`);
       console.error("==================================================\n");
       process.exit(1);
     }
@@ -81,6 +124,12 @@ function main() {
   const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
   const version = pkg.version;
   const expectedTag = `v${version}`;
+  const monitorOnly = process.argv.includes("--monitor-only");
+
+  if (monitorOnly) {
+    monitorGitHubActions(expectedTag);
+    return;
+  }
 
   console.log("==================================================");
   console.log(`🚀 PUBLIKACJA WYDANIA StageSync ${expectedTag}`);
