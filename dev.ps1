@@ -6,6 +6,17 @@ param(
 
 $ErrorActionPreference = "Continue"
 
+# Attempt process-level execution policy bypass if restricted
+try {
+    $currentPolicy = Get-ExecutionPolicy -Scope Process -ErrorAction SilentlyContinue
+    if (-not $currentPolicy -or $currentPolicy -eq "Restricted") {
+        Set-ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue
+    }
+}
+catch {
+    # Ignore if restricted by group policy, dev.cmd wrapper handles -ExecutionPolicy Bypass anyway.
+}
+
 function Write-Step {
     param([string]$Text)
     Write-Host "-> $Text" -ForegroundColor Cyan
@@ -46,7 +57,8 @@ if (-not $nodeCmd) {
             Write-Warn "Node.js zostal zainstalowany, ale wymaga utworzenia nowego okna terminala."
             exit 1
         }
-    } else {
+    }
+    else {
         Write-Warn "Brak Node.js. Nie mozna kontynuowac."
         exit 1
     }
@@ -60,7 +72,8 @@ try {
         corepack enable pnpm | Out-Null
         corepack install | Out-Null
     }
-} catch {
+}
+catch {
     # kontynuuj
 }
 
@@ -75,6 +88,7 @@ $env:NODE_NO_WARNINGS = "1"
 # 4. Handoff do Dev Hub z opcjonalna flaga
 if ($Target -ne "") {
     pnpm dev:hub $Target
-} else {
+}
+else {
     pnpm dev:hub
 }
