@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1283
+* **Liczba wszystkich plików:** 1284
 * **Liczba katalogów:** 196
-* **Data aktualizacji:** 2026-08-09T20:56:42.419Z
+* **Data aktualizacji:** 2026-08-09T20:57:01.518Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 801 |
+| Kod | 802 |
 | Docs | 214 |
 | Config | 119 |
 | Assety | 120 |
@@ -32,7 +32,7 @@
 | `.css` | 52 |
 | `.json` | 37 |
 | `.xml` | 35 |
-| `.mjs` | 28 |
+| `.mjs` | 29 |
 | `brak rozszerzenia` | 23 |
 | _(pozostałe)_ | 128 |
 
@@ -40,9 +40,9 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (887) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (888) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (99) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (454) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -252,7 +252,8 @@ stagesync/
 │   │   │   ├── parse-schema.mjs
 │   │   │   ├── prepare-stagesync-setup-bin.mjs
 │   │   │   ├── sync-launcher-ui.mjs
-│   │   │   └── sync-sidecar-server.mjs
+│   │   │   ├── sync-sidecar-server.mjs
+│   │   │   └── sync-sidecar-web.mjs
 │   │   ├── src-tauri/
 │   │   │   ├── assets/
 │   │   │   │   └── installer/  … (6 plików)

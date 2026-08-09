@@ -5,7 +5,7 @@
   "license": "BUSL-1.1",
   "scripts": {
     "build": "turbo run build",
-    "dev": "pnpm generate:map && turbo run dev",
+    "dev": "pnpm generate:map && turbo run dev --filter=@stagesync/web --filter=@stagesync/server --filter=@stagesync/shared",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",

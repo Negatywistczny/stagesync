@@ -61,19 +61,21 @@ Możesz uruchamiać poszczególne moduły bez otwierania interaktywnego menu:
 | `.\dev types` | **TypeScript Check:** Sprawdzenie typów w 10 pakietach monorepo. |
 | `.\dev release` | Otwarcie podmenu wydań GitHub Release Hub 2.0. |
 | `.\dev network` | Otwarcie diagnostyki LAN IP z kodami QR i wyborem NIC. |
-| `.\dev clean` | Głębokie czyszczenie `dist`, `.turbo`, `.vite`, `target`, `coverage`, `.cache` w monorepo. |
+| `.\dev` → Uruchomienie → **Pusty instalator NSIS** | Szybki smoke NSIS bez sidecara (`tauri:build:nsis-smoke`). |
 
 ---
 
 ### 📂 Kategorie Zadań w Interaktywnym Menu Dev Hub
 
 1. **🏥 Doctor / Szybka Diagnostyka:** Bezinwazyjny odczyt stanu środowiska i portów.
-2. **🚀 Uruchomienie & Dev:** Profile uruchomieniowe (Web+API, Web Only, API Only, Web+Desktop Shell, Docker Compose).
+2. **🚀 Uruchomienie & Dev:** Profile uruchomieniowe (Web+API, Web Only, API Only, Desktop Shell Tauri, Budowanie instalatora, NSIS smoke, Docker Compose).
 3. **🌐 Sieć & Diagnostyka LAN:** Wybór karty NIC, kody QR dla tabletów (`/client`, `/admin`, `/api/health`) i zarządca procesów/portów.
-4. **🧪 Testy & Jakość:** Mapa repozytorium, sprawdzanie typów TS, lintery CSS/Knip, weryfikacja docs, testy jednostkowe i Smart Tempo DSP Benchmark.
+4. **🧪 Testy & Jakość:** Mapa repozytorium, sprawdzanie typów TS, lintery CSS/Knip, weryfikacja docs, testy jednostkowe (shared, server, web), Smart Tempo DSP Benchmark, Auto-Fixer (Format & Lint), Pełny Build (Turbo), Testy z pokryciem (Coverage), Migracja Legacy, Sync Launcher UI.
 5. **🐙 GitHub & Wydania (Release Hub 2.0):** Synchronizacja wersji, Pre-Release Checklist 2.0, Preview Release Notes (podgląd opisów bez tworzenia tagów), przygotowywanie tagów SemVer (w tym alpha/beta) oraz status Git.
 6. **🧹 Konserwacja & Cache:** Głębokie usuwanie artefaktów buildów i pamięci podręcznej z pełnym raportem wyczyszczonych i zablokowanych katalogów.
-7. **🛠 Setup Środowiska:** Uruchomienie automatycznego instalatora zależności systemowych ([`setup.ps1`](./setup/setup.ps1) / [`setup.sh`](./setup/setup.sh)).
+7. **💾 Zarządzanie danymi & Logi:** Podgląd logów, czyszczenie katalogu danych.
+8. **📦 Zależności & Pakiety:** Sprawdzanie nieaktualnych pakietów, interaktywna aktualizacja, wymuszona instalacja, audyt bezpieczeństwa, czyszczenie store.
+9. **🛠 Setup Środowiska:** Uruchomienie automatycznego instalatora zależności systemowych ([`setup.ps1`](./setup/setup.ps1) / [`setup.sh`](./setup/setup.sh)).
 
 ---
 
@@ -127,4 +129,3 @@ Automatyzacja pociągów integracyjnych dla gałęzi `main`.
 | [`run-train-batch.sh`](./merge-train/run-train-batch.sh) | Wersja batch dla zbiorczych otwartych PR-ów. |
 
 ---
-

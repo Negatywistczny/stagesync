@@ -6,11 +6,12 @@
   "description": "StageSync Tauri thin shell — WebView to local server (ADR 0010)",
   "type": "module",
   "scripts": {
-    "dev": "node ./scripts/kill-zombies.mjs && node ./scripts/check-rust.mjs && node ./scripts/sync-launcher-ui.mjs && node ./scripts/sync-sidecar-server.mjs && tauri dev",
+    "dev": "node ./scripts/kill-zombies.mjs && node ./scripts/check-rust.mjs && node ./scripts/sync-launcher-ui.mjs && node ./scripts/sync-sidecar-server.mjs && node ./scripts/sync-sidecar-web.mjs && tauri dev",
     "build": "node -e \"console.log('@stagesync/desktop: skip turbo build — use pnpm tauri build')\"",
     "sync-ui": "node ./scripts/sync-launcher-ui.mjs",
     "tauri": "tauri",
     "tauri:build": "node ./scripts/kill-zombies.mjs && node ./scripts/check-rust.mjs && node ./scripts/sync-launcher-ui.mjs && tauri build",
+    "tauri:build:nsis-smoke": "node ./scripts/build-nsis-smoke.mjs",
     "check-types": "node -e \"process.exit(0)\"",
     "lint": "node -e \"process.exit(0)\"",
     "test": "node --test \"launcher/*.test.js\""
