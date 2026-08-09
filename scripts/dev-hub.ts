@@ -33,7 +33,7 @@ async function waitReturn() {
   await clack.select({
     message: 'Zadanie zakończone. Co chcesz zrobić?',
     options: [
-      { value: 'back', label: '↩  Powrót do menu głównego' },
+      { value: 'back', label: '↩️  Powrót do menu głównego' },
     ],
   });
 }
@@ -399,7 +399,7 @@ async function menuRunAndDev() {
       { value: 'api-only', label: '3. ⚙️   API Only (Tylko serwer Node)' },
       { value: 'desktop', label: '4. 💻  Web + Desktop Shell (Tauri)' },
       { value: 'docker', label: '5. 🐳  Stack produkcyjny (Docker Compose)' },
-      { value: 'back', label: '0. ↩   Powrót' },
+      { value: 'back', label: '0. ↩️   Powrót' },
     ],
   });
 
@@ -430,7 +430,7 @@ async function menuNetwork() {
     options: [
       { value: 'ip', label: '1. 📱  Podgląd LAN IP + Kod QR (z wyborem NIC)' },
       { value: 'ports', label: '2. 🔌  Port Guard & Kill-Zombies' },
-      { value: 'back', label: '0. ↩   Powrót' },
+      { value: 'back', label: '0. ↩️   Powrót' },
     ],
   });
 
@@ -459,8 +459,8 @@ async function menuTesting() {
       { value: 'server', label: '7. 🎼  Testy serwera transportu (@stagesync/server)' },
       { value: 'web', label: '8. 🎨  Testy UI Admin/Client (@stagesync/web)' },
       { value: 'benchmark', label: '9. 🎯  Smart Tempo DSP Benchmark' },
-      { value: 'fix', label: '10. 🧹 Auto-Fixer (Format & Lint)' },
-      { value: 'back', label: '0. ↩   Powrót' },
+      { value: 'fix', label: '10.🧹 Auto-Fixer (Format & Lint)' },
+      { value: 'back', label: '0. ↩️   Powrót' },
     ],
   });
 
@@ -517,7 +517,7 @@ async function menuRelease() {
       { value: 'preview', label: '3. 👁   Podgląd Information o Wydaniu (Preview Notes)' },
       { value: 'cut', label: '4. 🚀  Przygotowanie Taga / Cut Release' },
       { value: 'git', label: '5. 🔍  Status Git & Hygiene' },
-      { value: 'back', label: '0. ↩   Powrót' },
+      { value: 'back', label: '0. ↩️   Powrót' },
     ],
   });
 
@@ -564,7 +564,7 @@ async function menuRelease() {
         { value: 'major', label: '3. 💥  Wydanie Główne / Major (np. 5.4.8 -> 6.0.0)' },
         { value: 'alpha', label: '4. 🧪  Prerelease Alpha (np. 5.5.0-alpha.1)' },
         { value: 'beta', label: '5. 🧪  Prerelease Beta (np. 5.5.0-beta.1)' },
-        { value: 'cancel', label: '0. ↩   Anuluj' },
+        { value: 'cancel', label: '0. ↩️   Anuluj' },
       ],
     });
     if (!clack.isCancel(bumpType) && bumpType !== 'cancel') {
@@ -574,6 +574,45 @@ async function menuRelease() {
     }
   } else if (choice === 'git') {
     showGitStatus();
+    await waitReturn();
+  }
+}
+
+async function menuDependencies() {
+  clearTerminalScreen();
+  const choice = await clack.select({
+    message: 'Zależności & Pakiety (pnpm):',
+    options: [
+      { value: 'outdated', label: '1. 🔍  Sprawdź nieaktualne pakiety' },
+      { value: 'up', label: '2. 🆙  Interaktywna aktualizacja pakietów' },
+      { value: 'install', label: '3. 📥  Wymuś ponowną instalację' },
+      { value: 'audit', label: '4. 🛡️  Audyt bezpieczeństwa' },
+      { value: 'prune', label: '5. 🧹  Czyszczenie pnpm store' },
+      { value: 'back', label: '0. ↩️   Powrót' },
+    ],
+  });
+
+  if (clack.isCancel(choice) || choice === 'back') return;
+
+  if (choice === 'outdated') {
+    clack.note('Sprawdzanie nieaktualnych pakietów w monorepo (pnpm outdated -r)...');
+    runCommand('pnpm', ['outdated', '-r']);
+    await waitReturn();
+  } else if (choice === 'up') {
+    clack.note('Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r)...');
+    runCommand('pnpm', ['up', '-i', '-r']);
+    await waitReturn();
+  } else if (choice === 'install') {
+    clack.note('Wymuszanie ponownej instalacji zależności (pnpm install --force)...');
+    runCommand('pnpm', ['install', '--force']);
+    await waitReturn();
+  } else if (choice === 'audit') {
+    clack.note('Uruchamianie audytu bezpieczeństwa zależności (pnpm audit)...');
+    runCommand('pnpm', ['audit']);
+    await waitReturn();
+  } else if (choice === 'prune') {
+    clack.note('Czyszczenie lokalnego pnpm store (pnpm store prune)...');
+    runCommand('pnpm', ['store', 'prune']);
     await waitReturn();
   }
 }
@@ -622,6 +661,25 @@ async function main() {
       await menuRelease();
       return;
     }
+    if (flag === 'deps' || flag === 'dependencies' || flag === 'pnpm') {
+      await menuDependencies();
+      return;
+    }
+    if (flag === 'outdated') {
+      clack.note('Sprawdzanie nieaktualnych pakietów w monorepo (pnpm outdated -r)...');
+      runCommand('pnpm', ['outdated', '-r']);
+      return;
+    }
+    if (flag === 'up' || flag === 'update') {
+      clack.note('Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r)...');
+      runCommand('pnpm', ['up', '-i', '-r']);
+      return;
+    }
+    if (flag === 'audit') {
+      clack.note('Uruchamianie audytu bezpieczeństwa zależności (pnpm audit)...');
+      runCommand('pnpm', ['audit']);
+      return;
+    }
     if (flag === 'network' || flag === 'ip') {
       await showLANInfo();
       return;
@@ -647,13 +705,14 @@ async function main() {
     const category = await clack.select({
       message: 'Wybierz kategorię zadań:',
       options: [
-        { value: 'doctor', label: '1. 🏥  Doctor / Szybka Diagnostyka' },
+        { value: 'doctor', label: '1. 🏥  Szybka Diagnostyka' },
         { value: 'dev', label: '2. 🚀  Uruchomienie & Dev' },
         { value: 'network', label: '3. 🌐  Sieć & Diagnostyka LAN' },
         { value: 'testing', label: '4. 🧪  Testy & Jakość' },
         { value: 'release', label: '5. 🐙  GitHub & Wydania' },
-        { value: 'clean', label: '6. 🧹  Konserwacja & Cache' },
-        { value: 'setup', label: '7. 🛠   Setup Środowiska' },
+        { value: 'deps', label: '6. 📦  Zależności & Pakiety' },
+        { value: 'clean', label: '7. 🧹  Konserwacja & Cache' },
+        { value: 'setup', label: '8. 🛠   Setup Środowiska' },
         { value: 'exit', label: '0. 🚪  Wyjście' },
       ],
     });
@@ -671,6 +730,7 @@ async function main() {
     if (category === 'network') await menuNetwork();
     if (category === 'testing') await menuTesting();
     if (category === 'release') await menuRelease();
+    if (category === 'deps') await menuDependencies();
     if (category === 'clean') {
       cleanCache();
       await waitReturn();
