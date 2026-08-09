@@ -7,7 +7,6 @@ import {
   setPushEnabledPreference,
   syncPushRegistration,
 } from "@lib/client/pushNotifications.js";
-import styles from "./ShellNotificationFields.module.css";
 
 /**
  * Contextual opt-in for system notifications (#810).
@@ -19,7 +18,6 @@ export function ShellNotificationFields() {
     getWebNotificationPermission(),
   );
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     setPermission(getWebNotificationPermission());
@@ -27,7 +25,6 @@ export function ShellNotificationFields() {
 
   const onEnable = useCallback(async () => {
     setBusy(true);
-    setStatus(null);
     try {
       const perm = await requestNotificationPermission();
       setPermission(
@@ -37,20 +34,14 @@ export function ShellNotificationFields() {
             ? "unsupported"
             : perm,
       );
-      if (perm === "denied") {
+      if (perm === "denied" || perm === "unsupported") {
         setPushEnabledPreference(false);
         setEnabled(false);
-        setStatus("Odmówiono uprawnień systemowych — powiadomienia wyłączone.");
         return;
       }
       setPushEnabledPreference(true);
       setEnabled(true);
-      const synced = await syncPushRegistration();
-      setStatus(
-        synced
-          ? "Powiadomienia włączone; token zarejestrowany u hosta."
-          : "Powiadomienia lokalne włączone (rejestracja Push opcjonalna / brak VAPID lub FCM).",
-      );
+      await syncPushRegistration();
     } finally {
       setBusy(false);
     }
@@ -59,43 +50,33 @@ export function ShellNotificationFields() {
   const onDisable = useCallback(() => {
     setPushEnabledPreference(false);
     setEnabled(false);
-    setStatus("Powiadomienia wyłączone.");
   }, []);
 
+  const unsupported = permission === "unsupported";
+
   return (
-    <Field label="Powiadomienia systemowe">
-      <div className={styles.stack}>
-        <p className={styles.meta} data-testid="push-permission">
-          Uprawnienie: {permission}
-          {enabled ? " · włączone w StageSync" : " · wyłączone"}
-        </p>
-        <div className={styles.actions}>
-          {enabled ? (
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={busy}
-              onClick={onDisable}
-            >
-              Wyłącz
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="primary"
-              disabled={busy || permission === "unsupported"}
-              onClick={() => void onEnable()}
-            >
-              Włącz powiadomienia
-            </Button>
-          )}
-        </div>
-        {status ? (
-          <p className={styles.status} role="status">
-            {status}
-          </p>
-        ) : null}
-      </div>
+    <Field label="Powiadomienia">
+      <Button
+        type="button"
+        variant="ghost"
+        selected={enabled}
+        disabled={busy || unsupported}
+        data-testid="push-permission"
+        aria-pressed={enabled}
+        title={
+          unsupported
+            ? "Powiadomienia niedostępne w tej przeglądarce"
+            : enabled
+              ? "Wyłącz powiadomienia systemowe"
+              : "Włącz powiadomienia systemowe"
+        }
+        onClick={() => {
+          if (enabled) onDisable();
+          else void onEnable();
+        }}
+      >
+        {enabled ? "Włączone" : "Wyłączone"}
+      </Button>
     </Field>
   );
 }

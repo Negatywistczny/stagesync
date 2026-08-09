@@ -2,9 +2,16 @@
  * Push & local notifications (#810).
  * - Local scenic alerts (host disconnect) work without cloud.
  * - FCM / WebPush registration is opt-in via host config + native bridge.
+ * - Desktop Tauri uses tauri-plugin-notification (not WebView Notification API).
  */
 
 import type { PushChannel, PushPlatform, PushPublicConfig } from "@stagesync/shared";
+import {
+  hasExplicitTauriShellMarker,
+  requestDesktopNotificationPermission,
+  showDesktopNotification,
+  tauriInvokeAvailable,
+} from "./desktopBridge.js";
 import { getStageSyncNative } from "./nativeShell.js";
 
 const LS_ENABLED = "stagesync.pushEnabled";
@@ -21,6 +28,11 @@ function pushBridge(): StageSyncNativePushBridge | null {
   return native;
 }
 
+/** True when desktop Tauri should own notification permission (not WebView2). */
+function isDesktopNotificationPath(): boolean {
+  return tauriInvokeAvailable() || hasExplicitTauriShellMarker();
+}
+
 export function readPushEnabledPreference(): boolean {
   if (typeof localStorage === "undefined") return false;
   return localStorage.getItem(LS_ENABLED) === "1";
@@ -33,11 +45,15 @@ export function setPushEnabledPreference(enabled: boolean): void {
 }
 
 export function getWebNotificationPermission(): NotificationPermission | "unsupported" {
+  // WebView2 sticky-denies the Web Notification API; desktop uses the Tauri plugin.
+  if (isDesktopNotificationPath()) {
+    return readPushEnabledPreference() ? "granted" : "default";
+  }
   if (typeof Notification === "undefined") return "unsupported";
   return Notification.permission;
 }
 
-/** Request OS permission (web Notification API and/or Android bridge). */
+/** Request OS permission (web Notification API, Android bridge, or Tauri plugin). */
 export async function requestNotificationPermission(): Promise<
   NotificationPermission | "unsupported" | "native-pending"
 > {
@@ -53,6 +69,14 @@ export async function requestNotificationPermission(): Promise<
       return status;
     }
     return "native-pending";
+  }
+
+  if (tauriInvokeAvailable()) {
+    return requestDesktopNotificationPermission();
+  }
+  // Explicit Tauri shell marker without IPC yet — StageSync toggle is consent.
+  if (hasExplicitTauriShellMarker()) {
+    return "granted";
   }
 
   if (typeof Notification === "undefined") return "unsupported";
@@ -83,8 +107,13 @@ export function showLocalNotification(opts: {
       );
       return;
     } catch {
-      /* fall through to web */
+      /* fall through */
     }
+  }
+
+  if (tauriInvokeAvailable()) {
+    void showDesktopNotification({ title: opts.title, body: opts.body });
+    return;
   }
 
   if (typeof Notification === "undefined") return;

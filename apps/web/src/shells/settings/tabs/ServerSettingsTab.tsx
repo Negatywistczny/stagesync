@@ -91,7 +91,7 @@ export function ServerSettingsTab({
             aria-label="Nazwa hosta w sieci"
           />
           <span className={styles.muted}>
-            Widoczna przy wyszukiwaniu hostów w launcherze; adres IP zostaje w drugiej linii. Osobno od nazwy urządzenia na Scenie.
+            Widoczna przy wyszukiwaniu hostów w launcherze; adres IP zostaje w drugiej linii.
           </span>
         </label>
         <label className={styles.checkRow}>
