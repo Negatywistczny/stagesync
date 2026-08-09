@@ -26,12 +26,12 @@ Dla ID w stanie `hypothesis` (lub bez kolumny Stan):
 2. Minimalny test Vitest **lub** LIVE repro gdy test nie wystarczy.
 3. Ustaw stan wiersza — **tylko** te tokeny:
 
-| Stan | Kiedy |
-|------|--------|
-| `confirmed` | Repro lub czerwony test w repo |
-| `rejected` | Obalone (zielony test / błędna lektura) |
-| `limit` | Świadomy limit produktu (ADR / TODO 5.2+) |
-| `fixed` | Potwierdzone + naprawione + test (link commit/PR) |
+| Stan        | Kiedy                                             |
+| ----------- | ------------------------------------------------- |
+| `confirmed` | Repro lub czerwony test w repo                    |
+| `rejected`  | Obalone (zielony test / błędna lektura)           |
+| `limit`     | Świadomy limit produktu (ADR / TODO 5.2+)         |
+| `fixed`     | Potwierdzone + naprawione + test (link commit/PR) |
 
 Przepływ: `hypothesis` → (`confirmed` → `fixed`) | `rejected` | `limit`.
 

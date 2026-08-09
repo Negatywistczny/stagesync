@@ -51,17 +51,17 @@
 
 ## ⚡ O projekcie
 
-**StageSync** to zaawansowany, scentralizowany system reżyserii scenicznej i synchronizacji występów na żywo (*Live Show Control*). 
+**StageSync** to zaawansowany, scentralizowany system reżyserii scenicznej i synchronizacji występów na żywo (_Live Show Control_).
 
 Łączy w sobie precyzyjny silnik transportu (SSOT), interaktywną oś czasu (Timeline) oraz wielourządzeniową synchronizację ekranów dla muzyków w sieci lokalnej — od cyfrowych partytur i akordów, po automatyzację MIDI i metronom.
 
 ### 🎯 Kluczowe możliwości
 
-* ⏱️ **Pancerny silnik transportu (SSOT):** Jedno źródło prawdy dla zegara, tempa, metrum i osi czasu, gwarantujące idealne zsynchronizowanie całego zespołu.
-* 🎼 **Dedykowane widoki muzyków (Client Shell):** Automatyczne renderowanie i synchroniczne przewijanie partytur (OSMD), widoków akordowych, tekstów oraz sekcji perkusyjnych na tabletach i ekranach wykonawców.
-* 🎛️ **Reżyseria i zarządzanie setlistą:** Błyskawiczne przełączanie utworów, elasteczne szablony występów oraz pełna kontrola nad przebiegiem koncertu z poziomu panelu Admina.
-* 🔌 **Automatyzacja MIDI:** Wysyłanie komunikatów *Program Change* i *Control Change* do zewnętrznych procesorów efektów, instrumentów oraz DAW.
-* 📡 **Zero-config w sieci LAN:** Automatyczne wykrywanie urządzeń w sieci lokalnej (mDNS/WebSockets) bez konieczności dostępu do Internetu.
+- ⏱️ **Pancerny silnik transportu (SSOT):** Jedno źródło prawdy dla zegara, tempa, metrum i osi czasu, gwarantujące idealne zsynchronizowanie całego zespołu.
+- 🎼 **Dedykowane widoki muzyków (Client Shell):** Automatyczne renderowanie i synchroniczne przewijanie partytur (OSMD), widoków akordowych, tekstów oraz sekcji perkusyjnych na tabletach i ekranach wykonawców.
+- 🎛️ **Reżyseria i zarządzanie setlistą:** Błyskawiczne przełączanie utworów, elasteczne szablony występów oraz pełna kontrola nad przebiegiem koncertu z poziomu panelu Admina.
+- 🔌 **Automatyzacja MIDI:** Wysyłanie komunikatów _Program Change_ i _Control Change_ do zewnętrznych procesorów efektów, instrumentów oraz DAW.
+- 📡 **Zero-config w sieci LAN:** Automatyczne wykrywanie urządzeń w sieci lokalnej (mDNS/WebSockets) bez konieczności dostępu do Internetu.
 
 ## 🚀 Szybki start
 
@@ -88,8 +88,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 Skrypt weryfikuje środowisko (Node/pnpm) i uruchamia **Dev Hub**:
-* **Admin UI:** http://localhost:3000/admin
-* **API / WS:** http://localhost:4000 (`/api/health`)
+
+- **Admin UI:** http://localhost:3000/admin
+- **API / WS:** http://localhost:4000 (`/api/health`)
 
 > 💡 Komendy test/build/lint, podgląd wymagań kompilacji Tauri/Rust oraz reguły współpracy: [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
@@ -97,43 +98,43 @@ Skrypt weryfikuje środowisko (Node/pnpm) i uruchamia **Dev Hub**:
 
 ### 📦 Dla użytkowników i wdrożeń produkcyjnych
 
-* 💻 **Aplikacja Desktop (Windows / macOS):** Pobierz gotowy instalator z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases).
-* 🐳 **Serwer Dedykowany (Docker):** Zobacz [Instrukcję wdrożenia serwerowego](./docs/guides/INSTALL.md).
+- 💻 **Aplikacja Desktop (Windows / macOS):** Pobierz gotowy instalator z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases).
+- 🐳 **Serwer Dedykowany (Docker):** Zobacz [Instrukcję wdrożenia serwerowego](./docs/guides/INSTALL.md).
 
 ## 📦 Monorepo
 
-| Ścieżka | Rola | Opis |
-| :--- | :--- | :--- |
-| 📱 **[`apps/`](apps/README.md)** | **Kontener aplikacji** | Główny katalog aplikacji monorepo |
-| -> ⚙️ **[`server`](apps/server/README.md)** | API i transport SSOT | Serwer czasu, persystencja |
-| -> 💻 **[`web`](apps/web/README.md)** | UI Admin / Client / Timeline | Oś czasu, panele, sterowanie |
-| -> 🖥️ **[`desktop`](apps/desktop/README.md)** | Tauri Shell | Natywne paczkowanie i autowykrywanie |
-| -> 📱 **[`performer`](apps/performer/README.md)** | Android Client | Lekki klient sceniczny |
-| -> 📱 **[`console`](apps/console/README.md)** | Android Admin Shell | Zarządzanie z tabletu |
-| -> 🌐 **[`www`](apps/www/README.md)** | Publiczne WWW | Portal i aktualności |
-| 📦 **[`packages/`](packages/README.md)** | **Pakiety współdzielone** | Biblioteki, konfiguracje i design system |
-| -> 📐 **[`shared`](packages/shared/README.md)** | Czysta logika i czas | Walidacja Zod, helpery ticks/PPQ |
-| -> 🎨 **[`ui`](packages/ui/README.md)** | Design System | Komponenty bez logiki, CSS Modules |
-| 📂 **[`data/`](data/README.md)** | Dane operacyjne | Magazyn runtime, projekty v3 i logi *(w `.gitignore`)* |
-| 🛠️ **[`scripts/`](scripts/README.md)** | Narzędzia i automatyzacja | Skrypty release, build i generowania mapy |
-| 📚 **[`docs/`](docs/README.md)** | Baza wiedzy | Dokumentacja techniczna, specyfikacje i decyzje ADR |
+| Ścieżka                                           | Rola                         | Opis                                                   |
+| :------------------------------------------------ | :--------------------------- | :----------------------------------------------------- |
+| 📱 **[`apps/`](apps/README.md)**                  | **Kontener aplikacji**       | Główny katalog aplikacji monorepo                      |
+| -> ⚙️ **[`server`](apps/server/README.md)**       | API i transport SSOT         | Serwer czasu, persystencja                             |
+| -> 💻 **[`web`](apps/web/README.md)**             | UI Admin / Client / Timeline | Oś czasu, panele, sterowanie                           |
+| -> 🖥️ **[`desktop`](apps/desktop/README.md)**     | Tauri Shell                  | Natywne paczkowanie i autowykrywanie                   |
+| -> 📱 **[`performer`](apps/performer/README.md)** | Android Client               | Lekki klient sceniczny                                 |
+| -> 📱 **[`console`](apps/console/README.md)**     | Android Admin Shell          | Zarządzanie z tabletu                                  |
+| -> 🌐 **[`www`](apps/www/README.md)**             | Publiczne WWW                | Portal i aktualności                                   |
+| 📦 **[`packages/`](packages/README.md)**          | **Pakiety współdzielone**    | Biblioteki, konfiguracje i design system               |
+| -> 📐 **[`shared`](packages/shared/README.md)**   | Czysta logika i czas         | Walidacja Zod, helpery ticks/PPQ                       |
+| -> 🎨 **[`ui`](packages/ui/README.md)**           | Design System                | Komponenty bez logiki, CSS Modules                     |
+| 📂 **[`data/`](data/README.md)**                  | Dane operacyjne              | Magazyn runtime, projekty v3 i logi _(w `.gitignore`)_ |
+| 🛠️ **[`scripts/`](scripts/README.md)**            | Narzędzia i automatyzacja    | Skrypty release, build i generowania mapy              |
+| 📚 **[`docs/`](docs/README.md)**                  | Baza wiedzy                  | Dokumentacja techniczna, specyfikacje i decyzje ADR    |
 
 ## 📚 Dokumentacja
 
-| Dokument | Opis |
-| :--- | :--- |
-| 🚀 **[INSTALL](./docs/guides/INSTALL.md)** | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw) |
-| 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)** | Instalatory Tauri (`.dmg`, `.exe`), Launcher i aktualizacja |
-| 📱 **[MOBILE](./docs/guides/MOBILE.md)** | Performer / Console — sideload APK, QR, Offline-First |
-| 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)** | Mapa architektura monorepo i przepływ danych SSOT |
-| 🗺️ **[REPO_MAP](docs/REPO_MAP.md)** | Automatycznie generowana mapa struktury i statystyki kodu dla LLM |
-| 🔌 **[API](docs/api/README.md)** | Specyfikacja powierzchni REST API i punktów końcowych |
-| 💡 **[ADR](docs/adr/README.md)** | Dziennik decyzji architektonicznych (*Architecture Decision Records*) |
-| 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista |
-| 📜 **[CHANGELOG](CHANGELOG.md)** | Historia wydań (`5.4` Syllables, …) |
-| 🎨 **[UI](docs/ui/README.md)** | Przewodnik po Design Systemie i tokenach CSS |
-| 🔒 **[SECURITY](.github/SECURITY.md)** | Polityka bezpieczeństwa i zgłaszanie podatności |
-| 🤝 **[CONTRIBUTING](.github/CONTRIBUTING.md)** | Standardy commitów, obsługa PR-ów i praca na gałęziach |
+| Dokument                                                     | Opis                                                                  |
+| :----------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 🚀 **[INSTALL](./docs/guides/INSTALL.md)**                   | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw)  |
+| 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)**                   | Instalatory Tauri (`.dmg`, `.exe`), Launcher i aktualizacja           |
+| 📱 **[MOBILE](./docs/guides/MOBILE.md)**                     | Performer / Console — sideload APK, QR, Offline-First                 |
+| 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)**                  | Mapa architektura monorepo i przepływ danych SSOT                     |
+| 🗺️ **[REPO_MAP](docs/REPO_MAP.md)**                          | Automatycznie generowana mapa struktury i statystyki kodu dla LLM     |
+| 🔌 **[API](docs/api/README.md)**                             | Specyfikacja powierzchni REST API i punktów końcowych                 |
+| 💡 **[ADR](docs/adr/README.md)**                             | Dziennik decyzji architektonicznych (_Architecture Decision Records_) |
+| 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista                 |
+| 📜 **[CHANGELOG](CHANGELOG.md)**                             | Historia wydań (`5.4` Syllables, …)                                   |
+| 🎨 **[UI](docs/ui/README.md)**                               | Przewodnik po Design Systemie i tokenach CSS                          |
+| 🔒 **[SECURITY](.github/SECURITY.md)**                       | Polityka bezpieczeństwa i zgłaszanie podatności                       |
+| 🤝 **[CONTRIBUTING](.github/CONTRIBUTING.md)**               | Standardy commitów, obsługa PR-ów i praca na gałęziach                |
 
 ## 📜 Licencja
 

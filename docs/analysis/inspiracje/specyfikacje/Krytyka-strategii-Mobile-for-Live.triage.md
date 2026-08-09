@@ -12,16 +12,16 @@
 
 ## Macierz
 
-| Decyzja | Werdykt dumpu | Stan | Notatka |
-|---------|---------------|------|---------|
-| Performer Client-only | KEEP | `on-tree` | ADR 0016 |
-| Console full UI + local host | REVISE | `on-tree` / konflikt ADR | Host JNI on-tree; native MIDI = N/A; HW smoke residual — dump ma rację o limitach, nie o OUT hosta |
-| Sideload z hosta / Releases | KEEP | `on-tree` | `/downloads/*.apk` |
-| Offline-First + Zastosuj | KEEP | `on-tree` | #692 MVP |
-| Brak audio/MIDI na Performerze | KEEP | `confirmed` | SSOT server |
-| Multi-out tylko desktop/rack | REVISE scope | `hypothesis` / `limit` | Zgodne z praktyką WebAudio + TODO HW Out; nie wymaga OUT Console host |
-| Block Apply gdy PLAYING | — | `hypothesis` | Pytanie PO |
-| iOS Performer (natywny) | — | `limit` / **OUT** | Usunięte z TODO 5.3+; iOS = Safari/PWA `/client` (#809); natywne APK = Android only (ADR 0016) |
+| Decyzja                        | Werdykt dumpu | Stan                     | Notatka                                                                                            |
+| ------------------------------ | ------------- | ------------------------ | -------------------------------------------------------------------------------------------------- |
+| Performer Client-only          | KEEP          | `on-tree`                | ADR 0016                                                                                           |
+| Console full UI + local host   | REVISE        | `on-tree` / konflikt ADR | Host JNI on-tree; native MIDI = N/A; HW smoke residual — dump ma rację o limitach, nie o OUT hosta |
+| Sideload z hosta / Releases    | KEEP          | `on-tree`                | `/downloads/*.apk`                                                                                 |
+| Offline-First + Zastosuj       | KEEP          | `on-tree`                | #692 MVP                                                                                           |
+| Brak audio/MIDI na Performerze | KEEP          | `confirmed`              | SSOT server                                                                                        |
+| Multi-out tylko desktop/rack   | REVISE scope  | `hypothesis` / `limit`   | Zgodne z praktyką WebAudio + TODO HW Out; nie wymaga OUT Console host                              |
+| Block Apply gdy PLAYING        | —             | `hypothesis`             | Pytanie PO                                                                                         |
+| iOS Performer (natywny)        | —             | `limit` / **OUT**        | Usunięte z TODO 5.3+; iOS = Safari/PWA `/client` (#809); natywne APK = Android only (ADR 0016)     |
 
 ## Confirmed vs hypothesis
 

@@ -8,12 +8,13 @@ Audyt Routingu Miksera StageSync
 
 ## Architektura miksera i topologia sygnałowa
 
-Silnik miksowania audio w systemie StageSync opiera się na trójwarstwowej strukturze obejmującej deklaratywny model danych zaimplementowany w pakiecie `@stagesync/shared`, czystą warstwę matematyczną przeliczeń akustycznych oraz wykonawczy graf węzłów WebAudio API realizowany po stronie aplikacji przeglądarkowej w `apps/web` . 
+Silnik miksowania audio w systemie StageSync opiera się na trójwarstwowej strukturze obejmującej deklaratywny model danych zaimplementowany w pakiecie `@stagesync/shared`, czystą warstwę matematyczną przeliczeń akustycznych oraz wykonawczy graf węzłów WebAudio API realizowany po stronie aplikacji przeglądarkowej w `apps/web` .
 
 Obecna topologia routingu wspiera dwupoziomową hierarchię miksowania :
-* **Ścieżki audio (Audio Tracks):** Modyfikatory mono lub stereo kierujące sygnał bezpośrednio do szyny głównej (Master) bądź do jednej z maksymalnie 16 szyn grupowych (Group Busses) .
-* **Szyny grupowe (Audio Busses):** Węzły podgrup sumujące sygnały ze ścieżek, których wyjście jest na stałe zmapowane do szyny Master .
-* **Szyna główna (Master Bus):** Końcowy węzeł sumujący, z którego sygnał trafia bezpośrednio do fizycznego wyjścia interfejsu audio systemowego za pośrednictwem `AudioContext.destination` .
+
+- **Ścieżki audio (Audio Tracks):** Modyfikatory mono lub stereo kierujące sygnał bezpośrednio do szyny głównej (Master) bądź do jednej z maksymalnie 16 szyn grupowych (Group Busses) .
+- **Szyny grupowe (Audio Busses):** Węzły podgrup sumujące sygnały ze ścieżek, których wyjście jest na stałe zmapowane do szyny Master .
+- **Szyna główna (Master Bus):** Końcowy węzeł sumujący, z którego sygnał trafia bezpośrednio do fizycznego wyjścia interfejsu audio systemowego za pośrednictwem `AudioContext.destination` .
 
 Zgodnie z założeniami architektonicznymi opisanymi w ADR 0011, system nie udostępnia w warstwie interfejsu użytkownika atrap wyjść fizycznych (takich jak Out 3–4), chroniąc użytkownika przed obietnicą routingu sprzętowego, który nie został zaimplementowany w warstwie silnika . Przetwarzanie sygnału odbywa się na podstawie reguł konwersji topologicznej (mono/stereo) oraz profilowanych, liniowo-logarytmicznych charakterystyk tłumików .
 
@@ -31,7 +32,7 @@ Gdy nowa ścieżka zostaje utworzona bez jawnego określenia pola `channelMode` 
 
 ### Weryfikacja docelowa wyjść ścieżek i brak kaskadowania szyn
 
-Schemat `ProjectSchemaV5` zawiera regułę `superRefine`, która weryfikuje, czy identyfikator szyny `output.busId` przypisany do ścieżki istnieje w tablicy `audioBusses` projektu . Funkcja runtime `resolveTrackOutputDest` zabezpiecza silnik przed awarią poprzez sprowadzanie nieprawidłowych lub usuniętych szyn do szyny `MASTER_OUTPUT` . 
+Schemat `ProjectSchemaV5` zawiera regułę `superRefine`, która weryfikuje, czy identyfikator szyny `output.busId` przypisany do ścieżki istnieje w tablicy `audioBusses` projektu . Funkcja runtime `resolveTrackOutputDest` zabezpiecza silnik przed awarią poprzez sprowadzanie nieprawidłowych lub usuniętych szyn do szyny `MASTER_OUTPUT` .
 
 W przypadku samych szyn grupowych schemat `BusOutputDestSchema` ogranicza cel wyjściowy wyłącznie do unii `{ kind: "master" }` . Funkcja `resolveBusOutputDest` bezwarunkowo zwraca obiekt `{ kind: "master" }` . Ograniczenie to uniemożliwia tworzenie kaskadowych podgrup (routing Bus $\rightarrow$ Bus), co stanowi świadomy limit produktu zapobiegający powstawaniu pętli sprzężenia zwrotnego w acyklicznym grafie WebAudio .
 
@@ -53,7 +54,7 @@ $\text{Dla } b \ge 0: \quad g_L = 1 - b, \quad g_R = 1$
 
 gdzie $b \in [-1, 1]$ stanowi pozycję tłumika balansu .
 
-Zależność liniowa algorytmu True Balance powoduje, że gdy gałka balansu znajduje się w skrajnym lewym położeniu ($b = -1$), wzmocnienie kanału lewego wynosi $1{,}0$ ($0\text{ dB}$), a prawego $0{,}0$ ($-\infty\text{ dB}$). Przesuwanie kontrolera w prawo utrzymuje lewy kanał na poziomie jednostkowym aż do punktu centralnego ($b = 0$), podczas gdy kanał prawy rośnie liniowo od $0$ do $1$. Po przekroczeniu centrum lewy kanał opada liniowo do $0$ przy $b = 1$, a prawy pozostaje na stałym poziomie $1$ . 
+Zależność liniowa algorytmu True Balance powoduje, że gdy gałka balansu znajduje się w skrajnym lewym położeniu ($b = -1$), wzmocnienie kanału lewego wynosi $1{,}0$ ($0\text{ dB}$), a prawego $0{,}0$ ($-\infty\text{ dB}$). Przesuwanie kontrolera w prawo utrzymuje lewy kanał na poziomie jednostkowym aż do punktu centralnego ($b = 0$), podczas gdy kanał prawy rośnie liniowo od $0$ do $1$. Po przekroczeniu centrum lewy kanał opada liniowo do $0$ przy $b = 1$, a prawy pozostaje na stałym poziomie $1$ .
 
 W pozycji centralnej ($b = 0$) algorytm True Balance zwraca wzmocnienie $g_L = 1{,}0$ ($0\text{ dB}$) oraz $g_R = 1{,}0$ ($0\text{ dB}$) . Z tego powodu, przełączenie trybu ścieżki z `mono` na `stereo` dla tego samego źródła ze wskaźnikiem panoramy w centrum powoduje natychmiastowy skok głośności wyjścia o $+3\text{ dB}$ .
 
@@ -84,6 +85,7 @@ Obsługa stanów Solo oraz Mute w silniku StageSync jest podzielona między mody
 Funkcja `isClipAudible` ocenia audialność clipu w oparciu o hierarchię warunków. Pierwszeństwo ma sprawdzanie wyciszenia: jeśli clip lub ścieżka posiadają właściwość `muted === true`, clip jest odrzucany . Następnie badana jest tablica `soloTrackIds` – gdy nie jest pusta, odtwarzane są wyłącznie ścieżki w niej zawarte . Gdy tablica ścieżek solo jest pusta, funkcja analizuje tablicę `soloBusIds` i przepuszcza clipy ze ścieżek zroutowanych do wysolowanych szyn . Z kolei funkcja `applyBusParams` steruje wzmocnieniem samych szyn grupowych: jeśli tablica `soloBusIds` zawiera elementy, dowolna szyna niewymieniona na tej liście otrzymuje liniowe wzmocnienie równe $0$ .
 
 Anomalia martwego stanu powstaje w sytuacji, gdy użytkownik aktywuje tryb Solo na Szynie 1, a następnie aktywuje tryb Solo na Ścieżce 1, która jest zroutowana do Szyny 2 . W tym układzie:
+
 1. Funkcja `isClipAudible` wykrywa obecność Ścieżki 1 w `soloTrackIds` i zezwala na wyzwalanie jej clipów .
 2. Funkcja `applyBusParams` analizuje `soloBusIds` (zawierające wyłącznie Szynę 1) i wycisza Szynę 2, ustawiając wzmocnienie jej węzła `GainNode` na $0$ .
 3. Sygnał generowany przez Ścieżkę 1 trafia do wyciszonego węzła Szyny 2 i nie dociera do szyny Master .
@@ -107,9 +109,10 @@ Jeśli bufor pliku audio nie znajduje się w pamięci podręcznej `bufferCache`,
 W celu zabezpieczenia przed opóźnieniem sieciowym (RTT) z serwera po kliknięciu Pause/Stop, interfejs wywołuje funkcję `suppressAudioPlayback()`, która ustawia flagę `playbackSuppressed = true` oraz inkrementuje licznik `stopEpoch` .
 
 Gdy użytkownik wyzwala zatrzymanie transportu, sekwencja operacji przebiega następująco:
-* Funkcja `suppressAudioPlayback()` natychmiast czyści aktywne źródła `stopAll()`, zwiększa wartość `stopEpoch` i blokuje planer .
-* Gdy wiadomość WebSocket potwierdzająca zatrzymanie dociera z serwera, silnik wywołuje `syncAudioPlayback()` .
-* Funkcja wychwytuje lokalną wartość `epochAtStart = stopEpoch` i ze względu na flagę `playbackSuppressed` przerywa wykonywanie, chroniąc przed ponownym uruchomieniem źródeł .
+
+- Funkcja `suppressAudioPlayback()` natychmiast czyści aktywne źródła `stopAll()`, zwiększa wartość `stopEpoch` i blokuje planer .
+- Gdy wiadomość WebSocket potwierdzająca zatrzymanie dociera z serwera, silnik wywołuje `syncAudioPlayback()` .
+- Funkcja wychwytuje lokalną wartość `epochAtStart = stopEpoch` i ze względu na flagę `playbackSuppressed` przerywa wykonywanie, chroniąc przed ponownym uruchomieniem źródeł .
 
 Błąd występuje w sytuacji, gdy tuż po wyciszeniu użytkownik zmieni parametry tłumików w UI. Funkcja `applyBusParams` modyfikuje wartości `GainNode` na istniejących węzłach w czasie rzeczywistym, co przy wysokiej częstotliwości zdarzeń interfejsu może powodować powstawanie cyfrowych trzasków (clicks/pops) na węzłach sumujących .
 
@@ -125,15 +128,15 @@ Ponieważ odczyt z analizatora `readTrackMeterDb` odbywa się w pętli UI (`requ
 
 Poniższe zestawienie klasyfikuje wykryte usterki w kodzie oraz świadome ograniczenia przyjęte w projektach ADR .
 
-| DEFECT-ID | Warstwa | Mechanizm | Wpływ na dźwięk | Reprodukcja | Test | Klasyfikacja |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **DEF-BUG-01** | `shared` / `web` | Brak wymuszenia Equal-Power przy domyślnym braku `channelMode`. | Skok głośności wyjścia o $+3\text{ dB}$ po zmianie trybu z mono na stereo na środku panoramy. | 1. Utwórz ścieżkę bez `channelMode`. <br>2. Ustaw `pan = 0`. <br>3. Zmień tryb ścieżki na `mono`. | `test("balanceGains(0) vs StereoPanner level boost")`  | Bug |
-| **DEF-BUG-02** | `web (audioPlayback)` | Stały współczynnik downmixu $1/\sqrt{2}$ w `connectWithOptionalDownmix` sumuje sygnały dual-mono do $1{,}4142$. | Cyfrowe przesterowanie (clipping) sygnałów dual-mono wyeksportowanych do plików stereo odtwarzanych na ścieżkach mono. | 1. Wczytaj plik stereo $0\text{ dBFS}$ dual-mono. <br>2. Przypisz plik do ścieżki w trybie `mono`. <br>3. Odtwórz sygnał. | `test("stereo-to-mono downmix peak limits under 0 dBFS")`  | Bug |
-| **DEF-BUG-03** | `web (audioPlayback)` | Węzeł `AnalyserNode` w `TrackBusMono` umieszczony za `StereoPannerNode` zamiast przed nim. | Miernik VU wskazuje zaniżony poziom sygnału ($3\text{--}6\text{ dB}$) przy panoramowaniu w skrajne pozycje L/R. | 1. Uruchom odtwarzanie na ścieżce mono. <br>2. Przesuń `pan` z $0$ na $-1$. <br>3. Obserwuj wskazanie miernika peak. | `test("mono track meter invariant under panning shift")`  | Bug |
-| **DEF-BUG-04** | `web (audioPlayback)` | Priorytetyzacja `soloTrackIds` nad `soloBusIds` wycisza wyjście szyny w `applyBusParams`. | Martwy stan (cisza) przy wysolowaniu ścieżki przypisanej do szyny nieobjętej aktywną grupą solo szyn. | 1. Wykonaj solo na Szynie 1. <br>2. Wykonaj solo na Ścieżce 1 (zroutowanej do Szyny 2). <br>3. Brak dźwięku. | `test("cross-solo track and bus audio path persistence")`  | Bug |
-| **DEF-BUG-05** | `web (audioPlayback)` | Brak automatycznego powiadomienia grafu audio po wygenerowaniu bufora w `loadAudioBuffer`. | Zgubienie pierwszego transientu dźwięku lub brak audio po wykonaniu skoku (seek) na niepobrany plik. | 1. Uruchom odtwarzanie. <br>2. Wykonaj skok do obszaru z niepobranym plikiem WAV. <br>3. Dźwięk nie startuje od razu. | `test("async buffer decode re-triggers playback graph sync")`  | Bug |
-| **DEF-ADR-01** | `shared` / `web` | Szyny grupowe `AudioBusSchema` mają unormowany cel wyjścia `BusOutputDestSchema` wyłącznie do `master`. | Brak możliwości przekierowania podgrup na fizyczne wyjścia karty dźwiękowej (np. Out 3–4). | 1. Spróbuj przekazać `{ kind: "bus", busId: "out3" }` w polu output szyny. <br>2. Zod zwraca błąd walidacji. | `test("BusOutputDestSchema strictly limits destination to master")`  | Świadomy limit produktu (ADR 0011) |
-| **DEF-ADR-02** | `shared` / `web` | Brak wsparcia dla hierarchicznego routingu szyn (Bus $\rightarrow$ Bus) w warstwie schematów i grafu. | Brak możliwości tworzenia podgrup wyższego stopnia (np. Drum Bus $\rightarrow$ Music Bus $\rightarrow$ Master). | 1. Spróbuj skonfigurować wyjście szyny do innej szyny. <br>2. Opcja nie występuje w schemacie. | `test("resolveBusOutputDest ignores input and returns master")`  | Świadomy limit produktu (ADR 0011) |
+| DEFECT-ID      | Warstwa               | Mechanizm                                                                                                       | Wpływ na dźwięk                                                                                                        | Reprodukcja                                                                                                               | Test                                                                | Klasyfikacja                       |
+| :------------- | :-------------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------ | :--------------------------------- |
+| **DEF-BUG-01** | `shared` / `web`      | Brak wymuszenia Equal-Power przy domyślnym braku `channelMode`.                                                 | Skok głośności wyjścia o $+3\text{ dB}$ po zmianie trybu z mono na stereo na środku panoramy.                          | 1. Utwórz ścieżkę bez `channelMode`. <br>2. Ustaw `pan = 0`. <br>3. Zmień tryb ścieżki na `mono`.                         | `test("balanceGains(0) vs StereoPanner level boost")`               | Bug                                |
+| **DEF-BUG-02** | `web (audioPlayback)` | Stały współczynnik downmixu $1/\sqrt{2}$ w `connectWithOptionalDownmix` sumuje sygnały dual-mono do $1{,}4142$. | Cyfrowe przesterowanie (clipping) sygnałów dual-mono wyeksportowanych do plików stereo odtwarzanych na ścieżkach mono. | 1. Wczytaj plik stereo $0\text{ dBFS}$ dual-mono. <br>2. Przypisz plik do ścieżki w trybie `mono`. <br>3. Odtwórz sygnał. | `test("stereo-to-mono downmix peak limits under 0 dBFS")`           | Bug                                |
+| **DEF-BUG-03** | `web (audioPlayback)` | Węzeł `AnalyserNode` w `TrackBusMono` umieszczony za `StereoPannerNode` zamiast przed nim.                      | Miernik VU wskazuje zaniżony poziom sygnału ($3\text{--}6\text{ dB}$) przy panoramowaniu w skrajne pozycje L/R.        | 1. Uruchom odtwarzanie na ścieżce mono. <br>2. Przesuń `pan` z $0$ na $-1$. <br>3. Obserwuj wskazanie miernika peak.      | `test("mono track meter invariant under panning shift")`            | Bug                                |
+| **DEF-BUG-04** | `web (audioPlayback)` | Priorytetyzacja `soloTrackIds` nad `soloBusIds` wycisza wyjście szyny w `applyBusParams`.                       | Martwy stan (cisza) przy wysolowaniu ścieżki przypisanej do szyny nieobjętej aktywną grupą solo szyn.                  | 1. Wykonaj solo na Szynie 1. <br>2. Wykonaj solo na Ścieżce 1 (zroutowanej do Szyny 2). <br>3. Brak dźwięku.              | `test("cross-solo track and bus audio path persistence")`           | Bug                                |
+| **DEF-BUG-05** | `web (audioPlayback)` | Brak automatycznego powiadomienia grafu audio po wygenerowaniu bufora w `loadAudioBuffer`.                      | Zgubienie pierwszego transientu dźwięku lub brak audio po wykonaniu skoku (seek) na niepobrany plik.                   | 1. Uruchom odtwarzanie. <br>2. Wykonaj skok do obszaru z niepobranym plikiem WAV. <br>3. Dźwięk nie startuje od razu.     | `test("async buffer decode re-triggers playback graph sync")`       | Bug                                |
+| **DEF-ADR-01** | `shared` / `web`      | Szyny grupowe `AudioBusSchema` mają unormowany cel wyjścia `BusOutputDestSchema` wyłącznie do `master`.         | Brak możliwości przekierowania podgrup na fizyczne wyjścia karty dźwiękowej (np. Out 3–4).                             | 1. Spróbuj przekazać `{ kind: "bus", busId: "out3" }` w polu output szyny. <br>2. Zod zwraca błąd walidacji.              | `test("BusOutputDestSchema strictly limits destination to master")` | Świadomy limit produktu (ADR 0011) |
+| **DEF-ADR-02** | `shared` / `web`      | Brak wsparcia dla hierarchicznego routingu szyn (Bus $\rightarrow$ Bus) w warstwie schematów i grafu.           | Brak możliwości tworzenia podgrup wyższego stopnia (np. Drum Bus $\rightarrow$ Music Bus $\rightarrow$ Master).        | 1. Spróbuj skonfigurować wyjście szyny do innej szyny. <br>2. Opcja nie występuje w schemacie.                            | `test("resolveBusOutputDest ignores input and returns master")`     | Świadomy limit produktu (ADR 0011) |
 
 ---
 
@@ -152,4 +155,5 @@ Po pomyślnym zdekodowaniu bufora w `loadAudioBuffer` należy dodać wywołanie 
 Funkcje pomocnicze tworzące nowe ścieżki audio w schemacie projektu powinny bezwzględnie ustawiać pole `channelMode` na podstawie parametrów pliku źródłowego już na etapie zapisu, wykluczając stany nieokreślone (`undefined`) .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

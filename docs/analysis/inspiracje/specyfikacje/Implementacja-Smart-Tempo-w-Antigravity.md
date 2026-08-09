@@ -6,7 +6,7 @@
 
 # Algorytmiczna Architektura i Implementacja Systemu Smart Tempo w Środowisku StageSync
 
-*Surowy dump (hipotezy / blueprint Antigravity) — **nie** SSOT produktu. Ocena: plik `.triage.md`.*
+_Surowy dump (hipotezy / blueprint Antigravity) — **nie** SSOT produktu. Ocena: plik `.triage.md`._
 
 ## Paradygmat Systemowy i Ścisłe Warunki Brzegowe
 
@@ -16,14 +16,14 @@ W cyfrowych systemach scenicznych oraz aplikacjach estradowej synchronizacji mul
 
 Aplikacja implementuje wyłącznie zaawansowany tryb Adapt . Oznacza to, że cyfrowa oś czasu projektu wyrażana w impulsach zegarowych (ticks, gdzie standardowa rozdzielczość wynosi $PPQ = 480$ impulsów na ćwierćnutę) staje się elastyczna i podąża za naturalnymi wahaniami tempa wykonawcy . Wszelkie zdarzenia pasywne, takie jak tekst songbooka (UltraStar / Ultimate Guitar), automatyka oświetlenia DMX oraz sygnały sterujące MIDI, są zatrzaskiwane pasywnie na osi czasu wyznaczonej przez silnik Smart Tempo .
 
-| Cecha Silnika | Apple Logic Pro Smart Tempo | StageSync Smart Tempo |
-| :--- | :--- | :--- |
-| **Główny Paradygmat** | Adapt, Keep, Auto  | **Tylko Adapt** (Audio = SSOT)  |
-| **Time-Stretching (Flex Time)** | Polifoniczny, Monofoniczny, Slicing  | **Wykluczony (1.0× PCM Free-Run)**  |
-| **Jednostka Czasu Osi** | Sample / Sekundy / Ticks  | **Ticks ($PPQ = 480$)**  |
-| **Rozdzielczość Analizy MIR** | Złożona transformata STFT C++  | **Sub-Bass Low-Pass Flux + ACF + Viterbi**  |
-| **Zarządzanie Ciszą Wstępną** | Ręczny znacznik Downbeat w edytorze  | **Automatyczne Structural Anchoring / $t_0$ Phase Lock**  |
-| **Gęstość Mapy Tempa** | Rzadkie węzły na taktach (Sparse Nodes)  | **Sparsowane węzły na "Raz" ($targetTick \pmod{barTicks} = 0$)**  |
+| Cecha Silnika                   | Apple Logic Pro Smart Tempo             | StageSync Smart Tempo                                            |
+| :------------------------------ | :-------------------------------------- | :--------------------------------------------------------------- |
+| **Główny Paradygmat**           | Adapt, Keep, Auto                       | **Tylko Adapt** (Audio = SSOT)                                   |
+| **Time-Stretching (Flex Time)** | Polifoniczny, Monofoniczny, Slicing     | **Wykluczony (1.0× PCM Free-Run)**                               |
+| **Jednostka Czasu Osi**         | Sample / Sekundy / Ticks                | **Ticks ($PPQ = 480$)**                                          |
+| **Rozdzielczość Analizy MIR**   | Złożona transformata STFT C++           | **Sub-Bass Low-Pass Flux + ACF + Viterbi**                       |
+| **Zarządzanie Ciszą Wstępną**   | Ręczny znacznik Downbeat w edytorze     | **Automatyczne Structural Anchoring / $t_0$ Phase Lock**         |
+| **Gęstość Mapy Tempa**          | Rzadkie węzły na taktach (Sparse Nodes) | **Sparsowane węzły na "Raz" ($targetTick \pmod{barTicks} = 0$)** |
 
 ---
 
@@ -57,7 +57,7 @@ Zastosowanie trzykrotnego priorytetu dla pasma dolnego eliminuj fałszywe przyci
 
 ### Estymacja Tempa Bazowego, Grawitacja Gaussa i Harmonika Taktowa
 
-Po wyznaczeniu funkcji ODF, algorytm określa dominującą okresowość (Inter-Beat Interval – IBI) za pomocą autokorelacji (ACF) . Autokorelacja funkcji ODF wykrywa powtarzające się wzorce w przedziale tempa 60–200 BPM . 
+Po wyznaczeniu funkcji ODF, algorytm określa dominującą okresowość (Inter-Beat Interval – IBI) za pomocą autokorelacji (ACF) . Autokorelacja funkcji ODF wykrywa powtarzające się wzorce w przedziale tempa 60–200 BPM .
 
 Aby wyeliminować powszechny błąd oktawowy (Octave Error), polegający na błędnym wykrywaniu wolnego utworu Pop (np. 60–70 BPM) jako podwójnego tempa (120–140 BPM) lub na odwrót, stosuje się zakrzywienie autokorelacji za pomocą grawitacji muzycznej Gaussa wycentrowanej wokół 121 BPM :
 
@@ -76,9 +76,10 @@ $p = 0.5 \cdot \frac{\alpha - \gamma}{\alpha - 2\beta + \gamma}$
 Rzeczywisty, ułamkowy indeks szczytu wynosi $k_{true} = k + p$, co pozwala wyznaczyć długość okresu i wartość BPM z precyzją do $0.01\text{ BPM}$ .
 
 Dodatkowo, dla stabilizacji siatki stosuje się algorytm Two-Pass Viterbi :
-*   **Przebieg Pierwszy:** Viterbi generuje wstępną gęstą siatkę beatów w oparciu o szacunkowe tempo z autokorelacji .
-*   **Korekta Medianowa:** Z wygenerowanych odstępów czasowych $\Delta t_i = beatMs[i] - beatMs[i-1]$ wyliczana jest gładka mediana, odrzucająca chwilowe obserwacje .
-*   **Przebieg Drugi:** Viterbi uruchamiany jest powtórnie z precyzyjnie skorygowanym parametrem $refinedBpm = \frac{60000}{medianIbi}$, co eliminuje dryf w dalszych sekcjach utworu .
+
+- **Przebieg Pierwszy:** Viterbi generuje wstępną gęstą siatkę beatów w oparciu o szacunkowe tempo z autokorelacji .
+- **Korekta Medianowa:** Z wygenerowanych odstępów czasowych $\Delta t_i = beatMs[i] - beatMs[i-1]$ wyliczana jest gładka mediana, odrzucająca chwilowe obserwacje .
+- **Przebieg Drugi:** Viterbi uruchamiany jest powtórnie z precyzyjnie skorygowanym parametrem $refinedBpm = \frac{60000}{medianIbi}$, co eliminuje dryf w dalszych sekcjach utworu .
 
 Podczas drugiego przebiegu lokalna aktualizacja okresu wykorzystuje wygładzanie wykładnicze z wagą nowej obserwacji :
 
@@ -88,7 +89,7 @@ $\text{localPeriod}_{new} = 0.25 \cdot \Delta t_{observed} + 0.75 \cdot \text{lo
 
 Pliki nagrań audio MP3 dostarczane do analizy niemal zawsze zawierają bezwzględną ciszę wstępną, wywołaną kompresją nagłówków MP3 lub opóźnionym wejściem muzyki . Z kolei wzorcowe siatki tempa pochodzące z projektów Logic Pro czy plików referencyjnych RTF rozpoczynają numerację od Taktu 1 ($Bar\ 1\ Beat\ 1$) .
 
-Brak uwzględnienia tego przesunięcia prowadzi do zjawiska przesunięcia indeksów taktów (Bar Index Shift) . Jeżeli algorytm przypisze czas $t=0\text{ ms}$ (początek pliku) do Taktu 1, powstaje sztuczne przesunięcie fazowe równe długości ciszy . 
+Brak uwzględnienia tego przesunięcia prowadzi do zjawiska przesunięcia indeksów taktów (Bar Index Shift) . Jeżeli algorytm przypisze czas $t=0\text{ ms}$ (początek pliku) do Taktu 1, powstaje sztuczne przesunięcie fazowe równe długości ciszy .
 
 Rozwiązaniem jest funkcja wyrównania strukturalnego (Structural Anchoring) . Algorytm wykrywa pierwszy silny atak w paśmie sub-basowym o energii przekraczającej próg dynamiki ($t_{0, audio}$) i przypisuje do tego punktu czasowego zerowy impuls zegarowy ($targetTick = 0$) . Cisza poprzedzająca punkt $t_{0, audio}$ jest odcinana wizualnie i odtwarzaniowo poprzez parametr przycięcia klipu `trimInMs` .
 
@@ -128,18 +129,19 @@ Przekroczenie progu $15\text{ ms}$ na pierwszym takcie oznacza błąd fazowy i d
 
 Ewolucja algorytmu Smart Tempo została poddana testom benchmarkowym na zestawie 4 utworów treningowych reprezentujących odmienne gatunki muzyczne i techniki nagraniowe .
 
-| Utwór | Długość Audio | Referencyjne Tempo Logic Pro | Wykryte Tempo Bazowe (SSOT) | Średni Rozjazd $\Delta t$ (Mean) | Mediana Rozjazdu (Median) | Zgodność Faza $\le 15\text{ ms}$ |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **I Will Survive** | $202\text{ s}$ | $121.85\text{ BPM}$  | $121.82\text{ BPM}$  | $545.6\text{ ms}$  | $546.7\text{ ms}$  | **100% na $t_0$ ($\le 15\text{ ms}$)**  |
-| **The Winner Takes It All** | $295\text{ s}$ | $122.63\text{ BPM}$  | $122.64\text{ BPM}$  | $724.6\text{ ms}$  | $738.9\text{ ms}$  | **100% na $t_0$ ($\le 15\text{ ms}$)**  |
-| **Billie Jean** | $296\text{ s}$ | $116.32\text{--}117.44\text{ BPM}$  | $116.73\text{ BPM}$  | $4305.9\text{ ms}$  | $4379.1\text{ ms}$  | **100% na $t_0$ ($\le 15\text{ ms}$)**  |
-| **Smells Like Teen Spirit** | $301\text{ s}$ | $116.58\text{ BPM}$  | $116.58\text{ BPM}$  | $6321.8\text{ ms}$  | $6558.4\text{ ms}$  | **100% na $t_0$ ($\le 15\text{ ms}$)**  |
+| Utwór                       | Długość Audio  |    Referencyjne Tempo Logic Pro    | Wykryte Tempo Bazowe (SSOT) | Średni Rozjazd $\Delta t$ (Mean) | Mediana Rozjazdu (Median) |    Zgodność Faza $\le 15\text{ ms}$    |
+| :-------------------------- | :------------: | :--------------------------------: | :-------------------------: | :------------------------------: | :-----------------------: | :------------------------------------: |
+| **I Will Survive**          | $202\text{ s}$ |        $121.85\text{ BPM}$         |     $121.82\text{ BPM}$     |        $545.6\text{ ms}$         |     $546.7\text{ ms}$     | **100% na $t_0$ ($\le 15\text{ ms}$)** |
+| **The Winner Takes It All** | $295\text{ s}$ |        $122.63\text{ BPM}$         |     $122.64\text{ BPM}$     |        $724.6\text{ ms}$         |     $738.9\text{ ms}$     | **100% na $t_0$ ($\le 15\text{ ms}$)** |
+| **Billie Jean**             | $296\text{ s}$ | $116.32\text{--}117.44\text{ BPM}$ |     $116.73\text{ BPM}$     |        $4305.9\text{ ms}$        |    $4379.1\text{ ms}$     | **100% na $t_0$ ($\le 15\text{ ms}$)** |
+| **Smells Like Teen Spirit** | $301\text{ s}$ |        $116.58\text{ BPM}$         |     $116.58\text{ BPM}$     |        $6321.8\text{ ms}$        |    $6558.4\text{ ms}$     | **100% na $t_0$ ($\le 15\text{ ms}$)** |
 
 ### Interpretacja Przyczyn Dryfu w Nagraniach Żywych Instrumentów
 
 Szczegółowa analiza wykazała fundamentalną różnicę pomiędzy utworami nagranymi z użyciem sekwencera lub klikometru a nagraniami z żywym perkusistą :
-1.  **Utwory ze stałym klikometrem (*I Will Survive*, *The Winner Takes It All*):** Wykazują spadek średniego rozjazdu z poziomu $3937\text{ ms}$ do zaledwie $545.6\text{ ms}$ po zastosowaniu filtra sub-basowego i dynamicznego Viterbiego . Lokalny rozjazd na poszczególnych taktach mieści się w granicach $\le 15\text{--}35\text{ ms}$ .
-2.  **Nagrania z żywą sekcją rytmiczną (*Billie Jean*, *Smells Like Teen Spirit*):** Żywy perkusista naturalnie pływa w granicach $\pm 0.8\text{ BPM}$ między zwrotką a refrenem . Drobna odchyłka $0.1\text{ BPM}$ na jednym takcie generuje błąd $\approx 20\text{ ms}$. Bez ciągłego wstawiania rzadkich węzłów tempa na każdym takcie, błąd ten kumuluje się liniowo, doprowadzając po 80 taktach do rozjazdu rzędu $4300\text{--}6300\text{ ms}$ .
+
+1.  **Utwory ze stałym klikometrem (_I Will Survive_, _The Winner Takes It All_):** Wykazują spadek średniego rozjazdu z poziomu $3937\text{ ms}$ do zaledwie $545.6\text{ ms}$ po zastosowaniu filtra sub-basowego i dynamicznego Viterbiego . Lokalny rozjazd na poszczególnych taktach mieści się w granicach $\le 15\text{--}35\text{ ms}$ .
+2.  **Nagrania z żywą sekcją rytmiczną (_Billie Jean_, _Smells Like Teen Spirit_):** Żywy perkusista naturalnie pływa w granicach $\pm 0.8\text{ BPM}$ między zwrotką a refrenem . Drobna odchyłka $0.1\text{ BPM}$ na jednym takcie generuje błąd $\approx 20\text{ ms}$. Bez ciągłego wstawiania rzadkich węzłów tempa na każdym takcie, błąd ten kumuluje się liniowo, doprowadzając po 80 taktach do rozjazdu rzędu $4300\text{--}6300\text{ ms}$ .
 
 ---
 
@@ -151,16 +153,16 @@ Dla uzyskania czystej mapy tempa o gęstości znanej z Logic Pro stosuje się al
 
 ### Reguły Sparsyfikacji
 
-*   **Wymuszenie Downbeatu:** Węzły `TempoEvent` generowane są wyłącznie na pierwszej miarze taktu (Beat 1 / Downbeat), co weryfikowane jest warunkiem :
+- **Wymuszenie Downbeatu:** Węzły `TempoEvent` generowane są wyłącznie na pierwszej miarze taktu (Beat 1 / Downbeat), co weryfikowane jest warunkiem :
 
 $\text{targetTick} \pmod{barTicks} = 0$
 
 Wszelkie wahania wewnątrz taktu są płynnie uśredniane medianą okna .
 
-*   **Okno Medianowe (`SMART_TEMPO_SPARSE_WINDOW_BEATS = 4`):** Wartość tempa w danym węźle obliczana jest jako mediana z wykrytych natychmiastowych temp IBI w oknie 4 beatów (~1 takt w metrum 4/4) .
-*   **Bramka Dryfu (`Drift Gate`):** Ignoruje mikroskopijne odchylenia wykonawcze poniżej progu 1 taktu przy danym tempie bazowym ($seedBpm$) .
-*   **Ograniczenie Kroku Tempa (`SMART_TEMPO_SPARSE_MAX_BPM_STEP = 5`):** Zabrania gwałtownych skoków tempa większych niż $5\text{ BPM}$ pomiędzy sąsiednimi segmentami .
-*   **Decoupling Spike Filter:** W przypadku cichych fragmentów utworu, jeśli opóźnienie czasowe wymusza odświeżenie węzła (`quietTooLong`), a lokalny skok przekracza `maxStep`, algorytm nie odrzuca węzła, lecz przycina jego tempo do dopuszczalnego zakresu :
+- **Okno Medianowe (`SMART_TEMPO_SPARSE_WINDOW_BEATS = 4`):** Wartość tempa w danym węźle obliczana jest jako mediana z wykrytych natychmiastowych temp IBI w oknie 4 beatów (~1 takt w metrum 4/4) .
+- **Bramka Dryfu (`Drift Gate`):** Ignoruje mikroskopijne odchylenia wykonawcze poniżej progu 1 taktu przy danym tempie bazowym ($seedBpm$) .
+- **Ograniczenie Kroku Tempa (`SMART_TEMPO_SPARSE_MAX_BPM_STEP = 5`):** Zabrania gwałtownych skoków tempa większych niż $5\text{ BPM}$ pomiędzy sąsiednimi segmentami .
+- **Decoupling Spike Filter:** W przypadku cichych fragmentów utworu, jeśli opóźnienie czasowe wymusza odświeżenie węzła (`quietTooLong`), a lokalny skok przekracza `maxStep`, algorytm nie odrzuca węzła, lecz przycina jego tempo do dopuszczalnego zakresu :
 
 $BPM_{new} = \text{clamp}\left(BPM_{local}, lastBpm - maxStep, lastBpm + maxStep\right)$
 
@@ -173,7 +175,12 @@ Zapobiega to powstawaniu luk w mapie tempa na dłuższą metę .
 Poniższa specyfikacja techniczna stanowi kompletny wzorzec produkcyjny w języku TypeScript dla agenta AI pracującego w środowisku Antigravity. Kod integruje dwu-pasmową funkcja ODF, Two-Pass Viterbi, interpolację paraboliczną oraz bezpieczną sparsyfikację węzłów.
 
 ```typescript
-import type { AudioAnalysisResult, TempoEvent, TempoNode, TimeSignature } from "@stagesync/shared";
+import type {
+  AudioAnalysisResult,
+  TempoEvent,
+  TempoNode,
+  TimeSignature,
+} from "@stagesync/shared";
 import { DEFAULT_PPQ, ticksPerBar, localTicksPerBeat } from "@stagesync/shared";
 
 export interface SmartTempoEngineInput {
@@ -197,14 +204,15 @@ export function extractSubBassOnstreamFlux(
   pcmMono: Float32Array,
   sampleRate: number,
   frameSize = 1024,
-  hopSize = 441
+  hopSize = 441,
 ): { flux: Float32Array; onsetsMs: number[] } {
   const numFrames = Math.floor((pcmMono.length - frameSize) / hopSize);
   const flux = new Float32Array(numFrames);
   const onsetsMs: number[] = [];
 
   const fc = 250;
-  const alpha = (2 * Math.PI * fc / sampleRate) / (1 + (2 * Math.PI * fc / sampleRate));
+  const alpha =
+    (2 * Math.PI * fc) / sampleRate / (1 + (2 * Math.PI * fc) / sampleRate);
 
   let lowState = 0;
   let prevLowEnergy = 0;
@@ -244,7 +252,7 @@ export function extractSubBassOnstreamFlux(
 
 export function parabolicPeakInterpolation(
   array: Float32Array | number[],
-  peakIdx: number
+  peakIdx: number,
 ): { trueIndex: number; peakValue: number } {
   if (peakIdx <= 0 || peakIdx >= array.length - 1) {
     return { trueIndex: peakIdx, peakValue: array[peakIdx] ?? 0 };
@@ -258,7 +266,7 @@ export function parabolicPeakInterpolation(
     return { trueIndex: peakIdx, peakValue: beta };
   }
 
-  const p = 0.5 * (alpha - gamma) / denom;
+  const p = (0.5 * (alpha - gamma)) / denom;
   const trueIndex = peakIdx + p;
   const peakValue = beta - 0.25 * (alpha - gamma) * p;
 
@@ -268,7 +276,7 @@ export function parabolicPeakInterpolation(
 export function runTwoPassViterbiBeatTracker(
   onsetsMs: number[],
   initialSeedBpm: number,
-  durationMs: number
+  durationMs: number,
 ): number[] {
   if (onsetsMs.length === 0) return [];
 
@@ -281,7 +289,8 @@ export function runTwoPassViterbiBeatTracker(
     if (dt >= 250 && dt <= 1200) ibis.push(dt);
   }
   ibis.sort((a, b) => a - b);
-  const medianIbi = ibis[Math.floor(ibis.length / 2)] ?? (60_000 / initialSeedBpm);
+  const medianIbi =
+    ibis[Math.floor(ibis.length / 2)] ?? 60_000 / initialSeedBpm;
   const refinedBpm = Math.round((60_000 / medianIbi) * 100) / 100;
 
   return executeViterbiPass(onsetsMs, refinedBpm, durationMs);
@@ -290,7 +299,7 @@ export function runTwoPassViterbiBeatTracker(
 function executeViterbiPass(
   onsetsMs: number[],
   targetBpm: number,
-  durationMs: number
+  durationMs: number,
 ): number[] {
   const periodMs = 60_000 / targetBpm;
   const t0 = onsetsMs.find((t) => t >= 100) ?? onsetsMs[0] ?? 0;
@@ -327,7 +336,7 @@ function executeViterbiPass(
 export function buildDownbeatEnforcedTempoNodes(
   beatMs: number[],
   meter: TimeSignature = { numerator: 4, denominator: 4 },
-  ppq = DEFAULT_PPQ
+  ppq = DEFAULT_PPQ,
 ): TempoNode[] {
   if (beatMs.length === 0) return [];
   const barTicks = ticksPerBar(meter, ppq);
@@ -363,4 +372,4 @@ Rozbudowa macierzy przejść algorytmu Viterbiego o model bayesowski (Ellis DBN)
 
 ---
 
-*Provenance: Gemini / Antigravity · AI Exporter. Triage w repo: `*.triage.md`.*
+_Provenance: Gemini / Antigravity · AI Exporter. Triage w repo: `*.triage.md`._

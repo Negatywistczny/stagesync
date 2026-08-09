@@ -5,36 +5,36 @@ Kierunek produktu (długoterminowy). **Bieżąca checklista:** [TODO.md](./TODO.
 
 ## Etapy wydania
 
-| Wersja | Hero | Done (kryterium zamknięcia) | Scope |
-|--------|------|-----------------------------|-------|
-| **5.0.0-alpha.3** | Pion treści w ticks: Forma + mapy + zapis + transport + sekcja | Create → Timeline → pencil → save → play → Admin „Sekcja” | [report-scope-alpha3](./analysis/reports/milestones/report-scope-alpha3.md) |
-| **5.0.0-alpha.4** | Timeline layout + operacyjne domknięcie Formy | Track grid (nagłówek↔lane); eye per ślad; specjalne nad treścią; picker; inspector; mapy read-only | [report-scope-alpha4](./analysis/reports/milestones/report-scope-alpha4.md) |
-| **5.0.0-alpha.5** | Client roles poza Formą/`drums` | Karaoke wired z transportem + kontekstem projektu | [report-scope-alpha5](./analysis/reports/milestones/report-scope-alpha5.md) |
-| **5.0.0-alpha.6** | Admin Live Desk — setlista, scena, pliki | Import audio do projektu; metadata clipów; setlista; pliki w inspectorze | [report-scope-alpha6](./analysis/reports/milestones/report-scope-alpha6.md) |
-| **5.0.0-alpha.7** | Edycja Timeline (Forma + lane’y treści) | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut | [report-scope-alpha7](./analysis/reports/milestones/report-scope-alpha7.md) |
-| **5.0.0-alpha.8** | Parity workflow 4.x | Code freeze 2026-07-20 — engineering must + rebuild; residual → α9 | [freeze](./analysis/reports/milestones/report-alpha8-code-freeze.md) · [QA](./analysis/reports/milestones/report-qa-signoff-alpha8.md) |
-| **5.0.0-alpha.9** | Migrator + dokończenie rebuild | **Wydane** — Migrator M1–M9; Client CL-01/04/05; P8 green | [report-scope-alpha9](./analysis/reports/milestones/report-scope-alpha9.md) |
-| **5.0.0-alpha.10** | Standalone desktop (β1 spike) | **Wydane** — Tauri + Node sidecar; pierwszy `.dmg`/`.msi` | [report-standalone-spike-beta1](./analysis/reports/milestones/report-standalone-spike-beta1.md) |
-| **5.0.0-alpha.11** | Desktop shell polish | **Wydane** — menu OS Widok, shell detect, draft updater | [report-beta-gate](./analysis/reports/milestones/report-beta-gate.md) |
-| **5.0.0-alpha.12** | OS menu Faza A + hotfixy shella | **Wydane** — StageSync/Widok/Pomoc; sidecar fail-fast | [ADR 0010](./adr/0010-desktop-shell-tauri.md) |
-| **5.0.0-alpha.13** | Hotfix Windows sidecar `EISDIR` / `C:` | **Wydane** — MSI: Node bez `\\?\…` jako main module | [DESKTOP.md](./guides/DESKTOP.md) |
-| **5.0.0-beta.1** | Host / dystrybucja | **Wydane** — H1–H12; residual → β2 | [report-scope-beta1](./analysis/reports/milestones/report-scope-beta1.md) |
-| **5.0.0-beta.1.1** | Docs cut residual | **Wydane** — residual β1 → must β2 | [report-scope-beta2](./analysis/reports/milestones/report-scope-beta2.md) |
-| **5.0.0-beta.2** | Audio + MIDI + menu B/C | **Wydane** — Audio 0…N; MIDI serwera; menu B+C; Countdown; updater | [report-scope-beta2](./analysis/reports/milestones/report-scope-beta2.md) |
-| **5.0.0** | **Overture** — stabilne + parytet v4 | **Wydane 2026-07-23** — tag `v5.0.0`; G1–G10 residual operatorski (⬜ HW) | [report-scope-5.0.0](./analysis/reports/milestones/report-scope-5.0.0.md) |
-| **5.1.0** | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline | **Wydane 2026-07-24** — tag `v5.1.0` | [CHANGELOG](../CHANGELOG.md) · [ADR 0014](./adr/0014-desktop-launcher.md) |
-| **5.2.0** | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console | **Wydane 2026-07-25** — tag `v5.2.0` | [CHANGELOG](../CHANGELOG.md) · [specyfikacje](./analysis/inspiracje/README.md) |
-| **5.3.0** | **Colors & Channels** — multi-out HW + nazwane skóry | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4` | [CHANGELOG](../CHANGELOG.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
-| **5.4.0** | **Syllables** — Lyrics AST (ticks) + UltraStar → Karaoke | **Wydane 2026-08-02** — tag `v5.4.0`; format V6 + import UltraStar + highlight Karaoke | [CHANGELOG](../CHANGELOG.md) · [report-scope-5.4](./analysis/reports/current/report-scope-5.4.md) |
-| **5.4.1** | Syllables patch — US+UG eksperymentalny, transport AlongMap… | **Wydane 2026-08-03** — tag `v5.4.1` | [CHANGELOG](../CHANGELOG.md) |
-| **5.4.2** | **Smart Tempo** — mapa tempa z audio (nie z sylab US) | **Wydane 2026-08-04** — tag `v5.4.2`; Import US+UG stable (etykieta „eksperymentalny" usunięta) | [CHANGELOG](../CHANGELOG.md) |
-| **5.4.3** | Smart Tempo polish — downbeat/faza, `/smart-tempo` | **Wydane 2026-08-05** — tag `v5.4.3` | [CHANGELOG](../CHANGELOG.md) |
-| **5.4.4** | Smart Tempo accuracy + YouTube download resilience | **Wydane 2026-08-05** — tag `v5.4.4` | [CHANGELOG](../CHANGELOG.md) |
-| **5.4.5** | Smart Tempo dev polish — Dev panel, benchmark history, chrome cleanup | **Wydane 2026-08-05** — tag `v5.4.5` | [CHANGELOG](../CHANGELOG.md) |
-| **5.5** | **Pitch & FX** — Track Pitch + expanded send-return | Most do Live Suite 6.0; bez Input / automation / recording | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md) |
-| **6.0** | **Live Suite** + Dual Engine | Major: Input, Automation, Standalone VSTi Controller; sandboxed Plugin Host (Studio) + Freeze gate; Suite; recording + proste edit; MIDI Patch Matrix; STEM / mute lead | [ADR 0018](./adr/0018-future-audio-architecture.md) · [ADR 0019](./adr/0019-dual-engine-studio-live.md) · [TODO.md](./TODO.md) |
-| **6.1** | **Karaoke & Jukebox** | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0** | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md) |
-| **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI… | Równolegle / Later — nie mylić z filarami 6.0 | [TODO.md](./TODO.md) · [specyfikacje](./analysis/inspiracje/README.md) |
+| Wersja                  | Hero                                                                    | Done (kryterium zamknięcia)                                                                                                                                             | Scope                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **5.0.0-alpha.3**       | Pion treści w ticks: Forma + mapy + zapis + transport + sekcja          | Create → Timeline → pencil → save → play → Admin „Sekcja”                                                                                                               | [report-scope-alpha3](./analysis/reports/milestones/report-scope-alpha3.md)                                                            |
+| **5.0.0-alpha.4**       | Timeline layout + operacyjne domknięcie Formy                           | Track grid (nagłówek↔lane); eye per ślad; specjalne nad treścią; picker; inspector; mapy read-only                                                                      | [report-scope-alpha4](./analysis/reports/milestones/report-scope-alpha4.md)                                                            |
+| **5.0.0-alpha.5**       | Client roles poza Formą/`drums`                                         | Karaoke wired z transportem + kontekstem projektu                                                                                                                       | [report-scope-alpha5](./analysis/reports/milestones/report-scope-alpha5.md)                                                            |
+| **5.0.0-alpha.6**       | Admin Live Desk — setlista, scena, pliki                                | Import audio do projektu; metadata clipów; setlista; pliki w inspectorze                                                                                                | [report-scope-alpha6](./analysis/reports/milestones/report-scope-alpha6.md)                                                            |
+| **5.0.0-alpha.7**       | Edycja Timeline (Forma + lane’y treści)                                 | Smart Tool; Forma move/resize/pencil drag; Tekst/Akordy/Cue (start); Tap/UG/Różdżka wg cut                                                                              | [report-scope-alpha7](./analysis/reports/milestones/report-scope-alpha7.md)                                                            |
+| **5.0.0-alpha.8**       | Parity workflow 4.x                                                     | Code freeze 2026-07-20 — engineering must + rebuild; residual → α9                                                                                                      | [freeze](./analysis/reports/milestones/report-alpha8-code-freeze.md) · [QA](./analysis/reports/milestones/report-qa-signoff-alpha8.md) |
+| **5.0.0-alpha.9**       | Migrator + dokończenie rebuild                                          | **Wydane** — Migrator M1–M9; Client CL-01/04/05; P8 green                                                                                                               | [report-scope-alpha9](./analysis/reports/milestones/report-scope-alpha9.md)                                                            |
+| **5.0.0-alpha.10**      | Standalone desktop (β1 spike)                                           | **Wydane** — Tauri + Node sidecar; pierwszy `.dmg`/`.msi`                                                                                                               | [report-standalone-spike-beta1](./analysis/reports/milestones/report-standalone-spike-beta1.md)                                        |
+| **5.0.0-alpha.11**      | Desktop shell polish                                                    | **Wydane** — menu OS Widok, shell detect, draft updater                                                                                                                 | [report-beta-gate](./analysis/reports/milestones/report-beta-gate.md)                                                                  |
+| **5.0.0-alpha.12**      | OS menu Faza A + hotfixy shella                                         | **Wydane** — StageSync/Widok/Pomoc; sidecar fail-fast                                                                                                                   | [ADR 0010](./adr/0010-desktop-shell-tauri.md)                                                                                          |
+| **5.0.0-alpha.13**      | Hotfix Windows sidecar `EISDIR` / `C:`                                  | **Wydane** — MSI: Node bez `\\?\…` jako main module                                                                                                                     | [DESKTOP.md](./guides/DESKTOP.md)                                                                                                      |
+| **5.0.0-beta.1**        | Host / dystrybucja                                                      | **Wydane** — H1–H12; residual → β2                                                                                                                                      | [report-scope-beta1](./analysis/reports/milestones/report-scope-beta1.md)                                                              |
+| **5.0.0-beta.1.1**      | Docs cut residual                                                       | **Wydane** — residual β1 → must β2                                                                                                                                      | [report-scope-beta2](./analysis/reports/milestones/report-scope-beta2.md)                                                              |
+| **5.0.0-beta.2**        | Audio + MIDI + menu B/C                                                 | **Wydane** — Audio 0…N; MIDI serwera; menu B+C; Countdown; updater                                                                                                      | [report-scope-beta2](./analysis/reports/milestones/report-scope-beta2.md)                                                              |
+| **5.0.0**               | **Overture** — stabilne + parytet v4                                    | **Wydane 2026-07-23** — tag `v5.0.0`; G1–G10 residual operatorski (⬜ HW)                                                                                               | [report-scope-5.0.0](./analysis/reports/milestones/report-scope-5.0.0.md)                                                              |
+| **5.1.0**               | **Launch & Mix** — Launcher + Mixer + narzędzia Timeline                | **Wydane 2026-07-24** — tag `v5.1.0`                                                                                                                                    | [CHANGELOG](../CHANGELOG.md) · [ADR 0014](./adr/0014-desktop-launcher.md)                                                              |
+| **5.2.0**               | **Pocket Stage** — PIN, Safety Net, Sampler, bus→bus, Performer/Console | **Wydane 2026-07-25** — tag `v5.2.0`                                                                                                                                    | [CHANGELOG](../CHANGELOG.md) · [specyfikacje](./analysis/inspiracje/README.md)                                                         |
+| **5.3.0**               | **Colors & Channels** — multi-out HW + nazwane skóry                    | **Wydane 2026-07-27** — tag `v5.3.0`; gate `maxChannelCount ≥ 4`                                                                                                        | [CHANGELOG](../CHANGELOG.md) · [ADR 0018](./adr/0018-future-audio-architecture.md)                                                     |
+| **5.4.0**               | **Syllables** — Lyrics AST (ticks) + UltraStar → Karaoke                | **Wydane 2026-08-02** — tag `v5.4.0`; format V6 + import UltraStar + highlight Karaoke                                                                                  | [CHANGELOG](../CHANGELOG.md) · [report-scope-5.4](./analysis/reports/current/report-scope-5.4.md)                                      |
+| **5.4.1**               | Syllables patch — US+UG eksperymentalny, transport AlongMap…            | **Wydane 2026-08-03** — tag `v5.4.1`                                                                                                                                    | [CHANGELOG](../CHANGELOG.md)                                                                                                           |
+| **5.4.2**               | **Smart Tempo** — mapa tempa z audio (nie z sylab US)                   | **Wydane 2026-08-04** — tag `v5.4.2`; Import US+UG stable (etykieta „eksperymentalny" usunięta)                                                                         | [CHANGELOG](../CHANGELOG.md)                                                                                                           |
+| **5.4.3**               | Smart Tempo polish — downbeat/faza, `/smart-tempo`                      | **Wydane 2026-08-05** — tag `v5.4.3`                                                                                                                                    | [CHANGELOG](../CHANGELOG.md)                                                                                                           |
+| **5.4.4**               | Smart Tempo accuracy + YouTube download resilience                      | **Wydane 2026-08-05** — tag `v5.4.4`                                                                                                                                    | [CHANGELOG](../CHANGELOG.md)                                                                                                           |
+| **5.4.5**               | Smart Tempo dev polish — Dev panel, benchmark history, chrome cleanup   | **Wydane 2026-08-05** — tag `v5.4.5`                                                                                                                                    | [CHANGELOG](../CHANGELOG.md)                                                                                                           |
+| **5.5**                 | **Pitch & FX** — Track Pitch + expanded send-return                     | Most do Live Suite 6.0; bez Input / automation / recording                                                                                                              | [TODO.md](./TODO.md) · [ADR 0018](./adr/0018-future-audio-architecture.md)                                                             |
+| **6.0**                 | **Live Suite** + Dual Engine                                            | Major: Input, Automation, Standalone VSTi Controller; sandboxed Plugin Host (Studio) + Freeze gate; Suite; recording + proste edit; MIDI Patch Matrix; STEM / mute lead | [ADR 0018](./adr/0018-future-audio-architecture.md) · [ADR 0019](./adr/0019-dual-engine-studio-live.md) · [TODO.md](./TODO.md)         |
+| **6.1**                 | **Karaoke & Jukebox**                                                   | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0**                                                          | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md)                                                  |
+| **5.3+ residual (ops)** | Auto-election, Offline delta, OAuth, mobile GUI…                        | Równolegle / Later — nie mylić z filarami 6.0                                                                                                                           | [TODO.md](./TODO.md) · [specyfikacje](./analysis/inspiracje/README.md)                                                                 |
 
 Zamknięte cuty (α3–5.4): hero w tabeli; historia wydań w [CHANGELOG.md](../CHANGELOG.md);
 scope reports w `docs/analysis/reports/`. Aktywny plan tylko poniżej + [TODO.md](./TODO.md).
@@ -70,7 +70,9 @@ Tag `v5.4.4`. Historia: [CHANGELOG.md](../CHANGELOG.md). Lepsze kotwiczenie down
 Tag `v5.4.5`. Historia: [CHANGELOG.md](../CHANGELOG.md). Sekcja `Dev` w Adminie dla buildów deweloperskich; historia benchmarków Smart Tempo; odświeżony chrome shelli na desktopie; ujednolicona diagnostyka analizy.
 
 ### 5.5.0 — **Pitch & FX**
+
 Hero: Track Pitch + expanded send-return; szybka organizacja miksu scenicznego, odsłuch realizatora i płynny transport.
+
 - Solo / Mute Off for All (globalny przycisk resetujący wyciszenia/solo w Mikserze)
 - Odsłuch podglądowy realizatora (Audition Window / PFL na dedykowane wyjście słuchawkowe)
 - Kopiowanie właściwości klipów (Paste Properties: routing, gain, fade, wyjścia HW Out)
@@ -78,21 +80,27 @@ Hero: Track Pitch + expanded send-return; szybka organizacja miksu scenicznego, 
 - Szybkie przełączanie / rozłączanie hostów w sieci LAN
 
 ### 5.6.0 — **Studio Shell & Multi-Window**
+
 Hero: Ergonomia pracy na wielu monitorach, wygoda muzyków i raportowanie.
+
 - Obsługa wielu okien na Desktopie (Multi-Window via Tauri: odpinanie Timeline/Mikser/Klient)
 - Synchronizacja nieaktywnych okien i kart przeglądarki (Web Worker + performance.now)
 - Obsługa pedałów Bluetooth (AirTurn / PageFlip / HID keydown debounced)
 - Generowanie raportów odtworzeń dla ZAiKS (Setlist History CSV export)
 
 ### 5.7.0 — **Extended Notation & Chords**
+
 Hero: Personalizacja widoków partytur i tekstu na ekranach wykonawców.
+
 - Filtry widoczności w Partyturze (Selection Filter ukrywające warstwy w OSMD)
 - Wybór notacji akordów (English / German / Solfege per klient)
 - Dwukolumnowy układ tekstu (Two Column Layout w module Karaoke)
 - Litery orientacyjne na osi czasu i partyturze (Rehearsal Marks [A], [B], [C])
 
 ### 5.8.0 — **Advanced Timeline Editing**
+
 Hero: Szybkie i bezpieczne zarządzanie zawartością osi czasu.
+
 - Globalne wstawianie ciszy i wycinanie czasu (Insert Silence / Delete Time na wszystkich warstwach)
 - Szturchanie klipów i sylab z klawiatury (Nudge skróty Alt + Strzałki)
 - Zaznaczanie ciągłe od kursora (Select All Following skrót Shift + F)
@@ -101,19 +109,25 @@ Hero: Szybkie i bezpieczne zarządzanie zawartością osi czasu.
 - Pakowanie projektu i zbieranie zasobów (Collect All and Save do folderu assets/)
 
 ### 6.0.0 — **Live Suite + Dual Engine: Studio vs Live** (MAJOR RELEASE)
+
 Hero: Pancerna Scena i produkcyjne Studio — Live Suite z bezpiecznym podziałem trybów.
+
 - Dwa tryby SSOT: **Live** (scena, PIN, bez edycji warstw) vs **Studio** (edycja / rejestracja) — [ADR 0019](./adr/0019-dual-engine-studio-live.md)
 - Filary Live Suite: Input, Automation, Audio Suite, Standalone VSTi Controller, MIDI Patch Matrix, STEM / mute lead, recording + proste edit — [ADR 0018](./adr/0018-future-audio-architecture.md)
 - Sandboxowany Plugin Host (sidecar) **tylko w Studio**; wejście w Live wymaga Freeze (render ścieżek z wtyczkami → WAV)
 - Blokowanie warstw kłódką (Lock Lane w Studio; w Live edycja i tak wyłączona)
 
 ### 6.1.0 — **Live Show Automation & DMX**
+
 Hero: Pełna kontrola nad światłem i czasową mikro-synchronizacją.
+
 - Kompensacja opóźnień na pojedynczych ścieżkach (Track Delays w ms)
 - Dedykowana warstwa sterowania oświetleniem DMX / Art-Net (UDP 30 Hz na osi czasu)
 
 ### 6.2.0 — **Pre-flight & Hardware Setup**
+
 Hero: Pewność przed wejściem na scenę, uniwersalne mapowanie i wsparcie wykonawcy.
+
 - Warstwa abstrakcji sprzętu MIDI (Rig Manager – aliasy portów)
 - Tryb przypisywania kontrolerów (MIDI Learn)
 - Tuner instrumentalny w widoku Performera (`/client`)
@@ -121,15 +135,21 @@ Hero: Pewność przed wejściem na scenę, uniwersalne mapowanie i wsparcie wyko
 - Zbiorczy raport gotowości setlisty (Setlist Pre-flight Check)
 
 ### 6.3.0 — **Karaoke & Jukebox**
+
 Hero: Ekosystem rozrywkowy w lokalnej sieci Wi-Fi.
+
 - Moduł publiczny LAN (`/karaoke` & `/request` z moderacją w Adminie)
 
 ### 7.0.0 — **Integrated Notation Studio** (MAJOR RELEASE)
+
 Hero: Wbudowany, lekki edytor partytur nutowych MusicXML.
+
 - Podstawowa edycja i korekta nut (Studio Notation Edit bezpośrednio w drzewie XML)
 
 ### 7.1.0 — **Enterprise Rig & OSC**
+
 Hero: Zaawansowany podgląd sygnałów, pełna diagnostyka i redundancja.
+
 - Podgląd logów MIDI / OSC w czasie rzeczywistym z wirtualizacją
 - Redundancja i integracja mikserów (OSC Matrix & Zero-Glitch HA Master/Spare 50ms heartbeat)
 

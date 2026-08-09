@@ -59,24 +59,24 @@ Istniejące [`project.json`](../../apps/desktop/src-tauri/resources/sidecar/seed
 
 ## Mapowanie (skrót)
 
-| Legacy | v5 |
-|--------|-----|
-| `title` | `name` |
-| `sections[]` + END marker | `forma.clips` (Countdown → `kind: countdown`) |
-| `tempo` / `tempoMap` | `defaultBpm` / `tempoMap` |
-| `chords.timeSignature` / `meterMap` | `defaultMeter` / `meterMap` |
-| `key` / `keyMap` | `keyMap` |
+| Legacy                                    | v5                                                                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| `title`                                   | `name`                                                                               |
+| `sections[]` + END marker                 | `forma.clips` (Countdown → `kind: countdown`)                                        |
+| `tempo` / `tempoMap`                      | `defaultBpm` / `tempoMap`                                                            |
+| `chords.timeSignature` / `meterMap`       | `defaultMeter` / `meterMap`                                                          |
+| `key` / `keyMap`                          | `keyMap`                                                                             |
 | `vocal.lines` (bez `rest`, bez `vl-cd-*`) | `tekst.clips` (cyfry CD **nie** w storage — Client syntetyzuje z długości Countdown) |
-| `chords.clips` | `akordy.clips` (digit clipy w CD dropnięte) |
-| `cues[]` | `cue.clips` |
-| `setlist.songIds` | `setlist.projectIds` (zmapowane) |
-| `scoreBarMap` / Kotwice | `scoreBarMap.anchors` (+ ids) |
-| `sections[].drumsNote` | `forma.clips[].note` |
-| `year` / `artist` / `genre` | `year` / `artist` / `genre` |
-| `coverUrl` (http/s) | `coverUrl` (meta preview) |
-| `coverUrl` (local image in uploads/) | `assets[]` `kind: cover` + copy |
-| `musicxmlFile` | `assets[]` `kind: musicxml` + copy z `uploads/` |
-| `audioFile` / `audioFiles` / `stems` | `assets[]` + `audioTracks` / `audioClips` + copy |
+| `chords.clips`                            | `akordy.clips` (digit clipy w CD dropnięte)                                          |
+| `cues[]`                                  | `cue.clips`                                                                          |
+| `setlist.songIds`                         | `setlist.projectIds` (zmapowane)                                                     |
+| `scoreBarMap` / Kotwice                   | `scoreBarMap.anchors` (+ ids)                                                        |
+| `sections[].drumsNote`                    | `forma.clips[].note`                                                                 |
+| `year` / `artist` / `genre`               | `year` / `artist` / `genre`                                                          |
+| `coverUrl` (http/s)                       | `coverUrl` (meta preview)                                                            |
+| `coverUrl` (local image in uploads/)      | `assets[]` `kind: cover` + copy                                                      |
+| `musicxmlFile`                            | `assets[]` `kind: musicxml` + copy z `uploads/`                                      |
+| `audioFile` / `audioFiles` / `stems`      | `assets[]` + `audioTracks` / `audioClips` + copy                                     |
 
 Pozycje: `startTicks = round((startAbs − shift) × PPQ)`, gdzie `shift` =
 `startAbs` pierwszej sekcji nie-Countdown (treść od taktu 1).
@@ -96,10 +96,10 @@ wpis w `assets` zostaje (można dograć w Admin).
 
 W **Admin → Utwory** (kafelek **Pliki** pod Wybrany) upuść lub wybierz:
 
-| Plik | Wykrycie |
-|------|----------|
-| `.stagesync.json` / pakiet v5 `{ projects: [...] }` | import bez migracji |
-| legacy `database.json` (`songs[]`) | `migrateLegacyDatabase` → import utworów |
+| Plik                                                | Wykrycie                                 |
+| --------------------------------------------------- | ---------------------------------------- |
+| `.stagesync.json` / pakiet v5 `{ projects: [...] }` | import bez migracji                      |
+| legacy `database.json` (`songs[]`)                  | `migrateLegacyDatabase` → import utworów |
 
 Format jest wykrywany automatycznie (klient + `POST /api/library/import`).
 Archiwa ZIP / binarne `.stagesync` — na razie **nie** (czytelny błąd PL).

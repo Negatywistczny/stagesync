@@ -12,20 +12,20 @@
 
 ## Macierz FA — wybrane
 
-| ID | Temat | Stan | Notatka |
-|----|--------|------|---------|
-| FA-01 | Auto-advance | `confirmed` | IN + `stillPastEnd` |
-| FA-02 | Pause-at-end | `confirmed` | IN + soft-stop |
-| FA-03 | Loop song | `limit` | LATER |
-| FA-06 / 12 / 13 | Chance / nested / video | `limit` | OUT |
-| FA-04 / 05 / 14 | Prev/Next / GO | `hypothesis` | Smoke FOH |
+| ID              | Temat                   | Stan         | Notatka             |
+| --------------- | ----------------------- | ------------ | ------------------- |
+| FA-01           | Auto-advance            | `confirmed`  | IN + `stillPastEnd` |
+| FA-02           | Pause-at-end            | `confirmed`  | IN + soft-stop      |
+| FA-03           | Loop song               | `limit`      | LATER               |
+| FA-06 / 12 / 13 | Chance / nested / video | `limit`      | OUT                 |
+| FA-04 / 05 / 14 | Prev/Next / GO          | `hypothesis` | Smoke FOH           |
 
 ## Propozycje algorytmiczne
 
-| Propozycja | Stan | Notatka |
-|------------|------|---------|
-| `pendingPlayOnLoad` | `limit` | Brak w kodzie; Stop@home po advance = zamierzone |
-| `loadToken` / `stateVersion` | `limit` | Pokryte `stillPastEnd` + brak HTTP@onopen |
+| Propozycja                   | Stan    | Notatka                                          |
+| ---------------------------- | ------- | ------------------------------------------------ |
+| `pendingPlayOnLoad`          | `limit` | Brak w kodzie; Stop@home po advance = zamierzone |
+| `loadToken` / `stateVersion` | `limit` | Pokryte `stillPastEnd` + brak HTTP@onopen        |
 
 ## Następny krok eng
 

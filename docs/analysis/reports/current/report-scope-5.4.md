@@ -18,30 +18,30 @@ Jeden hero **Syllables**: timed lyrics (sylaby w tickach) + **widoczny** import 
 
 ## Kontrakt IN / OUT
 
-| IN 5.4 | OUT 5.4 |
-|--------|---------|
-| `formatVersion` bump + migrator bez milczącej utraty `tekst` / `akordy` / audio | Osobny `StageSyncSongAST` jako drugi SSOT w storage |
-| Sylaby / word blocks: `startTicks` + `lengthTicks` (+ tekst) | Czas w ms jako kanon storage |
-| Opcjonalne `role` na liniach / blokach | Widok publiczny `/karaoke` (TV) — **6.1** |
-| Opcjonalna ścieżka melodii w schemacie | Guest `/request` / Jukebox queue — **6.1** |
-| Provenance opcjonalnie (`isAutoPlaced` / `isUserOverridden`) — gdy PO chce re-import | Cloud AI / zewnętrzne API ingestii |
-| Client: highlight timed lyrics na istniejącym `/client` Karaoke | InputStrip / Audio Suite / automation / recording ([ADR 0018](../../../adr/0018-future-audio-architecture.md)) |
-| UltraStar → ticks → `tekst` (+ melody); bridging US+UG gdy fixtures | Atrapy UI „na zapas” ([ADR 0011](../../../adr/0011-ui-parity-behavior.md) §1a) |
-| Testy shared Zod + migrator golden (+ ścieżka importu przy cutcie) | Osobny hero / tag tylko za schema V6 |
+| IN 5.4                                                                               | OUT 5.4                                                                                                        |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `formatVersion` bump + migrator bez milczącej utraty `tekst` / `akordy` / audio      | Osobny `StageSyncSongAST` jako drugi SSOT w storage                                                            |
+| Sylaby / word blocks: `startTicks` + `lengthTicks` (+ tekst)                         | Czas w ms jako kanon storage                                                                                   |
+| Opcjonalne `role` na liniach / blokach                                               | Widok publiczny `/karaoke` (TV) — **6.1**                                                                      |
+| Opcjonalna ścieżka melodii w schemacie                                               | Guest `/request` / Jukebox queue — **6.1**                                                                     |
+| Provenance opcjonalnie (`isAutoPlaced` / `isUserOverridden`) — gdy PO chce re-import | Cloud AI / zewnętrzne API ingestii                                                                             |
+| Client: highlight timed lyrics na istniejącym `/client` Karaoke                      | InputStrip / Audio Suite / automation / recording ([ADR 0018](../../../adr/0018-future-audio-architecture.md)) |
+| UltraStar → ticks → `tekst` (+ melody); bridging US+UG gdy fixtures                  | Atrapy UI „na zapas” ([ADR 0011](../../../adr/0011-ui-parity-behavior.md) §1a)                                 |
+| Testy shared Zod + migrator golden (+ ścieżka importu przy cutcie)                   | Osobny hero / tag tylko za schema V6                                                                           |
 
 ## IN (must) — orientacja
 
-| # | Wycinek | Notatka |
-|---|---------|---------|
-| C1 | Zod: rozszerzenie `tekst` (lub równoważny Lyrics AST) o bloki sylabowe w tickach | **na `main`** |
-| C2 | Migrator: V5 linie → V6 (np. jeden block = cała linia) | Fail-fast Zod na krawędzi; bez cichej naprawy — **na `main`** |
-| C3 | Role wokalu w schemacie (opcjonalne pola) | Render filter Client = Should / minimal |
-| C4 | Melody track / clips (opcjonalne) | Bez wymogu UI edycji w 5.4 |
-| C5 | Client Karaoke/Grid: sync highlight do bloków gdy obecne | **na `main`**; H-01 throttle = residual osobny |
-| C6 | Testy `packages/shared` + ścieżka PUT projektu | Parity runtime Admin/Timeline gdy inspector pokazuje tekst |
-| I1 | Pure parser UltraStar → ticks → `tekst` (+ melody) | **Must cutu** — widoczny Ingest; bez cloud AI |
-| I2 | Text-Anchor Bridging (US+UG) | Dopiero ze golden fixtures |
-| I3 | UG/ChordPro zostaje | MusicXML/MIDI jako siatka taktowa = Later |
+| #   | Wycinek                                                                          | Notatka                                                       |
+| --- | -------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| C1  | Zod: rozszerzenie `tekst` (lub równoważny Lyrics AST) o bloki sylabowe w tickach | **na `main`**                                                 |
+| C2  | Migrator: V5 linie → V6 (np. jeden block = cała linia)                           | Fail-fast Zod na krawędzi; bez cichej naprawy — **na `main`** |
+| C3  | Role wokalu w schemacie (opcjonalne pola)                                        | Render filter Client = Should / minimal                       |
+| C4  | Melody track / clips (opcjonalne)                                                | Bez wymogu UI edycji w 5.4                                    |
+| C5  | Client Karaoke/Grid: sync highlight do bloków gdy obecne                         | **na `main`**; H-01 throttle = residual osobny                |
+| C6  | Testy `packages/shared` + ścieżka PUT projektu                                   | Parity runtime Admin/Timeline gdy inspector pokazuje tekst    |
+| I1  | Pure parser UltraStar → ticks → `tekst` (+ melody)                               | **Must cutu** — widoczny Ingest; bez cloud AI                 |
+| I2  | Text-Anchor Bridging (US+UG)                                                     | Dopiero ze golden fixtures                                    |
+| I3  | UG/ChordPro zostaje                                                              | MusicXML/MIDI jako siatka taktowa = Later                     |
 
 ## OUT (świadome)
 

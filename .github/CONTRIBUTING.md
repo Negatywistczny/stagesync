@@ -20,11 +20,11 @@ pnpm dev   # Vite :3000 + API :4000 — bez kompilacji Rusta
 
 Poza Node potrzebujesz:
 
-| | Windows | macOS |
-|--|---------|--------|
-| Kompilator C/C++ | **MSVC** — Visual Studio Build Tools, workload *Desktop development with C++* | **Xcode CLT** (`xcode-select --install`) |
-| Runtime WebView | **WebView2** (Evergreen; często już jest z Edge) | (WebKit systemowy) |
-| Rust | **rustup** + `cargo` w PATH | to samo |
+|                  | Windows                                                                       | macOS                                    |
+| ---------------- | ----------------------------------------------------------------------------- | ---------------------------------------- |
+| Kompilator C/C++ | **MSVC** — Visual Studio Build Tools, workload _Desktop development with C++_ | **Xcode CLT** (`xcode-select --install`) |
+| Runtime WebView  | **WebView2** (Evergreen; często już jest z Edge)                              | (WebKit systemowy)                       |
+| Rust             | **rustup** + `cargo` w PATH                                                   | to samo                                  |
 
 Kanoniczna lista Tauri 2: https://v2.tauri.app/start/prerequisites/  
 Konkretne komendy i weryfikacja: [docs/guides/DESKTOP.md — Wymagania](../docs/guides/DESKTOP.md#wymagania-dev--build).
@@ -43,7 +43,8 @@ Uruchom poniższy skrypt po sklonowaniu repozytorium. Automatycznie (po potwierd
 .\scripts\setup.ps1
 ```
 
-*(Opcjonalnie) Instalacja ręczna (winget):*
+_(Opcjonalnie) Instalacja ręczna (winget):_
+
 ```powershell
 winget install -e --id OpenJS.NodeJS.22
 winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
@@ -52,17 +53,19 @@ winget install -e --id Rustlang.Rustup
 ```
 
 Po instalacji VS Build Tools / rustup (lub po zakończeniu `setup.ps1`) **zamknij i otwórz** terminal (oraz Cursor), żeby odświeżyć `PATH`. Następnie:
+
 ```bash
 pnpm --filter @stagesync/desktop dev
 ```
+
 Alternatywa pinu Node: [fnm](https://github.com/Schniz/fnm) + `.nvmrc`.
 
 ## Język (kanon)
 
-| Co | Język |
-|----|--------|
-| Dokumentacja produktowa, ADR, CHANGELOG, reguły agenta | **Polski** |
-| Treść commitów (Conventional Commits), kod, nazwy API | **Angielski** |
+| Co                                                     | Język         |
+| ------------------------------------------------------ | ------------- |
+| Dokumentacja produktowa, ADR, CHANGELOG, reguły agenta | **Polski**    |
+| Treść commitów (Conventional Commits), kod, nazwy API  | **Angielski** |
 
 ## Gałęzie (trunk-based)
 
@@ -132,12 +135,12 @@ Skrót CHANGELOG: ludzki opis korzyści/zachowania; kolejność H3 **Dodano → 
 
 Skrót TODO: tylko otwarte `[ ]`; ukończone → ewentualnie CHANGELOG (gdy złota zasada), potem usuń z listy (bez „Dostarczone” / `[x]`).
 
-| Tak | Nie |
-|-----|-----|
-| Co się zmienia w zachowaniu systemu | Żargon czatu / AI (`stub`, `residual`, `must w strumieniu`, `ROADMAP OUT`) |
-| Fakt względem ostatniego wydania | Fałszywy „powrót” do stanu, którego nie było w wydanej wersji |
-| Kategorie: Zmieniono / Dodano / Naprawiono / Usunięto | Polityka zespołu, ADR, checklisty TODO, CI, skrypty build |
-| Zwięzły opis + opcjonalny link `#issue` / `#pr` | Relacja przebiegu prac („fundament pod…”, „parity bez stubu…”) |
+| Tak                                                   | Nie                                                                        |
+| ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| Co się zmienia w zachowaniu systemu                   | Żargon czatu / AI (`stub`, `residual`, `must w strumieniu`, `ROADMAP OUT`) |
+| Fakt względem ostatniego wydania                      | Fałszywy „powrót” do stanu, którego nie było w wydanej wersji              |
+| Kategorie: Zmieniono / Dodano / Naprawiono / Usunięto | Polityka zespołu, ADR, checklisty TODO, CI, skrypty build                  |
+| Zwięzły opis + opcjonalny link `#issue` / `#pr`       | Relacja przebiegu prac („fundament pod…”, „parity bez stubu…”)             |
 
 Polityka parytetu v4 → `5.0.0`: [ADR 0011 §1a](../docs/adr/0011-ui-parity-behavior.md).
 

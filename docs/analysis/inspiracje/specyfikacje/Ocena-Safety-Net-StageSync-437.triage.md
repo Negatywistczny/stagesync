@@ -16,15 +16,15 @@ Ten dump = **kanon** (KEEP architektury + REVISE docs; Decision 5 = shared dir O
 
 ## Macierz
 
-| ID | Temat | Werdykt | Stan | Notatka |
-|----|-------|---------|------|---------|
-| CRIT-SN-01 | Nazwy Master/Spare | KEEP | `on-tree` | Env + API |
-| CRIT-SN-02 | Manual promote only | KEEP | `on-tree` / `limit` | Auto-election = TODO residual |
-| CRIT-SN-03 | MIDI mute Spare | KEEP | `on-tree` | `isMidiOutAllowed` |
-| CRIT-SN-04 | Brak Docker=HA / G-gates bez HW | KEEP | `confirmed` | Polityka TODO — bez claim green |
-| Decyzja 5 (ten dump) | Shared data dir MVP | KEEP (soft) | `hypothesis` | „Wspólny dir / mirror” — vs v1 REVISE i CRIT-RES REVERT |
-| CRIT-SN-06 / docs | Zawęzić claim do Operator-Assisted Hot Standby | REVISE | `hypothesis` | DESKTOP/INSTALL — bez marketingu HA |
-| PO Q | PAUSE po Przejmij; mDNS/WS clients; host-token | — | `hypothesis` | Sprawdzić runtime promote → transport state |
+| ID                   | Temat                                          | Werdykt     | Stan                | Notatka                                                 |
+| -------------------- | ---------------------------------------------- | ----------- | ------------------- | ------------------------------------------------------- |
+| CRIT-SN-01           | Nazwy Master/Spare                             | KEEP        | `on-tree`           | Env + API                                               |
+| CRIT-SN-02           | Manual promote only                            | KEEP        | `on-tree` / `limit` | Auto-election = TODO residual                           |
+| CRIT-SN-03           | MIDI mute Spare                                | KEEP        | `on-tree`           | `isMidiOutAllowed`                                      |
+| CRIT-SN-04           | Brak Docker=HA / G-gates bez HW                | KEEP        | `confirmed`         | Polityka TODO — bez claim green                         |
+| Decyzja 5 (ten dump) | Shared data dir MVP                            | KEEP (soft) | `hypothesis`        | „Wspólny dir / mirror” — vs v1 REVISE i CRIT-RES REVERT |
+| CRIT-SN-06 / docs    | Zawęzić claim do Operator-Assisted Hot Standby | REVISE      | `hypothesis`        | DESKTOP/INSTALL — bez marketingu HA                     |
+| PO Q                 | PAUSE po Przejmij; mDNS/WS clients; host-token | —           | `hypothesis`        | Sprawdzić runtime promote → transport state             |
 
 ## Confirmed vs hypothesis
 

@@ -1,23 +1,23 @@
 # Button (`@stagesync/ui`)
 
 Kanoniczny przycisk StageSync. Źródło:
-[[`packages/ui/src/button.tsx`](../../packages/ui/src/button.tsx)](../../packages/ui/src/button.tsx),
-[[`button.css`](../../apps/desktop/launcher/vendor/button.css)](../../packages/ui/src/button.css).
+[`packages/ui/src/button.tsx`](../../packages/ui/src/button.tsx),
+[`button.css`](../../apps/desktop/launcher/vendor/button.css).
 
 Zamknięty zbiór stanów — konstytucja; **nie** twórz `Button2` ani lokalnych
 przycisków CSS w shellach.
 
 ## Props
 
-| Prop | Typ | Opis |
-|------|-----|------|
-| `variant` | `"primary"` \| `"secondary"` \| `"ghost"` | Hierarchia wizualna (domyślnie `primary`) |
-| `loading` | `boolean` | Spinner + blokada interakcji |
-| `selected` | `boolean` | Toggle; ustawia `aria-pressed` |
-| `iconOnly` | `boolean` | Kwadrat `touch-min` (`ss-btn--icon`) |
-| `disabled` | `boolean` | Natywna blokada |
-| `className` | `string` | Dodatkowe klasy |
-| … | atrybuty `<button>` | `type`, `onClick`, itd. (bez `children` w Omit) |
+| Prop        | Typ                                       | Opis                                            |
+| ----------- | ----------------------------------------- | ----------------------------------------------- |
+| `variant`   | `"primary"` \| `"secondary"` \| `"ghost"` | Hierarchia wizualna (domyślnie `primary`)       |
+| `loading`   | `boolean`                                 | Spinner + blokada interakcji                    |
+| `selected`  | `boolean`                                 | Toggle; ustawia `aria-pressed`                  |
+| `iconOnly`  | `boolean`                                 | Kwadrat `touch-min` (`ss-btn--icon`)            |
+| `disabled`  | `boolean`                                 | Natywna blokada                                 |
+| `className` | `string`                                  | Dodatkowe klasy                                 |
+| …           | atrybuty `<button>`                       | `type`, `onClick`, itd. (bez `children` w Omit) |
 
 **Desktop launcher (bez React):** te same klasy `ss-btn` / `ss-btn--*` z
 `pnpm sync:launcher-ui` → [`apps/desktop/launcher/vendor/button.css`](../../apps/desktop/launcher/vendor/button.css)
@@ -27,15 +27,15 @@ przycisków CSS w shellach.
 
 Kolejność jak w komponencie: default → hover → focus → active → selected → loading → disabled.
 
-| Stan | Zachowanie | A11y / kursor |
-|------|------------|---------------|
-| **default** | Gotowy do interakcji; wariant `primary` / `secondary` / `ghost` | kursor `pointer` |
-| **hover** | Tylko `@media (hover: hover)` — brak sticky hover na touch/PWA; tło wariantu | bez zmiany a11y |
-| **focus** | `focus-visible`: outline 2px `focus-ring`, offset 2px; samo `:focus` bez ringa | klawiatura / AT |
-| **active** | `:active:not(:disabled)` — kolor pressed wariantu | — |
-| **selected** | prop `selected` → `ss-btn--selected` | **`aria-pressed="true\|false"`** |
-| **loading** | spinner + `ss-btn--loading`; `disabled={true}` — pełna blokada tap/click | **`aria-busy="true"`**, **`aria-disabled`**; kursor **`wait`** |
-| **disabled** | style disabled-bg/text; brak hover/active | **`aria-disabled`**; kursor **`not-allowed`**; native `disabled` |
+| Stan         | Zachowanie                                                                     | A11y / kursor                                                    |
+| ------------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| **default**  | Gotowy do interakcji; wariant `primary` / `secondary` / `ghost`                | kursor `pointer`                                                 |
+| **hover**    | Tylko `@media (hover: hover)` — brak sticky hover na touch/PWA; tło wariantu   | bez zmiany a11y                                                  |
+| **focus**    | `focus-visible`: outline 2px `focus-ring`, offset 2px; samo `:focus` bez ringa | klawiatura / AT                                                  |
+| **active**   | `:active:not(:disabled)` — kolor pressed wariantu                              | —                                                                |
+| **selected** | prop `selected` → `ss-btn--selected`                                           | **`aria-pressed="true\|false"`**                                 |
+| **loading**  | spinner + `ss-btn--loading`; `disabled={true}` — pełna blokada tap/click       | **`aria-busy="true"`**, **`aria-disabled`**; kursor **`wait`**   |
+| **disabled** | style disabled-bg/text; brak hover/active                                      | **`aria-disabled`**; kursor **`not-allowed`**; native `disabled` |
 
 ## Blokada interakcji
 

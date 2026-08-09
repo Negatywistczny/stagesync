@@ -25,10 +25,10 @@ Flex Time / time-stretching, nagrywanie wielościeżkowe, Take Folders, Join/Bou
 
 ### 1. Model produktowy (hybryda)
 
-| Faza | Zakres audio / edycji |
-|------|------------------------|
-| **MVP sceniczny** | import, clip na Timeline, sync z transportem, trim/move, gain/mute, prosty waveform |
-| **Później w 5.x (gdy PO)** | fade, crossfade, loop-region, overlap mode — **bez** Flex / Takes / recording / join bounce |
+| Faza                          | Zakres audio / edycji                                                                                                                    |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **MVP sceniczny**             | import, clip na Timeline, sync z transportem, trim/move, gain/mute, prosty waveform                                                      |
+| **Później w 5.x (gdy PO)**    | fade, crossfade, loop-region, overlap mode — **bez** Flex / Takes / recording / join bounce                                              |
 | **Permanent OUT (linia 5.x)** | Flex Time / time-stretching, nagrywanie wielościeżkowe, Take Folders, Join/Bounce ([ADR 0017](./0017-live-show-control-contracts.md) §5) |
 
 Clipy audio i MIDI (przyszłość) są **powiązane z projektem** (`data/projects/<id>/`),
@@ -43,12 +43,12 @@ Liczba ścieżek audio (i kiedyś MIDI): **0…N** — brak twardego limitu w UI
 **Terminologia Logic:** ten tryb = Tracks Area Drag Mode „No Overlap”. Parametr
 Inspectora „No Overlap” (Score / notacja) — **N/A** (brak Score Editor w StageSync).
 
-| Operacja | Zachowanie |
-|----------|------------|
+| Operacja                            | Zachowanie                                                                            |
+| ----------------------------------- | ------------------------------------------------------------------------------------- |
 | Przeciągnięcie klipu na zajęty span | **Auto-trim** klipu leżącego pod spodem (Logic „No Overlap”); ewentualny split reszty |
-| Resize brzegu | Docina sąsiada w punkcie styku |
-| Delete | Usuwa klip; **luki pozostają** (brak Shuffle L/R) |
-| Pencil / insert (Forma) | Overwrite spanu + split sąsiadów — jak α3 `pencilFormaClick` |
+| Resize brzegu                       | Docina sąsiada w punkcie styku                                                        |
+| Delete                              | Usuwa klip; **luki pozostają** (brak Shuffle L/R)                                     |
+| Pencil / insert (Forma)             | Overwrite spanu + split sąsiadów — jak α3 `pencilFormaClick`                          |
 
 **OUT na start:** Overlap, X-Fade, Shuffle L/R (możliwe w przyszłości dla audio).
 
@@ -56,24 +56,24 @@ Kolizje **między różnymi ścieżkami** (audio 0…N) — dozwolone (niezależ
 
 ### 3. Forma (sekcje) — narzędzia α7
 
-| Gest | Narzędzie | Efekt |
-|------|-----------|-------|
-| Click | Pencil | Nowa sekcja 1 takt @ snap (istniejące α3) |
-| Drag | Pencil | Nowa sekcja na zakres taktów (snap początek/koniec) |
-| Click | Pointer / Smart | Zaznaczenie; **Delete** usuwa clip |
-| Drag body | Pointer / Smart | Przesunięcie sekcji (no overlap) |
-| Drag brzeg | Pointer / Smart | Zmiana `lengthTicks` (no overlap) |
+| Gest       | Narzędzie       | Efekt                                               |
+| ---------- | --------------- | --------------------------------------------------- |
+| Click      | Pencil          | Nowa sekcja 1 takt @ snap (istniejące α3)           |
+| Drag       | Pencil          | Nowa sekcja na zakres taktów (snap początek/koniec) |
+| Click      | Pointer / Smart | Zaznaczenie; **Delete** usuwa clip                  |
+| Drag body  | Pointer / Smart | Przesunięcie sekcji (no overlap)                    |
+| Drag brzeg | Pointer / Smart | Zmiana `lengthTicks` (no overlap)                   |
 
 Countdown (`kind: countdown`) — **zablokowany** do edycji geometrycznej (jak α3).
 
 ### 4. Audio — narzędzia β2
 
-| Dozwolone | Zakazane (MVP silnika) |
-|-----------|------------------------|
-| Pointer / Smart: select, move, trim brzegów | Rozciągnięcie `lengthTicks` **ponad** długość materiału (bez time-stretch) |
-| Trim/move w granicach pliku źródłowego | Automatyzacja gain/mute |
-| Gain clip, Mute clip, Mute track, Fader track | |
-| **Pencil** na ścieżce audio | Klik w pustym → Import / File Browser i wstawienie klipu w **dokładnej** pozycji Timeline (jak Logic; implementacja → TODO) |
+| Dozwolone                                     | Zakazane (MVP silnika)                                                                                                      |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Pointer / Smart: select, move, trim brzegów   | Rozciągnięcie `lengthTicks` **ponad** długość materiału (bez time-stretch)                                                  |
+| Trim/move w granicach pliku źródłowego        | Automatyzacja gain/mute                                                                                                     |
+| Gain clip, Mute clip, Mute track, Fader track |                                                                                                                             |
+| **Pencil** na ścieżce audio                   | Klik w pustym → Import / File Browser i wstawienie klipu w **dokładnej** pozycji Timeline (jak Logic; implementacja → TODO) |
 
 **Time-stretch / pitch:** poza silnikiem 5.x (**permanent OUT**) — odtwarzanie w **oryginalnym tempie**
 pliku; pozycja na osi = `startTicks` + `trimIn`/`trimOut` względem pliku.
@@ -83,12 +83,12 @@ nie live FFT.
 
 ### 5. Mix — poziomy bez automatyzacji
 
-| Kontrolka | Zakres |
-|-----------|--------|
-| **Mute ścieżki** | cały lane audio |
-| **Mute klipu** | pojedynczy region |
-| **Gain klipu** | region (np. Gain Tool w Smart zones) |
-| **Fader ścieżki** | lane (dock lub inspector) |
+| Kontrolka         | Zakres                               |
+| ----------------- | ------------------------------------ |
+| **Mute ścieżki**  | cały lane audio                      |
+| **Mute klipu**    | pojedynczy region                    |
+| **Gain klipu**    | region (np. Gain Tool w Smart zones) |
+| **Fader ścieżki** | lane (dock lub inspector)            |
 
 Brak krzywych automatyzacji w alpha/beta. Wartości persist w [`project.json`](../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) (schema v3+).
 
@@ -111,24 +111,24 @@ Brak krzywych automatyzacji w alpha/beta. Wartości persist w [`project.json`](.
 
 ### 8. Stan edycji i Undo
 
-| Okres | Wzorzec |
-|-------|---------|
-| **Alpha (α4–α7)** | **Draft** w React (`draftProject`) + **Zapisz / Odrzuć** → PUT |
-| **Gest drag** | Snapshot na pointerdown → preview w overlay → commit do draft na pointerup |
-| **Pełny Undo/Redo** (stos sesji) | **α8** (done); utrzymanie w β2 przy audio |
+| Okres                            | Wzorzec                                                                    |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| **Alpha (α4–α7)**                | **Draft** w React (`draftProject`) + **Zapisz / Odrzuć** → PUT             |
+| **Gest drag**                    | Snapshot na pointerdown → preview w overlay → commit do draft na pointerup |
+| **Pełny Undo/Redo** (stos sesji) | **α8** (done); utrzymanie w β2 przy audio                                  |
 
 **Zakaz:** mutacja `draftProject` na każdy `pointermove` bez warstwy preview (antywzorzec DAW).
 
 ### 9. Chronologia implementacji (orientacyjna)
 
-| Etap | Zakres |
-|------|--------|
-| **α4** | Layout track grid; lane Audio **placeholder**; snap faza 1 (pencil) |
-| **α6** | Import plików do folderu projektu; metadata; schema clip refs (bez silnika lub stub) |
-| **α7** | Forma: pencil drag, pointer move/resize, Smart Tool FSM, Delete; snap + Cmd-off |
-| **β1** | Docker + Tauri ([ADR 0010](./0010-desktop-shell-tauri.md)); stabilność hosta — **bez** silnika audio |
-| **β2** | Silnik audio; clip na Timeline; sync; trim/move; waveform; gain/mute/fader; MIDI I/O |
-| **5.0.0** | fade, crossfade, loop-region; overlap mode; snap picker UI |
+| Etap      | Zakres                                                                                               |
+| --------- | ---------------------------------------------------------------------------------------------------- |
+| **α4**    | Layout track grid; lane Audio **placeholder**; snap faza 1 (pencil)                                  |
+| **α6**    | Import plików do folderu projektu; metadata; schema clip refs (bez silnika lub stub)                 |
+| **α7**    | Forma: pencil drag, pointer move/resize, Smart Tool FSM, Delete; snap + Cmd-off                      |
+| **β1**    | Docker + Tauri ([ADR 0010](./0010-desktop-shell-tauri.md)); stabilność hosta — **bez** silnika audio |
+| **β2**    | Silnik audio; clip na Timeline; sync; trim/move; waveform; gain/mute/fader; MIDI I/O                 |
+| **5.0.0** | fade, crossfade, loop-region; overlap mode; snap picker UI                                           |
 
 Szczegóły checklist → [ROADMAP.md](../ROADMAP.md). Scope per etap → `report-scope-*.md`.
 

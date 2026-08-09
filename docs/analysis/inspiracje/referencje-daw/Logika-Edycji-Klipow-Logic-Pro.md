@@ -12,24 +12,24 @@ System przyciągania do siatki reguluje sposób wyrównywania obiektów w czasie
 ### **Przyciąganie Bezwzględne (Absolute Snap)**
 
 W trybie bezwzględnym – będącym domyślnym trybem w większości klasycznych scenariuszy edycyjnych – punkt startowy regionu (P\_{\\text{start}}) jest bezpośrednio przyciągany do najbliższego punktu siatki muzycznej (G\_i), wyznaczonego przez aktualną rozdzielczość. Jeśli region posiadał przesunięcie (offset) względem siatki przed rozpoczęciem ruchu, przesunięcie to zostaje bezpowrotnie usunięte.  
-Algorytm obliczania pozycji docelowej P\_{\\text{new}} przy przesunięciu o wektor \\Delta x (wyrażony w jednostkach czasu muzycznego, np. *ticks*) opisuje następująca zależność matematyczna:  
+Algorytm obliczania pozycji docelowej P\_{\\text{new}} przy przesunięciu o wektor \\Delta x (wyrażony w jednostkach czasu muzycznego, np. _ticks_) opisuje następująca zależność matematyczna:  
 P\_{\\text{new}} \= \\text{round}\\left( \\frac{P\_{\\text{start}} \+ \\Delta x}{G\_{\\text{size}}} \\right) \\times G\_{\\text{size}}  
 gdzie G\_{\\text{size}} oznacza aktualny rozmiar kroku siatki w tych samych jednostkach.
 
 ### **Przyciąganie Względne (Relative Snap)**
 
-Tryb względny zachowuje oryginalny dystans (offset) regionu od najbliższego punktu siatki. Przykładowo, jeśli region znajduje się na pozycji 2.1.1.16 (szesnaście *ticks* po pierwszym uderzeniu drugiego taktu), przesunięcie go o jeden takt w przód w trybie względnym uplasuje go dokładnie na pozycji 3.1.1.16.  
+Tryb względny zachowuje oryginalny dystans (offset) regionu od najbliższego punktu siatki. Przykładowo, jeśli region znajduje się na pozycji 2.1.1.16 (szesnaście _ticks_ po pierwszym uderzeniu drugiego taktu), przesunięcie go o jeden takt w przód w trybie względnym uplasuje go dokładnie na pozycji 3.1.1.16.  
 Wdrożenie tej logiki wymaga zachowania początkowego przesunięcia klipu (O\_{\\text{start}}) względem siatki:  
 O\_{\\text{start}} \= P\_{\\text{start}} \\pmod{G\_{\\text{size}}}  
 Pozycja docelowa P\_{\\text{new}} przy przesunięciu \\Delta x jest wówczas kalkulowana jako:  
 P\_{\\text{new}} \= \\left( \\text{round}\\left( \\frac{P\_{\\text{start}} \+ \\Delta x \- O\_{\\text{start}}}{G\_{\\text{size}}} \\right) \\times G\_{\\text{size}} \\right) \+ O\_{\\text{start}}  
-Wprowadzenie trybu względnego eliminuje ryzyko przypadkowego zniszczenia ludzkiego micro-timingu (tzw. *groove* lub *swing*) podczas reorganizacji aranżacji na osi czasu. Niemniej jednak, deweloperzy DAW muszą wziąć pod uwagę, że tryb ten bywa mylący dla użytkowników oczekujących, iż funkcja "Snap to Grid" zawsze wyrówna obiekt bezpośrednio do linii siatki. Z tego względu konieczne jest zapewnienie szybkiego przełącznika stanów (skrótu klawiszowego) pomiędzy trybami względnym i bezwzględnym.
+Wprowadzenie trybu względnego eliminuje ryzyko przypadkowego zniszczenia ludzkiego micro-timingu (tzw. _groove_ lub _swing_) podczas reorganizacji aranżacji na osi czasu. Niemniej jednak, deweloperzy DAW muszą wziąć pod uwagę, że tryb ten bywa mylący dla użytkowników oczekujących, iż funkcja "Snap to Grid" zawsze wyrówna obiekt bezpośrednio do linii siatki. Z tego względu konieczne jest zapewnienie szybkiego przełącznika stanów (skrótu klawiszowego) pomiędzy trybami względnym i bezwzględnym.
 
 ### **Skalowanie Rozdzielczości i Modyfikatory Klawiszowe**
 
 Podczas przeciągania obiektów na osi czasu, naciśnięcie klawiszy modyfikujących pozwala na dynamiczną zmianę rozdzielczości siatki, co eliminuje potrzebę ciągłego przełączania parametrów w menu głównym. System ten jest ściśle powiązany z aktualnym stopniem powiększenia widoku (zoom).  
-| Modyfikator Klawiszowy | Poziom Przybliżenia (Zoom) | Wynikowe Zachowanie Siatki (Snap Resolution) | Relacja Ruchu Myszki do Ruchu Klipu | | :--- | :--- | :--- | :--- | | **Brak (Domyślny)** | Dowolny | Korzysta z wybranego trybu siatki (np. *Bar, Beat, Division, Smart*). | Liniowa 1:1 | | **Control** | Niski (Wąski widok) | Blokada siatki na sztywnej wartości podziału (np. 1/16) zdefiniowanej w metrach transportu. | Liniowa 1:1 | | **Control** | Wysoki (Zbliżenie) | Siatka skaluje się o stały współczynnik (ułamek) względem domyślnej wartości podziału. | Liniowa 1:1 | | **Control \+ Shift** | Niski (Wąski widok) | Siatka przełącza się całkowicie na najmniejsze jednostki muzyczne (*Ticks*). | Nieliniowa (Tłumienie ruchu wskaźnika) | | **Control \+ Shift** | Wysoki (Zbliżenie) | Siatka przechodzi w tryb czasu rzeczywistego z dokładnością do pojedynczej próbki audio (*Samples*). | Nieliniowa (Mocne tłumienie wskaźnika – precyzja pikselowa) |  
-Użycie kombinacji Control \+ Shift wymusza na silniku GUI przełamanie liniowej relacji 1:1 między ruchem myszy a ruchem klipu. Aby przesunąć region o jedną próbkę lub jeden *tick*, użytkownik musi pokonać fizycznie znaczną odległość kursorem na ekranie, co gwarantuje najwyższą precyzję edycyjną.
+| Modyfikator Klawiszowy | Poziom Przybliżenia (Zoom) | Wynikowe Zachowanie Siatki (Snap Resolution) | Relacja Ruchu Myszki do Ruchu Klipu | | :--- | :--- | :--- | :--- | | **Brak (Domyślny)** | Dowolny | Korzysta z wybranego trybu siatki (np. _Bar, Beat, Division, Smart_). | Liniowa 1:1 | | **Control** | Niski (Wąski widok) | Blokada siatki na sztywnej wartości podziału (np. 1/16) zdefiniowanej w metrach transportu. | Liniowa 1:1 | | **Control** | Wysoki (Zbliżenie) | Siatka skaluje się o stały współczynnik (ułamek) względem domyślnej wartości podziału. | Liniowa 1:1 | | **Control \+ Shift** | Niski (Wąski widok) | Siatka przełącza się całkowicie na najmniejsze jednostki muzyczne (_Ticks_). | Nieliniowa (Tłumienie ruchu wskaźnika) | | **Control \+ Shift** | Wysoki (Zbliżenie) | Siatka przechodzi w tryb czasu rzeczywistego z dokładnością do pojedynczej próbki audio (_Samples_). | Nieliniowa (Mocne tłumienie wskaźnika – precyzja pikselowa) |  
+Użycie kombinacji Control \+ Shift wymusza na silniku GUI przełamanie liniowej relacji 1:1 między ruchem myszy a ruchem klipu. Aby przesunąć region o jedną próbkę lub jeden _tick_, użytkownik musi pokonać fizycznie znaczną odległość kursorem na ekranie, co gwarantuje najwyższą precyzję edycyjną.
 
 ## **2\. Logika i Stany Trybów Przeciągania (Drag Modes)**
 
@@ -39,26 +39,26 @@ Podczas przesuwania, kopiowania lub usuwania regionów, silnik osi czasu musi wi
 
 Kluczowym elementem architektury DAW, który często bywa błędnie interpretowany przez systemy sztucznej inteligencji, jest rozróżnienie dwóch mechanizmów o nazwie „No Overlap”.
 
-> * **Tryb Przeciągania „No Overlap” (Tracks Area Drag Mode):** Jest to globalne ustawienie edycyjne ścieżek. Zapobiega fizycznemu nakładaniu się bloków na osi czasu poprzez automatyczne docinanie lub dzielenie regionu leżącego pod spodem.  
-> * **Parametr Regionu „No Overlap” (Region Inspector Parameter):** Jest to lokalny parametr w inspektorze powiązany z wyświetlaniem zapisu nutowego (Score Editor). Służy uproszczeniu notacji muzycznej i nie wpływa na fizyczne położenie ani długość klipów na głównej osi czasu. Parametr ten skraca wyłącznie wizualną reprezentację nut granych przesadnym legato, tak aby nie nachodziły na siebie na pięciolinii.
+> - **Tryb Przeciągania „No Overlap” (Tracks Area Drag Mode):** Jest to globalne ustawienie edycyjne ścieżek. Zapobiega fizycznemu nakładaniu się bloków na osi czasu poprzez automatyczne docinanie lub dzielenie regionu leżącego pod spodem.
+> - **Parametr Regionu „No Overlap” (Region Inspector Parameter):** Jest to lokalny parametr w inspektorze powiązany z wyświetlaniem zapisu nutowego (Score Editor). Służy uproszczeniu notacji muzycznej i nie wpływa na fizyczne położenie ani długość klipów na głównej osi czasu. Parametr ten skraca wyłącznie wizualną reprezentację nut granych przesadnym legato, tak aby nie nachodziły na siebie na pięciolinii.
 
 Poniższa tabela przedstawia zachowanie geometryczne osi czasu dla poszczególnych trybów przeciągania:
 
-| Tryb Przeciągania | Operacja: Nakładanie regionów | Operacja: Zmiana długości (Resize) | Operacja: Usunięcie klipu (Delete) |
-| :---- | :---- | :---- | :---- |
-| **Overlap** | Zachowuje oryginalne granice obu obiektów; klip przeciągany układa się na warstwie wyższej. | Zmiana krawędzi nie wpływa na sąsiednie klipy (może tworzyć ukryte nakładanie). | Usuwa wybrany klip, pozostawiając puste miejsce (gap) na osi czasu. |
-| **No Overlap** | Automatycznie skraca lub dzieli klip pod spodem, eliminując ukryte warstwy. | Zmiana krawędzi docina sąsiedni klip w punkcie styku, zapobiegając nakładaniu. | Usuwa klip, pozostawiając puste miejsce; nie przesuwa sąsiednich obiektów. |
-| **X-Fade** | Tworzy automatyczne przenikanie (crossfade) na obszarze wspólnym obu klipów audio. | Dynamicznie modyfikuje długość i krzywą przenikania w miarę przesuwania granic. | Usuwa klip wraz z powiązanymi z nim krzywymi przenikania na sąsiednich krawędziach. |
-| **Shuffle L** | Wepchnięcie klipu między inne powoduje, że zamieniają się one miejscami (brak luk). | Skrócenie lewego brzegu przesuwa poprzedzające regiony w prawo. | Wszystkie klipy po prawej stronie przesuwają się w lewo o długość usuniętego klipu. |
-| **Shuffle R** | Wepchnięcie klipu powoduje automatyczną zamianę pozycji i dociągnięcie do prawej. | Wydłużenie prawego brzegu przesuwa wszystkie kolejne klipy w prawo. | Wszystkie klipy po lewej stronie przesuwają się w prawo o długość usuniętego klipu. |
+| Tryb Przeciągania | Operacja: Nakładanie regionów                                                               | Operacja: Zmiana długości (Resize)                                              | Operacja: Usunięcie klipu (Delete)                                                  |
+| :---------------- | :------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------- |
+| **Overlap**       | Zachowuje oryginalne granice obu obiektów; klip przeciągany układa się na warstwie wyższej. | Zmiana krawędzi nie wpływa na sąsiednie klipy (może tworzyć ukryte nakładanie). | Usuwa wybrany klip, pozostawiając puste miejsce (gap) na osi czasu.                 |
+| **No Overlap**    | Automatycznie skraca lub dzieli klip pod spodem, eliminując ukryte warstwy.                 | Zmiana krawędzi docina sąsiedni klip w punkcie styku, zapobiegając nakładaniu.  | Usuwa klip, pozostawiając puste miejsce; nie przesuwa sąsiednich obiektów.          |
+| **X-Fade**        | Tworzy automatyczne przenikanie (crossfade) na obszarze wspólnym obu klipów audio.          | Dynamicznie modyfikuje długość i krzywą przenikania w miarę przesuwania granic. | Usuwa klip wraz z powiązanymi z nim krzywymi przenikania na sąsiednich krawędziach. |
+| **Shuffle L**     | Wepchnięcie klipu między inne powoduje, że zamieniają się one miejscami (brak luk).         | Skrócenie lewego brzegu przesuwa poprzedzające regiony w prawo.                 | Wszystkie klipy po prawej stronie przesuwają się w lewo o długość usuniętego klipu. |
+| **Shuffle R**     | Wepchnięcie klipu powoduje automatyczną zamianę pozycji i dociągnięcie do prawej.           | Wydłużenie prawego brzegu przesuwa wszystkie kolejne klipy w prawo.             | Wszystkie klipy po lewej stronie przesuwają się w prawo o długość usuniętego klipu. |
 
 ### **Scenariusze Brzegowe i Podatności na Błędy Silnika (Edge Cases)**
 
 Deweloper tworzący własne oprogramowanie DAW musi zaimplementować mechanizmy obronne przed klasycznymi błędami, które występowały historycznie nawet w dojrzałych środowiskach:
 
-> * **Błąd Zagubionego Przenikania (Stolen Crossfade Bug):** W trybie *Overlap*, jeśli użytkownik najpierw ręcznie wykona podziały i nałoży krzywe crossfade, a następnie przeciągnie nowy klip na ten obszar, wadliwy silnik może błędnie przypisać istniejące identyfikatory crossfade do lewej krawędzi nowego klipu. Skutkuje to natychmiastowym wyciszeniem ścieżki audio zaraz po zakończeniu odtwarzania nowego klipu. Zapobiega się temu poprzez izolację obiektów crossfade jako unikalnych encji przypisanych do konkretnych par regionów, a nie fizycznych współrzędnych ścieżki.  
-> * **Problem Powielonych Fades i Odtwarzania Pliku Macierzystego (Ghost Playback):** Przy powielaniu regionów powiązanych relacją przenikania, kopiowane są również referencje do plików audio. Jeśli silnik nie odświeży prawidłowo wskaźników granic (boundaries), może dojść do sytuacji, w której system odtwarza fragmenty pliku wykraczające poza widoczne granice zedytowanego klipu (tzw. odtwarzanie ukrytego audio).  
-> * **Trunkacja Folderów Take'ów (Take Folders) w No Overlap:** Podczas pracy z wielościeżkowymi podejściami (Take Folders), włączenie trybu *No Overlap* przy operacjach dzielenia (split) lub powielania może doprowadzić do nieoczekiwanego obcięcia pustych przestrzeni wewnątrz folderu kompozycji (comping). Rozwiązaniem jest wyłączenie działania algorytmu *No Overlap* wewnątrz kontenerów nadrzędnych typu Take Folder.
+> - **Błąd Zagubionego Przenikania (Stolen Crossfade Bug):** W trybie _Overlap_, jeśli użytkownik najpierw ręcznie wykona podziały i nałoży krzywe crossfade, a następnie przeciągnie nowy klip na ten obszar, wadliwy silnik może błędnie przypisać istniejące identyfikatory crossfade do lewej krawędzi nowego klipu. Skutkuje to natychmiastowym wyciszeniem ścieżki audio zaraz po zakończeniu odtwarzania nowego klipu. Zapobiega się temu poprzez izolację obiektów crossfade jako unikalnych encji przypisanych do konkretnych par regionów, a nie fizycznych współrzędnych ścieżki.
+> - **Problem Powielonych Fades i Odtwarzania Pliku Macierzystego (Ghost Playback):** Przy powielaniu regionów powiązanych relacją przenikania, kopiowane są również referencje do plików audio. Jeśli silnik nie odświeży prawidłowo wskaźników granic (boundaries), może dojść do sytuacji, w której system odtwarza fragmenty pliku wykraczające poza widoczne granice zedytowanego klipu (tzw. odtwarzanie ukrytego audio).
+> - **Trunkacja Folderów Take'ów (Take Folders) w No Overlap:** Podczas pracy z wielościeżkowymi podejściami (Take Folders), włączenie trybu _No Overlap_ przy operacjach dzielenia (split) lub powielania może doprowadzić do nieoczekiwanego obcięcia pustych przestrzeni wewnątrz folderu kompozycji (comping). Rozwiązaniem jest wyłączenie działania algorytmu _No Overlap_ wewnątrz kontenerów nadrzędnych typu Take Folder.
 
 ## **3\. Architektura Wielonarzędziowa i Inteligentne Strefy Kliknięć (Smart Tool Click Zones)**
 
@@ -68,26 +68,29 @@ Ergonomia pracy w DAW opiera się na eliminacji zbędnych kliknięć. Logic Pro 
 
 Jeśli wysokość graficzna regionu wynosi H pikseli, a jego długość rozciąga się od współrzędnej S do E, podział przestrzeni interakcji wygląda następująco:
 
-> 1. **Górna strefa (y \\in \[0.0H, 0.5H\]):**  
-   * **Lewy i prawy narożnik (x \\in \[S, S \+ 12\\text{ px}\] lub x \\in \[E \- 12\\text{ px}, E\]):** Obszar aktywacji **Fade Tool**. Kursor zmienia się w ikonę łuku przenikania, umożliwiając szybkie rysowanie krzywych głośności. Przytrzymanie klawisza Option w tym miejscu przełącza funkcjonalność w tryb pętli (Loop).  
-   * **Środek (x pomiędzy narożnikami):** Klasyczny wskaźnik wyboru (Pointer Tool) służący do zaznaczania całego obiektu i jego przemieszczania.  
-> 2. **Dolna strefa (y \\in \[0.5H, 1.0H\]):**  
-   * **Lewy i prawy narożnik dolny:** Obszar aktywacji **Trim Tool**, służący do skracania lub wydłużania fizycznego okna widoczności audio/MIDI.  
-   * **Środek dolnej strefy:** Obszar aktywacji **Marquee Tool** (wskaźnik celownika). Pozwala na precyzyjną selekcję przedziałów czasowych wewnątrz jednego lub wielu regionów jednocześnie.
+> 1. **Górna strefa (y \\in \[0.0H, 0.5H\]):**
+
+- **Lewy i prawy narożnik (x \\in \[S, S \+ 12\\text{ px}\] lub x \\in \[E \- 12\\text{ px}, E\]):** Obszar aktywacji **Fade Tool**. Kursor zmienia się w ikonę łuku przenikania, umożliwiając szybkie rysowanie krzywych głośności. Przytrzymanie klawisza Option w tym miejscu przełącza funkcjonalność w tryb pętli (Loop).
+- **Środek (x pomiędzy narożnikami):** Klasyczny wskaźnik wyboru (Pointer Tool) służący do zaznaczania całego obiektu i jego przemieszczania.
+
+> 2. **Dolna strefa (y \\in \[0.5H, 1.0H\]):**
+
+- **Lewy i prawy narożnik dolny:** Obszar aktywacji **Trim Tool**, służący do skracania lub wydłużania fizycznego okna widoczności audio/MIDI.
+- **Środek dolnej strefy:** Obszar aktywacji **Marquee Tool** (wskaźnik celownika). Pozwala na precyzyjną selekcję przedziałów czasowych wewnątrz jednego lub wielu regionów jednocześnie.
 
 ### **Zaawansowane Operacje Narzędziem Marquee**
 
 Narzędzie Marquee jest fundamentem szybkiej edycji niekonstruktywnej. Silnik DAW powinien wspierać następujące kluczowe zachowania oparte na zaznaczeniu ramkowym:
 
-| Gest / Skrót Klawiszowy z Marquee | Opis Zachowania Silnika DAW | Wynik Geometryczny na Osi Czasu |
-| :---- | :---- | :---- |
-| **Zaznaczenie \+ Double-Click** | Wykonanie podwójnego kliknięcia w dolnej strefie regionu za pomocą wskaźnika Marquee. | Automatyczne przecięcie regionu dokładnie na najbliższej linii siatki przyciągania względem pozycji kliknięcia. |
-| **Zaznaczenie \+ Klawisz 'Delete'** | Usunięcie wybranego przedziału czasowego wewnątrz regionu. | Rozcięcie regionu na krawędziach selekcji i usunięcie środkowego fragmentu. |
-| **Zaznaczenie \+ Klawisz 'M'** | Wyciszenie wybranego przedziału czasowego bez wpływu na resztę ścieżki. | Przecięcie regionu na granicach selekcji, wyizolowanie nowego regionu środkowego i nadanie mu flagi *Mute*. |
-| **Option \+ Przeciągnięcie (Drag)** | Skopiowanie zaznaczonego fragmentu Marquee na inną ścieżkę lub w inne miejsce osi czasu. | Tworzy nowy region w miejscu docelowym; krawędzie cięcia na regionie źródłowym ulegają automatycznemu scaleniu (heal). |
-| **Zaznaczenie Pustego Obszaru \+ Cmd+C \-\> Cmd+V** | Skopiowanie selekcji Marquee obejmującej puste miejsce (brak regionów) i wklejenie jej w nowej lokalizacji. | Kopiuje ciszę i precyzyjny offset czasowy, co ułatwia synchronizację ścieżek, które nie zaczynają się na mocną część taktu. |
-| **Strzałki Lewo/Prawo (Tab to Transient)** | Nawigacja krawędzią zaznaczenia Marquee za pomocą klawiatury. | Granice selekcji Marquee automatycznie przyciągają się do najbliższych wykrytych transientów w pliku audio. |
-| **Zaznaczenie \+ Przejście do widoku automatyzacji** | Wybór obszaru czasowego przy aktywnej ścieżce automatyzacji parametrów. | Kliknięcie w obszar zaznaczenia narzędziem Pointer automatycznie tworzy cztery punkty węzłowe automatyzacji na jego granicach. |
+| Gest / Skrót Klawiszowy z Marquee                    | Opis Zachowania Silnika DAW                                                                                 | Wynik Geometryczny na Osi Czasu                                                                                                |
+| :--------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| **Zaznaczenie \+ Double-Click**                      | Wykonanie podwójnego kliknięcia w dolnej strefie regionu za pomocą wskaźnika Marquee.                       | Automatyczne przecięcie regionu dokładnie na najbliższej linii siatki przyciągania względem pozycji kliknięcia.                |
+| **Zaznaczenie \+ Klawisz 'Delete'**                  | Usunięcie wybranego przedziału czasowego wewnątrz regionu.                                                  | Rozcięcie regionu na krawędziach selekcji i usunięcie środkowego fragmentu.                                                    |
+| **Zaznaczenie \+ Klawisz 'M'**                       | Wyciszenie wybranego przedziału czasowego bez wpływu na resztę ścieżki.                                     | Przecięcie regionu na granicach selekcji, wyizolowanie nowego regionu środkowego i nadanie mu flagi _Mute_.                    |
+| **Option \+ Przeciągnięcie (Drag)**                  | Skopiowanie zaznaczonego fragmentu Marquee na inną ścieżkę lub w inne miejsce osi czasu.                    | Tworzy nowy region w miejscu docelowym; krawędzie cięcia na regionie źródłowym ulegają automatycznemu scaleniu (heal).         |
+| **Zaznaczenie Pustego Obszaru \+ Cmd+C \-\> Cmd+V**  | Skopiowanie selekcji Marquee obejmującej puste miejsce (brak regionów) i wklejenie jej w nowej lokalizacji. | Kopiuje ciszę i precyzyjny offset czasowy, co ułatwia synchronizację ścieżek, które nie zaczynają się na mocną część taktu.    |
+| **Strzałki Lewo/Prawo (Tab to Transient)**           | Nawigacja krawędzią zaznaczenia Marquee za pomocą klawiatury.                                               | Granice selekcji Marquee automatycznie przyciągają się do najbliższych wykrytych transientów w pliku audio.                    |
+| **Zaznaczenie \+ Przejście do widoku automatyzacji** | Wybór obszaru czasowego przy aktywnej ścieżce automatyzacji parametrów.                                     | Kliknięcie w obszar zaznaczenia narzędziem Pointer automatycznie tworzy cztery punkty węzłowe automatyzacji na jego granicach. |
 
 ## **4\. Algorytmy Rozciągania Czasowego (Time Stretching)**
 
@@ -117,32 +120,32 @@ Technologia Flex Time pozwala na nieliniową edycję mikro-timingu wewnątrz pli
 
 Silnik Flex operuje na czterech typach linii pomocniczych generowanych na fali dźwiękowej:  
 \+-----------------------------------------------------------------+  
-|   |         |         |         |         |         |         |   
-|   | (szary) | (biały) | (niebi) | (szary) | (biały) | (szary) |   
-|   |  Trans  |  Manual |  Tempo  |  Trans  |  Quant  |  Trans  |   
-|   |         |         |         |         |         |         |   
+| | | | | | | |  
+| | (szary) | (biały) | (niebi) | (szary) | (biały) | (szary) |  
+| | Trans | Manual | Tempo | Trans | Quant | Trans |  
+| | | | | | | |  
 \+-----------------------------------------------------------------+
 
-> 1. **Transient Markers (Markery Transientów):** Cienkie, jasnoszare linie pionowe wykrywane automatycznie podczas pierwszej analizy pliku przez silnik DAW. Nie wpływają one na czas odtwarzania, dopóki nie zostaną aktywowane.  
-> 2. **Manual Flex Markers (Ręczne Markery Flex):** Grube białe linie z trójkątnym uchwytem na górze. Są to tzw. sztywne kotwice czasowe (hard anchors) tworzone przez użytkownika.  
-> 3. **Tempo Flex Markers:** Ciemnoniebieskie linie dopasowujące klipy audio bezpośrednio do zmian na globalnej ścieżce tempa projektu.  
+> 1. **Transient Markers (Markery Transientów):** Cienkie, jasnoszare linie pionowe wykrywane automatycznie podczas pierwszej analizy pliku przez silnik DAW. Nie wpływają one na czas odtwarzania, dopóki nie zostaną aktywowane.
+> 2. **Manual Flex Markers (Ręczne Markery Flex):** Grube białe linie z trójkątnym uchwytem na górze. Są to tzw. sztywne kotwice czasowe (hard anchors) tworzone przez użytkownika.
+> 3. **Tempo Flex Markers:** Ciemnoniebieskie linie dopasowujące klipy audio bezpośrednio do zmian na globalnej ścieżce tempa projektu.
 > 4. **Quantize Flex Markers:** Powstają automatycznie po wywołaniu operacji kwantyzacji dźwięku z poziomu inspektora regionu.
 
 ### **Zasady Generowania Markerów ze względu na Strefę Kliknięcia**
 
 Gdy tryb Flex jest aktywny na ścieżce, kursor nad regionem zmienia zachowanie w zależności od osi Y:
 
-> * **Górna połowa regionu (Single Flex Marker Tool):** Kliknięcie na transient lub w wolne miejsce fali tworzy dokładnie **jeden** ręczny marker Flex. Ruch tego markera rozciąga materiał dźwiękowy od tego punktu aż do najbliższego sąsiedniego markera Flex po lewej i prawej stronie (lub do fizycznych krawędzi regionu).  
-> * **Dolna połowa regionu (Triple Flex Marker Tool):** Kliknięcie tworzy automatycznie **trzy** markery Flex. Jeden marker główny (do przeciągania) pojawia się pod kursorem, a dwa dodatkowe markery kotwiczące (anchors) są automatycznie umieszczane na sąsiednich transientach po lewej i prawej stronie. Dzięki temu ruch środkowego markera rozciąga dźwięk wyłącznie wewnątrz tych wąskich widełek, nie naruszając timingu pozostałej części frazy muzycznej.
+> - **Górna połowa regionu (Single Flex Marker Tool):** Kliknięcie na transient lub w wolne miejsce fali tworzy dokładnie **jeden** ręczny marker Flex. Ruch tego markera rozciąga materiał dźwiękowy od tego punktu aż do najbliższego sąsiedniego markera Flex po lewej i prawej stronie (lub do fizycznych krawędzi regionu).
+> - **Dolna połowa regionu (Triple Flex Marker Tool):** Kliknięcie tworzy automatycznie **trzy** markery Flex. Jeden marker główny (do przeciągania) pojawia się pod kursorem, a dwa dodatkowe markery kotwiczące (anchors) są automatycznie umieszczane na sąsiednich transientach po lewej i prawej stronie. Dzięki temu ruch środkowego markera rozciąga dźwięk wyłącznie wewnątrz tych wąskich widełek, nie naruszając timingu pozostałej części frazy muzycznej.
 
 ### **Fizyka Przeciągania i Interakcja Międzyścieżkowa**
 
 Podczas implementacji zachowania markerów Flex należy uwzględnić następujące algorytmy interaktywne:
 
-> * **Przekraczanie sąsiednich markerów (Crossing Behavior):** Jeśli użytkownik przeciągnie marker Flex M\_2 na tyle daleko w lewo, że przekroczy on pozycję markera M\_1, marker M\_1 powinien automatycznie "odskoczyć" wstecz do pozycji swojego oryginalnego transientu źródłowego. Pozwala to na elastyczne rozszerzanie zakresu edycji bez blokowania interfejsu.  
-> * **Re-anchoring (Modyfikator Option):** Przytrzymanie klawisza Option podczas przeciągania markera Flex umożliwia zmianę jego pozycji (przypięcie do innego transientu) bez fizycznego rozciągania samej fali audio pod spodem.  
-> * **Wielokanałowe Wyrównywanie (Inter-Track Guideline Snapping):** Edytując np. nagranie wokalu dublującego (double-track), użytkownik może przeciągnąć marker Flex pionowo w dół/górę w stronę ścieżki wokalu głównego (lead). Na sąsiednim torze wyświetla się wówczas żółta pionowa linia magnetyczna, która pozwala na idealne przyciągnięcie i wyrównanie fazy transientów obu ścieżek.  
-> * **Wizualizacja Naprężeń Materiału (Color Coding):** Tło regionu pod falami ulega dynamicznemu zabarwieniu: kolor zielony oznacza kompresję czasu (przyspieszenie), kolor pomarańczowy oznacza ekspansję (zwolnienie), natomiast kolor czerwony sygnalizuje krytyczne rozciągnięcie grożące drastyczną degradacją jakości dźwięku.
+> - **Przekraczanie sąsiednich markerów (Crossing Behavior):** Jeśli użytkownik przeciągnie marker Flex M\_2 na tyle daleko w lewo, że przekroczy on pozycję markera M\_1, marker M\_1 powinien automatycznie "odskoczyć" wstecz do pozycji swojego oryginalnego transientu źródłowego. Pozwala to na elastyczne rozszerzanie zakresu edycji bez blokowania interfejsu.
+> - **Re-anchoring (Modyfikator Option):** Przytrzymanie klawisza Option podczas przeciągania markera Flex umożliwia zmianę jego pozycji (przypięcie do innego transientu) bez fizycznego rozciągania samej fali audio pod spodem.
+> - **Wielokanałowe Wyrównywanie (Inter-Track Guideline Snapping):** Edytując np. nagranie wokalu dublującego (double-track), użytkownik może przeciągnąć marker Flex pionowo w dół/górę w stronę ścieżki wokalu głównego (lead). Na sąsiednim torze wyświetla się wówczas żółta pionowa linia magnetyczna, która pozwala na idealne przyciągnięcie i wyrównanie fazy transientów obu ścieżek.
+> - **Wizualizacja Naprężeń Materiału (Color Coding):** Tło regionu pod falami ulega dynamicznemu zabarwieniu: kolor zielony oznacza kompresję czasu (przyspieszenie), kolor pomarańczowy oznacza ekspansję (zwolnienie), natomiast kolor czerwony sygnalizuje krytyczne rozciągnięcie grożące drastyczną degradacją jakości dźwięku.
 
 ## **6\. Obsługa Zdarzeń MIDI w Scenariuszach Nakładania i Nagrywania**
 
@@ -152,9 +155,9 @@ Format MIDI, z racji swojej struktury opartej na komunikatach binarnych, stwarza
 
 Jeśli dwie identyczne nuty (np. C3) nakładają się czasowo na tej samej ścieżce, silnik syntezatora otrzymuje komendy w kolejności chronologicznej:
 
-> 1. t \= 0: Note On (Nuta 1\) \\rightarrow start dźwięku.  
-> 2. t \= 4: Note On (Nuta 2\) \\rightarrow syntezator może uruchomić drugi głos lub zignorować komunikat.  
-> 3. t \= 6: Note Off (Nuta 1\) \\rightarrow **syntezator wyłącza całkowicie brzmienie nuty C3**.  
+> 1. t \= 0: Note On (Nuta 1\) \\rightarrow start dźwięku.
+> 2. t \= 4: Note On (Nuta 2\) \\rightarrow syntezator może uruchomić drugi głos lub zignorować komunikat.
+> 3. t \= 6: Note Off (Nuta 1\) \\rightarrow **syntezator wyłącza całkowicie brzmienie nuty C3**.
 > 4. t \= 10: Note Off (Nuta 2\) \\rightarrow ponowne, bezużyteczne wyciszenie.
 
 W rezultacie druga nuta przestaje brzmieć już w punkcie t \= 6\. Aby temu zapobiec, silnik DAW musi posiadać wbudowany automat czyszczący – funkcję Remove Overlaps.  
@@ -168,21 +171,21 @@ DAW musi precyzyjnie reagować na sytuacje, w których użytkownik nagrywa nowe 
 
 #### **Zachowanie przy wyłączonym zapętleniu (Cycle Off)**
 
-> * **Create Take Folder:** Nowe nagranie oraz stary region są pakowane do specjalnego kontenera wielowarstwowego (Take Folder) umożliwiającego późniejszy comping.  
-> * **Merge:** Dane MIDI z nowego podejścia są natychmiast scalane z istniejącym regionem w jeden wspólny plik.  
-> * **Overlap:** Stary region pozostaje nietknięty, a pod spodem lub nad nim powstaje nowy, w pełni nakładający się region MIDI; obie warstwy grają jednocześnie.  
-> * **Create Track:** System automatycznie generuje nową ścieżkę pomocniczą o tym samym przypisaniu instrumentu i tam plasuje nagrany klip.
+> - **Create Take Folder:** Nowe nagranie oraz stary region są pakowane do specjalnego kontenera wielowarstwowego (Take Folder) umożliwiającego późniejszy comping.
+> - **Merge:** Dane MIDI z nowego podejścia są natychmiast scalane z istniejącym regionem w jeden wspólny plik.
+> - **Overlap:** Stary region pozostaje nietknięty, a pod spodem lub nad nim powstaje nowy, w pełni nakładający się region MIDI; obie warstwy grają jednocześnie.
+> - **Create Track:** System automatycznie generuje nową ścieżkę pomocniczą o tym samym przypisaniu instrumentu i tam plasuje nagrany klip.
 
 #### **Zachowanie w trybie zastępowania (Replace Mode)**
 
 Jeżeli użytkownik aktywuje tryb zastępowania danych (Replace), nagrywanie MIDI zachowuje się jak rejestrator taśmowy. Wybór zachowania w ustawieniach preferencji determinuje wynik na osi czasu:
 
-| Pod-tryb Zastępowania | Zachowanie Silnika wobec Istniejących Regionów | Wynik na Osi Czasu po Zakończeniu Nagrania |
-| :---- | :---- | :---- |
-| **Region Erase** | Kasuje całe istniejące regiony leżące w przedziale czasu trwania nagrania (od punktu wciśnięcia *Record* do *Stop*), bez względu na to, czy użytkownik zagrał jakąkolwiek nutę. | Powstaje czysta przestrzeń, w której znajduje się wyłącznie nowo nagrany region. |
-| **Region Punch** | Kasuje istniejące regiony w nagrywanym przedziale czasowym, ale operacja ta aktywowana jest dopiero w momencie odebrania pierwszego komunikatu Note On z klawiatury. | Zapobiega to usunięciu danych, jeśli użytkownik nagrywał w ciszy (np. czekając na swoje wejście). |
-| **Content Erase** | Nie usuwa całych regionów, lecz precyzyjnie wycina i usuwa wszystkie komunikaty MIDI (nuty, kontrolery CC) wewnątrz istniejącego klipu w przedziale czasowym nagrywania. | Granice regionów zewnętrznych pozostają nienaruszone, ale ich zawartość zostaje nadpisana nową partią. |
-| **Content Punch** | Działa analogicznie do Content Erase, lecz wycinanie komunikatów wewnątrz regionu następuje dopiero po odebraniu pierwszej zagranej nuty MIDI. | Zapewnia maksymalne bezpieczeństwo przed przypadkową utratą danych. |
+| Pod-tryb Zastępowania | Zachowanie Silnika wobec Istniejących Regionów                                                                                                                                  | Wynik na Osi Czasu po Zakończeniu Nagrania                                                             |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------- |
+| **Region Erase**      | Kasuje całe istniejące regiony leżące w przedziale czasu trwania nagrania (od punktu wciśnięcia _Record_ do _Stop_), bez względu na to, czy użytkownik zagrał jakąkolwiek nutę. | Powstaje czysta przestrzeń, w której znajduje się wyłącznie nowo nagrany region.                       |
+| **Region Punch**      | Kasuje istniejące regiony w nagrywanym przedziale czasowym, ale operacja ta aktywowana jest dopiero w momencie odebrania pierwszego komunikatu Note On z klawiatury.            | Zapobiega to usunięciu danych, jeśli użytkownik nagrywał w ciszy (np. czekając na swoje wejście).      |
+| **Content Erase**     | Nie usuwa całych regionów, lecz precyzyjnie wycina i usuwa wszystkie komunikaty MIDI (nuty, kontrolery CC) wewnątrz istniejącego klipu w przedziale czasowym nagrywania.        | Granice regionów zewnętrznych pozostają nienaruszone, ale ich zawartość zostaje nadpisana nową partią. |
+| **Content Punch**     | Działa analogicznie do Content Erase, lecz wycinanie komunikatów wewnątrz regionu następuje dopiero po odebraniu pierwszej zagranej nuty MIDI.                                  | Zapewnia maksymalne bezpieczeństwo przed przypadkową utratą danych.                                    |
 
 ## **7\. Scalanie Regionów (Join Regions)**
 
@@ -192,10 +195,10 @@ Jeżeli użytkownik aktywuje tryb zastępowania danych (Replace), nagrywanie MID
 
 Podczas łączenia regionów audio (np. za pomocą komendy Join lub dedykowanego narzędzia Join Tool), system DAW nie może jedynie "zgrupować" obiektów graficznych. Musi wygenerować fizyczny plik na dysku (Digital Mixdown/Bounce):
 
-> * **Sąsiedztwo:** Łączone regiony muszą znajdować się bezpośrednio obok siebie na tej samej ścieżce.  
-> * **Wypalanie efektów i głośności:** Nowo powstały plik audio uwzględnia wszelkie naniesione na regiony parametry głośności (Region Gain) oraz automatyczne krzywe przenikania (Crossfades). Długości crossfade i typy krzywych (np. Equal Power) są pobierane bezpośrednio z ustawień renderowania projektu.  
-> * **Spłaszczanie pętli (Flatten Loops):** Jeśli scalany jest region posiadający aktywne pętle (Loops), silnik DAW automatycznie powiela te pętle i zapisuje je jako jeden ciągły, nowy plik audio.  
-> * **Struktura mono/stereo:** Jeśli łączone są pliki o różnych panoramach lub szerokościach kanałów, nowy plik zostaje zrenderowany z uwzględnieniem parametrów miksera (pan i volume).
+> - **Sąsiedztwo:** Łączone regiony muszą znajdować się bezpośrednio obok siebie na tej samej ścieżce.
+> - **Wypalanie efektów i głośności:** Nowo powstały plik audio uwzględnia wszelkie naniesione na regiony parametry głośności (Region Gain) oraz automatyczne krzywe przenikania (Crossfades). Długości crossfade i typy krzywych (np. Equal Power) są pobierane bezpośrednio z ustawień renderowania projektu.
+> - **Spłaszczanie pętli (Flatten Loops):** Jeśli scalany jest region posiadający aktywne pętle (Loops), silnik DAW automatycznie powiela te pętle i zapisuje je jako jeden ciągły, nowy plik audio.
+> - **Struktura mono/stereo:** Jeśli łączone są pliki o różnych panoramach lub szerokościach kanałów, nowy plik zostaje zrenderowany z uwzględnieniem parametrów miksera (pan i volume).
 
 ### **Scalanie Klipów MIDI**
 
@@ -210,18 +213,18 @@ Aby zaimplementować powyższe mechanizmy za pomocą oprogramowania Cursor bez w
 
 Tradycyjna tablica obiektów nie radzi sobie z szybkim wyszukiwaniem kolizji czasowych przy tysiącach regionów. Podstawą silnika osi czasu powinno być drzewo przedziałowe (Interval Tree), w którym każdy klip reprezentowany jest jako unikalny węzeł:  
 interface DAWRegion {  
-  id: string;  
-  trackId: string;  
-  start: number;      // Wyrażone w ticks (czas muzyczny) lub samples (czas rzeczywisty)  
-  duration: number;   // Długość trwania  
-  end: number;        // start \+ duration  
-  clipOffset: number; // Przesunięcie relatywne dla Relative Snap  
-  type: 'AUDIO' | 'MIDI';  
-  audioSource?: {  
-    fileUri: string;  
-    trimStart: number; // Punkt rozpoczęcia odtwarzania wewnątrz pliku źródłowego  
-  };  
-  midiEvents?: Array\<MIDIEvent\>;  
+id: string;  
+trackId: string;  
+start: number; // Wyrażone w ticks (czas muzyczny) lub samples (czas rzeczywisty)  
+duration: number; // Długość trwania  
+end: number; // start \+ duration  
+clipOffset: number; // Przesunięcie relatywne dla Relative Snap  
+type: 'AUDIO' | 'MIDI';  
+audioSource?: {  
+fileUri: string;  
+trimStart: number; // Punkt rozpoczęcia odtwarzania wewnątrz pliku źródłowego  
+};  
+midiEvents?: Array\<MIDIEvent\>;  
 }
 
 Dzięki strukturze drzewa przedziałowego wyszukanie obiektów nakładających się w trybie No Overlap sprowadza się do zapytania o złożoności obliczeniowej O(\\log n \+ k), co gwarantuje płynność działania interfejsu przy 60\\text{ fps}.
@@ -231,24 +234,24 @@ Dzięki strukturze drzewa przedziałowego wyszukanie obiektów nakładających s
 Jednym z najczęstszych błędów podczas pisania DAW z pomocą AI jest bezpośrednie modyfikowanie bazy danych projektu podczas każdego ruchu myszą. Prowadzi to do desynchronizacji odtwarzacza audio i powstawania artefaktów.  
 Wszelkie operacje przeciągania muszą być **transakcyjne**:
 
-> 1. **On Drag Start:** Silnik tworzy płytką kopię struktur danych ścieżki (Snapshot) i przechodzi w stan wizualizacji tymczasowej (Temporary State).  
-> 2. **On Drag Move:** Zmiany pozycji klipów i docinanie są kalkulowane wyłącznie w pamięci podręcznej i rysowane na warstwie tymczasowej (Overlay) interfejsu graficznego.  
+> 1. **On Drag Start:** Silnik tworzy płytką kopię struktur danych ścieżki (Snapshot) i przechodzi w stan wizualizacji tymczasowej (Temporary State).
+> 2. **On Drag Move:** Zmiany pozycji klipów i docinanie są kalkulowane wyłącznie w pamięci podręcznej i rysowane na warstwie tymczasowej (Overlay) interfejsu graficznego.
 > 3. **On Drag End (Mouse Up):** Silnik wykonuje ostateczną walidację kolizji, wywołuje algorytm No Overlap lub X-Fade na oryginalnej bazie danych, zapisuje stan do historii zmian (Undo/Redo History) i dopiero wtedy wysyła sygnał do silnika odtwarzania (Audio Engine Buffer) o konieczności przebudowania kolejki odtwarzania.
 
 ### **Maszyna Stanów Interakcji Myszki (Pointer Interaction State Machine)**
 
 Kod odpowiedzialny za obsługę zdarzeń wejściowych myszy powinien być całkowicie odizolowany od logiki rysowania ścieżek. Należy zaimplementować maszynę stanów (FSM), która na podstawie pozycji kursora i wciśniętych modyfikatorów zmienia tryb interakcji:  
-                          \[Mouse Move\]  
-                               |  
-                \+--------------+--------------+  
-                |                             |  
-      \[y \< 50% Height\]              \[y \>= 50% Height\]  
-                |                             |  
-        \+-------+-------+             \+-------+--\[span\_82\](start\_span)\[span\_82\](end\_span)-----+  
-        |               |             |               |  
-   \[Near Edge\]     \[Centroid\]    \[Near Edge\]     \[Centroid\]  
-        |               |             |               |  
-    \[FADE\_STATE\]  \[POINTER\_STATE\] \[TRIM\_STATE\]  \[MARQUEE\_STATE\]
+\[Mouse Move\]  
+|  
+\+--------------+--------------+  
+| |  
+\[y \< 50% Height\] \[y \>= 50% Height\]  
+| |  
+\+-------+-------+ \+-------+--\[span\_82\](start\_span)\[span\_82\](end\_span)-----+  
+| | | |  
+\[Near Edge\] \[Centroid\] \[Near Edge\] \[Centroid\]  
+| | | |  
+\[FADE\_STATE\] \[POINTER\_STATE\] \[TRIM\_STATE\] \[MARQUEE\_STATE\]
 
 Dzięki takiemu podejściu, Cursor bez problemu zrozumie, że każda strefa klipu ma swój unikalny zestaw funkcji i nie będzie mieszać kodu odpowiedzialnego za rozciąganie czasowe Option-drag z kodem zwykłego przesuwania czy rysowania zaznaczenia ramkowego.
 

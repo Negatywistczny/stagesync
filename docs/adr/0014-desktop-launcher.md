@@ -8,7 +8,7 @@
 
 Desktop ([ADR 0010](./0010-desktop-shell-tauri.md)) zawsze spawnował lokalny sidecar i od razu nawigował WebView do `http://127.0.0.1:4000/admin`. Błędy startu lądowały w data-URL `<pre>`. Operator nie mógł wybrać hosta w LAN ani dołączyć do zdalnego StageSync bez lokalnego Node.
 
-SPA web jest **same-origin** — nie da się pokazać React Launchera *zanim* istnieje host.
+SPA web jest **same-origin** — nie da się pokazać React Launchera _zanim_ istnieje host.
 
 ## Decyzja
 

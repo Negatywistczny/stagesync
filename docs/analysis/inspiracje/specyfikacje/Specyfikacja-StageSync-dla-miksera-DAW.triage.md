@@ -14,14 +14,14 @@
 
 ## Epiki / tematy vs `main` (5.2.0)
 
-| ID / temat | Stan | Notatka |
-|------------|------|---------|
-| MX-OUT-01…04 HW outs + meters + mute/solo | `partial` | Zod `audioHardwareOutputs` + `hw_out` **on-tree**; WebAudio ChannelMerger + UI **skip** bez `maxChannelCount` ≥ 4 (`hwOutputUiAllowed`) |
-| MX-BUS-01 bus→bus | `on-tree` | `BusOutputDest` = master\|bus; Mixer Out na busie; playback DAG |
-| MX-BUS-02 anti-cycle Zod + fail-soft | `on-tree` | `busGraphHasCycle` / `wouldCreateBusCycle`; Zod fail-fast; runtime fail-soft → Master |
-| MX-BUS-03 solo cascade / track-wins | `partial` | Track solo wins już wcześniej; pełna kaskada DAG — Later |
-| WebAudio discrete ChannelMerger + OS speaker config warning | `limit` / **skip** | Brak atrap Out 3–4 w UI; multi-channel destination — deferred |
-| Zakaz multi-`AudioContext` / stubów Out 3–4 | `limit` | Egzekwowane: UI nie listuje HW bez `hwOutputUiAllowed` |
+| ID / temat                                                  | Stan               | Notatka                                                                                                                                 |
+| ----------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| MX-OUT-01…04 HW outs + meters + mute/solo                   | `partial`          | Zod `audioHardwareOutputs` + `hw_out` **on-tree**; WebAudio ChannelMerger + UI **skip** bez `maxChannelCount` ≥ 4 (`hwOutputUiAllowed`) |
+| MX-BUS-01 bus→bus                                           | `on-tree`          | `BusOutputDest` = master\|bus; Mixer Out na busie; playback DAG                                                                         |
+| MX-BUS-02 anti-cycle Zod + fail-soft                        | `on-tree`          | `busGraphHasCycle` / `wouldCreateBusCycle`; Zod fail-fast; runtime fail-soft → Master                                                   |
+| MX-BUS-03 solo cascade / track-wins                         | `partial`          | Track solo wins już wcześniej; pełna kaskada DAG — Later                                                                                |
+| WebAudio discrete ChannelMerger + OS speaker config warning | `limit` / **skip** | Brak atrap Out 3–4 w UI; multi-channel destination — deferred                                                                           |
+| Zakaz multi-`AudioContext` / stubów Out 3–4                 | `limit`            | Egzekwowane: UI nie listuje HW bez `hwOutputUiAllowed`                                                                                  |
 
 ## Confirmed vs hypothesis
 

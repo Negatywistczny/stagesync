@@ -14,14 +14,14 @@
 
 ## Epiki / tematy vs `main`
 
-| ID / temat | Stan | Notatka |
-|------------|------|---------|
-| Cue tekstowy / stage-cue-banner | `on-tree` | Bez zmian |
-| CSMP-REF-01…08 MVP (one-shot, gated, tick/beat/immediate, post-stop, panic, Master/Bus) | `on-tree` | `CueSampleConfig` + playback + Inspector GO; panic via suppress; **bez** bump `formatVersion` (opcjonalne pole na v5) |
-| CSMP-REF-09…12 Later (polyphony polish, loop, pitch, HW 3–4) | `limit` / **skip** | polyphony choke/retrigger w modelu; loop/pitch/HW OUT |
-| Pre-buffer dla cue samples | `on-tree` | `ensureAudioBuffered` skanuje `cue.clips[].sample` |
-| Inspector + FOH GO pad | `on-tree` | Inspector Sampler + GO |
-| Migracja formatVersion → 6 | **skip** | Hipoteza dumpu — opcjonalne `sample` na v5 wystarcza (wstecznie kompatybilne) |
+| ID / temat                                                                              | Stan               | Notatka                                                                                                               |
+| --------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Cue tekstowy / stage-cue-banner                                                         | `on-tree`          | Bez zmian                                                                                                             |
+| CSMP-REF-01…08 MVP (one-shot, gated, tick/beat/immediate, post-stop, panic, Master/Bus) | `on-tree`          | `CueSampleConfig` + playback + Inspector GO; panic via suppress; **bez** bump `formatVersion` (opcjonalne pole na v5) |
+| CSMP-REF-09…12 Later (polyphony polish, loop, pitch, HW 3–4)                            | `limit` / **skip** | polyphony choke/retrigger w modelu; loop/pitch/HW OUT                                                                 |
+| Pre-buffer dla cue samples                                                              | `on-tree`          | `ensureAudioBuffered` skanuje `cue.clips[].sample`                                                                    |
+| Inspector + FOH GO pad                                                                  | `on-tree`          | Inspector Sampler + GO                                                                                                |
+| Migracja formatVersion → 6                                                              | **skip**           | Hipoteza dumpu — opcjonalne `sample` na v5 wystarcza (wstecznie kompatybilne)                                         |
 
 ## Confirmed vs hypothesis
 

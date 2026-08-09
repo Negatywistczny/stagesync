@@ -9,10 +9,10 @@ Aplikacja `apps/desktop` to natywna powłoka desktopowa dla systemu macOS i Wind
   - Pakuje binarny proces sidecara (Node.js) odpowiedzialny za lokalny serwer i timing.
   - Zawiera konfigurację instalatora NSIS dla Windowsa (dedykowane grafiki, spersonalizowany instalator).
 - **`launcher/`** — Lekki i intuicyjny interfejs startowy (HTML/CSS/JS) odpowiadający za:
-  - Wykrywanie działających serwerów w sieci LAN za pomocą mDNS (*host discovery*).
+  - Wykrywanie działających serwerów w sieci LAN za pomocą mDNS (_host discovery_).
   - Zarządzanie lokalnym serwerem i przekierowywanie do głównego panelu Admina.
   - Wyświetlanie informacji o aktualizacjach i błędach; na Windows/Linux ten sam wizualny title bar co SPA (Menu + sterowanie oknem).
-- **`scripts/`** — Skrypty pre-build (Node.js): `check-rust`, sync launcher / server / **web** (`sync-sidecar-web.mjs` przy `dev`, żeby lokalny host nie serwował starego bundla bez title bara).
+- **`scripts/`** — Skrypty pre-build (Node.js): `check-rust`, sync launcher / server / **web** ([`sync-sidecar-web.mjs`](./scripts/sync-sidecar-web.mjs) przy [`dev`](../../dev), żeby lokalny host nie serwował starego bundla bez title bara).
 - **`ui-placeholder/`** — Lekki panel zastępczy wyświetlany podczas inicjalizacji kontenera Tauri.
 
 ## ⚙️ Budowanie i uruchamianie

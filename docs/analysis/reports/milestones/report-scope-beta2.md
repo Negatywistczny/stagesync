@@ -17,30 +17,30 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 ## Kontrakt IN / OUT
 
-| IN β2 | OUT β2 |
-|-------|--------|
-| Audio playback + clip edit (trim/move, no-overlap) — [#42](https://github.com/Negatywistczny/stagesync/issues/42) | Fade / crossfade / loop-region → **5.0.0** |
-| Waveform peak/RMS; gain clip; fader/mute track | Flex Time / stretch poza plik / pencil na audio |
-| Play z Countdown / Stop bez snap past CD — [#41](https://github.com/Negatywistczny/stagesync/issues/41) | — |
-| MIDI device I/O + clock w **serwera** | MIDI w procesie **Tauri** (zakaz) |
-| Menu OS Faza B (Plik + Host) | Menu OS Faza D → **5.0.0** |
-| Menu OS Faza C (Transport) | Android / store auto-update |
-| G1–G10 weryfikacja przed tagiem | git-apply (nigdy) |
+| IN β2                                                                                                             | OUT β2                                          |
+| ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Audio playback + clip edit (trim/move, no-overlap) — [#42](https://github.com/Negatywistczny/stagesync/issues/42) | Fade / crossfade / loop-region → **5.0.0**      |
+| Waveform peak/RMS; gain clip; fader/mute track                                                                    | Flex Time / stretch poza plik / pencil na audio |
+| Play z Countdown / Stop bez snap past CD — [#41](https://github.com/Negatywistczny/stagesync/issues/41)           | —                                               |
+| MIDI device I/O + clock w **serwera**                                                                             | MIDI w procesie **Tauri** (zakaz)               |
+| Menu OS Faza B (Plik + Host)                                                                                      | Menu OS Faza D → **5.0.0**                      |
+| Menu OS Faza C (Transport)                                                                                        | Android / store auto-update                     |
+| G1–G10 weryfikacja przed tagiem                                                                                   | git-apply (nigdy)                               |
 
 ## IN (must) — Audio (A)
 
 Źródło: [ADR 0008](../../../adr/0008-timeline-clip-editing.md) §4–5 · [ROADMAP](../../../ROADMAP.md) § Beta 2 · [ADR 0002](../../../adr/0002-timebase-ssot.md) (ticks → ms na krawędzi).
 
-| # | Wycinek | Uwagi |
-|---|---------|--------|
-| A1 | Import audio (α6) → tworzenie / edycja `audioClips` na Timeline | Schema `assets` / `audioTracks` / `audioClips` już istnieje |
-| A2 | Lane audio w Timeline UI (`timelineTracks`) | Pointer / Smart: select, move, trim; **zakaz pencil** |
-| A3 | Sync playback z transportem SSOT | Scheduler klienta: `ticksToMs` między tickami serwera; **bez** własnego zegara muzycznego |
-| A4 | Trim / move w granicach pliku | `trimInMs` (+ `trimOutMs` jeśli potrzebne); no-overlap per lane |
-| A5 | Waveform peak/RMS | Precompute przy imporcie lub on-demand; nie live FFT |
-| A6 | Gain clip + fader track + mute clip/track | Persist w [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json); bez automatyzacji |
-| A7 | Testy mapping ticks↔ms + smoke play/mute | Shared czyste funkcje; bez `Date.now()` w konwersji domenowej |
-| A8 | Issue [#42](https://github.com/Negatywistczny/stagesync/issues/42) — ścieżka Audio w warstwach | Must β2 (nie defer); lane eye-menu + clip na Timeline |
+| #   | Wycinek                                                                                        | Uwagi                                                                                                                                                                    |
+| --- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A1  | Import audio (α6) → tworzenie / edycja `audioClips` na Timeline                                | Schema `assets` / `audioTracks` / `audioClips` już istnieje                                                                                                              |
+| A2  | Lane audio w Timeline UI (`timelineTracks`)                                                    | Pointer / Smart: select, move, trim; **zakaz pencil**                                                                                                                    |
+| A3  | Sync playback z transportem SSOT                                                               | Scheduler klienta: `ticksToMs` między tickami serwera; **bez** własnego zegara muzycznego                                                                                |
+| A4  | Trim / move w granicach pliku                                                                  | `trimInMs` (+ `trimOutMs` jeśli potrzebne); no-overlap per lane                                                                                                          |
+| A5  | Waveform peak/RMS                                                                              | Precompute przy imporcie lub on-demand; nie live FFT                                                                                                                     |
+| A6  | Gain clip + fader track + mute clip/track                                                      | Persist w [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json); bez automatyzacji |
+| A7  | Testy mapping ticks↔ms + smoke play/mute                                                       | Shared czyste funkcje; bez `Date.now()` w konwersji domenowej                                                                                                            |
+| A8  | Issue [#42](https://github.com/Negatywistczny/stagesync/issues/42) — ścieżka Audio w warstwach | Must β2 (nie defer); lane eye-menu + clip na Timeline                                                                                                                    |
 
 **Playback (kontrakt):** WebAudio w kliencie, pozycja z ticków serwera — Tauri nie jest autorytetem czasu.
 
@@ -48,11 +48,11 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 Źródło: issue [#41](https://github.com/Negatywistczny/stagesync/issues/41) · [ADR 0002](../../../adr/0002-timebase-ssot.md) (pre-roll ≤ 0; takt 1 = start utworu).
 
-| # | Wycinek | Uwagi |
-|---|---------|--------|
-| T1 | **Play** startuje z pozycji Countdown / pre-roll | Gdy playhead w CD (ujemne takty); bez wymogu ręcznego scrubu |
-| T2 | **Stop** wraca na początek Forma Countdown | Nie snap na tick 0 „po CD”; locator Timeline = ten sam home |
-| T3 | Projekt bez Countdown | Stop → tick 0 (bez regresji) |
+| #   | Wycinek                                          | Uwagi                                                        |
+| --- | ------------------------------------------------ | ------------------------------------------------------------ |
+| T1  | **Play** startuje z pozycji Countdown / pre-roll | Gdy playhead w CD (ujemne takty); bez wymogu ręcznego scrubu |
+| T2  | **Stop** wraca na początek Forma Countdown       | Nie snap na tick 0 „po CD”; locator Timeline = ten sam home  |
+| T3  | Projekt bez Countdown                            | Stop → tick 0 (bez regresji)                                 |
 
 **Must β2** — nie defer; fix: PR `fix/countdown-play-from-preroll`.
 
@@ -60,27 +60,27 @@ Dostarczyć **sceniczny playback i host MIDI** oraz domknąć **menu operatora (
 
 Źródło: [ROADMAP](../../../ROADMAP.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) (zakaz I/O tylko w Tauri) · [ADR 0002](../../../adr/0002-timebase-ssot.md) (MIDI → serwer).
 
-| # | Wycinek | Uwagi |
-|---|---------|--------|
-| M1 | Lista / wybór urządzeń MIDI po stronie `apps/server` | Admin Host status |
-| M2 | MIDI clock / sync do transportu serwera | Mapowanie ticków ↔ clock; nie playhead klienta |
-| M3 | API / UI status w Admin → Host | Stub „β2” → realny status |
-| M4 | Testy z mock device jeśli możliwe bez HW | Fail-fast Zod na krawędziach |
+| #   | Wycinek                                              | Uwagi                                          |
+| --- | ---------------------------------------------------- | ---------------------------------------------- |
+| M1  | Lista / wybór urządzeń MIDI po stronie `apps/server` | Admin Host status                              |
+| M2  | MIDI clock / sync do transportu serwera              | Mapowanie ticków ↔ clock; nie playhead klienta |
+| M3  | API / UI status w Admin → Host                       | Stub „β2” → realny status                      |
+| M4  | Testy z mock device jeśli możliwe bez HW             | Fail-fast Zod na krawędziach                   |
 
 ## IN (must) — Menu OS Faza B (B)
 
 Źródło: [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop · residual β1.
 
-| # | Wycinek | Uwagi |
-|---|---------|--------|
-| B1 | **Plik → Open Recent** | localStorage + lista w menu natywnym |
-| B2 | **Plik → Zapisz** | Istniejący save Timeline draft (query/event) |
-| B3 | **Plik → Zamknij projekt** | Navigate → Admin |
-| B4 | **Host → Status** | Deep link `/admin?section=host` |
-| B5 | **Host → urządzenia / klienci** | `GET /api/stage/clients` |
-| B6 | **Host → QR** | Nowy dialog z LAN URL z `GET /api/system/network` |
-| B7 | **Host → Restart** | `POST /api/system/restart` |
-| B8 | **Host → Ustawienia…** | → Host section |
+| #   | Wycinek                         | Uwagi                                             |
+| --- | ------------------------------- | ------------------------------------------------- |
+| B1  | **Plik → Open Recent**          | localStorage + lista w menu natywnym              |
+| B2  | **Plik → Zapisz**               | Istniejący save Timeline draft (query/event)      |
+| B3  | **Plik → Zamknij projekt**      | Navigate → Admin                                  |
+| B4  | **Host → Status**               | Deep link `/admin?section=host`                   |
+| B5  | **Host → urządzenia / klienci** | `GET /api/stage/clients`                          |
+| B6  | **Host → QR**                   | Nowy dialog z LAN URL z `GET /api/system/network` |
+| B7  | **Host → Restart**              | `POST /api/system/restart`                        |
+| B8  | **Host → Ustawienia…**          | → Host section                                    |
 
 Reuse Faza A: `install_desktop_menu` + navigate / eventy WebView.
 
@@ -88,45 +88,45 @@ Reuse Faza A: `install_desktop_menu` + navigate / eventy WebView.
 
 Źródło: [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) § nawigacja desktop.
 
-| # | Wycinek | Uwagi |
-|---|---------|--------|
-| C1 | Transport → Play / Stop | Event → istniejące `/api/transport/*` (SSOT serwer) |
-| C2 | Transport → Next / Prev | Jak wyżej; skróty przez ten sam mostek |
-| C3 | Zero MIDI / audio clock w Rust | Shell tylko mostkuje; autorytet = `apps/server` |
+| #   | Wycinek                        | Uwagi                                               |
+| --- | ------------------------------ | --------------------------------------------------- |
+| C1  | Transport → Play / Stop        | Event → istniejące `/api/transport/*` (SSOT serwer) |
+| C2  | Transport → Next / Prev        | Jak wyżej; skróty przez ten sam mostek              |
+| C3  | Zero MIDI / audio clock w Rust | Shell tylko mostkuje; autorytet = `apps/server`     |
 
 ## IN (must) — Bramka G1–G10 (G)
 
 Źródło: [report-beta-gate.md](./report-beta-gate.md).
 
-| # | Wycinek | Uwagi |
-|---|---------|--------|
-| G1–G10 | Ręczna bramka na instalatorach β2 | Krytyczne: G1–G5, G7 przed tagiem |
-| G6+ | `latest.json` **darwin + windows** | Merge updater JSON (nie last-writer win↔mac); mac CI = aarch64 |
+| #      | Wycinek                            | Uwagi                                                          |
+| ------ | ---------------------------------- | -------------------------------------------------------------- |
+| G1–G10 | Ręczna bramka na instalatorach β2  | Krytyczne: G1–G5, G7 przed tagiem                              |
+| G6+    | `latest.json` **darwin + windows** | Merge updater JSON (nie last-writer win↔mac); mac CI = aarch64 |
 
 ## OUT (świadome)
 
-| Temat | Etap |
-|-------|------|
-| Fade / crossfade / loop-region | **5.0.0** |
-| Menu OS Faza D | **5.0.0** |
-| MIDI I/O w procesie Tauri | **Nigdy** |
-| Flex Time / time-stretch / pencil audio | OUT |
-| Android / store auto-update | Poza β2 |
-| AD-01…03 / wand / Timeline Help feature | **5.0.0** (chyba że pull-forward) |
-| git-apply | Nigdy ([ADR 0004](../../../adr/0004-updates-docker.md)) |
+| Temat                                   | Etap                                                    |
+| --------------------------------------- | ------------------------------------------------------- |
+| Fade / crossfade / loop-region          | **5.0.0**                                               |
+| Menu OS Faza D                          | **5.0.0**                                               |
+| MIDI I/O w procesie Tauri               | **Nigdy**                                               |
+| Flex Time / time-stretch / pencil audio | OUT                                                     |
+| Android / store auto-update             | Poza β2                                                 |
+| AD-01…03 / wand / Timeline Help feature | **5.0.0** (chyba że pull-forward)                       |
+| git-apply                               | Nigdy ([ADR 0004](../../../adr/0004-updates-docker.md)) |
 
 ## Weryfikacja vs ADR / ROADMAP (zero sprzeczności)
 
-| Aksjomat | Status w tym scope |
-|----------|-------------------|
-| SSOT czasu = serwer; klient wygładza tylko między tickami ([ADR 0002](../../../adr/0002-timebase-ssot.md)) | ✓ A3, C1–C3, T* |
-| Pre-roll ≤ 0; Stop/home = Countdown gdy obecny ([ADR 0002](../../../adr/0002-timebase-ssot.md), [#41](https://github.com/Negatywistczny/stagesync/issues/41)) | ✓ T1–T3 |
-| Kanon = integer ticks + PPQ; ms tylko na krawędzi audio | ✓ A3, A7 |
-| Audio no-overlap; zakaz pencil; bez stretch poza plik ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) | ✓ A2, A4 |
-| Fade/crossfade → 5.0.0 (nie β2) | ✓ OUT |
-| MIDI / clock nie w procesie Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) | ✓ M*, C3, OUT |
-| Faza B+C = β2; Faza D = 5.0.0 ([ROADMAP](../../../ROADMAP.md)) | ✓ B*, C*, OUT |
-| Residual β1 (B + G1–G10) = must β2 (`β1.1`) | ✓ B*, G* |
+| Aksjomat                                                                                                                                                      | Status w tym scope |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| SSOT czasu = serwer; klient wygładza tylko między tickami ([ADR 0002](../../../adr/0002-timebase-ssot.md))                                                    | ✓ A3, C1–C3, T*    |
+| Pre-roll ≤ 0; Stop/home = Countdown gdy obecny ([ADR 0002](../../../adr/0002-timebase-ssot.md), [#41](https://github.com/Negatywistczny/stagesync/issues/41)) | ✓ T1–T3            |
+| Kanon = integer ticks + PPQ; ms tylko na krawędzi audio                                                                                                       | ✓ A3, A7           |
+| Audio no-overlap; zakaz pencil; bez stretch poza plik ([ADR 0008](../../../adr/0008-timeline-clip-editing.md))                                                | ✓ A2, A4           |
+| Fade/crossfade → 5.0.0 (nie β2)                                                                                                                               | ✓ OUT              |
+| MIDI / clock nie w procesie Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md))                                                                      | ✓ M*, C3, OUT      |
+| Faza B+C = β2; Faza D = 5.0.0 ([ROADMAP](../../../ROADMAP.md))                                                                                                | ✓ B*, C*, OUT      |
+| Residual β1 (B + G1–G10) = must β2 (`β1.1`)                                                                                                                   | ✓ B*, G*           |
 
 ## Architektura (domyślna)
 

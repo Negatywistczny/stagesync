@@ -1,6 +1,6 @@
 # ⚙️ apps/server — Serwer Czasu, Transportu i API (SSOT)
 
-Aplikacja `apps/server` odpowiada za logikę backendową, persystencję danych projektów oraz precyzyjną dystrybucję czasu muzycznego (*Single Source of Truth* — SSOT) za pomocą protokołu WebSockets.
+Aplikacja `apps/server` odpowiada za logikę backendową, persystencję danych projektów oraz precyzyjną dystrybucję czasu muzycznego (_Single Source of Truth_ — SSOT) za pomocą protokołu WebSockets.
 
 ## 📁 Struktura katalogu
 

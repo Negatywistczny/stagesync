@@ -16,19 +16,19 @@ Ten ADR jest **SSOT trybów Studio vs Live**. Audio, Plugin Host i „prosta edy
 
 ### 0. Zakres obowiązywania
 
-| Linia | Obowiązywanie |
-|-------|----------------|
-| **5.x** | Dual Engine **OUT** — brak trybu Studio/Live, brak Plugin Host, brak Freeze gate. |
+| Linia    | Obowiązywanie                                                                                        |
+| -------- | ---------------------------------------------------------------------------------------------------- |
+| **5.x**  | Dual Engine **OUT** — brak trybu Studio/Live, brak Plugin Host, brak Freeze gate.                    |
 | **6.0+** | Ten ADR = SSOT Dual Engine. Implementacja dopiero po `report-scope-6.0` + akceptacji PO przed kodem. |
 
 ### 1. Dwa tryby (twarde)
 
 Dokładnie dwa tryby wykonawcze:
 
-| Tryb | Rola |
-|------|------|
+| Tryb       | Rola                                                                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Studio** | Produkcja / edycja: Timeline, Mixer, rejestracja + proste edit ([ADR 0018](./0018-future-audio-architecture.md) §5), opcjonalny Plugin Host |
-| **Live** | Pancerna scena: odtwarzanie i sterowanie widowiskiem; bez edycji warstw; bez aktywnego Plugin Host |
+| **Live**   | Pancerna scena: odtwarzanie i sterowanie widowiskiem; bez edycji warstw; bez aktywnego Plugin Host                                          |
 
 **Stan trybu = SSOT serwera** (projekt / sesja). Lokalny flip UI bez komendy serwera = **zakazany**.
 

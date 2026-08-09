@@ -17,11 +17,11 @@ Android Performer / Console: [MOBILE.md](./MOBILE.md) · [ADR 0016](../adr/0016-
 docker compose up --build -d
 ```
 
-| URL | Opis |
-|-----|------|
-| http://localhost:4000/ | Client |
-| http://localhost:4000/admin | Admin |
-| http://localhost:4000/timeline | Timeline |
+| URL                              | Opis                                      |
+| -------------------------------- | ----------------------------------------- |
+| http://localhost:4000/           | Client                                    |
+| http://localhost:4000/admin      | Admin                                     |
+| http://localhost:4000/timeline   | Timeline                                  |
 | http://localhost:4000/api/health | Healthcheck (`protocolVersion`, `uiHash`) |
 
 Dane użytkownika: volume `./data` → `/app/data` w kontenerze (`STAGESYNC_DATA_DIR`).
@@ -161,11 +161,11 @@ pnpm install
 pnpm dev   # web :3000 + server :4000
 ```
 
-| URL (dev) | Opis |
-|-----------|------|
-| http://localhost:3000/admin | Admin (Vite + HMR) |
-| http://localhost:3000/client | Client |
-| http://localhost:3000/timeline | Timeline |
+| URL (dev)                        | Opis                  |
+| -------------------------------- | --------------------- |
+| http://localhost:3000/admin      | Admin (Vite + HMR)    |
+| http://localhost:3000/client     | Client                |
+| http://localhost:3000/timeline   | Timeline              |
 | http://localhost:4000/api/health | API / health (bez UI) |
 
 Wejście na `:4000/admin` z tej samej maszyny przekierowuje do `:3000`, gdy serwer działa bez bundla UI (`STAGESYNC_STATIC_DIR` nieustawione).
@@ -237,31 +237,31 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 
 ## Zmienne środowiskowe
 
-| Zmienna | Domyślnie | Opis |
-|---------|-----------|------|
-| `PORT` | `4000` | HTTP + WS |
-| `STAGESYNC_DATA_DIR` | `~/Documents/StageSync` (desktop) · `/app/data` (Compose) | Library + projects |
-| `STAGESYNC_DOWNLOADS_DIR` | (auto) | Nadpisanie katalogu APK; desktop lokalny host ustawia bundel / monorepo `data/downloads` |
-| `STAGESYNC_APK_BUNDLE_DIR` | obok seeda (`data/downloads`) | Read-only fallback APK (gdy brak w dataDir) |
-| `STAGESYNC_REPO_DEV` | `1` (z [`.env.example`](../../.env.example)) | Wymusza `<repo>/data` w trybie dev |
-| `STAGESYNC_STATIC_DIR` | `/app/web` (obraz) | Vite `dist` serwowany przez Node |
-| `STAGESYNC_URL` | `http://127.0.0.1:4000` | URL dla shella Tauri |
-| `STAGESYNC_VERSION` | — | Tag obrazu GHCR ([`compose.prod.yml`](../../compose.prod.yml)) |
-| `GHCR_USER` / `GHCR_TOKEN` | — | Poświadczenia Watchtower do GHCR |
-| `WATCHTOWER_TOKEN` | — | Shared secret Watchtower HTTP API |
-| `STAGESYNC_UPDATER_URL` | — | URL Watchtower (`http://watchtower:8080`) |
-| `STAGESYNC_UPDATER_TOKEN` | — | = `WATCHTOWER_TOKEN` (używany przez serwer) |
-| `STAGESYNC_GITHUB_TOKEN` | — | PAT do GitHub Releases API (update-status na Docker/host; desktop sidecar pomija) |
-| `STAGESYNC_HOST_TOKEN` | — | Bearer / `X-Stagesync-Host-Token` dla restart/shutdown z LAN |
-| `STAGESYNC_ALLOW_REMOTE_LIFECYCLE` | — | `1` = pozwól na restart/shutdown spoza localhost bez tokenu |
-| `STAGESYNC_OPERATOR_PIN` | — | Opcjonalny PIN destrukcyjnych mutacji Admin REST (`X-Stagesync-Operator-Pin`) |
-| `STAGESYNC_SAFETY_ROLE` | `master` | Safety Net: `master` \| `spare` (Spare = bez MIDI OUT; ręczne Przejmij) |
-| `STAGESYNC_THEME_DEFAULT` | — | Domyślny motyw klientów bez lokalnej preferencji (`booth` / `daylight` / `midnight` / `matrix` / `neon`) |
-| `STAGESYNC_BACKUPS_DIR` | `{dataDir}/backups` | Katalog kopii (mapowanie przy Przywróć); puste = domyślny podkatalog danych |
-| `SENTRY_DSN` | — | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII) |
-| `VITE_SENTRY_DSN` | — | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania) |
+| Zmienna                            | Domyślnie                                                 | Opis                                                                                                     |
+| ---------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `PORT`                             | `4000`                                                    | HTTP + WS                                                                                                |
+| `STAGESYNC_DATA_DIR`               | `~/Documents/StageSync` (desktop) · `/app/data` (Compose) | Library + projects                                                                                       |
+| `STAGESYNC_DOWNLOADS_DIR`          | (auto)                                                    | Nadpisanie katalogu APK; desktop lokalny host ustawia bundel / monorepo `data/downloads`                 |
+| `STAGESYNC_APK_BUNDLE_DIR`         | obok seeda (`data/downloads`)                             | Read-only fallback APK (gdy brak w dataDir)                                                              |
+| `STAGESYNC_REPO_DEV`               | `1` (z [`.env.example`](../../.env.example))              | Wymusza `<repo>/data` w trybie dev                                                                       |
+| `STAGESYNC_STATIC_DIR`             | `/app/web` (obraz)                                        | Vite `dist` serwowany przez Node                                                                         |
+| `STAGESYNC_URL`                    | `http://127.0.0.1:4000`                                   | URL dla shella Tauri                                                                                     |
+| `STAGESYNC_VERSION`                | —                                                         | Tag obrazu GHCR ([`compose.prod.yml`](../../compose.prod.yml))                                           |
+| `GHCR_USER` / `GHCR_TOKEN`         | —                                                         | Poświadczenia Watchtower do GHCR                                                                         |
+| `WATCHTOWER_TOKEN`                 | —                                                         | Shared secret Watchtower HTTP API                                                                        |
+| `STAGESYNC_UPDATER_URL`            | —                                                         | URL Watchtower (`http://watchtower:8080`)                                                                |
+| `STAGESYNC_UPDATER_TOKEN`          | —                                                         | = `WATCHTOWER_TOKEN` (używany przez serwer)                                                              |
+| `STAGESYNC_GITHUB_TOKEN`           | —                                                         | PAT do GitHub Releases API (update-status na Docker/host; desktop sidecar pomija)                        |
+| `STAGESYNC_HOST_TOKEN`             | —                                                         | Bearer / `X-Stagesync-Host-Token` dla restart/shutdown z LAN                                             |
+| `STAGESYNC_ALLOW_REMOTE_LIFECYCLE` | —                                                         | `1` = pozwól na restart/shutdown spoza localhost bez tokenu                                              |
+| `STAGESYNC_OPERATOR_PIN`           | —                                                         | Opcjonalny PIN destrukcyjnych mutacji Admin REST (`X-Stagesync-Operator-Pin`)                            |
+| `STAGESYNC_SAFETY_ROLE`            | `master`                                                  | Safety Net: `master` \| `spare` (Spare = bez MIDI OUT; ręczne Przejmij)                                  |
+| `STAGESYNC_THEME_DEFAULT`          | —                                                         | Domyślny motyw klientów bez lokalnej preferencji (`booth` / `daylight` / `midnight` / `matrix` / `neon`) |
+| `STAGESYNC_BACKUPS_DIR`            | `{dataDir}/backups`                                       | Katalog kopii (mapowanie przy Przywróć); puste = domyślny podkatalog danych                              |
+| `SENTRY_DSN`                       | —                                                         | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII)                                  |
+| `VITE_SENTRY_DSN`                  | —                                                         | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania)         |
 
-Wzór: [[`.env.example`](../../.env.example)](../../.env.example). Decyzja: [ADR 0012](../adr/0012-user-data-location.md).
+Wzór: [`.env.example`](../../.env.example). Decyzja: [ADR 0012](../adr/0012-user-data-location.md).
 
 **Host restart/shutdown:** z `localhost` zawsze dozwolone (desktop / Tauri). Z innej maszyny w LAN —
 ustaw `STAGESYNC_HOST_TOKEN` (Admin: `localStorage.stagesync.hostToken`) albo świadomie

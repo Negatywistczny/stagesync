@@ -20,19 +20,21 @@ v5 celuje w **immutable deploy** (Docker) z danymi użytkownika na volume (`data
 
 Oryginalna decyzja nr 3 mówiła „bez przycisku wykonującego update". Rozróżnienie, które wyjaśnia zmianę:
 
-| Model 4.x (OUT) | Model v5 (IN) |
-|-----------------|---------------|
+| Model 4.x (OUT)                                           | Model v5 (IN)                                                          |
+| --------------------------------------------------------- | ---------------------------------------------------------------------- |
 | git-apply w runtime (`git fetch` + merge + `npm install`) | Trigger immutable pull: Watchtower HTTP API → `docker pull` + recreate |
-| Mutacja working tree na scenie | Nowy obraz z rejestru; `data/` na volume bez zmian |
-| Ryzyko półzaktualizowanego procesu | Krótka przerwa WS (kontener restart), rollback = poprzedni tag |
+| Mutacja working tree na scenie                            | Nowy obraz z rejestru; `data/` na volume bez zmian                     |
+| Ryzyko półzaktualizowanego procesu                        | Krótka przerwa WS (kontener restart), rollback = poprzedni tag         |
 
 **Dozwolone od β1:**
+
 - `GET /api/system/update-status` — porównanie semver (current vs GitHub Releases latest)
 - `POST /api/system/apply-update` z `{ target: "host" }` — **wyłącznie** trigger Watchtower HTTP; nie git, nie `npm install`, nie mutacja FS
 - Przycisk „Aktualizuj host" w Adminie po potwierdzeniu operatora (nie auto-poll w tle)
 - Tauri updater na żądanie z Admina (minisign, nie podpis OS): patrz [ADR 0010](./0010-desktop-shell-tauri.md)
 
 **Nadal OUT:**
+
 - git-apply / `git clone` z Admina
 - Auto-update w tle bez decyzji operatora (β2+)
 - Kanały testowe / sklepy OS (β2+)

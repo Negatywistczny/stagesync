@@ -12,17 +12,17 @@ Wszystkie priorytetowe ID rozstrzygnięte. H-02/H-04 wcześniej; H-05 trailing `
 
 ## Rozstrzygnięte
 
-| ID | Temat | Stan | Notatka |
-|----|--------|------|---------|
+| ID   | Temat                                   | Stan                  | Notatka                                                                                                                                                                                                                             |
+| ---- | --------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | H-01 | `setDisplayTicks` co rAF → pełne drzewo | `confirmed` + observe | Vitest: N nowych ticków → N re-renderów; ten sam tick → 0. `commitDisplayTicks` + `h01PerfProbe` (`?ss_perf=h01` → `window.__stagesyncH01`). **Nie** mierzone CPU @ 120 Hz na tablecie — → TODO 5.2+ (profiler → split / throttle). |
-| H-02 | REST `getTransport` @ `ws.onopen` | `fixed` | |
-| H-03 | OSMD pełny `render()` na zoom/transpose | `fixed` | Debounce 120 ms w `ScorePane` |
-| H-04 | `syncLeadMs` | `rejected` | Korekta w `ClientShell` |
-| H-05 | Mid-edit `"C#m7/"` → `sup` z `/` | `fixed` | `splitRealBass` zrzuca samotny `/` |
+| H-02 | REST `getTransport` @ `ws.onopen`       | `fixed`               |                                                                                                                                                                                                                                     |
+| H-03 | OSMD pełny `render()` na zoom/transpose | `fixed`               | Debounce 120 ms w `ScorePane`                                                                                                                                                                                                       |
+| H-04 | `syncLeadMs`                            | `rejected`            | Korekta w `ClientShell`                                                                                                                                                                                                             |
+| H-05 | Mid-edit `"C#m7/"` → `sup` z `/`        | `fixed`               | `splitRealBass` zrzuca samotny `/`                                                                                                                                                                                                  |
 
 ## Otwarte
 
-*(brak — priorytetowe ID rozstrzygnięte; residual H-01 = pomiar HW, nie brak potwierdzenia)*
+_(brak — priorytetowe ID rozstrzygnięte; residual H-01 = pomiar HW, nie brak potwierdzenia)_
 
 ## Następny krok eng
 

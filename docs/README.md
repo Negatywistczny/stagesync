@@ -21,7 +21,7 @@ Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, mu
 
 ### Podkatalogi specjalistyczne
 
-- **`adr/`** — Indeks decyzji architektonicznych (*Architecture Decision Records*).
+- **`adr/`** — Indeks decyzji architektonicznych (_Architecture Decision Records_).
 - **`api/`** — Specyfikacja punktów końcowych interfejsu REST i WebSockets.
 - **`analysis/`** — Raporty kanoniczne (`reports/{current,milestones,hygiene}/`), inspiracje zewnętrzne + triage, oraz lokalny scratch `working/`.
 - **`examples/`** — Przykładowe pliki projektów dla wersji v5 i legacy v4.

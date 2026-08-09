@@ -12,14 +12,14 @@
 
 ## Priorytety weryfikacji
 
-| ID | Temat | Priorytet | Stan | Dowód |
-|----|--------|-----------|------|--------|
-| TST-UGF-01 | `extractDataContentJson` — odwrotna kolejność atrybutów | P1 | `fixed` | [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) — reverse attribute order |
-| TST-UGF-02 | Cloudflare / 403 / 404 / timeout | P1 | `fixed` | [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) — async mocked `fetch` |
-| TST-UGF-03 | `resolveUgTabUrl` fallback search | P2 | `fixed` | [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) — resolves via search |
-| TST-UGF-04 | Typ tab ≠ Chords | P1 | `fixed` | `buildFetchResult` + async non-Chords |
-| TST-UGF-05 | `parseUgSearchResults` + rank | P2 | `fixed` | helpers + `searchUgChords` ranking |
-| TST-UGF-06 | Mapowanie błędów w `routes/import.ts` | P1 | `confirmed` | Granica router vs lib — osobny plik testowy |
+| ID         | Temat                                                   | Priorytet | Stan        | Dowód                                                                                           |
+| ---------- | ------------------------------------------------------- | --------- | ----------- | ----------------------------------------------------------------------------------------------- |
+| TST-UGF-01 | `extractDataContentJson` — odwrotna kolejność atrybutów | P1        | `fixed`     | [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) — reverse attribute order |
+| TST-UGF-02 | Cloudflare / 403 / 404 / timeout                        | P1        | `fixed`     | [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) — async mocked `fetch`    |
+| TST-UGF-03 | `resolveUgTabUrl` fallback search                       | P2        | `fixed`     | [`ug-fetch.test.ts`](../../../../apps/server/src/ug/ug-fetch.test.ts) — resolves via search     |
+| TST-UGF-04 | Typ tab ≠ Chords                                        | P1        | `fixed`     | `buildFetchResult` + async non-Chords                                                           |
+| TST-UGF-05 | `parseUgSearchResults` + rank                           | P2        | `fixed`     | helpers + `searchUgChords` ranking                                                              |
+| TST-UGF-06 | Mapowanie błędów w `routes/import.ts`                   | P1        | `confirmed` | Granica router vs lib — osobny plik testowy                                                     |
 
 ## Limit
 

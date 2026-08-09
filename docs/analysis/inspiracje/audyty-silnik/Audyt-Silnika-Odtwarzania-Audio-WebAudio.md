@@ -16,28 +16,29 @@ Sytuację pogarsza zjawisko szybkiego przeskakiwania playheada (scrubbing) . Wyw
 
 Poniższa tabela przedstawia porównanie cyklu życia i podatności na wycieki pamięci poszczególnych węzłów w analizowanym silniku.
 
-| Typ węzła WebAudio | Funkcja / Miejsce powołania | Warunek zwolnienia z pamięci (GC) | Status w silniku i ryzyko wycieku |
-| :--- | :--- | :--- | :--- |
-| `AudioBufferSourceNode` | `startClip` | Zakończenie odtwarzania + brak referencji JS + brak połączeń wyjściowych . | **Krytyczny wyciek**: Węzeł przetrzymuje duży dekodowany bufor z powodu braku nadpisania buforem referencyjnym (scratch buffer) po zatrzymaniu . |
-| `GainNode` (Clip/Track) | `startClip`, `createChannelBus` | Brak referencji w tablicy `active` oraz usunięcie nadrzędnej szyny . | **Średnie ryzyko**: Pozostaje połączony z szyną wejściową z powodu asymetrii `disconnect()` . |
-| `ChannelSplitterNode` | `createChannelBus` (Stereo) | Pełne rozłączenie wszystkich wyjść i wejść podgrafu . | **Wysokie ryzyko**: Brak jawnego rozłączenia w `disconnectBusNodes` blokuje zwolnienie szyny . |
-| `AnalyserNode` | `createChannelBus` | Zamknięcie kontekstu lub jawne wywołanie `disconnect()` na wejściu . | **Wysokie ryzyko**: Pozostaje połączony z wewnętrznym splitterem/mergerem szyny, generując ciągłe obciążenie . |
+| Typ węzła WebAudio      | Funkcja / Miejsce powołania     | Warunek zwolnienia z pamięci (GC)                                          | Status w silniku i ryzyko wycieku                                                                                                                |
+| :---------------------- | :------------------------------ | :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AudioBufferSourceNode` | `startClip`                     | Zakończenie odtwarzania + brak referencji JS + brak połączeń wyjściowych . | **Krytyczny wyciek**: Węzeł przetrzymuje duży dekodowany bufor z powodu braku nadpisania buforem referencyjnym (scratch buffer) po zatrzymaniu . |
+| `GainNode` (Clip/Track) | `startClip`, `createChannelBus` | Brak referencji w tablicy `active` oraz usunięcie nadrzędnej szyny .       | **Średnie ryzyko**: Pozostaje połączony z szyną wejściową z powodu asymetrii `disconnect()` .                                                    |
+| `ChannelSplitterNode`   | `createChannelBus` (Stereo)     | Pełne rozłączenie wszystkich wyjść i wejść podgrafu .                      | **Wysokie ryzyko**: Brak jawnego rozłączenia w `disconnectBusNodes` blokuje zwolnienie szyny .                                                   |
+| `AnalyserNode`          | `createChannelBus`              | Zamknięcie kontekstu lub jawne wywołanie `disconnect()` na wejściu .       | **Wysokie ryzyko**: Pozostaje połączony z wewnętrznym splitterem/mergerem szyny, generując ciągłe obciążenie .                                   |
 
 ---
 
 ## Wyścigi Stanów i Operacje Asynchroniczne (Async & Race Conditions)
 
-Asynchroniczna natura pobierania i dekodowania plików dźwiękowych za pomocą operacji sieciowych `fetch` oraz metody `AudioContext.decodeAudioData` stanowi klasyczne źródło problemów z synchronizacją stanów (race conditions) . 
+Asynchroniczna natura pobierania i dekodowania plików dźwiękowych za pomocą operacji sieciowych `fetch` oraz metody `AudioContext.decodeAudioData` stanowi klasyczne źródło problemów z synchronizacją stanów (race conditions) .
 
 ### Unieważnianie pamięci podręcznej i osierocone obietnice
 
-Mechanizm zarządzania pamięcią podręczną w `loadAudioBuffer` wykorzystuje mapę `inflight` do śledzenia aktualnie wykonywanych żądań asynchronicznych . W momencie, gdy użytkownik decyduje się na natychmiastowe zamknięcie lub przełączenie projektu, aplikacja wywołuje `clearAudioBufferCache(projectId)`, usuwając wpisy z `bufferCache` oraz `inflight` . Jednak usunięcie obietnicy z mapy `inflight` za pomocą `inflight.delete(key)` nie powoduje przerwania jej fizycznego wykonania . Proces pobierania sieciowego oraz dekodowania danych w tle trwa nadal . 
+Mechanizm zarządzania pamięcią podręczną w `loadAudioBuffer` wykorzystuje mapę `inflight` do śledzenia aktualnie wykonywanych żądań asynchronicznych . W momencie, gdy użytkownik decyduje się na natychmiastowe zamknięcie lub przełączenie projektu, aplikacja wywołuje `clearAudioBufferCache(projectId)`, usuwając wpisy z `bufferCache` oraz `inflight` . Jednak usunięcie obietnicy z mapy `inflight` za pomocą `inflight.delete(key)` nie powoduje przerwania jej fizycznego wykonania . Proces pobierania sieciowego oraz dekodowania danych w tle trwa nadal .
 
 Po zakończeniu dekodowania, kod zawarty w asynchronicznym bloku funkcji `loadAudioBuffer` bezwarunkowo wywołuje `rememberBuffer(key, decoded)`, co powoduje ponowne dodanie zdekodowanego bufora do pamięci podręcznej `bufferCache` . W rezultacie zasoby powiązane z rzekomo zamkniętym i wyczyszczonym projektem zostają ponownie załadowane do pamięci RAM . Taki stan rzeczy łamie izolację projektów i prowadzi do niekontrolowanego wzrostu użycia pamięci podręcznej, dopóki nie zostanie osiągnięty limit `MAX_BUFFER_CACHE` . Dodatkowo, brak powiązania pobierania z obiektem typu `AbortController` uniemożliwia natychmiastowe przerwanie żądań HTTP, co marnuje pasmo sieciowe użytkownika .
 
 ### Widmowe odtwarzanie (Phantom Playback)
 
 Podatność na powstawanie zjawiska widmowego odtwarzania (phantom playback) ujawnia się w asynchronicznej metodzie `resumeAndSyncAudioPlayback` . Procedura ta najpierw oczekuje na wybudzenie kontekstu audio, a dopiero potem wykonuje synchronizację odtwarzania :
+
 ```typescript
 export async function resumeAndSyncAudioPlayback(
   projectId: string,
@@ -48,7 +49,7 @@ export async function resumeAndSyncAudioPlayback(
 }
 ```
 
-Czas potrzebny na pomyślne wykonanie `resumeMetronomeAudio` (które w przeglądarkach mobilnych i desktopowych wiąże się z odblokowaniem polityki automatycznego odtwarzania - *autoplay policy*) może wynosić od kilkudziesięciu do kilkuset milisekund . W tym oknie czasowym użytkownik może wykonać akcję zatrzymania transportu, co skutkuje ustawieniem flagi `playing` na `false` lub jawnym wywołaniem `suppressAudioPlayback()` . 
+Czas potrzebny na pomyślne wykonanie `resumeMetronomeAudio` (które w przeglądarkach mobilnych i desktopowych wiąże się z odblokowaniem polityki automatycznego odtwarzania - _autoplay policy_) może wynosić od kilkudziesięciu do kilkuset milisekund . W tym oknie czasowym użytkownik może wykonać akcję zatrzymania transportu, co skutkuje ustawieniem flagi `playing` na `false` lub jawnym wywołaniem `suppressAudioPlayback()` .
 
 Ponieważ parametr `input` przekazywany do funkcji `resumeAndSyncAudioPlayback` reprezentuje historyczny stan w momencie kliknięcia (snapshot), po zakończeniu asynchronicznego oczekiwania na aktywację kontekstu silnik wywoła `syncAudioPlayback` z przestarzałym parametrem `input.playing = true` . Doprowadzi to do niekontrolowanego uruchomienia źródeł dźwięku (start clip) w momencie, gdy transport DAW powinien być całkowicie zatrzymany . Choć globalna flaga `playbackSuppressed` teoretycznie blokuje uruchomienie odtwarzania, to jeśli użytkownik wykonał sekwencję szybkich kliknięć "Play -> Stop -> Play", nakładające się na siebie asynchroniczne wywołania `syncAudioPlayback` doprowadzą do nałożenia się sygnałów audio i całkowitego rozsynchronizowania wirtualnego zegara DAW .
 
@@ -61,6 +62,7 @@ Precyzyjne wyliczanie czasu wyciszeń (fades) oraz pozycjonowanie wskaźnika odt
 ### Harmonogramowanie ramp głośności bez punktów zakotwiczenia
 
 Podczas uruchamiania klipu w strefie fade-out, gdy playhead rozpoczyna odtwarzanie blisko końca klipu, parametr `intoClipMs` przekracza punkt rozpoczęcia wyciszenia (`playableMs - fadeOut`) . W takim przypadku silnik wkracza w następującą gałąź warunkową :
+
 ```typescript
 } else if (endAt > now) {
   gain.gain.linearRampToValueAtTime(0, endAt);
@@ -70,6 +72,7 @@ Podczas uruchamiania klipu w strefie fade-out, gdy playhead rozpoczyna odtwarzan
 Zgodnie ze specyfikacją standardu Web Audio API, wywołanie `linearRampToValueAtTime` bez uprzedniego jawnego zdefiniowania wartości początkowej w tym samym punkcie czasowym (lub bezpośrednio przed nim) za pomocą metody `setValueAtTime` powoduje nieprzewidywalne zachowanie silnika interpolacji przeglądarki . Wiele implementacji (w tym silnik Blink w Google Chrome) rozpoczyna wówczas rampowanie od ostatniego zarejestrowanego zdarzenia na osi czasu $\text{AudioParam}$ . Ponieważ bezpośrednio przed tym wywoływana jest funkcja `cancelScheduledValues(now)`, parametr głośności nie posiada stabilnego punktu zakotwiczenia dla nowego rampowania . Skutkuje to gwałtownym skokiem wartości głośności do wartości domyślnej ($1.0$), po czym następuje natychmiastowe, strome wyciszenie do zera . Taka nieciągłość sygnału generuje bardzo głośny i słyszalny trzask cyfrowy (click/pop) na samym początku odtwarzania klipu .
 
 Kolejny problem dotyczy ujemnych wartości czasu. Jeżeli `intoClipMs` przyjmie wartość ujemną (co może mieć miejsce z powodu minimalnych rozbieżności zaokrągleń czasu przy konwersji jednostek czasu na bity), obliczenie czasu ukończenia rampy wyciszenia początkowego (`reachMaxAt`) ulega zniekształceniu :
+
 ```typescript
 const reachMaxAt = now + (fadeIn - intoClipMs) / 1000;
 ```
@@ -85,6 +88,7 @@ Każda anomalia w harmonogramowaniu tej wartości na osi czasu parametru $\text{
 ### Walidacja granic zapętlenia krótkich próbek
 
 Podczas odtwarzania zapętlonych klipów, silnik wylicza granice pętli w oparciu o czas trwania bufora i parametry trimowania :
+
 ```typescript
 source.loopStart = trimInMsOf(clip) / 1000;
 source.loopEnd = Math.max(
@@ -104,6 +108,7 @@ Topologia przetwarzania sygnałów w mikserze DAW musi w sposób deterministyczn
 ### Krytyczny błąd upmiksowania mono do stereo w szynach True Balance
 
 Standard Web Audio API definiuje ścisłe reguły upmiksowania i downmiksowania sygnałów w przypadku łączenia węzłów o niezgodnej liczbie kanałów . Analiza kodu tworzącego szynę stereo ujawnia krytyczną podatność topologiczną :
+
 ```typescript
 const splitter = ctx.createChannelSplitter(2);
 // ...
@@ -114,7 +119,7 @@ splitter.connect(gainR, 1);
 
 Jeśli na ścieżce skonfigurowanej jako stereo zostanie umieszczony klip mono (czyli jednokanałowy plik dźwiękowy), węzeł `BufferSourceNode` będzie dostarczał sygnał mono . Sygnał ten przechodzi przez `clipGain` oraz główny suwak głośności ścieżki `trackBus.gain` . Ponieważ domyślna wartość właściwości `channelCountMode` dla węzła typu `GainNode` wynosi `"max"`, a do jego wejścia podłączone jest wyłącznie źródło mono, węzeł `trackBus.gain` przyjmuje konfigurację jednokanałową i przesyła jednokanałowy sygnał na swoje wyjście .
 
-W momencie, gdy ten jednokanałowy (mono) sygnał zostaje przesłany do wejścia węzła `ChannelSplitterNode(2)`, silnik Web Audio API stosuje regułę podziału . Zgodnie z oficjalną specyfikacją, splitter nie dokonuje automatycznego upmiksu sygnału na swoim wejściu . W efekcie jedyny dostępny kanał (kanał 0) zostaje przekierowany do pierwszego wyjścia splittera (index 0 - lewy kanał) . Drugie wyjście splittera (index 1 - prawy kanał) nie otrzymuje żadnego sygnału wejściowego, co skutkuje generowaniem na nim całkowitej ciszy . 
+W momencie, gdy ten jednokanałowy (mono) sygnał zostaje przesłany do wejścia węzła `ChannelSplitterNode(2)`, silnik Web Audio API stosuje regułę podziału . Zgodnie z oficjalną specyfikacją, splitter nie dokonuje automatycznego upmiksu sygnału na swoim wejściu . W efekcie jedyny dostępny kanał (kanał 0) zostaje przekierowany do pierwszego wyjścia splittera (index 0 - lewy kanał) . Drugie wyjście splittera (index 1 - prawy kanał) nie otrzymuje żadnego sygnału wejściowego, co skutkuje generowaniem na nim całkowitej ciszy .
 
 W konsekwencji, jakikolwiek plik mono odtwarzany na ścieżce stereo w analizowanym DAW będzie słyszalny wyłącznie w lewym głośniku . Aby rozwiązać ten problem, węzeł wejściowy szyny (`gain`) musi mieć jawnie wymuszoną konfigurację dwukanałową :
 
@@ -125,6 +130,7 @@ Gwarantuje to, że sygnał mono zostanie poprawnie zduplikowany do obu kanałów
 ### Przerywanie odtwarzania przy zmianie głośności klipów
 
 Klucz strukturalny grafu generowany przez funkcję `graphKey` określa, czy silnik powinien zrekonstruować połączenia węzłów i zatrzymać odtwarzanie . W obecnej implementacji klucz ten jest definiowany następująco :
+
 ```typescript
 function graphKey(input: AudioPlaybackInput): string {
   return [
@@ -143,7 +149,7 @@ Uwzględnienie parametru `c.gainDb` (głośność pojedynczego klipu) w kluczu `
 
 ## Czyszczenie Pamięci Podręcznej (Cache Invalidation & Error State)
 
-Procedura czyszczenia pamięci podręcznej w silnikach audio musi gwarantować bezwzględne usunięcie danych bez pozostawiania jakichkolwiek asynchronicznych skutków ubocznych . Wdrożona funkcja `clearAudioBufferCache(projectId)` poprawnie usuwa klucze z map pamięci podręcznej, jednak nie rozwiązuje problemu oczekujących operacji wejścia/wyjścia (I/O) . 
+Procedura czyszczenia pamięci podręcznej w silnikach audio musi gwarantować bezwzględne usunięcie danych bez pozostawiania jakichkolwiek asynchronicznych skutków ubocznych . Wdrożona funkcja `clearAudioBufferCache(projectId)` poprawnie usuwa klucze z map pamięci podręcznej, jednak nie rozwiązuje problemu oczekujących operacji wejścia/wyjścia (I/O) .
 
 Brak integracji sygnałów anulowania, takich jak `AbortSignal`, z asynchronicznymi zapytaniami sieciowymi powoduje, że transfer plików dźwiękowych w tle trwa nadal, obciążając łącze sieciowe urządzenia . Ponadto, brak weryfikacji aktualności projektu (project epoch) przy zapisie zdekodowanych buforów pozwala na ponowne zapisanie danych do pamięci cache po zakończeniu spóźnionego dekodowania .
 
@@ -182,7 +188,9 @@ function mockConnectable() {
   return { connect: vi.fn(), disconnect: vi.fn() };
 }
 
-function mockAudioContext(overrides: Record<string, unknown> = {}): AudioContext {
+function mockAudioContext(
+  overrides: Record<string, unknown> = {},
+): AudioContext {
   return {
     state: "running",
     currentTime: 10.0,
@@ -269,7 +277,7 @@ describe("audioPlayback - Turn-Red Vulnerability Audit Suite", () => {
   // =========================================================================
   it("WYKRYCIE LUKI: Spóźnione obietnice ładowania bufora zanieczyszczają cache po wyczyszczeniu projektu", async () => {
     const fakeBuf = { duration: 1.0, numberOfChannels: 2 } as AudioBuffer;
-    
+
     let triggerDecodeComplete: (buf: AudioBuffer) => void = () => {};
     const decodePromise = new Promise<AudioBuffer>((resolve) => {
       triggerDecodeComplete = resolve;
@@ -400,9 +408,12 @@ describe("audioPlayback - Turn-Red Vulnerability Audit Suite", () => {
 
     // Pobieramy instancję GainNode dla szyny trackBus
     const gainNodeInstances = (ctx.createGain as any).mock.results;
-    const trackBusGainNode = gainNodeInstances.map((r: any) => r.value).find(
-      (node: any) => node && node.gain && !node.gain.cancelScheduledValues.mock
-    );
+    const trackBusGainNode = gainNodeInstances
+      .map((r: any) => r.value)
+      .find(
+        (node: any) =>
+          node && node.gain && !node.gain.cancelScheduledValues.mock,
+      );
 
     // Aby uniknąć wyciszenia prawego wyjścia splittera przy podłączeniu źródła mono,
     // węzeł wejściowy szyny trackBus musi mieć wymuszony upmiks stereo.
@@ -449,7 +460,11 @@ describe("audioPlayback - Turn-Red Vulnerability Audit Suite", () => {
     updatedProject.audioClips[0].gainDb = -6;
 
     // Ponowna synchronizacja silnika
-    syncAudioPlayback("p1", { project: updatedProject, playing: true, displayTicks: 10 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project: updatedProject, playing: true, displayTicks: 10 },
+      ctx,
+    );
 
     // Zmiana głośności klipu nie powinna przerywać odtwarzania ani wywoływać stop() na aktywnym źródle
     expect(mockSourceNode.stop).not.toHaveBeenCalled();
@@ -495,13 +510,19 @@ describe("audioPlayback - Turn-Red Vulnerability Audit Suite", () => {
     const updatedProject = JSON.parse(JSON.stringify(project));
     updatedProject.audioTracks[0].channelMode = "mono" as const;
 
-    syncAudioPlayback("p1", { project: updatedProject, playing: true, displayTicks: 10 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project: updatedProject, playing: true, displayTicks: 10 },
+      ctx,
+    );
 
     // Oczekujemy, że aktywny węzeł clipGain zostanie przepięty do wejścia nowej szyny mono
     // Jeśli clipGain nadal wskaże połączenie wyłącznie ze starą szyną (lub zostanie odcięty), test zgłosi błąd
     expect(clipGainNode.connect).toHaveBeenCalled();
-    const connectTargets = clipGainNode.connect.mock.calls.map((call: any) => call[0]);
-    
+    const connectTargets = clipGainNode.connect.mock.calls.map(
+      (call: any) => call[0],
+    );
+
     // Szukamy nowo utworzonej szyny mono w celach połączeń węzła clipGain
     const monoTrackBus = getAudioPlaybackDebugState();
     expect(connectTargets.length).toBeGreaterThanOrEqual(2);
@@ -554,7 +575,11 @@ describe("audioPlayback - Turn-Red Vulnerability Audit Suite", () => {
 
     // Startujemy odtwarzanie w strefie fade-out (np. na sekundę przed końcem, czyli w 1.5s klipu)
     // 1.5s = 1500ms. Fade-out rozpoczyna się od 1500ms i trwa do 2000ms.
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 1440 }, ctx);
+    syncAudioPlayback(
+      "p1",
+      { project, playing: true, displayTicks: 1440 },
+      ctx,
+    );
 
     const gainNodeInstances = (ctx.createGain as any).mock.results;
     const clipGainNode = gainNodeInstances[gainNodeInstances.length - 1].value;
@@ -563,7 +588,7 @@ describe("audioPlayback - Turn-Red Vulnerability Audit Suite", () => {
     // chroniąc przed natychmiastowym skokiem amplitudy do 1.0 przed wykonaniem linearRampToValueAtTime
     expect(clipGainNode.gain.setValueAtTime).toHaveBeenCalled();
     const setValueCalls = clipGainNode.gain.setValueAtTime.mock.calls;
-    
+
     // Weryfikujemy czy głośność początkowa została zredukowana poniżej maksymalnego poziomu (1.0)
     const initialSetValue = setValueCalls[0][0];
     expect(initialSetValue).toBeLessThan(1.0);
@@ -572,4 +597,5 @@ describe("audioPlayback - Turn-Red Vulnerability Audit Suite", () => {
 ```
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

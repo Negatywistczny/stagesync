@@ -10,6 +10,7 @@ CEL ANALIZY
 [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) jest bogaty; moduł ma >50 uncovered lines. Znajdź luki w parserze sekcji, onsets, `reflowUgImportSectionBars`, `applyUgImportToProject`.
 
 PYTANIA BADAWCZE
+
 1. Które regex/token paths (`CHORD_TOKEN`, `SECTION_BRACKET`) nie mają negatywnych testów?
 2. `barsPerLine` ≠ 1, custom `contentFloorTicks`, `idPrefix` — pokrycie?
 3. `clipsFromOnsets` / `chordOnsetsInBar` — overlapping, empty bar, multiple chords per bar?
@@ -19,11 +20,13 @@ PYTANIA BADAWCZE
 7. Integracja z `wand.sealAkordyLengths` po imporcie?
 
 KONTEKST
+
 - Pure shared; fail-soft `UgImportResult`; Polish H → B via `toLiteralStorage`.
 - Vitest; bez I/O.
 - Parity legacy: barsPerLine, onset timing do następnego akordu.
 
 OCZEKIWANY OUTPUT
+
 1. Lista brakujących testów z przykładowym input string (ChordPro-lite).
 2. Fixture snippets inline (nie tylko Money sample).
 3. Mocki: brak (pure).
@@ -55,7 +58,7 @@ Analiza UG Import StageSync
 
 # Systemowa Analiza Parseru UG/ChordPro oraz Audyt Pokrycia Testowego Modułu ug-import.ts w StageSync
 
-Moduł importu Ultimate Guitar (UG) oraz ChordPro-lite, umiejscowiony w ścieżce [`packages/shared/src/ug-import.ts`](../../../../packages/shared/src/ug-import.ts), stanowi kluczowy element architektoniczny warstwy dzielonej (*pure shared domain*) w systemie StageSync . Odpowiada on za bezwyjątkową (*fail-soft*) transformację surowego tekstu piosenki z akordami na deterministyczne struktury danych: sekcje Formy (`formaMusic`), linie wokalne (`tekst`) oraz klipy akordowe (`akordy`) . Proces ten opiera się na siatce czasowej wyznaczonej przez wskaźnik PPQ (*Pulses Per Quarter Note*, domyślnie 960) oraz metrum .
+Moduł importu Ultimate Guitar (UG) oraz ChordPro-lite, umiejscowiony w ścieżce [`packages/shared/src/ug-import.ts`](../../../../packages/shared/src/ug-import.ts), stanowi kluczowy element architektoniczny warstwy dzielonej (_pure shared domain_) w systemie StageSync . Odpowiada on za bezwyjątkową (_fail-soft_) transformację surowego tekstu piosenki z akordami na deterministyczne struktury danych: sekcje Formy (`formaMusic`), linie wokalne (`tekst`) oraz klipy akordowe (`akordy`) . Proces ten opiera się na siatce czasowej wyznaczonej przez wskaźnik PPQ (_Pulses Per Quarter Note_, domyślnie 960) oraz metrum .
 
 Mimo że istniejąca suita testowa [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) weryfikuje podstawowe przypadki użycia, szczegółowa analiza wykazuje ponad 50 niepokrytych linii kodu . Luki te dotyczą krawędziowych ścieżek parsowania tokenów akordowych, nietypowych nagłówków sekcji, matematyki czasowej przy parametrze `barsPerLine > 1`, przeliczania metrum podczas operacji `reflowUgImportSectionBars`, a także integracji wyniku importu z dokumentem projektu i modułem Różdżki (`shared-wand.ts`) .
 
@@ -72,10 +75,10 @@ const CHORD_TOKEN =
 
 Wyrażenie `CHORD_TOKEN` służy do weryfikacji tokenów w liniach czysto akordowych oraz wewnątrz nawiasów kwadratowych ChordPro . Analiza reguły ujawnia następujące luki w testach negatywnych:
 
-*   **Nieprawidłowy Bass po Ukośniku (Slash Bass)**: Tokeny zawierające niepoprawny dźwięk basowy, takie jak `C/9` lub `C/Z`, są dopuszczane przez człon `(?:\/[A-H](?:#|b)?)?` w `CHORD_TOKEN`, lecz odrzucane na etapie `splitRealBass` w `toLiteralStorage` . W przypadku napotkania tokenu `C/9` w linii czysto akordowej, parser traktuje go jako nie-akord, co powoduje zakwalifikowanie całej linii jako linii tekstu wokalnego . Błąd ten nie posiada obecnie dedykowanego testu .
-*   **Wielokrotne Grupy Alteracji w Nawiasach**: Regex akceptuje tylko jedną grupę nawiasów `(?:\([^)]+\))?` . Złożone symbole, takie jak `C(add9)(omit3)`, nie dopasowują się do wzorca i są błędnie traktowane jako słowa tekstu piosenki .
-*   **Kolidujące Litery Jednoliterowe**: Słowa jednoliterowe stanowiące w języku polskim lub angielskim spójniki (np. „A”, „i”), występujące w liniach z akordami, są interpretowane jako nuty basowe lub prymy akordów . Linia składająca się wyłącznie ze słów „A B C” zostanie w całości sparowana jako linia akordowa bez tekstu .
-*   **Wielokrotne Modyfikacje Alterowane**: Sekwencje nakładających się alteracji (np. `Cmaj7#5#9#11#13`) testują chciwość wyrażenia regularnego, ale brak jest testów sprawdzających limity długości i poprawności .
+- **Nieprawidłowy Bass po Ukośniku (Slash Bass)**: Tokeny zawierające niepoprawny dźwięk basowy, takie jak `C/9` lub `C/Z`, są dopuszczane przez człon `(?:\/[A-H](?:#|b)?)?` w `CHORD_TOKEN`, lecz odrzucane na etapie `splitRealBass` w `toLiteralStorage` . W przypadku napotkania tokenu `C/9` w linii czysto akordowej, parser traktuje go jako nie-akord, co powoduje zakwalifikowanie całej linii jako linii tekstu wokalnego . Błąd ten nie posiada obecnie dedykowanego testu .
+- **Wielokrotne Grupy Alteracji w Nawiasach**: Regex akceptuje tylko jedną grupę nawiasów `(?:\([^)]+\))?` . Złożone symbole, takie jak `C(add9)(omit3)`, nie dopasowują się do wzorca i są błędnie traktowane jako słowa tekstu piosenki .
+- **Kolidujące Litery Jednoliterowe**: Słowa jednoliterowe stanowiące w języku polskim lub angielskim spójniki (np. „A”, „i”), występujące w liniach z akordami, są interpretowane jako nuty basowe lub prymy akordów . Linia składająca się wyłącznie ze słów „A B C” zostanie w całości sparowana jako linia akordowa bez tekstu .
+- **Wielokrotne Modyfikacje Alterowane**: Sekwencje nakładających się alteracji (np. `Cmaj7#5#9#11#13`) testują chciwość wyrażenia regularnego, ale brak jest testów sprawdzających limity długości i poprawności .
 
 Nagłówki sekcji są identyfikowane przez wyrażenie `SECTION_BRACKET` oraz funkcję `parseSectionHeader` :
 
@@ -84,7 +87,7 @@ const SECTION_BRACKET =
   /^\[(Verse|Chorus|Bridge|Intro|Outro|Pre-?Chorus|Solo|Instrumental|Interlude|Tag|Ending|Hook|Refrain|Coda|Break|Prechorus)(?:\s*\d*)?\]$/i;
 ```
 
-Wyrażenie `SECTION_BRACKET` akceptuje wyłącznie angielskie nazwy sekcji . Polskie nazwy, takie jak `[Zwrotka 1]` czy `[Refren]`, nie pasują do tego regexu, lecz wpadają do drugiego warunku awaryjnego w `parseSectionHeader` (`/^\[[^\]]+\]$/`), o ile linia nie zawiera wewnątrz akordów w nawiasach . Rezmieszczenie to działa poprawnie dzięki projektowej ścieżce fallback, ale zachowanie to nie jest objęte żadnym testem . 
+Wyrażenie `SECTION_BRACKET` akceptuje wyłącznie angielskie nazwy sekcji . Polskie nazwy, takie jak `[Zwrotka 1]` czy `[Refren]`, nie pasują do tego regexu, lecz wpadają do drugiego warunku awaryjnego w `parseSectionHeader` (`/^\[[^\]]+\]$/`), o ile linia nie zawiera wewnątrz akordów w nawiasach . Rezmieszczenie to działa poprawnie dzięki projektowej ścieżce fallback, ale zachowanie to nie jest objęte żadnym testem .
 
 Ponadto dyrektywy blokowe ChordPro, takie jak `{start_of_verse: Intro}` lub `{start_of_chorus}`, są parsowane przez `parseSectionHeader`, podczas gdy dyrektywy metadanych (np. `{title: Song}`) są odrzucane przez `isSkipMetaDirective` . W zestawie testów brakuje weryfikacji, czy dyrektywa `{title}` nie powoduje błędnego utworzenia pustej sekcji Formy .
 
@@ -94,21 +97,21 @@ Ponadto dyrektywy blokowe ChordPro, takie jak `{start_of_verse: Intro}` lub `{st
 
 Konfiguracja importu przekazywana w obiekcie `UgImportOptions` steruje rozmieszczaniem obiektów na osi czasowej wyrażonej w tickach . Domyślne wartości to `PPQ = 960` (co daje 3840 ticków na takt w metrum 4/4), `contentFloorTicks = 0` oraz `idPrefix = "ug"` .
 
-| Parametr Konfiguracji | Wartość Domyślna | Znaczenie Architektoniczne w Kodzie | Stan Pokrycia Testowego |
-| :--- | :--- | :--- | :--- |
-| `barsPerLine` | `1` | Liczba taktów siatki przydzielana na jedną linię tekstu (`lineTicks = barTicks * barsPerLine`) . | **Brak** (weryfikowane tylko domyślne `barsPerLine = 1`) . |
-| `contentFloorTicks` | `0` | Punkt startowy na osi czasu (np. przesunięcie po klipie odliczania `countdown`) . | **Brak** (wszystkie testy startują od ticka 0) . |
-| `idPrefix` | `"ug"` | Prefiks generowanych identyfikatorów klipów (`ug-tekst-N`, `ug-akord-N`, `ug-forma-N`) . | **Brak** (weryfikowane tylko domyślny prefiks `"ug"`) . |
+| Parametr Konfiguracji | Wartość Domyślna | Znaczenie Architektoniczne w Kodzie                                                              | Stan Pokrycia Testowego                                    |
+| :-------------------- | :--------------- | :----------------------------------------------------------------------------------------------- | :--------------------------------------------------------- |
+| `barsPerLine`         | `1`              | Liczba taktów siatki przydzielana na jedną linię tekstu (`lineTicks = barTicks * barsPerLine`) . | **Brak** (weryfikowane tylko domyślne `barsPerLine = 1`) . |
+| `contentFloorTicks`   | `0`              | Punkt startowy na osi czasu (np. przesunięcie po klipie odliczania `countdown`) .                | **Brak** (wszystkie testy startują od ticka 0) .           |
+| `idPrefix`            | `"ug"`           | Prefiks generowanych identyfikatorów klipów (`ug-tekst-N`, `ug-akord-N`, `ug-forma-N`) .         | **Brak** (weryfikowane tylko domyślny prefiks `"ug"`) .    |
 
-Gdy parametr `barsPerLine` przybiera wartość większą od 1 (np. `barsPerLine = 2`), jedna linia tekstu zajmuje w projekcie 2 takty (7680 ticków przy PPQ 960 i metrum 4/4) . Klip tekstu (`TekstClip`) otrzymuje wówczas `lengthTicks = 7680` . 
+Gdy parametr `barsPerLine` przybiera wartość większą od 1 (np. `barsPerLine = 2`), jedna linia tekstu zajmuje w projekcie 2 takty (7680 ticków przy PPQ 960 i metrum 4/4) . Klip tekstu (`TekstClip`) otrzymuje wówczas `lengthTicks = 7680` .
 
-Akordy przypisane do tej linii są rozmieszczane przez funkcję `chordOnsetsInBar` w granicach **pierwszego taktu** (`barTicks = 3840`) . Jednakże funkcja `clipsFromOnsets` wylicza długość ostatniego akordu w linii jako `spanEnd - startTicks`, gdzie `spanEnd = lineStart + lineTicks` . W efekcie ostatni akord danej linii rozciąga się przez cały drugi takt, aż do rozpoczęcia kolejnej linii wokalnej . Jest to zachowanie zgodne z historyczną specyfikacją systemu StageSync (*legacy parity*), ale nie posiada ono testu weryfikacyjnego w [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) .
+Akordy przypisane do tej linii są rozmieszczane przez funkcję `chordOnsetsInBar` w granicach **pierwszego taktu** (`barTicks = 3840`) . Jednakże funkcja `clipsFromOnsets` wylicza długość ostatniego akordu w linii jako `spanEnd - startTicks`, gdzie `spanEnd = lineStart + lineTicks` . W efekcie ostatni akord danej linii rozciąga się przez cały drugi takt, aż do rozpoczęcia kolejnej linii wokalnej . Jest to zachowanie zgodne z historyczną specyfikacją systemu StageSync (_legacy parity_), ale nie posiada ono testu weryfikacyjnego w [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) .
 
 ---
 
 ## Algorytmy Rozmieszczania Akordów (`chordOnsetsInBar`, `clipsFromOnsets`, `sealAkordyLengths`)
 
-Wyliczanie pozycji akordów w obrębie taktu opiera się na matematycznej dystrybucji miar . Funkcja `chordOnsetsInBar` wyznacza unikalne i monotonicznie rosnące punkty startowe (*onsets*) :
+Wyliczanie pozycji akordów w obrębie taktu opiera się na matematycznej dystrybucji miar . Funkcja `chordOnsetsInBar` wyznacza unikalne i monotonicznie rosnące punkty startowe (_onsets_) :
 
 1.  Dla `chordCount == 1` zwracany jest jednowelementowy wektor `[barStart]` .
 2.  Dla `chordCount <= beatsPerBar` stosowana jest funkcja `distributeChordBeatIndices`, przypisująca akordy do konkretnych miar taktu (1..4) .
@@ -131,9 +134,9 @@ $\text{lengthTicks}_{\text{new}} = \max\left(1, \left\lfloor \text{lengthTicks}_
 
 Podczas analizy kodu `reflowUgImportSectionBars` zidentyfikowano następujące niepokryte ścieżki i sytuacje brzegowe :
 
-*   **Niezgodność Długości Tablicy Sekcji**: Kod zawiera warunek walidacyjny sprawdzający, czy podana tablica długości `sectionBars` odpowiada liczbie sekcji w obiekcie `imported.formaMusic.clips` . Ścieżka zwracająca błąd `{ ok: false, message: "Liczba długości sekcji nie pasuje..." }` nie jest wywoływana w żadnym teście .
-*   **Nieprawidłowe lub Ujemne Wartości Taktów**: Konwersja `Math.min(256, Math.max(1, v))` zabezpiecza kod przed wartościami ujemnymi, zerowymi oraz `NaN` . Przypadek przekazania wartości ujemnych w tablicy `sectionBars` nie jest objęty testem .
-*   **Zmiana Metrum podczas Reflow**: Gdy import pierwotny wykonano w metrum 4/4 (`barTicks = 3840`), a wywołanie `reflowUgImportSectionBars` przekaże nową konfigurację metrum 3/4 (`barTicks = 2880`), nowa długość sekcji zostanie wyliczona w oparciu o metrum 3/4 . Skalowanie proporcjonalne przeliczy pozycje tickowe, jednak klipy mogą zostać przesunięte poza miary taktu . Brak jest testów weryfikujących zachowanie parsera przy zmianie metrum .
+- **Niezgodność Długości Tablicy Sekcji**: Kod zawiera warunek walidacyjny sprawdzający, czy podana tablica długości `sectionBars` odpowiada liczbie sekcji w obiekcie `imported.formaMusic.clips` . Ścieżka zwracająca błąd `{ ok: false, message: "Liczba długości sekcji nie pasuje..." }` nie jest wywoływana w żadnym teście .
+- **Nieprawidłowe lub Ujemne Wartości Taktów**: Konwersja `Math.min(256, Math.max(1, v))` zabezpiecza kod przed wartościami ujemnymi, zerowymi oraz `NaN` . Przypadek przekazania wartości ujemnych w tablicy `sectionBars` nie jest objęty testem .
+- **Zmiana Metrum podczas Reflow**: Gdy import pierwotny wykonano w metrum 4/4 (`barTicks = 3840`), a wywołanie `reflowUgImportSectionBars` przekaże nową konfigurację metrum 3/4 (`barTicks = 2880`), nowa długość sekcji zostanie wyliczona w oparciu o metrum 3/4 . Skalowanie proporcjonalne przeliczy pozycje tickowe, jednak klipy mogą zostać przesunięte poza miary taktu . Brak jest testów weryfikujących zachowanie parsera przy zmianie metrum .
 
 ---
 
@@ -162,7 +165,7 @@ Gdy użytkownik uruchamia Różdżkę w celu ponownego dopasowania tekstu lub ak
 
 ## Bezpieczeństwo Typów i Walidacja Schematu (`UgImportPayloadSchema`)
 
-Parser realizuje wzorzec bezwyjątkowej obsługi błędów (*fail-soft*) . Żaden nieprawidłowy ciąg znaków wprowadzony przez użytkownika nie generuje wyjątku `throw` . Przechwytywanie błędów na najwyższym poziomie pakuje ewentualne awarie do obiektu `{ ok: false, message: "..." }` z komunikatem w języku polskim .
+Parser realizuje wzorzec bezwyjątkowej obsługi błędów (_fail-soft_) . Żaden nieprawidłowy ciąg znaków wprowadzony przez użytkownika nie generuje wyjątku `throw` . Przechwytywanie błędów na najwyższym poziomie pakuje ewentualne awarie do obiektu `{ ok: false, message: "..." }` z komunikatem w języku polskim .
 
 Przed zwróceniem wyniku `UgImportOk`, sparowane tablice klipów są przepuszczane przez walidator Zod `UgImportPayloadSchema` :
 
@@ -182,22 +185,22 @@ Jedyny istniejący test walidacji schematu wymusza błąd poprzez przepełnienie
 
 ### Matryca Pokrycia Scenariuszy Importu
 
-| Typ Sekcji Formy | Typ Linii | Scenariusz Wejściowy (ChordPro-lite) | Oczekiwany Wynik Parsera i Stan Pokrycia |
-| :--- | :--- | :--- | :--- |
-| `[Verse]` | Akordy + Tekst | `[Am7b5]Line 1\n[C7b9]Line 2` | Akordy alterowane zaakceptowane, zmapowane na kanoniczny format storage . **Pokryte** . |
-| `[Chorus]` | Czyste Akordy | `G/H\ntekst` | Polish H w basie zamienione na B (`G/B`), linia tekstu zachowana . **Pokryte** . |
-| `[Zwrotka 1]` | Akordy w nawiasach | `[Hdim]Tekst` | Nagłówek przetworzony przez fallback, `Hdim` $\to$ `Bdim` . **Częściowe** . |
-| `{start_of_verse}` | Dyrektywy ChordPro | `{start_of_verse: Intro}\n[C]Hello` | Wykrycie nazwy sekcji "Intro" z dyrektywy blokowej . **Brak pokrycia** . |
-| `{title: Song}` | Metadane ChordPro | `{title: Test}\n[Verse]\n[C]Hi` | Pomięcie dyrektywy metadanych, utworzenie sekcji `Verse` . **Brak pokrycia** . |
-| Brak | Błędne Akordy | `C/9\nLine text` | Token `C/9` odrzucony jako akord, linia uznana za tekst wokalny . **Brak pokrycia** . |
-| `[Intro]` | Multi-bar line | `barsPerLine: 2` | `lineTicks = 7680`, klip tekstu ma długość 7680, akord rozciągnięty do końca linii . **Brak pokrycia** . |
-| Odliczanie | Custom Offset | `contentFloorTicks: 3840` | Sekcje i klipy rozpoczynają się od offsetu 3840 ticków . **Brak pokrycia** . |
-| `[Verse]` | Custom ID | `idPrefix: "test-import"` | Klipy otrzymują identyfikatory z prefiksem `test-import-` . **Brak pokrycia** . |
-| Reflow | Mismatch Tablicy | `reflowUgImportSectionBars(res, [8])` przy 2 sekcjach | Zwraca `{ ok: false, message: "Liczba długości..." }` . **Brak pokrycia** . |
+| Typ Sekcji Formy   | Typ Linii          | Scenariusz Wejściowy (ChordPro-lite)                  | Oczekiwany Wynik Parsera i Stan Pokrycia                                                                 |
+| :----------------- | :----------------- | :---------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| `[Verse]`          | Akordy + Tekst     | `[Am7b5]Line 1\n[C7b9]Line 2`                         | Akordy alterowane zaakceptowane, zmapowane na kanoniczny format storage . **Pokryte** .                  |
+| `[Chorus]`         | Czyste Akordy      | `G/H\ntekst`                                          | Polish H w basie zamienione na B (`G/B`), linia tekstu zachowana . **Pokryte** .                         |
+| `[Zwrotka 1]`      | Akordy w nawiasach | `[Hdim]Tekst`                                         | Nagłówek przetworzony przez fallback, `Hdim` $\to$ `Bdim` . **Częściowe** .                              |
+| `{start_of_verse}` | Dyrektywy ChordPro | `{start_of_verse: Intro}\n[C]Hello`                   | Wykrycie nazwy sekcji "Intro" z dyrektywy blokowej . **Brak pokrycia** .                                 |
+| `{title: Song}`    | Metadane ChordPro  | `{title: Test}\n[Verse]\n[C]Hi`                       | Pomięcie dyrektywy metadanych, utworzenie sekcji `Verse` . **Brak pokrycia** .                           |
+| Brak               | Błędne Akordy      | `C/9\nLine text`                                      | Token `C/9` odrzucony jako akord, linia uznana za tekst wokalny . **Brak pokrycia** .                    |
+| `[Intro]`          | Multi-bar line     | `barsPerLine: 2`                                      | `lineTicks = 7680`, klip tekstu ma długość 7680, akord rozciągnięty do końca linii . **Brak pokrycia** . |
+| Odliczanie         | Custom Offset      | `contentFloorTicks: 3840`                             | Sekcje i klipy rozpoczynają się od offsetu 3840 ticków . **Brak pokrycia** .                             |
+| `[Verse]`          | Custom ID          | `idPrefix: "test-import"`                             | Klipy otrzymują identyfikatory z prefiksem `test-import-` . **Brak pokrycia** .                          |
+| Reflow             | Mismatch Tablicy   | `reflowUgImportSectionBars(res, [8])` przy 2 sekcjach | Zwraca `{ ok: false, message: "Liczba długości..." }` . **Brak pokrycia** .                              |
 
 ### Suita Uzupełniających Testów Jednostkowych
 
-Poniższy kod stanowi gotowy zestaw testów jednostkowych Vitest, przeznaczony do wdrożenia w pliku [`packages/shared/src/ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts). Testy są w 100% czyste (*pureshared*), nie używają atrap (*mocks*), nie wykonują I/O i są w pełni deterministyczne .
+Poniższy kod stanowi gotowy zestaw testów jednostkowych Vitest, przeznaczony do wdrożenia w pliku [`packages/shared/src/ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts). Testy są w 100% czyste (_pureshared_), nie używają atrap (_mocks_), nie wykonują I/O i są w pełni deterministyczne .
 
 ```typescript
 import { describe, expect, it } from "vitest";
@@ -345,9 +348,7 @@ Lyrics after chords`;
       meterMap: [{ id: "m1", startTicks: 0, numerator: 4, denominator: 4 }],
       keyMap: [],
       assets: [],
-      audioTracks: [
-        { id: "tr-1", name: "Backing Track", gainDb: 0 },
-      ],
+      audioTracks: [{ id: "tr-1", name: "Backing Track", gainDb: 0 }],
       audioClips: [],
       tekst: {
         clips: [
@@ -381,4 +382,5 @@ Lyrics after chords`;
 ```
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

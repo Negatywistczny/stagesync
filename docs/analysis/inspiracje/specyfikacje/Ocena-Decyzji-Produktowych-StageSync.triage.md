@@ -8,9 +8,9 @@
 
 ## Provenance / duplikaty
 
-| Plik | Rola |
-|------|------|
-| Ten dump (168 linii) | **Kanon** — reliability / live production (D1–D7) |
+| Plik                                                                                       | Rola                                                                                       |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| Ten dump (168 linii)                                                                       | **Kanon** — reliability / live production (D1–D7)                                          |
 | [Ocena-Decyzji-Produktowych-StageSync-v1.md](./Ocena-Decyzji-Produktowych-StageSync-v1.md) | **Inny** eksport Gemini (CRIT-MX mikser FOH) — nie draft tego samego tekstu; osobny triage |
 
 ## Werdykt przydatności
@@ -19,15 +19,15 @@
 
 ## Macierz vs dysk / ADR
 
-| ID | Decyzja | Werdykt dumpu | Stan | Notatka |
-|----|---------|---------------|------|---------|
-| D1 | Safety Net manual promote; auto-election Later | KEEP | `on-tree` / `limit` | Role + promote API; auto-election = TODO residual |
-| D2 | MIDI OUT/Clock off na Spare | KEEP | `on-tree` | `isMidiOutAllowed()` |
-| D3 | Backup Przywróć GUI = backlog | REVISE | `rejected` (claim) / `on-tree` | Admin **Przywróć…** `.bak`/ZIP w `5.2.1` — luka dumpu zamknięta |
-| D4 | Auto-update permanent NIE | KEEP | `confirmed` | ADR 0015 |
-| D5 | git-apply / Aktualizuj teraz OUT | KEEP | `confirmed` | ADR 0015 |
-| D6 | Offline-First + dialog Zastosuj | KEEP | `on-tree` | #692 MVP; delta = residual |
-| D7 | Shared data dir NFS/SMB | REVERT | `hypothesis` | Dump: local SSD + async WS; Safety Net triage = shared dir hipoteza — **re-open PO** |
+| ID  | Decyzja                                        | Werdykt dumpu | Stan                           | Notatka                                                                              |
+| --- | ---------------------------------------------- | ------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
+| D1  | Safety Net manual promote; auto-election Later | KEEP          | `on-tree` / `limit`            | Role + promote API; auto-election = TODO residual                                    |
+| D2  | MIDI OUT/Clock off na Spare                    | KEEP          | `on-tree`                      | `isMidiOutAllowed()`                                                                 |
+| D3  | Backup Przywróć GUI = backlog                  | REVISE        | `rejected` (claim) / `on-tree` | Admin **Przywróć…** `.bak`/ZIP w `5.2.1` — luka dumpu zamknięta                      |
+| D4  | Auto-update permanent NIE                      | KEEP          | `confirmed`                    | ADR 0015                                                                             |
+| D5  | git-apply / Aktualizuj teraz OUT               | KEEP          | `confirmed`                    | ADR 0015                                                                             |
+| D6  | Offline-First + dialog Zastosuj                | KEEP          | `on-tree`                      | #692 MVP; delta = residual                                                           |
+| D7  | Shared data dir NFS/SMB                        | REVERT        | `hypothesis`                   | Dump: local SSD + async WS; Safety Net triage = shared dir hipoteza — **re-open PO** |
 
 ## Confirmed vs hypothesis
 

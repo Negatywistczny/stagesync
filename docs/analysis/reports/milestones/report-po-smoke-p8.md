@@ -12,14 +12,14 @@ Po green: odhacz [TODO.md](../../../TODO.md) R1/R5 + inventarz „PO verified”
 
 ## Podsumowanie (odhacz na końcu)
 
-| ID | Obszar | Pass |
-|----|--------|------|
-| **T-gest** | marquee, Cmd/Shift select, multi-drag, ⌘C/X/V/D | ☑ |
-| **T-loc / zoom / maps / chrome** | locator, suwaki H/V/UI, mapy, header | ☑ |
-| **meta / CD** | Countdown length + ephemeral digits | ☑ |
-| **A1** | Set + song pick | ☑ |
-| **C1** | Karaoke fill, Grid cycle, Forma strip | ☑ |
-| **P8** | Sign-off (wszystkie powyżej green) | ☑ |
+| ID                               | Obszar                                          | Pass |
+| -------------------------------- | ----------------------------------------------- | ---- |
+| **T-gest**                       | marquee, Cmd/Shift select, multi-drag, ⌘C/X/V/D | ☑    |
+| **T-loc / zoom / maps / chrome** | locator, suwaki H/V/UI, mapy, header            | ☑    |
+| **meta / CD**                    | Countdown length + ephemeral digits             | ☑    |
+| **A1**                           | Set + song pick                                 | ☑    |
+| **C1**                           | Karaoke fill, Grid cycle, Forma strip           | ☑    |
+| **P8**                           | Sign-off (wszystkie powyżej green)              | ☑    |
 
 **β:** P8 green — wejście β1 **na prośbę** (Docker/Tauri). Nie bumpaj `5.0.0-beta.*` bez osobnej decyzji. Tag α9 — osobna prośba.
 

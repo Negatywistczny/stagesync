@@ -11,40 +11,40 @@
 
 ## IN (must) — Migrator
 
-| # | Wycinek | Done |
-|---|---------|------|
-| M1 | Scope report (ten plik) | ✓ |
-| M2 | Pure `migrateLegacySong` / `migrateLegacyDatabase` w `@stagesync/shared` | ✓ |
-| M3 | Axis shift + `absBeatToTicks` (`Math.round(startAbs * PPQ)`) | ✓ |
-| M4 | Mapowanie: Forma (+ note), tempo/meter/key maps, Tekst, Akordy, Cue, scoreBarMap, metadata | ✓ |
-| M5 | Zod fail-fast na wyjściu (`ProjectSchema`) | ✓ |
-| M6 | Vitest happy + broken path | ✓ |
-| M7 | CLI `--dry-run` / `--apply` + shadow `.bak` | ✓ |
-| M8 | Docs użytkownika [MIGRATION.md](../../../guides/MIGRATION.md) | ✓ |
-| M9 | Fixtures / smoke na typowej bazie 4.x + regresja Admin import | ✓ |
+| #   | Wycinek                                                                                    | Done |
+| --- | ------------------------------------------------------------------------------------------ | ---- |
+| M1  | Scope report (ten plik)                                                                    | ✓    |
+| M2  | Pure `migrateLegacySong` / `migrateLegacyDatabase` w `@stagesync/shared`                   | ✓    |
+| M3  | Axis shift + `absBeatToTicks` (`Math.round(startAbs * PPQ)`)                               | ✓    |
+| M4  | Mapowanie: Forma (+ note), tempo/meter/key maps, Tekst, Akordy, Cue, scoreBarMap, metadata | ✓    |
+| M5  | Zod fail-fast na wyjściu (`ProjectSchema`)                                                 | ✓    |
+| M6  | Vitest happy + broken path                                                                 | ✓    |
+| M7  | CLI `--dry-run` / `--apply` + shadow `.bak`                                                | ✓    |
+| M8  | Docs użytkownika [MIGRATION.md](../../../guides/MIGRATION.md)                              | ✓    |
+| M9  | Fixtures / smoke na typowej bazie 4.x + regresja Admin import                              | ✓    |
 
 ## IN (must) — Residual parity (z α8 freeze)
 
 Playbook PO: [report-po-smoke-p8.md](./report-po-smoke-p8.md). CL-P0 kod ✓; **C1 / P8 green (2026-07-21)**.
 
-| # | Wycinek | Done |
-|---|---------|------|
-| R1 | PO smoke T-gest / T-loc / T-zoom / T-maps / T-chrome / A1 | ✓ |
-| R2 | **CL-01** Karaoke beat / bar highlight | ✓ |
-| R3 | **CL-04** Grid full cycle / multi-bar | ✓ |
-| R4 | **CL-05** Forma / drums bar progress | ✓ |
-| R5 | **P8** Sign-off PO (blokuje β) | ✓ |
+| #   | Wycinek                                                   | Done |
+| --- | --------------------------------------------------------- | ---- |
+| R1  | PO smoke T-gest / T-loc / T-zoom / T-maps / T-chrome / A1 | ✓    |
+| R2  | **CL-01** Karaoke beat / bar highlight                    | ✓    |
+| R3  | **CL-04** Grid full cycle / multi-bar                     | ✓    |
+| R4  | **CL-05** Forma / drums bar progress                      | ✓    |
+| R5  | **P8** Sign-off PO (blokuje β)                            | ✓    |
 
 ## OUT (świadome)
 
-| Temat | Uwagi |
-|-------|--------|
-| MusicXML / cover file copy | Tylko refs w JSON jeśli kiedyś; pliki ręcznie |
-| Audio tracks / playback | β2 |
-| AD-01…03 Live Desk korekt | β2 |
-| Dual-write do `database.json` | Nigdy |
-| Pełny round-trip v5→4.x | OUT |
-| UI wizard w Admin | CLI + import pack wystarczy; pełny wizard optional |
+| Temat                         | Uwagi                                              |
+| ----------------------------- | -------------------------------------------------- |
+| MusicXML / cover file copy    | Tylko refs w JSON jeśli kiedyś; pliki ręcznie      |
+| Audio tracks / playback       | β2                                                 |
+| AD-01…03 Live Desk korekt     | β2                                                 |
+| Dual-write do `database.json` | Nigdy                                              |
+| Pełny round-trip v5→4.x       | OUT                                                |
+| UI wizard w Admin             | CLI + import pack wystarczy; pełny wizard optional |
 
 ## Reguła osi (kontrakt)
 

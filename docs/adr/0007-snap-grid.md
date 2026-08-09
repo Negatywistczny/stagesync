@@ -34,12 +34,12 @@ Ten ADR dotyczy **snap grid** / **edit quantize** — siatki **czasu**, nie layo
 
 ### 2. Tryby snap (rozszerzalne)
 
-| Tryb | Semantyka (v5) | Port v4 |
-|------|----------------|---------|
-| `off` | brak kwantyzacji (ticks bez zmian) | — |
-| `bar` | linia początku taktu muzycznego @ `meter` ( **miara** ) | `snapAbsToBarStart` |
-| `beat` | siatka lokalnego beatu (`localTicksPerBeat`) | `quantizeAbsBeat` + `beatUnitQuarters` |
-| `subdivision` | podział ćwierćnuty: 1/2, 1/4, 1/8, 1/16 | analog Logic „1/8 note” |
+| Tryb          | Semantyka (v5)                                          | Port v4                                |
+| ------------- | ------------------------------------------------------- | -------------------------------------- |
+| `off`         | brak kwantyzacji (ticks bez zmian)                      | —                                      |
+| `bar`         | linia początku taktu muzycznego @ `meter` ( **miara** ) | `snapAbsToBarStart`                    |
+| `beat`        | siatka lokalnego beatu (`localTicksPerBeat`)            | `quantizeAbsBeat` + `beatUnitQuarters` |
+| `subdivision` | podział ćwierćnuty: 1/2, 1/4, 1/8, 1/16                 | analog Logic „1/8 note”                |
 
 Tryb snap to **stan sesji Timeline** (React + opcjonalnie localStorage później).
 **Nie** zapisujemy go w [`project.json`](../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) w alpha.
@@ -83,12 +83,12 @@ chwilowy tryb **`off`** (brak kwantyzacji do siatki).
 
 ### 6. Narzędzia (kolejność wdrożenia)
 
-| Narzędzie | Snap |
-|-----------|------|
-| Pencil (Forma) | must — przez `quantizeTicks` |
-| Drag resize / move | should (α7 Forma; β1 audio) |
-| Scissors, mapy Tempo/Metrum | should (α7) |
-| Transport seek (UI) | opcjonalnie; SSOT seek = dokładne ticks |
+| Narzędzie                   | Snap                                    |
+| --------------------------- | --------------------------------------- |
+| Pencil (Forma)              | must — przez `quantizeTicks`            |
+| Drag resize / move          | should (α7 Forma; β1 audio)             |
+| Scissors, mapy Tempo/Metrum | should (α7)                             |
+| Transport seek (UI)         | opcjonalnie; SSOT seek = dokładne ticks |
 
 ## Poza zakresem (jawnie OUT na teraz)
 
@@ -107,9 +107,9 @@ chwilowy tryb **`off`** (brak kwantyzacji do siatki).
 
 ## Fazy implementacji
 
-| Faza | Zakres |
-|------|--------|
-| **0** | Ten ADR + szkic API w `@stagesync/shared` |
-| **1** | Pencil Forma → `quantizeTicks`; domyślnie `bar` |
-| **2** | Toggle UI + tryby beat / subdivision |
+| Faza  | Zakres                                                                                  |
+| ----- | --------------------------------------------------------------------------------------- |
+| **0** | Ten ADR + szkic API w `@stagesync/shared`                                               |
+| **1** | Pencil Forma → `quantizeTicks`; domyślnie `bar`                                         |
+| **2** | Toggle UI + tryby beat / subdivision                                                    |
 | **3** | Drag, scissors, mapy; Cmd/Ctrl = snap off ([ADR 0008](./0008-timeline-clip-editing.md)) |

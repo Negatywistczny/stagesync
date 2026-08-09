@@ -97,4 +97,3 @@ Bazując na [report-beta-gate.md](./report-beta-gate.md), poniższe punkty nadal
 3. Przejdź checklistę G1–G10 w [report-beta-gate.md](./report-beta-gate.md).
 4. G6: po zainstalowaniu alpha.10 — tag `v5.0.0-alpha.11` jako cel updatu.
 5. Bump `5.0.0-beta.1` **tylko na prośbę** po green gate.
-

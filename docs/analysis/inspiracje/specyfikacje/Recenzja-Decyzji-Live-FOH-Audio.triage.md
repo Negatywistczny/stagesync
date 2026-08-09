@@ -12,13 +12,13 @@
 
 ## Macierz
 
-| ID | Temat | Werdykt | Stan | Notatka |
-|----|-------|---------|------|---------|
-| CRIT-OUT-01 | Multi-out + runtime criteria | REVISE | `partial` | Gate on-tree; HW UI/ChannelMerger = TODO |
-| CRIT-OUT-02 | Bus→bus + anti-cycle | KEEP | `on-tree` | Zod + fail-soft → Master |
-| CRIT-OUT-03 | Brak atrap Out | KEEP | `confirmed` | ADR 0011 |
-| CRIT-OUT-04 | Logical HW patch table | KEEP | `on-tree` / residual UI | Model vs runtime multi-out |
-| PO Q | Hot-unplug fail-safe; offline show prep; patch in project vs host prefs | — | `hypothesis` | |
+| ID          | Temat                                                                   | Werdykt | Stan                    | Notatka                                  |
+| ----------- | ----------------------------------------------------------------------- | ------- | ----------------------- | ---------------------------------------- |
+| CRIT-OUT-01 | Multi-out + runtime criteria                                            | REVISE  | `partial`               | Gate on-tree; HW UI/ChannelMerger = TODO |
+| CRIT-OUT-02 | Bus→bus + anti-cycle                                                    | KEEP    | `on-tree`               | Zod + fail-soft → Master                 |
+| CRIT-OUT-03 | Brak atrap Out                                                          | KEEP    | `confirmed`             | ADR 0011                                 |
+| CRIT-OUT-04 | Logical HW patch table                                                  | KEEP    | `on-tree` / residual UI | Model vs runtime multi-out               |
+| PO Q        | Hot-unplug fail-safe; offline show prep; patch in project vs host prefs | —       | `hypothesis`            |                                          |
 
 ## Następny krok
 

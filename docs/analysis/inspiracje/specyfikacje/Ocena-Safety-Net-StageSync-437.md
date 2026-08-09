@@ -14,7 +14,7 @@ Rozwiązanie Safety Net pozbawione automatycznej elekcji nie jest marketingową 
 
 Tradycyjne systemy redundantne stosowane na światowych trasach koncertowych (oparte na oprogramowaniu QLab, MainStage czy Ableton Live) w przeważającej większości opierają się na równoległym wyzwalaniu dwóch niezależnych maszyn oraz ręcznym lub sprzętowym przełączaniu sygnału wyjściowego . Wprowadzenie w StageSync kontrolowanego przejęcia roli Mastera przez operatora, przy jednoczesnym automatycznym blokowaniu portów wyjściowych MIDI na maszynie Spare, dostarcza wysoki poziom bezpieczeństwa bez wprowadzania niedeterministycznych automatów decyzyjnych .
 
-Rekomenduje się jednak **zawężenie opisu w dokumentacji (REVISE)**, aby uniknąć sformułowań sugerujących bezobsługową, przezroczystą wysoką dostępność (Zero-Glitch Seamless HA) . Dokumentacja dla realizatorów powinna jednoznacznie definiować Safety Net w MVP jako *Operator-Assisted Hot Standby* (Pasywna Rezerwa z Ręcznym Przejęciem) .
+Rekomenduje się jednak **zawężenie opisu w dokumentacji (REVISE)**, aby uniknąć sformułowań sugerujących bezobsługową, przezroczystą wysoką dostępność (Zero-Glitch Seamless HA) . Dokumentacja dla realizatorów powinna jednoznacznie definiować Safety Net w MVP jako _Operator-Assisted Hot Standby_ (Pasywna Rezerwa z Ręcznym Przejęciem) .
 
 ---
 
@@ -22,7 +22,7 @@ Rekomenduje się jednak **zawężenie opisu w dokumentacji (REVISE)**, aby unikn
 
 ### Decyzja 1: Nazewnictwo Master / Spare (odrzucenie terminu Slave)
 
-Wybór terminologii Master / Spare w pełni odpowiada współczesnym standardom branży mediatronicznej i nadawczej . W odróżnieniu od klasycznego układu Master / Slave — gdzie instancja podrzędna bezrefleksyjnie wykonuje polecenia instancji nadrzędnej — słowo *Spare* precyzyjnie oddaje charakter węzła rezerwowego . Instancja Spare w StageSync nie jest bezwolnym wykonawcą, lecz autonomicznym serwerem utrzymującym w pamięci podręcznej pełne odzwierciedlenie stanu projektu, zablokowanym programowo w trybie odczytu (Read-Only Mirror) do momentu awansu . Nazewnictwo to jest spójne z nomenklaturą stosowaną w konsoletach cyfrowych oraz systemach matrycowych (Primary / Secondary lub Main / Spare) .
+Wybór terminologii Master / Spare w pełni odpowiada współczesnym standardom branży mediatronicznej i nadawczej . W odróżnieniu od klasycznego układu Master / Slave — gdzie instancja podrzędna bezrefleksyjnie wykonuje polecenia instancji nadrzędnej — słowo _Spare_ precyzyjnie oddaje charakter węzła rezerwowego . Instancja Spare w StageSync nie jest bezwolnym wykonawcą, lecz autonomicznym serwerem utrzymującym w pamięci podręcznej pełne odzwierciedlenie stanu projektu, zablokowanym programowo w trybie odczytu (Read-Only Mirror) do momentu awansu . Nazewnictwo to jest spójne z nomenklaturą stosowaną w konsoletach cyfrowych oraz systemach matrycowych (Primary / Secondary lub Main / Spare) .
 
 ### Decyzja 2: MVP = Wyłącznie ręczny Promote; Auto-Election odłożone na Fazy Późniejsze
 
@@ -52,16 +52,16 @@ Założenie, że węzeł Spare korzysta z zasobu danych w trybie odczytu (np. za
 
 W celu obiektywnej oceny przyjętych założeń, zestawiono architekturę StageSync v5.2 z trzema powszechnie stosowanymi w branży rozrywkowej modelami redundancji: podwójnymi zestawami QLab, dedykowanymi odtwarzaczami sprzętowymi oraz podwójnymi systemami MainStage.
 
-| Cecha / Mechanizm | QLab Dual-Machine Setup  | MainStage Redundant Rig  | Redundant Players (np. Ableton)  | StageSync v5.2 Safety Net  |
-| :--- | :--- | :--- | :--- | :--- |
-| **Architektura Autorytetu** | Zdublowane niezależne maszyny wyzwalane równolegle  | Zdublowane komputery odbierające sygnał MIDI IN  | Dwie instancje połączone protokołem Ableton Link / MIDI  | Zdeterminiowany układ Master (SSOT) / Spare (Mirror)  |
-| **Mechanizm Przełączenia Audio** | Sprzętowy przełącznik (np. Radial SW8, PlayAudio12)  | Sprzętowy przełącznik audio sterowany tonem pilotującym  | Sprzętowy przełącznik audio lub konsoleta mikserska  | Zewnętrzny przełącznik audio lub ręczny tłumik konsolety  |
-| **Zarządzanie Magistralą MIDI OUT** | Brak natywnej blokady; wymaga sprzętowego splitter-boxa  | Wymaga fizycznego odłączenia kabli lub przełącznika MIDI  | Zdublowane komunikaty wysyłane na osobne porty  | **Natywne wyciszenie wyjść MIDI na instancji Spare**  |
-| **Inicjalizacja Przełączenia Failover** | Ręczna (operator) lub automatyczna przez przełącznik audio  | Automatyczna (zanik tonu sine 1kHz) lub ręczna  | Ręczna przez realizatora na konsolecie lub switchu  | **Ręczna (akcja operatora „Przejmij” w UI)**  |
-| **Synchronizacja Pozycji Transportu** | Wyzwalanie CUE z jednego pilota (np. StreamDeck, OSC)  | Odczyt komunikatów MIDI ze wspólnej klawiatury  | Równoległe odtwarzanie od wspólnego punktu startu  | Pasywne podążanie węzła Spare za zdarzeniami WS z Mastera  |
-| **Ryzyko Kolizji Split-Brain** | Niskie (przełącznik fizyczny decyduje o szynie wyjściowej)  | Bardzo niskie (detekcja czysto analogowa tonu pilotującego)  | Średnie przy automatycznym spięciu zegarów bez switcha  | **Zero (blokada programowa i brak autoelekcji w MVP)**  |
+| Cecha / Mechanizm                       | QLab Dual-Machine Setup                                    | MainStage Redundant Rig                                     | Redundant Players (np. Ableton)                         | StageSync v5.2 Safety Net                                 |
+| :-------------------------------------- | :--------------------------------------------------------- | :---------------------------------------------------------- | :------------------------------------------------------ | :-------------------------------------------------------- |
+| **Architektura Autorytetu**             | Zdublowane niezależne maszyny wyzwalane równolegle         | Zdublowane komputery odbierające sygnał MIDI IN             | Dwie instancje połączone protokołem Ableton Link / MIDI | Zdeterminiowany układ Master (SSOT) / Spare (Mirror)      |
+| **Mechanizm Przełączenia Audio**        | Sprzętowy przełącznik (np. Radial SW8, PlayAudio12)        | Sprzętowy przełącznik audio sterowany tonem pilotującym     | Sprzętowy przełącznik audio lub konsoleta mikserska     | Zewnętrzny przełącznik audio lub ręczny tłumik konsolety  |
+| **Zarządzanie Magistralą MIDI OUT**     | Brak natywnej blokady; wymaga sprzętowego splitter-boxa    | Wymaga fizycznego odłączenia kabli lub przełącznika MIDI    | Zdublowane komunikaty wysyłane na osobne porty          | **Natywne wyciszenie wyjść MIDI na instancji Spare**      |
+| **Inicjalizacja Przełączenia Failover** | Ręczna (operator) lub automatyczna przez przełącznik audio | Automatyczna (zanik tonu sine 1kHz) lub ręczna              | Ręczna przez realizatora na konsolecie lub switchu      | **Ręczna (akcja operatora „Przejmij” w UI)**              |
+| **Synchronizacja Pozycji Transportu**   | Wyzwalanie CUE z jednego pilota (np. StreamDeck, OSC)      | Odczyt komunikatów MIDI ze wspólnej klawiatury              | Równoległe odtwarzanie od wspólnego punktu startu       | Pasywne podążanie węzła Spare za zdarzeniami WS z Mastera |
+| **Ryzyko Kolizji Split-Brain**          | Niskie (przełącznik fizyczny decyduje o szynie wyjściowej) | Bardzo niskie (detekcja czysto analogowa tonu pilotującego) | Średnie przy automatycznym spięciu zegarów bez switcha  | **Zero (blokada programowa i brak autoelekcji w MVP)**    |
 
-Światowe standardy estradowe dowodzą, że brak automatycznego przełączania w samej warstwie oprogramowania nie jest wadą, lecz zamierzonym wyborem inżynieryjnym . Żaden z wiodących programów estradowych nie posiada wbudowanego automatycznego algorytmu decyzyjnego przejmowania autorytetu w sieci IP bez wsparcia zewnętrznego sprzętu . 
+Światowe standardy estradowe dowodzą, że brak automatycznego przełączania w samej warstwie oprogramowania nie jest wadą, lecz zamierzonym wyborem inżynieryjnym . Żaden z wiodących programów estradowych nie posiada wbudowanego automatycznego algorytmu decyzyjnego przejmowania autorytetu w sieci IP bez wsparcia zewnętrznego sprzętu .
 
 W profesjonalnych systemach przełączenie toru audio odbywa się w warstwie fizycznej — poprzez przełącznik matrycowy (np. Radial SW8 przełączający sygnał po zaniku tonu pilotującego 1 kHz) lub dedykowane interfejsy audio z funkcją failover (np. iConnectivity PlayAudio12) . StageSync v5.2 doskonale wpisuje się w ten model: oprogramowanie dba o spójność stanu i bezpieczną magistralę MIDI, natomiast przełączenie sumy audio pozostaje w warstwie sprzętowej realizatora .
 
@@ -73,32 +73,33 @@ Zaletą StageSync w zestawieniu z rynkowymi rozwiązaniami jest eliminated konie
 
 W celu zapewnienia pełnej jasności operacyjnej, specyfikacja Safety Net w StageSync v5.2 rozdziela obiekty danych na podlegające synchronizacji oraz obiekty o charakterze wyłącznie lokalnym .
 
-| Obiekt Danych | Kategoria | Mechanizm Replikacji | Rola podczas Przełączenia Awaryjnego |
-| :--- | :--- | :--- | :--- |
-| **Plik Projektu (`*.json`)** | Synchronizowany | Zapis na dysku Mastera + Odczyt ze wspólnego dir / WS | Kluczowa: Węzeł Spare posiada identyczną osnowę utworu  |
-| **Kolejność Setlisty (`setlist.json`)** | Synchronizowany | Emisja zdarzenia `publishSetlistHub` przez WebSocket | Kluczowa: Węzeł Spare wskazuje ten sam utwór i sekcję  |
-| **Mapowanie MIDI (`midi.json`)** | Synchronizowany | Plik konfiguracyjny roboczy w katalogu projektu | Wysoka: Po awansie maszyna Spare wie, gdzie wysłać PC  |
-| **Stan Bazy Live Desk** | Synchronizowany | Replikacja zmian stanu w pamięci podręcznej z Mastera | Średnia: Zachowuje tymczasowe nadpisania i wyciszenia  |
-| **Kontekst Audio (`AudioContext`)** | LOKALNY | Brak (Lokalny silnik audio na danej maszynie) | Wykluczony: Maszyna Spare inicjalizuje własne karty  |
-| **Obecność Klientów (`Presence`)** | LOKALNY | Dynamiczne wyliczanie gniazd WebSocket na serwerze | Wykluczony: Klienci przelogowują się po zmianie IP  |
-| **Bufor Logów Procesu** | LOKALNY | Zapis w lokalnym pliku / pamięci sidecara | Wykluczony: Unikalny dla danej instancji OS  |
+| Obiekt Danych                           | Kategoria       | Mechanizm Replikacji                                  | Rola podczas Przełączenia Awaryjnego                   |
+| :-------------------------------------- | :-------------- | :---------------------------------------------------- | :----------------------------------------------------- |
+| **Plik Projektu (`*.json`)**            | Synchronizowany | Zapis na dysku Mastera + Odczyt ze wspólnego dir / WS | Kluczowa: Węzeł Spare posiada identyczną osnowę utworu |
+| **Kolejność Setlisty (`setlist.json`)** | Synchronizowany | Emisja zdarzenia `publishSetlistHub` przez WebSocket  | Kluczowa: Węzeł Spare wskazuje ten sam utwór i sekcję  |
+| **Mapowanie MIDI (`midi.json`)**        | Synchronizowany | Plik konfiguracyjny roboczy w katalogu projektu       | Wysoka: Po awansie maszyna Spare wie, gdzie wysłać PC  |
+| **Stan Bazy Live Desk**                 | Synchronizowany | Replikacja zmian stanu w pamięci podręcznej z Mastera | Średnia: Zachowuje tymczasowe nadpisania i wyciszenia  |
+| **Kontekst Audio (`AudioContext`)**     | LOKALNY         | Brak (Lokalny silnik audio na danej maszynie)         | Wykluczony: Maszyna Spare inicjalizuje własne karty    |
+| **Obecność Klientów (`Presence`)**      | LOKALNY         | Dynamiczne wyliczanie gniazd WebSocket na serwerze    | Wykluczony: Klienci przelogowują się po zmianie IP     |
+| **Bufor Logów Procesu**                 | LOKALNY         | Zapis w lokalnym pliku / pamięci sidecara             | Wykluczony: Unikalny dla danej instancji OS            |
 
-Sekwencja awaryjnego przełączenia autorytetu w StageSync v5.2 przebiega w sposób ściśle zdeterminiowany . Początkowo aktywny serwer Master nadaje ciągły sygnał Heartbeat przez WebSocket oraz rozgłasza swoją obecność w usłudze mDNS . Pasywny węzeł Spare nieustannie odbiera te pakiety, utrzymując stan transportu oraz podgląd setlisty w trybie do odczytu przy zablokowanych fizycznych portach MIDI OUT . 
+Sekwencja awaryjnego przełączenia autorytetu w StageSync v5.2 przebiega w sposób ściśle zdeterminiowany . Początkowo aktywny serwer Master nadaje ciągły sygnał Heartbeat przez WebSocket oraz rozgłasza swoją obecność w usłudze mDNS . Pasywny węzeł Spare nieustannie odbiera te pakiety, utrzymując stan transportu oraz podgląd setlisty w trybie do odczytu przy zablokowanych fizycznych portach MIDI OUT .
 
 W momencie wystąpienia awarii — czy to na skutek uszkodzenia procesu sidecar, awarii zasilania, czy odłączenia przewodu sieciowego — interfejs użytkownika na węźle Spare wykrywa brak impulsu Heartbeat po przekroczeniu progu 3000 ms . Powłoka aplikacji wyświetla natychmiast ostrzegawczy baner informujący o utracie połączenia z Masterem oraz uaktywnia przycisk ręcznej promocji .
 
 Po wciśnięciu przez realizatora przycisku „Przejmij” (Manual Promote), system wykonuje natychmiastową kaskadę przełączenia:
+
 1. Zostaje odepchnięta blokada zapisu w katalogu danych, a pliki projektu przechodzą w tryb do zapisu .
 2. Moduł `MidiHost` zdejmuje programowe wyciszenie wyjść i inicjalizuje fizyczne porty MIDI OUT .
 3. Silnik transportu przechodzi w stan PAUSE na ostatniej zapamiętanej pozycji, zapobiegając niekontrolowanemu wystrzałowi dźwięku bez decyzji operatora .
 4. Usługa mDNS aktualizuje rekord rozgłoszeniowy z `role=spare` na `role=master`, przejmując autorytet w sieci LAN .
 
-| Typ Awarii | Detekcja przez Węzeł Spare | Czas Reakcji Systemu | Zachowanie Interfejsu i Silnika | Akcja Wymagana od Operatora |
-| :--- | :--- | :--- | :--- | :--- |
-| **Crash procesu sidecar na Masterze**  | Natychmiastowe zamknięcie gniazda IPC / WS  | < 100 ms  | Powłoka Tauri przechwytuje zdarzenie, powrót do Launchera  | Ręczne wciśnięcie „Przejmij” na maszynie Spare  |
-| **Zanik zasilania / Awaria komputera Master**  | Timeout pętli Heartbeat WS oraz zapytania Probe  | 3000 ms (Heartbeat) + 3000 ms (Probe)  | Pojawienie się banera „Utracono połączenie z Masterem”  | Kliknięcie przycisku „Przejmij autorytet Mastera”  |
-| **Fizyczne odłączenie kabla LAN**  | Błąd warstwy TCP / gniazda WebSocket  | < 500 ms (OS Event)  | Przejście w tryb ponawiania połączenia (Backoff)  | Weryfikacja przewodu lub wymuszenie promocji lokalnej  |
-| **Ręczna promocja w trakcie pauzy**  | Wyzwolenie komendy `POST /api/system/promote`  | Natychmiastowo (0 ms)  | Zmiana roli na Master, otwarcie FS, odblokowanie MIDI  | Przełączenie suwaka audio na konsolecie (jeśli dotyczy)  |
+| Typ Awarii                                    | Detekcja przez Węzeł Spare                      | Czas Reakcji Systemu                  | Zachowanie Interfejsu i Silnika                           | Akcja Wymagana od Operatora                             |
+| :-------------------------------------------- | :---------------------------------------------- | :------------------------------------ | :-------------------------------------------------------- | :------------------------------------------------------ |
+| **Crash procesu sidecar na Masterze**         | Natychmiastowe zamknięcie gniazda IPC / WS      | < 100 ms                              | Powłoka Tauri przechwytuje zdarzenie, powrót do Launchera | Ręczne wciśnięcie „Przejmij” na maszynie Spare          |
+| **Zanik zasilania / Awaria komputera Master** | Timeout pętli Heartbeat WS oraz zapytania Probe | 3000 ms (Heartbeat) + 3000 ms (Probe) | Pojawienie się banera „Utracono połączenie z Masterem”    | Kliknięcie przycisku „Przejmij autorytet Mastera”       |
+| **Fizyczne odłączenie kabla LAN**             | Błąd warstwy TCP / gniazda WebSocket            | < 500 ms (OS Event)                   | Przejście w tryb ponawiania połączenia (Backoff)          | Weryfikacja przewodu lub wymuszenie promocji lokalnej   |
+| **Ręczna promocja w trakcie pauzy**           | Wyzwolenie komendy `POST /api/system/promote`   | Natychmiastowo (0 ms)                 | Zmiana roli na Master, otwarcie FS, odblokowanie MIDI     | Przełączenie suwaka audio na konsolecie (jeśli dotyczy) |
 
 ---
 
@@ -107,16 +108,21 @@ Po wciśnięciu przez realizatora przycisku „Przejmij” (Manual Promote), sys
 Przed ostatecznym zamknięciem etapu v5.2 i przekazaniem specyfikacji do zespołu wdrożeniowego, należy uzyskać odpowiedź od Product Ownera na poniższe pytania dotyczące komunikacji i granic produktu (ID: CRIT-SN-01):
 
 ### CRIT-SN-01-Q1: Nazewnictwo i Komunikacja Rynkowa (SLA vs Operational Safety)
+
 Czy Product Owner akceptuje wprowadzenie do oficjalnej dokumentacji dla użytkowników ([`DESKTOP.md`](../../../guides/DESKTOP.md), [`INSTALL.md`](../../../guides/INSTALL.md)) precyzyjnego pojęcia **„Manual Hot Standby”** w miejsce samego słowa „Safety Net”? Zapobiegnie to ewentualnym roszczeniom realizatorów, którzy mogliby oczekiwać bezobsługowej, automatycznej przełączalności bez udziału człowieka .
 
 ### CRIT-SN-01-Q2: Rekomendacja Sprzętowa dla Toru Audio (Audio Redundancy Strategy)
+
 Czy w oficjalnym podręczniku użytkowania opisany zostanie rekomendowany schemat podłączenia audio ze sprzętowym przełącznikiem (np. Radial SW8 / iConnectivity PlayAudio12) lub prostym wyciszeniem kanałów na mikserze FOH? StageSync v5.2 rozwiązuje problem autorytetu czasu i magistrali MIDI, ale nie przełącza fizycznych kabli sygnałowych audio . Wyraźny diagram w dokumentacji podniesie profesjonalny wizerunek systemu w oczach realizatorów .
 
 ### CRIT-SN-01-Q3: Infrastruktura Współdzielenia Danych (Shared Data Dir Guidelines)
+
 Czy w ramach MVP wskazujemy jako jedyną wspieraną ścieżkę lokalne kopiowanie / synchronizację projektów (np. narzędziem Syncthing lub rsync w tle), czy dopuszczamy sieciowe protokoły SMB/NFS na scenie? Protokoły sieciowe SMB/NFS na niestabilnym łączu Wi-Fi mogą powodować zawieszenie operacji I/O w Node.js, co mogłoby zablokować interfejs komputera Spare .
 
 ### CRIT-SN-01-Q4: Kryteria Gotowości dla Fazy Auto-Election (v5.3+ Backlog Definition)
+
 Czy Product Owner zatwierdza wpisanie automatycznej elekcji (Auto-Election) do oficjalnego rejestru spraw odłożonych (TODO 5.3+) z twardym zastrzeżeniem, że jej wdrożenie wymagać będzie fizycznego tokenu dzierżawy (Lease Token) oraz dedykowanego kanału sieciowego Heartbeat? Zabezpieczy to architekturę przed próbami pośpiesznego wprowadzania niesprawdzonych automatów decyzyjnych bez pełnej kontroli nad ryzykiem Split-Brain .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

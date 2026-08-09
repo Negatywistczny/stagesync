@@ -12,15 +12,15 @@
 
 ## Macierz
 
-| ID | Decyzja | Werdykt dumpu | Stan | Notatka |
-|----|---------|---------------|------|---------|
-| 1 | Logic Pro first (po SSOT/stubs) | REVISE | `limit` (ADR KEEP) | Re-open tylko PO; dump zawęża do gestów edycji |
-| 2 | Console = full desktop + host | REVERT | `on-tree` / konflikt | Jak Mobile critique — limity realne, OUT bez PO = nie |
-| 3 | Performer Client-only | KEEP | `confirmed` | |
-| 4 | OAuth OUT; PIN MVP; scenic lock | KEEP | `partial` | PIN on-tree; scenic lock **już usunięty** (dump może być stale na „scenic lock” jako aktywnym) |
-| 5 | Sampler CueClip; Master\|Bus | KEEP | `on-tree` / residual HW | Sampler triage; HW sample = osobny REVISE |
-| 6 | Flex/Takes/recording później | REVISE → wykreślić | `hypothesis` | ADR: nie permanent OUT |
-| 7 | Menubar OUT Audio/MIDI/… | KEEP | `confirmed` | ADR 0015 |
+| ID  | Decyzja                         | Werdykt dumpu      | Stan                    | Notatka                                                                                        |
+| --- | ------------------------------- | ------------------ | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | Logic Pro first (po SSOT/stubs) | REVISE             | `limit` (ADR KEEP)      | Re-open tylko PO; dump zawęża do gestów edycji                                                 |
+| 2   | Console = full desktop + host   | REVERT             | `on-tree` / konflikt    | Jak Mobile critique — limity realne, OUT bez PO = nie                                          |
+| 3   | Performer Client-only           | KEEP               | `confirmed`             |                                                                                                |
+| 4   | OAuth OUT; PIN MVP; scenic lock | KEEP               | `partial`               | PIN on-tree; scenic lock **już usunięty** (dump może być stale na „scenic lock” jako aktywnym) |
+| 5   | Sampler CueClip; Master\|Bus    | KEEP               | `on-tree` / residual HW | Sampler triage; HW sample = osobny REVISE                                                      |
+| 6   | Flex/Takes/recording później    | REVISE → wykreślić | `hypothesis`            | ADR: nie permanent OUT                                                                         |
+| 7   | Menubar OUT Audio/MIDI/…        | KEEP               | `confirmed`             | ADR 0015                                                                                       |
 
 ## Sprzeczność ADR 0015 × 0016 (sekcja C dumpu)
 

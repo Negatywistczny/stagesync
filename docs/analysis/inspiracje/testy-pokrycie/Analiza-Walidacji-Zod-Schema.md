@@ -10,6 +10,7 @@ CEL ANALIZY
 Zidentyfikować schematy i superRefine bez testów negatywnych / edge case’ów; zaproponować systematyczne uzupełnienie [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts).
 
 PYTANIA BADAWCZE
+
 1. Które schematy wersji Project (V1–V5) i upgrade path mają luki w testach?
 2. `refineMeterForPpq`, `busGraphHasCycle`, Setlist preprocess — jakie invalid inputs nie są testowane?
 3. Audio/Mixer: `AudioClipSchema`, `CueSampleConfigSchema`, `MixerOutputDestSchema` — brakujące granice (max arrays, cross-field rules)?
@@ -18,11 +19,13 @@ PYTANIA BADAWCZE
 6. Jak grupować testy żeby uniknąć duplikacji przy 50+ schematach?
 
 KONTEKST
+
 - Zod fail-fast na krawędziach HTTP/plik/IPC.
 - Zależności: [`time.ts`](../../../../packages/shared/src/time.ts), [`mixer-routing.ts`](../../../../packages/shared/src/mixer-routing.ts), [`track-appearance.ts`](../../../../packages/shared/src/track-appearance.ts), [`theme-default.ts`](../../../../packages/shared/src/theme-default.ts).
 - Vitest w packages/shared; brak DOM/Node w samym schema.
 
 OCZEKIWANY OUTPUT
+
 1. Tabela: schema/export → brakujące testy (valid/invalid) z przykładowym payloadem.
 2. Priorytety P0 (security/corruption) vs P2 (kosmetyka).
 3. Wzorce: `expect(() => Schema.parse(x)).toThrow()` + message match.
@@ -62,9 +65,9 @@ Plik [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts
 
 ## Architektura walidacji i stan pokrycia w StageSync
 
-Walidacja w StageSync realizuje koncepcję *fail-fast* na zewnętrznych krawędziach systemu . Wszystkie przychodzące obiekty JSON przed przekazaniem do logiki aplikacyjnej są parsowane przez odpowiadające im schematy Zod . Schematy te nie tylko weryfikują typy proste i opcjonalność pól, ale również wymuszają ścisłe reguły domenowe za pomocą transformacji `z.preprocess()` oraz dodatkowych weryfikacji kontekstowych `superRefine()` .
+Walidacja w StageSync realizuje koncepcję _fail-fast_ na zewnętrznych krawędziach systemu . Wszystkie przychodzące obiekty JSON przed przekazaniem do logiki aplikacyjnej są parsowane przez odpowiadające im schematy Zod . Schematy te nie tylko weryfikują typy proste i opcjonalność pól, ale również wymuszają ścisłe reguły domenowe za pomocą transformacji `z.preprocess()` oraz dodatkowych weryfikacji kontekstowych `superRefine()` .
 
-Zaawansowane reguły rafinacji obejmują między innymi sprawdzanie spójności metrum i liczby impulsów na ćwierćnutę (PPQ) w logice czasowej , wykrywanie cykli w skierowanym grafie połączeń szyn miksera audio (`busGraphHasCycle`) , weryfikację relacji między klipami CUE a zasobami audio w projekcie , wymuszanie wykluczania identyfikatorów programu MIDI w szablonach projektów  oraz automatyczną koercję struktury setlisty pomiędzy formatem kanonicznym a formatem dziedziczonym .
+Zaawansowane reguły rafinacji obejmują między innymi sprawdzanie spójności metrum i liczby impulsów na ćwierćnutę (PPQ) w logice czasowej , wykrywanie cykli w skierowanym grafie połączeń szyn miksera audio (`busGraphHasCycle`) , weryfikację relacji między klipami CUE a zasobami audio w projekcie , wymuszanie wykluczania identyfikatorów programu MIDI w szablonach projektów oraz automatyczną koercję struktury setlisty pomiędzy formatem kanonicznym a formatem dziedziczonym .
 
 Dotychczasowy zestaw testów w [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) skupiał się głównie na weryfikacji ścieżek pozytywnych (happy paths) oraz wybranych asercjach negatywnych dla nagłówków API i podstawowych struktur komunikatów . Wiele kluczowych mechanizmów wyłapywania błędów pozostało nieprzetestowanych pod kątem danych wejściowych przekraczających limity lub naruszających spójność grafu .
 
@@ -108,12 +111,12 @@ Wszystkie wyznaczone w specyfikacji V5 maksymalne rozmiary tablic (`audioTracks`
 
 Schematy Zod odpowiadają za fail-fast na punktach końcowych REST API i szynie WebSocket . W tym obszarze zidentyfikowano następujące braki testowe:
 
-* **PutProjectBodySchema**: Korzysta z `.strict()` oraz tych samych reguł `superRefine` co V5 . Brak testów sprawdzających odrzucenie ładunku w przypadku przekazania dodatkowego, nadmiarowego pola na poziomie głównym oraz przy braku pola `updatedAt` służącego do optymistycznej kontroli współbieżności (OCC) .
-* **BatchMidiPcBodySchema**: Posiada test dla `midiProgramId > 127` . Brak testów dla wartości ujemnych (`midiProgramId < 0`), braku pola `id` oraz przekroczenia maksymalnego rozmiaru tablicy `assignments` (1024 elementy) .
-* **StageMessageBodySchema**: Posiada testy czasu życia `ttlMs` . Brak testu sprawdzającego odrzucenie tekstu dłuższego niż 200 znaków oraz tablicy `roles` zawierającej więcej niż 4 elementy .
-* **RestoreBackupBodySchema**: Obsługuje odtwarzanie kopii zapasowej na podstawie ścieżki pliku lub tablicy ścieżek z wymaganiem `confirm: true` . Schemat ten nie posiada żadnych testów jednostkowych .
-* **PutServerSettingsBodySchema**: Wymaga walidacji długości klucza (max 64 znaki) oraz typu i długości wartości (max 500 znaków), co nie zostało przetestowane .
-* **PutMidiHostConfigBodySchema**: Brak testów odrzucenia kanałów MIDI spoza cyfrowego zakresu protokołu $0..15$ (np. $16$ lub $-1$) dla `inputChannel` i `outputChannel` .
+- **PutProjectBodySchema**: Korzysta z `.strict()` oraz tych samych reguł `superRefine` co V5 . Brak testów sprawdzających odrzucenie ładunku w przypadku przekazania dodatkowego, nadmiarowego pola na poziomie głównym oraz przy braku pola `updatedAt` służącego do optymistycznej kontroli współbieżności (OCC) .
+- **BatchMidiPcBodySchema**: Posiada test dla `midiProgramId > 127` . Brak testów dla wartości ujemnych (`midiProgramId < 0`), braku pola `id` oraz przekroczenia maksymalnego rozmiaru tablicy `assignments` (1024 elementy) .
+- **StageMessageBodySchema**: Posiada testy czasu życia `ttlMs` . Brak testu sprawdzającego odrzucenie tekstu dłuższego niż 200 znaków oraz tablicy `roles` zawierającej więcej niż 4 elementy .
+- **RestoreBackupBodySchema**: Obsługuje odtwarzanie kopii zapasowej na podstawie ścieżki pliku lub tablicy ścieżek z wymaganiem `confirm: true` . Schemat ten nie posiada żadnych testów jednostkowych .
+- **PutServerSettingsBodySchema**: Wymaga walidacji długości klucza (max 64 znaki) oraz typu i długości wartości (max 500 znaków), co nie zostało przetestowane .
+- **PutMidiHostConfigBodySchema**: Brak testów odrzucenia kanałów MIDI spoza cyfrowego zakresu protokołu $0..15$ (np. $16$ lub $-1$) dla `inputChannel` i `outputChannel` .
 
 ---
 
@@ -121,23 +124,23 @@ Schematy Zod odpowiadają za fail-fast na punktach końcowych REST API i szynie 
 
 Poniższa tabela przedstawia zestawienie wyidentyfikowanych luk testowych, przykładowe dane wejściowe wywołujące błąd walidacji oraz przydzielony poziom priorytetu naprawczego.
 
-| Schemat / Eksport | Opis Luki Walidacyjnej | Typ Testu | Przykładowy Payload / Stan Wejściowy | Priorytet |
-| :--- | :--- | :--- | :--- | :--- |
-| `ProjectSchemaV5` | Brak testu wyrywania cyklu w skierowanym grafie szyn ($A \rightarrow B \rightarrow A$) . | Invalid | `{ ...seed, audioBusses: [{ id: "b1", output: { kind: "bus", busId: "b2" } }, { id: "b2", output: { kind: "bus", busId: "b1" } }] }`  | **P0** |
-| `ProjectSchemaV5` | Brak blokady odwołania CUE sample do pliku niebędącego audio (np. obraz okładki) . | Invalid | `{ ...seed, assets: [{ id: "a1", kind: "cover", ... }], cue: { clips: [{ sample: { assetId: "a1" }, ... }] } }`  | **P0** |
-| `ProjectSchemaV5` | Brak weryfikacji odwołania toru audio do nieistniejącego wyjścia sprzętowego `hwOutputId` . | Invalid | `{ ...seed, audioTracks: [{ id: "t1", name: "T1", output: { kind: "hw_out", hwOutputId: "missing-hw" } }] }`  | **P0** |
-| `RestoreBackupBodySchema` | Brak walidacji wymogu `confirm: true` oraz braku ścieżek w unii przywracania . | Invalid | `{ path: "/backups/bak1.zip", confirm: false }` lub `{ paths: [] }`  | **P0** |
-| `ProjectSchemaV5` | Przekroczenie maksymalnego rozmiaru tablicy torów audio (max 64) . | Invalid | `{ ...seed, audioTracks: Array(65).fill(validTrack) }`  | **P1** |
-| `ProjectSchemaV5` | Przekroczenie maksymalnego rozmiaru tablicy klipów audio (max 512) . | Invalid | `{ ...seed, audioClips: Array(513).fill(validClip) }`  | **P1** |
-| `AudioClipSchema` | Wartości wzmocnienia `gainDb` lub panoramy `pan` spoza dopuszczalnego zakresu . | Invalid | `{ id: "c1", trackId: "t1", assetId: "a1", startTicks: 0, lengthTicks: 960, gainDb: 30 }`  | **P1** |
-| `MeterEventSchema` | Nieprawidłowe metrum generujące ułamkowe impulsy zegara (`ticksPerBar`) . | Invalid | `{ id: "m1", startTicks: 0, numerator: 7, denominator: 11 }`  | **P1** |
-| `SetlistSchema` | Przekazanie nieprawidłowej struktury elementu w preprocessingu setlisty . | Invalid | `{ version: 1, enabled: true, items: [{ type: "unknown" }], autoAdvance: { enabled: false } }`  | **P1** |
-| `PutMidiHostConfigBodySchema` | Kanały MIDI wykraczające poza zakres $0..15$ . | Invalid | `{ inputChannel: 16 }` lub `{ outputChannel: -2 }`  | **P1** |
-| `PutServerSettingsBodySchema` | Zbyt długi klucz zmiennej środowiskowej (>64 znaki) lub wartość (>500 znaków) . | Invalid | `{ values: { ["X".repeat(65)]: "value" } }`  | **P1** |
-| `StageMessageBodySchema` | Komunikat tekstowy na scenę przekraczający limit 200 znaków . | Invalid | `{ text: "A".repeat(201) }`  | **P2** |
-| `FormaClipSchema` | Zbyt długa nazwa sekcji formy (>120 znaków) lub notatka (>500 znaków) . | Invalid | `{ id: "f1", name: "N".repeat(121), startTicks: 0, lengthTicks: 960 }`  | **P2** |
-| `UpdateStatusSchema` | Przekazanie nieznanego trybu aktualizacji w odpowiedzi statusu systemu . | Invalid | `{ current: "1.0", latest: "1.1", updateAvailable: true, updateMode: "invalid_mode" }`  | **P2** |
-| `LibraryProjectEntrySchema` | Etykieta klucza muzycznego `keyLabel` przekraczająca 16 znaków . | Invalid | `{ id: "p1", name: "P1", keyLabel: "C_MAJOR_VERY_LONG_LABEL" }`  | **P2** |
+| Schemat / Eksport             | Opis Luki Walidacyjnej                                                                      | Typ Testu | Przykładowy Payload / Stan Wejściowy                                                                                                 | Priorytet |
+| :---------------------------- | :------------------------------------------------------------------------------------------ | :-------- | :----------------------------------------------------------------------------------------------------------------------------------- | :-------- |
+| `ProjectSchemaV5`             | Brak testu wyrywania cyklu w skierowanym grafie szyn ($A \rightarrow B \rightarrow A$) .    | Invalid   | `{ ...seed, audioBusses: [{ id: "b1", output: { kind: "bus", busId: "b2" } }, { id: "b2", output: { kind: "bus", busId: "b1" } }] }` | **P0**    |
+| `ProjectSchemaV5`             | Brak blokady odwołania CUE sample do pliku niebędącego audio (np. obraz okładki) .          | Invalid   | `{ ...seed, assets: [{ id: "a1", kind: "cover", ... }], cue: { clips: [{ sample: { assetId: "a1" }, ... }] } }`                      | **P0**    |
+| `ProjectSchemaV5`             | Brak weryfikacji odwołania toru audio do nieistniejącego wyjścia sprzętowego `hwOutputId` . | Invalid   | `{ ...seed, audioTracks: [{ id: "t1", name: "T1", output: { kind: "hw_out", hwOutputId: "missing-hw" } }] }`                         | **P0**    |
+| `RestoreBackupBodySchema`     | Brak walidacji wymogu `confirm: true` oraz braku ścieżek w unii przywracania .              | Invalid   | `{ path: "/backups/bak1.zip", confirm: false }` lub `{ paths: [] }`                                                                  | **P0**    |
+| `ProjectSchemaV5`             | Przekroczenie maksymalnego rozmiaru tablicy torów audio (max 64) .                          | Invalid   | `{ ...seed, audioTracks: Array(65).fill(validTrack) }`                                                                               | **P1**    |
+| `ProjectSchemaV5`             | Przekroczenie maksymalnego rozmiaru tablicy klipów audio (max 512) .                        | Invalid   | `{ ...seed, audioClips: Array(513).fill(validClip) }`                                                                                | **P1**    |
+| `AudioClipSchema`             | Wartości wzmocnienia `gainDb` lub panoramy `pan` spoza dopuszczalnego zakresu .             | Invalid   | `{ id: "c1", trackId: "t1", assetId: "a1", startTicks: 0, lengthTicks: 960, gainDb: 30 }`                                            | **P1**    |
+| `MeterEventSchema`            | Nieprawidłowe metrum generujące ułamkowe impulsy zegara (`ticksPerBar`) .                   | Invalid   | `{ id: "m1", startTicks: 0, numerator: 7, denominator: 11 }`                                                                         | **P1**    |
+| `SetlistSchema`               | Przekazanie nieprawidłowej struktury elementu w preprocessingu setlisty .                   | Invalid   | `{ version: 1, enabled: true, items: [{ type: "unknown" }], autoAdvance: { enabled: false } }`                                       | **P1**    |
+| `PutMidiHostConfigBodySchema` | Kanały MIDI wykraczające poza zakres $0..15$ .                                              | Invalid   | `{ inputChannel: 16 }` lub `{ outputChannel: -2 }`                                                                                   | **P1**    |
+| `PutServerSettingsBodySchema` | Zbyt długi klucz zmiennej środowiskowej (>64 znaki) lub wartość (>500 znaków) .             | Invalid   | `{ values: { ["X".repeat(65)]: "value" } }`                                                                                          | **P1**    |
+| `StageMessageBodySchema`      | Komunikat tekstowy na scenę przekraczający limit 200 znaków .                               | Invalid   | `{ text: "A".repeat(201) }`                                                                                                          | **P2**    |
+| `FormaClipSchema`             | Zbyt długa nazwa sekcji formy (>120 znaków) lub notatka (>500 znaków) .                     | Invalid   | `{ id: "f1", name: "N".repeat(121), startTicks: 0, lengthTicks: 960 }`                                                               | **P2**    |
+| `UpdateStatusSchema`          | Przekazanie nieznanego trybu aktualizacji w odpowiedzi statusu systemu .                    | Invalid   | `{ current: "1.0", latest: "1.1", updateAvailable: true, updateMode: "invalid_mode" }`                                               | **P2**    |
+| `LibraryProjectEntrySchema`   | Etykieta klucza muzycznego `keyLabel` przekraczająca 16 znaków .                            | Invalid   | `{ id: "p1", name: "P1", keyLabel: "C_MAJOR_VERY_LONG_LABEL" }`                                                                      | **P2**    |
 
 ---
 
@@ -272,4 +275,5 @@ Przeprowadzona analiza wykazuje obecność istotnych luk w pokryciu testami nega
 4. Włączenie wdrożonych testów do ciągłej integracji z nakazem weryfikacji komunikatów błędów za pomocą dopasowań wzorców tekstowych w `toThrow()` .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

@@ -10,6 +10,7 @@ CEL ANALIZY
 Zmapować niepokryte funkcje edycji audio lane względem bogatego [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) i zaproponować uzupełnienia.
 
 PYTANIA BADAWCZE
+
 1. Które exported helpers (`commitAudioGesture`, `previewAudioFromSession`, bus cycle guards) mają zero lub słabe pokrycie?
 2. Mapowanie Forma↔Audio (`audioAsForma`, `mapFormaBack`) — edge: split parent id, missing seed error?
 3. `placeImportedAudioClipAt`, `applyDecodedAudioMeta` — ścieżki z asset duration/tempo map?
@@ -19,11 +20,13 @@ PYTANIA BADAWCZE
 7. Integracja z [`timelineGesture.ts`](../../../../apps/web/src/lib/timeline/timelineGesture.ts) / [`formaCanvas.ts`](../../../../apps/web/src/lib/timeline-edit/formaCanvas.ts) — granice mocków.
 
 KONTEKST
+
 - Pure project transforms (immutable `{ ...project }`); czas przez `resolveTempoAt`/`elapsedToTicks` ze shared.
 - ADR 0008 timeline clip editing; Logic Pro jako referencja zachowań.
 - Vitest; `createProjectSeed` w testach.
 
 OCZEKIWANY OUTPUT
+
 1. Lista funkcji export → status pokrycia → proponowany test.
 2. Fixture factory: minimal project z audio track + clip + bus.
 3. Mocki: minimalne (pure functions) — wskazać wyjątki DOM/file import.
@@ -57,34 +60,34 @@ Audio Lane Editing Test Plan
 
 ## Analiza Luk w Pokryciu Funkcji Eksportowanych
 
-Analiza porównawcza modułu edycji ścieżek audio `apps/web/src/lib/audioLaneEdit.ts`  oraz odpowiadającego mu pakietu testów jednostkowych [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts)  wykazuje wysokie ogólne pokrycie kodu, lecz jednocześnie ujawnia niepokryte ścieżki krytyczne, niedostatecznie przetestowane warunki brzegowe oraz brak testów negatywnych. Silnik edycji Timeline w StageSync opiera się na niezmienniczych transformacjach struktury projektu (`{ ...project }`) , co gwarantuje braki efektów ubocznych, ale wymaga precyzyjnego przetestowania asercji stanów i reguł biznesowych zawartych w ADR 0008 .
+Analiza porównawcza modułu edycji ścieżek audio `apps/web/src/lib/audioLaneEdit.ts` oraz odpowiadającego mu pakietu testów jednostkowych [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) wykazuje wysokie ogólne pokrycie kodu, lecz jednocześnie ujawnia niepokryte ścieżki krytyczne, niedostatecznie przetestowane warunki brzegowe oraz brak testów negatywnych. Silnik edycji Timeline w StageSync opiera się na niezmienniczych transformacjach struktury projektu (`{ ...project }`) , co gwarantuje braki efektów ubocznych, ale wymaga precyzyjnego przetestowania asercji stanów i reguł biznesowych zawartych w ADR 0008 .
 
-Poniższa tabela przedstawia szczegółowe zmapowanie wszystkich funkcji eksportowanych z modułu [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) , ich aktualny stan pokrycia w zestawie testów  oraz dedykowane propozycje przypadków testowych w środowisku Vitest .
+Poniższa tabela przedstawia szczegółowe zmapowanie wszystkich funkcji eksportowanych z modułu [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) , ich aktualny stan pokrycia w zestawie testów oraz dedykowane propozycje przypadków testowych w środowisku Vitest .
 
-| Eksportowana funkcja | Status pokrycia | Weryfikowane zachowanie i luki | Proponowany przypadek testowy (Vitest) |
-| :--- | :--- | :--- | :--- |
-| `audioAsForma` | Pełne  | Prosta konwersja tablicy `AudioClip[]` do formatu `FormaClip[]` dla algorytmów kolizji . | Brak — istniejący test prawidłowo weryfikuje mapowanie identyfikatorów i ram czasowych . |
-| `deleteAudioClip` | Pełne  | Usunięcie klipu o podanym ID oraz brak modyfikacji projektu (no-op) w przypadku braku klipu . | Weryfikacja usunięcia pojedynczego klipu ze ścieżki wieloklipowej bez naruszania pozostałych obiektów . |
-| `placeImportedAudioClipAt` | Częściowe  | Pozycjonowanie importowanego klipu na osi czasu i wyliczanie `lengthTicks` z parametru `durationMs` . | **Test 1**: Kliknięcie przed krawędzią Countdown (clamping do `contentFloorTicks`) .<br>**Test 2**: Przekazanie nieistniejącego `clipId` lub `durationMs <= 0` (no-op/fallback) . |
-| `setAudioClipMuted` / `toggleAudioClipMute` | Pełne  | Modyfikacja flagi Mute klipu z czyszczeniem klucza przy wartości `false` . | Brak — pokryte dla stanów `true` i `false` . |
-| `setAudioClipGainDb` / `gainDbFromPointerDelta` | Pełne  | Modyfikacja wzmocnienia klipu w dB oraz przelicznik delta pikseli pointera na zmianę wartości dB . | Weryfikacja twardych granic (clamping) w przedziale od -60 dB do +24 dB . |
-| `splitAudioClipAt` | Częściowe  | Podział klipu na podanym ticku oraz rozdzielenie trimów i fadów . | **Test 1**: Rozcięcie dokładnie na krawędzi początkowej lub końcowej (no-op) .<br>**Test 2**: Rozcięcie klipu bez zdefiniowanego `durationMs` w pliku źródłowym (fallback czasowy) . |
-| `joinAdjacentAudioClips` | Częściowe  | Łączenie sąsiadujących klipów pochodzących z tego samego pliku źródłowego . | **Test 1**: Odrzucenie próby połączenia klipów o różnych `assetId` .<br>**Test 2**: Odrzucenie próby połączenia klipów z przerwą czasową (gap > 0) .<br>**Test 3**: Odrzucenie, gdy okna źródłowe są niespójne (różnica > 1.5 ms) . |
-| `setAudioClipTrimMs` / `setAudioClipFadeMs` / `setAudioClipLoop` | Pełne  | Modyfikacja trimów, fadów oraz flagi pętli . | Weryfikacja usunięcia kluczy ze struktury JSON po przekazaniu wartości `0` . |
-| `applyAbutCrossfadeForClip` | Częściowe  | Aplikowanie symetrycznego crossfade dla stykających się klipów . | **Test 1**: Wywołanie dla klipu, który nie posiada bezpośredniego sąsiada stykającego się krawędzią .<br>**Test 2**: Przekazanie `crossfadeMs` przekraczającego długość odtwarzalną klipu (clamping fadów) . |
-| `setAudioTrackMuted` / `setAudioTracksMuted` | Pełne  | Wyciszanie pojedynczych oraz grup ścieżek audio . | Pusta tablica identyfikatorów w `setAudioTracksMuted` zwraca referencyjnie ten sam obiekt projektu . |
-| `setAudioTrackGainDb` / `setAudioTrackPan` / `setAudioTrackChannelMode` | Pełne  | Ustawianie wzmocnienia, panoramy i trybu kanału (mono/stereo) . | Usunięcie pola `pan` przy wartości `0` oraz pola `channelMode` przy ustawieniu domyślnego `"stereo"` . |
-| `setMasterGainDb` / `setAudioTrackName` / `setAudioTrackColor` / `setAudioTrackIcon` | Pełne  | Modyfikacja metadanych ścieżek i sumy projektu . | Przycinanie nazwy ścieżki (trim + limit 80 znaków) oraz ignorowanie pustych ciągów znaków . |
-| `setAudioTrackOutput` | Częściowe  | Kierowanie sygnału ścieżki do Master, Bus lub HW Out . | **Test 1**: Próba przypisania nieistniejącego `busId` (reset do Master/undefined) .<br>**Test 2**: Próba przypisania nieistniejącego `hwOutputId` . |
-| `addAudioBus` / `removeAudioBus` | Częściowe  | Tworzenie i usuwanie szyn zbiorczych audio . | **Test 1**: Przekroczenie limitu `MAX_AUDIO_BUSSES` (16) wyrzuca wyjątek `RangeError` .<br>**Test 2**: Kaskadowe przepięcie szyn podrzędnych do Master po usunięciu szyny nadrzędnej . |
-| `setAudioBusOutput` | Częściowe  | Routing szyna->szyna i ochrona przed pętlami . | **Test 1**: Próba skierowania szyny na samą siebie (`busId === output.busId`) .<br>**Test 2**: Wykrycie cyklu wielostopniowego (A -> B -> C -> A) poprzez `wouldCreateBusCycle` . |
-| `setAudioBusGainDb` / `setAudioBusPan` / `setAudioBusChannelMode` / `setAudioBusMuted` / `setAudioBusName` | Pełne  | Kompleksowy CRUD parametrów szyn zbiorczych . | Brak — przetestowano wywołania na poprawnych i nieistniejących szynach . |
-| `addAudioTrack` / `removeAudioTrack` / `duplicateAudioTrack` | Częściowe  | Dodawanie, usuwanie i duplikowanie ścieżek wraz z klipami . | **Test 1**: Przekroczenie limitu `MAX_AUDIO_TRACKS` (64) w `addAudioTrack` oraz `duplicateAudioTrack` (wyjątek `RangeError`) . |
-| `commitMoveAudioClip` / `commitMoveAudioClips` | Pełne  | Przesuwanie pojedynczych i wielu klipów z uwzględnieniem kolizji No Overlap . | Przesunięcie z pominięciem klucza primaryId w tablicy moveIds (automatyczne dołączenie) . |
-| `commitResizeAudioClip` | Pełne  | Zmiana rozmiaru krawędzi początkowej/końcowej ze snapem . | Zmiana rozmiaru krawędzi korygowana przez krawędź Countdown (`contentFloorTicks`) . |
-| `commitAudioGesture` | Słabe  | Aplikowanie zatwierdzonego gestu (move, resize, fade, gain) . | **Test 1**: Przekazanie niepoprawnego identyfikatora lane (np. `"forma"` zamiast `"audio:<id>"`) .<br>**Test 2**: Przekazanie sesji z `clipId = null` .<br>**Test 3**: Wywołanie z nieobsługiwanym typem gestu (np. `pencil-draw`) . |
-| `previewAudioFromSession` | Słabe  | Generowanie tymczasowej geometrii i parametrów podglądu . | **Test 1**: Gest `resize-start`, w którym przesunięcie przekracza krawędź końcową klipu (spięcie do długości 1 ticka) .<br>**Test 2**: Gest `gain` bez podanego `clientY` (fallback do `originClientY`) .<br>**Test 3**: Brak klipu dla gestów `fade-in`/`fade-out` (zwrócenie bez zmian) . |
-| `applyDecodedAudioMeta` | Częściowe  | Stemplowanie metadanych dekodowania (waveform, duration, channels) . | **Test 1**: Przekazanie pliku jednokanałowego (`channelCount = 1`) dla ścieżki z brakiem `channelMode` (ustawienie `"mono"`) .<br>**Test 2**: Przekazanie `durationMs = 0` (wczesny zwrot bez modyfikacji klipów) . |
+| Eksportowana funkcja                                                                                       | Status pokrycia | Weryfikowane zachowanie i luki                                                                        | Proponowany przypadek testowy (Vitest)                                                                                                                                                                                                                                                      |
+| :--------------------------------------------------------------------------------------------------------- | :-------------- | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `audioAsForma`                                                                                             | Pełne           | Prosta konwersja tablicy `AudioClip[]` do formatu `FormaClip[]` dla algorytmów kolizji .              | Brak — istniejący test prawidłowo weryfikuje mapowanie identyfikatorów i ram czasowych .                                                                                                                                                                                                    |
+| `deleteAudioClip`                                                                                          | Pełne           | Usunięcie klipu o podanym ID oraz brak modyfikacji projektu (no-op) w przypadku braku klipu .         | Weryfikacja usunięcia pojedynczego klipu ze ścieżki wieloklipowej bez naruszania pozostałych obiektów .                                                                                                                                                                                     |
+| `placeImportedAudioClipAt`                                                                                 | Częściowe       | Pozycjonowanie importowanego klipu na osi czasu i wyliczanie `lengthTicks` z parametru `durationMs` . | **Test 1**: Kliknięcie przed krawędzią Countdown (clamping do `contentFloorTicks`) .<br>**Test 2**: Przekazanie nieistniejącego `clipId` lub `durationMs <= 0` (no-op/fallback) .                                                                                                           |
+| `setAudioClipMuted` / `toggleAudioClipMute`                                                                | Pełne           | Modyfikacja flagi Mute klipu z czyszczeniem klucza przy wartości `false` .                            | Brak — pokryte dla stanów `true` i `false` .                                                                                                                                                                                                                                                |
+| `setAudioClipGainDb` / `gainDbFromPointerDelta`                                                            | Pełne           | Modyfikacja wzmocnienia klipu w dB oraz przelicznik delta pikseli pointera na zmianę wartości dB .    | Weryfikacja twardych granic (clamping) w przedziale od -60 dB do +24 dB .                                                                                                                                                                                                                   |
+| `splitAudioClipAt`                                                                                         | Częściowe       | Podział klipu na podanym ticku oraz rozdzielenie trimów i fadów .                                     | **Test 1**: Rozcięcie dokładnie na krawędzi początkowej lub końcowej (no-op) .<br>**Test 2**: Rozcięcie klipu bez zdefiniowanego `durationMs` w pliku źródłowym (fallback czasowy) .                                                                                                        |
+| `joinAdjacentAudioClips`                                                                                   | Częściowe       | Łączenie sąsiadujących klipów pochodzących z tego samego pliku źródłowego .                           | **Test 1**: Odrzucenie próby połączenia klipów o różnych `assetId` .<br>**Test 2**: Odrzucenie próby połączenia klipów z przerwą czasową (gap > 0) .<br>**Test 3**: Odrzucenie, gdy okna źródłowe są niespójne (różnica > 1.5 ms) .                                                         |
+| `setAudioClipTrimMs` / `setAudioClipFadeMs` / `setAudioClipLoop`                                           | Pełne           | Modyfikacja trimów, fadów oraz flagi pętli .                                                          | Weryfikacja usunięcia kluczy ze struktury JSON po przekazaniu wartości `0` .                                                                                                                                                                                                                |
+| `applyAbutCrossfadeForClip`                                                                                | Częściowe       | Aplikowanie symetrycznego crossfade dla stykających się klipów .                                      | **Test 1**: Wywołanie dla klipu, który nie posiada bezpośredniego sąsiada stykającego się krawędzią .<br>**Test 2**: Przekazanie `crossfadeMs` przekraczającego długość odtwarzalną klipu (clamping fadów) .                                                                                |
+| `setAudioTrackMuted` / `setAudioTracksMuted`                                                               | Pełne           | Wyciszanie pojedynczych oraz grup ścieżek audio .                                                     | Pusta tablica identyfikatorów w `setAudioTracksMuted` zwraca referencyjnie ten sam obiekt projektu .                                                                                                                                                                                        |
+| `setAudioTrackGainDb` / `setAudioTrackPan` / `setAudioTrackChannelMode`                                    | Pełne           | Ustawianie wzmocnienia, panoramy i trybu kanału (mono/stereo) .                                       | Usunięcie pola `pan` przy wartości `0` oraz pola `channelMode` przy ustawieniu domyślnego `"stereo"` .                                                                                                                                                                                      |
+| `setMasterGainDb` / `setAudioTrackName` / `setAudioTrackColor` / `setAudioTrackIcon`                       | Pełne           | Modyfikacja metadanych ścieżek i sumy projektu .                                                      | Przycinanie nazwy ścieżki (trim + limit 80 znaków) oraz ignorowanie pustych ciągów znaków .                                                                                                                                                                                                 |
+| `setAudioTrackOutput`                                                                                      | Częściowe       | Kierowanie sygnału ścieżki do Master, Bus lub HW Out .                                                | **Test 1**: Próba przypisania nieistniejącego `busId` (reset do Master/undefined) .<br>**Test 2**: Próba przypisania nieistniejącego `hwOutputId` .                                                                                                                                         |
+| `addAudioBus` / `removeAudioBus`                                                                           | Częściowe       | Tworzenie i usuwanie szyn zbiorczych audio .                                                          | **Test 1**: Przekroczenie limitu `MAX_AUDIO_BUSSES` (16) wyrzuca wyjątek `RangeError` .<br>**Test 2**: Kaskadowe przepięcie szyn podrzędnych do Master po usunięciu szyny nadrzędnej .                                                                                                      |
+| `setAudioBusOutput`                                                                                        | Częściowe       | Routing szyna->szyna i ochrona przed pętlami .                                                        | **Test 1**: Próba skierowania szyny na samą siebie (`busId === output.busId`) .<br>**Test 2**: Wykrycie cyklu wielostopniowego (A -> B -> C -> A) poprzez `wouldCreateBusCycle` .                                                                                                           |
+| `setAudioBusGainDb` / `setAudioBusPan` / `setAudioBusChannelMode` / `setAudioBusMuted` / `setAudioBusName` | Pełne           | Kompleksowy CRUD parametrów szyn zbiorczych .                                                         | Brak — przetestowano wywołania na poprawnych i nieistniejących szynach .                                                                                                                                                                                                                    |
+| `addAudioTrack` / `removeAudioTrack` / `duplicateAudioTrack`                                               | Częściowe       | Dodawanie, usuwanie i duplikowanie ścieżek wraz z klipami .                                           | **Test 1**: Przekroczenie limitu `MAX_AUDIO_TRACKS` (64) w `addAudioTrack` oraz `duplicateAudioTrack` (wyjątek `RangeError`) .                                                                                                                                                              |
+| `commitMoveAudioClip` / `commitMoveAudioClips`                                                             | Pełne           | Przesuwanie pojedynczych i wielu klipów z uwzględnieniem kolizji No Overlap .                         | Przesunięcie z pominięciem klucza primaryId w tablicy moveIds (automatyczne dołączenie) .                                                                                                                                                                                                   |
+| `commitResizeAudioClip`                                                                                    | Pełne           | Zmiana rozmiaru krawędzi początkowej/końcowej ze snapem .                                             | Zmiana rozmiaru krawędzi korygowana przez krawędź Countdown (`contentFloorTicks`) .                                                                                                                                                                                                         |
+| `commitAudioGesture`                                                                                       | Słabe           | Aplikowanie zatwierdzonego gestu (move, resize, fade, gain) .                                         | **Test 1**: Przekazanie niepoprawnego identyfikatora lane (np. `"forma"` zamiast `"audio:<id>"`) .<br>**Test 2**: Przekazanie sesji z `clipId = null` .<br>**Test 3**: Wywołanie z nieobsługiwanym typem gestu (np. `pencil-draw`) .                                                        |
+| `previewAudioFromSession`                                                                                  | Słabe           | Generowanie tymczasowej geometrii i parametrów podglądu .                                             | **Test 1**: Gest `resize-start`, w którym przesunięcie przekracza krawędź końcową klipu (spięcie do długości 1 ticka) .<br>**Test 2**: Gest `gain` bez podanego `clientY` (fallback do `originClientY`) .<br>**Test 3**: Brak klipu dla gestów `fade-in`/`fade-out` (zwrócenie bez zmian) . |
+| `applyDecodedAudioMeta`                                                                                    | Częściowe       | Stemplowanie metadanych dekodowania (waveform, duration, channels) .                                  | **Test 1**: Przekazanie pliku jednokanałowego (`channelCount = 1`) dla ścieżki z brakiem `channelMode` (ustawienie `"mono"`) .<br>**Test 2**: Przekazanie `durationMs = 0` (wczesny zwrot bez modyfikacji klipów) .                                                                         |
 
 ---
 
@@ -109,14 +112,16 @@ Przeliczenie czasu trwania w milisekundach na klatki czasowe (ticki) realizowane
 Przeliczanie metadanych po zdekodowaniu nagłówka pliku binarnego przez `applyDecodedAudioMeta` aktualizuje obiekty `ProjectAsset` (czas trwania, piki waveformu) oraz iteruje po wszystkich klipach przypisanych do danego `assetId` . Każdy klip przechodzi przeliczenie długości przez `lengthTicksFromAssetWindow` oraz clamping przez `clampAudioClipToAsset` .
 
 Dotychczasowe testy sprawdzają podstawowe przeskalowanie `lengthTicks` przy stałym tempie . Brakuje w nich weryfikacji dwóch kluczowych ścieżek brzegowych:
-* Przypadku, w którym klip zostaje umieszczony w sekcji objętej zmianą tempa w `tempoMap` (przeliczenie po zmiennej mapie tempa) .
-* Automatycznego stemplowania trybu kanału (`channelMode: "mono"`) na ścieżce, która nie posiadała dotąd jawnie określonego trybu, gdy importowany plik posiada dokładnie jeden kanał (`channelCount = 1`) .
+
+- Przypadku, w którym klip zostaje umieszczony w sekcji objętej zmianą tempa w `tempoMap` (przeliczenie po zmiennej mapie tempa) .
+- Automatycznego stemplowania trybu kanału (`channelMode: "mono"`) na ścieżce, która nie posiadała dotąd jawnie określonego trybu, gdy importowany plik posiada dokładnie jeden kanał (`channelCount = 1`) .
 
 ### Routing Miksera Audio, Ochrona DAG i Limity Systemowe
 
 Struktura miksera audio w StageSync v5 obsługuje acykliczny graf skierowany (DAG) szyn zbiorczych . Bezpieczeństwo routingu gwarantują funkcje pomocnicze ze `@stagesync/shared`: `busGraphHasCycle` oraz `wouldCreateBusCycle` .
 
 Reguły walidacji routingu w module edycji audio:
+
 1. Zewnętrzny interfejs `setAudioBusOutput` sprawdza, czy docelowa szyna nie jest tą samą szyną (`busId === output.busId`) .
 2. Wywoływana jest funkcja `wouldCreateBusCycle`, która buduje hipotetyczną strukturę grafu i wykonuje przeszukiwanie w głąb (DFS) w celu wykrycia pętli .
 3. Maksymalna liczba szyn w projekcie ograniczona jest stałą `MAX_AUDIO_BUSSES = 16` .
@@ -133,9 +138,10 @@ Ponadto usunięcie szyny za pomocą `removeAudioBus` musi wykonać czyszczenie k
 Ścieżki audio wprowadzają cyfrową obsługę obwiedni głośności oraz nakładanych przejść (crossfade) . Funkcja `applyAbutCrossfadeForClip` w module [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) przeszukuje ścieżkę w poszukiwaniu stykającego się sąsiada (gdzie odległość w tickach `gap === 0`) przy użyciu `findAbutNeighbor` . Następnie aplikuje symetryczne obwiednie `fadeOutMs` dla klipu lewego oraz `fadeInMs` dla klipu prawego bez modyfikowania geometrii klipów na osi czasu .
 
 Kluczowe różnice i wymagania parzystości pomiędzy ścieżkami zawartości a ścieżkami audio:
-* Na ścieżkach zawartości połączenie klipów (`joinAdjacentContentClips`) scala dwa klipy w jeden obiekt o sumarycznej długości .
-* Na ścieżkach audio nakładanie przejścia (`applyAbutCrossfadeForClip`) zachowuje dwa osobne klipy i zmienia wyłącznie parametry cyfrowej obwiedni .
-* Połączenie klipów audio (`joinAdjacentAudioClips`) jest dozwolone wyłącznie wtedy, gdy klipy dzielą ten sam `assetId` oraz ich okna źródłowe pliku są idealnie spójne (różnica `leftTrimIn + leftPlayable` oraz `rightTrimIn` nie przekracza 1.5 ms) .
+
+- Na ścieżkach zawartości połączenie klipów (`joinAdjacentContentClips`) scala dwa klipy w jeden obiekt o sumarycznej długości .
+- Na ścieżkach audio nakładanie przejścia (`applyAbutCrossfadeForClip`) zachowuje dwa osobne klipy i zmienia wyłącznie parametry cyfrowej obwiedni .
+- Połączenie klipów audio (`joinAdjacentAudioClips`) jest dozwolone wyłącznie wtedy, gdy klipy dzielą ten sam `assetId` oraz ich okna źródłowe pliku są idealnie spójne (różnica `leftTrimIn + leftPlayable` oraz `rightTrimIn` nie przekracza 1.5 ms) .
 
 W zestawie testów brakuje weryfikacji zachowania `applyAbutCrossfadeForClip` w sytuacji, gdy żądany czas przejścia `crossfadeMs` przekracza całkowity odtwarzalny czas trwania jednego z klipów . W takim przypadku funkcja `clampAudioFades` musi proporcjonalnie skrócić wartości fadów, aby nie przekroczyły one długości okna `playableMs` .
 
@@ -177,7 +183,11 @@ export function createMinimalAudioFixture(): {
   busId: string;
   laneId: ReturnType<typeof audioLaneId>;
 } {
-  let project = createProjectSeed("test-p1", "Audio Test", "2026-07-21T00:00:00.000Z");
+  let project = createProjectSeed(
+    "test-p1",
+    "Audio Test",
+    "2026-07-21T00:00:00.000Z",
+  );
 
   const trackAdded = addAudioTrack(project, "Track 1");
   project = trackAdded.project;
@@ -189,7 +199,12 @@ export function createMinimalAudioFixture(): {
 
   const assetId = "asset-test-1";
   const durationMs = 4000;
-  const lengthTicks = elapsedToTicks(durationMs, project.defaultBpm, project.defaultMeter, project.ppq);
+  const lengthTicks = elapsedToTicks(
+    durationMs,
+    project.defaultBpm,
+    project.defaultMeter,
+    project.ppq,
+  );
 
   const asset: ProjectAsset = {
     id: assetId,
@@ -227,7 +242,7 @@ export function createMinimalAudioFixture(): {
 }
 
 export function createGestureSessionFixture(
-  overrides: Partial<FormaGestureSession> & Pick<FormaGestureSession, "kind">
+  overrides: Partial<FormaGestureSession> & Pick<FormaGestureSession, "kind">,
 ): FormaGestureSession {
   return {
     clipId: "clip-test-1",
@@ -260,8 +275,9 @@ Wyjątki wymagające izolacji środowiskowej:
 Ponieważ transformacje projektowe w StageSync są synchroniczne i niezmiennicze (`{ ...project }`), ryzyko niestabilności testów (flakiness) wywołane asynchronicznością, opóźnieniami sieciowymi czy wyścigami wątków wynosi **0%** .
 
 Jedynym potencjalnym źródłem błędów w testach są **niedokładności zaokrągleń zmiennoprzecinkowych** występujące podczas przeliczania jednostek czasu pomiędzy milisekundami a tickami :
-* Przy niestandardowych wartościach BPM (np. `117.5` BPM) przeliczanie `ticksToMsAlongTempoMap` oraz `elapsedToTicks` może generować drobne odchylenia ułamkowe .
-* W asercjach testowych należy unikać rygorystycznego porównywania liczbowego `.toBe()` dla wartości milisekundowych, zastępując je metodą `.toBeCloseTo()` z odpowiednią precyzją, natomiast wartości w tickach należy zaokrąglać za pomocą `Math.floor()` lub `Math.round()` .
+
+- Przy niestandardowych wartościach BPM (np. `117.5` BPM) przeliczanie `ticksToMsAlongTempoMap` oraz `elapsedToTicks` może generować drobne odchylenia ułamkowe .
+- W asercjach testowych należy unikać rygorystycznego porównywania liczbowego `.toBe()` dla wartości milisekundowych, zastępując je metodą `.toBeCloseTo()` z odpowiednią precyzją, natomiast wartości w tickach należy zaokrąglać za pomocą `Math.floor()` lub `Math.round()` .
 
 ---
 
@@ -358,4 +374,5 @@ describe("audioLaneEdit — rozszerzenie pokrycia", () => {
 Przedstawiony plan uzupełnienia testów usuwa powstawanie niedokładności w krawędziowych scenariuszach edycji, w pełni zabezpiecza architekturę routingu miksera audio oraz gwarantuje stuprocentową zgodność implementacji z założeniami opisanymi w ADR 0008 .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

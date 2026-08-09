@@ -20,12 +20,12 @@ dane produkcyjne użytkownika lądowały wewnątrz katalogu repozytorium.
 
 `defaultDataDir()` ([`apps/server/src/storage/paths.ts`](../../apps/server/src/storage/paths.ts)) stosuje następujący priorytet:
 
-| Priorytet | Warunek | Katalog |
-|-----------|---------|---------|
-| 1 | `STAGESYNC_DATA_DIR` ustawione | wartość zmiennej |
-| 2 | `STAGESYNC_REPO_DEV=1` | `<repo>/data` |
-| 3 | `HOME` lub `USERPROFILE` dostępne | `~/Documents/StageSync` |
-| 4 | fallback (brak HOME) | `<repo>/data` |
+| Priorytet | Warunek                           | Katalog                 |
+| --------- | --------------------------------- | ----------------------- |
+| 1         | `STAGESYNC_DATA_DIR` ustawione    | wartość zmiennej        |
+| 2         | `STAGESYNC_REPO_DEV=1`            | `<repo>/data`           |
+| 3         | `HOME` lub `USERPROFILE` dostępne | `~/Documents/StageSync` |
+| 4         | fallback (brak HOME)              | `<repo>/data`           |
 
 `STAGESYNC_REPO_DEV=1` jest domyślnie ustawione w [`.env.example`](../../.env.example) — deweloper
 kopiuje plik jako `.env` i nie musi nic zmieniać. Docker i Compose zawsze ustawiają

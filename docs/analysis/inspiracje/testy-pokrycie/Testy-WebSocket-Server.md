@@ -10,6 +10,7 @@ CEL ANALIZY
 [`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts) pokrywa podstawy REST+WS; `attachTransportWs` ma luki w hub broadcast, presence, error handling, malformed messages.
 
 PYTANIA BADAWCZE
+
 1. Connection handshake: initial tick + liveDesk snapshot + setlist + stage cues — wszystkie kombinacje optional hubs?
 2. `transport.onChange` broadcast — wielu klientów, closed socket skip?
 3. `client_hello` message: displayName, roles, latencyMs — upsert presence; malformed JSON ignored?
@@ -19,11 +20,13 @@ PYTANIA BADAWCZE
 7. Zod `TransportTickMessageSchema.parse` w send — invalid message handling?
 
 KONTEKST
+
 - Path `/ws/transport`; biblioteka `ws`.
 - Wzorzec testów: createServer + WebSocket client w [`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts).
 - Vitest + prawdziwy WS na localhost.
 
 OCZEKIWANY OUTPUT
+
 1. Lista testów integration (multi-client WS).
 2. Mocki: minimal TransportEngine, opcjonalne StageHub/LiveDesk/SetlistHub/ClientPresence stubs.
 3. Ryzyka flaky: timing connect/message — wzorce `await new Promise` z timeout.
@@ -103,19 +106,19 @@ Krytycznym punktem podatności jest natomiast użycie schematu `TransportTickMes
 
 W celu kompletnego pokrycia mechanizmów transportu WebSocket w środowisku testowym Vitest zaprojektowano pakiet testów integracyjnych . Testy te symulują równoległe połączenia wielu klientów, weryfikują izolację błędów oraz sprawdzają spójność dostarczania ramek danych .
 
-| ID Testu | Kategoria | Scenariusz Testowy | Stan Wstępny | Akcja Testowa | Oczekiwany Rezultat |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC-01** | Handshake | Inicjalizacja z pełnym kompletem hubów  | Utworzone i zasilone dane we wszystkich 4 hubach . | Połączenie nowego klienta WS do `/ws/transport` . | Odbiór w ścisłej kolejności: `transport_tick`, `live_desk`, `setlist_snapshot` oraz serii ramek `stage_cue` . |
-| **TC-02** | Handshake | Inicjalizacja bez opcjonalnych hubów  | Przekazana wyłącznie instancja `TransportEngine` . | Połączenie nowego klienta WS do `/ws/transport` . | Odbiór dokładnie jednej ramki `transport_tick`. Brak jakichkolwiek błędów po stronie serwera . |
-| **TC-03** | Fanout | Rozgłaszanie zegara do wielu klientów  | Aktywne 3 połączenia klientów WS (`C1`, `C2`, `C3`) . | Wywołanie zmiany pozycji lub tempa w `TransportEngine` . | Wszyscy trzej klienci odbierają zaktualizowaną ramkę `transport_tick` o identycznym znaczniku czasu . |
-| **TC-04** | Fanout | Izolacja i pomijanie zamkniętych gniazd  | Podłączeni klienci `C1` i `C2`. Gniazdo `C2` zostaje zamknięte wywołaniem `close()` . | Emisja nowej wiadomości w `StageHub` . | Klient `C1` odbiera wiadomość. Serwer nie zgłasza błędów zapisu dla klienta `C2` . |
-| **TC-05** | Presence | Rejestracja i aktualizacja `client_hello`  | Klient `C1` podłączony do serwera . | Wysyłka poprawnej ramki JSON `client_hello` z danymi profilu . | Wywołanie `presence.upsert` z poprawnym identyfikatorem socketu i obecnością klienta na liście . |
-| **TC-06** | Presence | Sanitaryzacja niepoprawnych ról i przekroczeń długości  | Klient `C1` podłączony do serwera . | Wysyłka `client_hello` z nazwą 100 znaków i niedozwoloną rolą . | Nazwa w rejestrze zostaje przycięta do 40 znaków, a nieprawidłowa rola odrzucona . |
-| **TC-07** | Presence | Automatyczne usuwanie po rozłączeniu  | Klient `C1` zarejestrowany w module `presence` . | Fizyczne przerwanie połączenia przez klienta `C1` . | Wywołanie `presence.remove(id)`. Klient znika z listy obecności . |
-| **TC-08** | Boundary | Ignorowanie ramek przekraczających 8192 bajty  | Klient `C1` podłączony do serwera . | Wysyłka ramki JSON o skumulowanym rozmiarze 8193 bajtów . | Ramka zostaje odrzucona. Stan obecności nie ulega zmianie, gniazdo pozostaje otwarte . |
-| **TC-09** | Boundary | Odporność na uszkodzony format JSON  | Klient `C1` podłączony do serwera . | Wysyłka niepoprawnego ciągu tekstowego `{ malformed json ...` . | Serwer ignoruje błąd parsowania. Gniazdo nie zostaje zerwane . |
-| **TC-10** | Resilience | Obsługa błędu bazowego serwera WSS  | Uruchomiony serwer transportowy WebSocket . | Sztuczne wyemitowanie zdarzenia `wss.emit('error', new Error())` . | Błąd trafia do przechwycenia. Główny proces testowy kontynuuje działanie . |
-| **TC-11** | Teardown | Pełne czyszczenie subskrypcji przy zamknięciu  | Serwer powiązany ze wszystkimi 4 hubami . | Wywołanie metody `wss.close()` . | Odłączenie wszystkich listenerów ze wszystkich hubów (`listeners.size === 0`) . |
+| ID Testu  | Kategoria  | Scenariusz Testowy                                     | Stan Wstępny                                                                          | Akcja Testowa                                                      | Oczekiwany Rezultat                                                                                           |
+| :-------- | :--------- | :----------------------------------------------------- | :------------------------------------------------------------------------------------ | :----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| **TC-01** | Handshake  | Inicjalizacja z pełnym kompletem hubów                 | Utworzone i zasilone dane we wszystkich 4 hubach .                                    | Połączenie nowego klienta WS do `/ws/transport` .                  | Odbiór w ścisłej kolejności: `transport_tick`, `live_desk`, `setlist_snapshot` oraz serii ramek `stage_cue` . |
+| **TC-02** | Handshake  | Inicjalizacja bez opcjonalnych hubów                   | Przekazana wyłącznie instancja `TransportEngine` .                                    | Połączenie nowego klienta WS do `/ws/transport` .                  | Odbiór dokładnie jednej ramki `transport_tick`. Brak jakichkolwiek błędów po stronie serwera .                |
+| **TC-03** | Fanout     | Rozgłaszanie zegara do wielu klientów                  | Aktywne 3 połączenia klientów WS (`C1`, `C2`, `C3`) .                                 | Wywołanie zmiany pozycji lub tempa w `TransportEngine` .           | Wszyscy trzej klienci odbierają zaktualizowaną ramkę `transport_tick` o identycznym znaczniku czasu .         |
+| **TC-04** | Fanout     | Izolacja i pomijanie zamkniętych gniazd                | Podłączeni klienci `C1` i `C2`. Gniazdo `C2` zostaje zamknięte wywołaniem `close()` . | Emisja nowej wiadomości w `StageHub` .                             | Klient `C1` odbiera wiadomość. Serwer nie zgłasza błędów zapisu dla klienta `C2` .                            |
+| **TC-05** | Presence   | Rejestracja i aktualizacja `client_hello`              | Klient `C1` podłączony do serwera .                                                   | Wysyłka poprawnej ramki JSON `client_hello` z danymi profilu .     | Wywołanie `presence.upsert` z poprawnym identyfikatorem socketu i obecnością klienta na liście .              |
+| **TC-06** | Presence   | Sanitaryzacja niepoprawnych ról i przekroczeń długości | Klient `C1` podłączony do serwera .                                                   | Wysyłka `client_hello` z nazwą 100 znaków i niedozwoloną rolą .    | Nazwa w rejestrze zostaje przycięta do 40 znaków, a nieprawidłowa rola odrzucona .                            |
+| **TC-07** | Presence   | Automatyczne usuwanie po rozłączeniu                   | Klient `C1` zarejestrowany w module `presence` .                                      | Fizyczne przerwanie połączenia przez klienta `C1` .                | Wywołanie `presence.remove(id)`. Klient znika z listy obecności .                                             |
+| **TC-08** | Boundary   | Ignorowanie ramek przekraczających 8192 bajty          | Klient `C1` podłączony do serwera .                                                   | Wysyłka ramki JSON o skumulowanym rozmiarze 8193 bajtów .          | Ramka zostaje odrzucona. Stan obecności nie ulega zmianie, gniazdo pozostaje otwarte .                        |
+| **TC-09** | Boundary   | Odporność na uszkodzony format JSON                    | Klient `C1` podłączony do serwera .                                                   | Wysyłka niepoprawnego ciągu tekstowego `{ malformed json ...` .    | Serwer ignoruje błąd parsowania. Gniazdo nie zostaje zerwane .                                                |
+| **TC-10** | Resilience | Obsługa błędu bazowego serwera WSS                     | Uruchomiony serwer transportowy WebSocket .                                           | Sztuczne wyemitowanie zdarzenia `wss.emit('error', new Error())` . | Błąd trafia do przechwycenia. Główny proces testowy kontynuuje działanie .                                    |
+| **TC-11** | Teardown   | Pełne czyszczenie subskrypcji przy zamknięciu          | Serwer powiązany ze wszystkimi 4 hubami .                                             | Wywołanie metody `wss.close()` .                                   | Odłączenie wszystkich listenerów ze wszystkich hubów (`listeners.size === 0`) .                               |
 
 ---
 
@@ -129,9 +132,16 @@ import type { ClientPresence, PresenceClient } from "./client-presence.js";
 import type { LiveDeskStore } from "./live-desk.js";
 import type { StageHub } from "./transport/stage-hub.js";
 import type { SetlistHub } from "./transport/setlist-hub.js";
-import type { TransportTickMessage, LiveDeskMessage, SetlistSnapshotMessage, StageCueMessage } from "@stagesync/shared";
+import type {
+  TransportTickMessage,
+  LiveDeskMessage,
+  SetlistSnapshotMessage,
+  StageCueMessage,
+} from "@stagesync/shared";
 
-export function createTransportEngineStub(): TransportEngine & { emitTick: (msg?: Partial<TransportTickMessage>) => void } {
+export function createTransportEngineStub(): TransportEngine & {
+  emitTick: (msg?: Partial<TransportTickMessage>) => void;
+} {
   const listeners = new Set<(msg: TransportTickMessage) => void>();
   let currentTick: TransportTickMessage = {
     type: "transport_tick",
@@ -150,7 +160,9 @@ export function createTransportEngineStub(): TransportEngine & { emitTick: (msg?
     toTickMessage: () => currentTick,
     onChange: (fn) => {
       listeners.add(fn);
-      return () => { listeners.delete(fn); };
+      return () => {
+        listeners.delete(fn);
+      };
     },
     emitTick: (override) => {
       if (override) currentTick = { ...currentTick, ...override };
@@ -167,19 +179,23 @@ export function createTransportEngineStub(): TransportEngine & { emitTick: (msg?
     seek: () => currentTick,
     setLoop: () => currentTick,
     clearActiveIf: () => null,
-    dispose: () => { listeners.clear(); },
-  } as unknown as TransportEngine & { emitTick: (msg?: Partial<TransportTickMessage>) => void };
+    dispose: () => {
+      listeners.clear();
+    },
+  } as unknown as TransportEngine & {
+    emitTick: (msg?: Partial<TransportTickMessage>) => void;
+  };
 }
 ```
 
 Do weryfikacji pozostałych modułów pomocniczych wykorzystuje się uproszczone atrapy stanowe reprezentowane w poniższej specyfikacji.
 
-| Obiekt Makietowy | Symulowany Interfejs | Zarządzanie Stanem Wewnętrznym | Sposób Wyzwalania Zdarzeń |
-| :--- | :--- | :--- | :--- |
-| `StageHubStub` | `snapshotCues()`, `onMessage()` . | Wewnętrzna tablica `StageCueMessage[]` oraz zbiór listenerów `Set` . | Metoda `emitCue(msg)` dodaje komunikat do tablicy i rozgłasza go do słuchaczy . |
-| `LiveDeskStoreStub` | `snapshotMessage()`, `onMessage()` . | Obiekt `LiveDeskMessage` przechowujący transpozycję i parametry synchronizacji . | Metoda `emitUpdate(patch)` aktualizuje stan i powiadamia słuchaczy . |
-| `SetlistHubStub` | `snapshotMessage()`, `onMessage()` . | Instancja `SetlistSnapshotMessage` lub wartość `null` . | Metoda `publish(msg)` zmienia zapamiętaną migawkę i emituje zdarzenie . |
-| `ClientPresenceStub` | `connect()`, `upsert()`, `remove()`, `list()` . | Mapa `Map<string, PresenceClient>` indeksowana identyfikatorem socketu `id` . | Wywołania metod modyfikują mapę w pamięci analogicznie do modułu produkcyjnego . |
+| Obiekt Makietowy     | Symulowany Interfejs                            | Zarządzanie Stanem Wewnętrznym                                                   | Sposób Wyzwalania Zdarzeń                                                        |
+| :------------------- | :---------------------------------------------- | :------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| `StageHubStub`       | `snapshotCues()`, `onMessage()` .               | Wewnętrzna tablica `StageCueMessage[]` oraz zbiór listenerów `Set` .             | Metoda `emitCue(msg)` dodaje komunikat do tablicy i rozgłasza go do słuchaczy .  |
+| `LiveDeskStoreStub`  | `snapshotMessage()`, `onMessage()` .            | Obiekt `LiveDeskMessage` przechowujący transpozycję i parametry synchronizacji . | Metoda `emitUpdate(patch)` aktualizuje stan i powiadamia słuchaczy .             |
+| `SetlistHubStub`     | `snapshotMessage()`, `onMessage()` .            | Instancja `SetlistSnapshotMessage` lub wartość `null` .                          | Metoda `publish(msg)` zmienia zapamiętaną migawkę i emituje zdarzenie .          |
+| `ClientPresenceStub` | `connect()`, `upsert()`, `remove()`, `list()` . | Mapa `Map<string, PresenceClient>` indeksowana identyfikatorem socketu `id` .    | Wywołania metod modyfikują mapę w pamięci analogicznie do modułu produkcyjnego . |
 
 ---
 
@@ -195,12 +211,16 @@ import { WebSocket } from "ws";
 export function waitForMessage<T = unknown>(
   ws: WebSocket,
   predicate: (msg: any) => boolean,
-  timeoutMs = 1500
+  timeoutMs = 1500,
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       ws.off("message", handler);
-      reject(new Error(`Przekroczono limit czasu (${timeoutMs}ms) oczekując na wiadomość WebSocket`));
+      reject(
+        new Error(
+          `Przekroczono limit czasu (${timeoutMs}ms) oczekując na wiadomość WebSocket`,
+        ),
+      );
     }, timeoutMs);
 
     function handler(data: unknown) {
@@ -224,14 +244,20 @@ export function waitForMessage<T = unknown>(
 W przypadku scenariuszy wieloklienckich krytyczne jest upewnienie się, że wszystkie gniazda testowe przeszły do stanu `WebSocket.OPEN` przed wyemitowaniem zdarzenia rozgłoszeniowego przez serwer. Do tego celu służy funkcja synchronizująca `waitForAllOpen`:
 
 ```typescript
-export function waitForAllOpen(sockets: WebSocket[], timeoutMs = 1500): Promise<void> {
+export function waitForAllOpen(
+  sockets: WebSocket[],
+  timeoutMs = 1500,
+): Promise<void> {
   return Promise.all(
     sockets.map((ws) => {
       if (ws.readyState === WebSocket.OPEN) return Promise.resolve();
       return new Promise<void>((resolve, reject) => {
         const timer = setTimeout(
-          () => reject(new Error("Przekroczono limit czasu otwarcia gniazda WebSocket")),
-          timeoutMs
+          () =>
+            reject(
+              new Error("Przekroczono limit czasu otwarcia gniazda WebSocket"),
+            ),
+          timeoutMs,
         );
         ws.once("open", () => {
           clearTimeout(timer);
@@ -239,7 +265,7 @@ export function waitForAllOpen(sockets: WebSocket[], timeoutMs = 1500): Promise<
         });
         ws.once("error", reject);
       });
-    })
+    }),
   ).then(() => undefined);
 }
 ```
@@ -257,7 +283,7 @@ Mechanizm odczytu wiadomości `client_hello` łączy sprawdzenie długości cią
 ```typescript
 export function parseClientHelloMessage(
   data: unknown,
-  maxLength = 8192
+  maxLength = 8192,
 ): { displayName?: unknown; roles?: unknown; latencyMs?: unknown } | null {
   const text = String(data);
   if (text.length > maxLength) return null;
@@ -286,7 +312,7 @@ export function buildHandshakeMessages(
   transport: TransportEngine,
   liveDesk?: LiveDeskStore,
   setlistHub?: SetlistHub,
-  stageHub?: StageHub
+  stageHub?: StageHub,
 ): unknown[] {
   const messages: unknown[] = [transport.toTickMessage()];
   if (liveDesk) {
@@ -311,7 +337,10 @@ Wywołanie `TransportTickMessageSchema.parse(raw)` w obecnej wersji bezpośredni
 export function safeSerializeTick(raw: unknown): string | null {
   const result = TransportTickMessageSchema.safeParse(raw);
   if (!result.success) {
-    console.error("[stagesync-server] Błąd walidacji schematu TransportTickMessage:", result.error);
+    console.error(
+      "[stagesync-server] Błąd walidacji schematu TransportTickMessage:",
+      result.error,
+    );
     return null;
   }
   return JSON.stringify(result.data);
@@ -324,13 +353,14 @@ export function safeSerializeTick(raw: unknown): string | null {
 
 W celu zapewnienia najwyższej sprawności i niezawodności systemu StageSync podczas występów na żywo, prace wdrożeniowe zostały ustrukturyzowane według stopnia wpływu na ciągłość działania odtwarzacza scenicznego .
 
-| Priorytet | Obszar Funkcjonalny | Uzasadnienie Biznesowe i Techniczne |
-| :--- | :--- | :--- |
+| Priorytet          | Obszar Funkcjonalny                              | Uzasadnienie Biznesowe i Techniczne                                                                                                                                 |
+| :----------------- | :----------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **P0 (Krytyczny)** | Poprawność Rozgłaszania (Broadcast Correctness)  | Błędy w fanout zegara odtwarzacza lub zatrzymanie pętli rozgłoszeniowej na uszkodzonym gnieździe powodują natychmiastową utratę synchronizacji urządzeń na scenie . |
-| **P1 (Wysoki)** | Bezpieczeństwo Handshake i Rejestracja Obecności  | Poprawna inicjalizacja gwarantuje, że podłączający się klienci natychmiast otrzymują aktualny stan sceny, a ich obecność jest widoczna w konsolecie Admina . |
-| **P2 (Średni)** | Odporność na Błędy i Serwerowe Granice Danych  | Zabezpieczenie przed uszkodzonymi ramkami JSON, przekroczeniem limitu 8192 bajtów oraz błędami Zod chroni proces przed niekontrolowanym zatrzymaniem . |
+| **P1 (Wysoki)**    | Bezpieczeństwo Handshake i Rejestracja Obecności | Poprawna inicjalizacja gwarantuje, że podłączający się klienci natychmiast otrzymują aktualny stan sceny, a ich obecność jest widoczna w konsolecie Admina .        |
+| **P2 (Średni)**    | Odporność na Błędy i Serwerowe Granice Danych    | Zabezpieczenie przed uszkodzonymi ramkami JSON, przekroczeniem limitu 8192 bajtów oraz błędami Zod chroni proces przed niekontrolowanym zatrzymaniem .              |
 
 Przedstawiona strategia testów integracyjnych w połączeniu z proponowaną refaktoryzacją czystych funkcji pomocniczych eliminuje dotychczasowe luki w pokryciu kodu modułu [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) . Wdrożenie opisanych wzorców asynchronicznych i atrap obiektowych zagwarantuje pełną deterministyczność zestawu testowego Vitest oraz wysoką odporność serwera StageSync w warunkach produkcyjnych .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

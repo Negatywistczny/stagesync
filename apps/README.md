@@ -33,5 +33,6 @@ Każda aplikacja w monorepo odpowiada za inny aspekt systemu synchronizacji scen
 ## ⚙️ Lokalne uruchomienie (pnpm)
 
 Główne komendy do uruchamiania i budowania aplikacji znajdują się w głównym katalogu monorepo. Przykładowo:
+
 - `pnpm dev` — uruchamia jednocześnie wszystkie aplikacje w trybie deweloperskim (wykorzystuje [`turbo.json`](../turbo.json)).
 - `pnpm build` — kompiluje wszystkie aplikacje do wersji produkcyjnej.

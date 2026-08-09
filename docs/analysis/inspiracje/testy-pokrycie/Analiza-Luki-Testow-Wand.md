@@ -10,6 +10,7 @@ CEL ANALIZY
 [`wand.test.ts`](../../../../packages/shared/src/wand.test.ts) jest obszerny, ale moduł ma >50 uncovered lines. Zidentyfikuj luki w algorytmach A–F (tekst) i A–E+L (akordy), scope, approximate layers.
 
 PYTANIA BADAWCZE
+
 1. Które gałęzie `placeContentFromForma` / `wandContentToForma` nie są trafiane (grep coverage)?
 2. Scenariusze: puste Forma, scope sectionIds, countdown clips, subsections, multi-section Verse/Chorus?
 3. `TEXT_WEIGHT_RATIO_THRESHOLD` heurystyki — edge cases krótkich ostatnich linii?
@@ -18,11 +19,13 @@ PYTANIA BADAWCZE
 6. Czy `placeContentFromForma` nigdy nie powinien throw — wszystkie fail-soft paths pokryte?
 
 KONTEKST
+
 - Pure; Forma clips nie mutowane; fail-soft via `WandResult.ok`.
 - Czas: `ticksPerBar`, `resolveMeterAt` — bez Date.now.
 - Vitest + `createProjectV5Seed` fixtures.
 
 OCZEKIWANY OUTPUT
+
 1. Macierz: scenariusz × mode (tekst/akordy/both) × oczekiwany placed/approximate.
 2. Brakujące testy z konkretnymi liniami tekstu/akordów.
 3. Mocki: niepotrzebne (pure).
@@ -68,20 +71,20 @@ Przetwarzanie danych realizowane jest w sposób zorientowany na rezultat poprzez
 
 Poniższa macierz klasyfikuje zachowanie algorytmu Różdżki w zależności od struktury sekcji `Forma`, charakterystyki wprowadzanych danych oraz wybranego trybu pracy (`tekst`, `akordy` lub `both`).
 
-| Scenariusz struktury Forma / Kontentu | Tryb (`mode`) | Oczekiwane `placed` | Oczekiwane `approximate` | Dominująca warstwa (Layer) | Stan wyniku (`ok`) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Sekcja 8 taktów, 4 linie tekstu (podział równomierny) | `tekst` | 4 | `false` | Layer A (równy podział taktowy) | `true` |
-| Sekcja 7 taktów, 4 linie tekstu (podział nierównomierny) | `tekst` | 4 | `true` | Layer B (reszta taktów na końcu: 1+2+2+2) | `true` |
-| Sekcja 4 takty, 8 linii tekstu ($n > \text{bars}$) | `tekst` | 8 | `false` | Layer D (ułamkowy podział taktu) | `true` |
-| Sekcja 4 takty, 1 linia tekstu ($n = 1$) | `tekst` | 1 | `false` | Layer E (rozciągnięcie na pełną sekcję) | `true` |
-| Sekcja 8 taktów, 6 linii o dużej dysproporcji długości | `tekst` | 6 | `true` | Layer F (podział ważony długością) | `true` |
-| Podsekcje typu Content/Gap (np. 4+1+4+1 bar) | `tekst` / `akordy` | $n$ | `true` (gdy sub-layer B/F) | Layer C (omijanie pauz/gapów) | `true` |
-| Akordy przypisane via `sourceLineId` do linii tekstu | `akordy` | $n$ | Zależy od pod-warstwy | Layer L (placement po wersach) | `true` |
-| Akordy zgrupowane w taktach odpowiadających wersom | `akordy` | $n$ | Zależy od pod-warstwy | Layer L (klastry taktowe) | `true` |
-| Brak sekcji muzycznych w `Forma` (tylko Countdown) | dowolny | 0 | `false` | Brak | `false` (`"Brak sekcji Formy"`) |
-| Pusta ścieżka tekstu lub brak śpiewalnych linii | `tekst` | 0 | `false` | Brak | `false` (`"Brak linii Tekstu"`) |
-| Scope `sectionIds` niepasujący do istniejących sekcji | dowolny | 0 | `false` | Brak | `false` (`"Brak... w zaznaczonych"`) |
-| Poprawny Tekst, brak akordów w projekcie | `both` | $n_{\text{tekst}}$ | Zależy od Tekstu | Tekst: A–F, Akordy: brak | `false` (`"Tekst OK, ale..."`) |
+| Scenariusz struktury Forma / Kontentu                    | Tryb (`mode`)      | Oczekiwane `placed` | Oczekiwane `approximate`   | Dominująca warstwa (Layer)                | Stan wyniku (`ok`)                   |
+| :------------------------------------------------------- | :----------------- | :------------------ | :------------------------- | :---------------------------------------- | :----------------------------------- |
+| Sekcja 8 taktów, 4 linie tekstu (podział równomierny)    | `tekst`            | 4                   | `false`                    | Layer A (równy podział taktowy)           | `true`                               |
+| Sekcja 7 taktów, 4 linie tekstu (podział nierównomierny) | `tekst`            | 4                   | `true`                     | Layer B (reszta taktów na końcu: 1+2+2+2) | `true`                               |
+| Sekcja 4 takty, 8 linii tekstu ($n > \text{bars}$)       | `tekst`            | 8                   | `false`                    | Layer D (ułamkowy podział taktu)          | `true`                               |
+| Sekcja 4 takty, 1 linia tekstu ($n = 1$)                 | `tekst`            | 1                   | `false`                    | Layer E (rozciągnięcie na pełną sekcję)   | `true`                               |
+| Sekcja 8 taktów, 6 linii o dużej dysproporcji długości   | `tekst`            | 6                   | `true`                     | Layer F (podział ważony długością)        | `true`                               |
+| Podsekcje typu Content/Gap (np. 4+1+4+1 bar)             | `tekst` / `akordy` | $n$                 | `true` (gdy sub-layer B/F) | Layer C (omijanie pauz/gapów)             | `true`                               |
+| Akordy przypisane via `sourceLineId` do linii tekstu     | `akordy`           | $n$                 | Zależy od pod-warstwy      | Layer L (placement po wersach)            | `true`                               |
+| Akordy zgrupowane w taktach odpowiadających wersom       | `akordy`           | $n$                 | Zależy od pod-warstwy      | Layer L (klastry taktowe)                 | `true`                               |
+| Brak sekcji muzycznych w `Forma` (tylko Countdown)       | dowolny            | 0                   | `false`                    | Brak                                      | `false` (`"Brak sekcji Formy"`)      |
+| Pusta ścieżka tekstu lub brak śpiewalnych linii          | `tekst`            | 0                   | `false`                    | Brak                                      | `false` (`"Brak linii Tekstu"`)      |
+| Scope `sectionIds` niepasujący do istniejących sekcji    | dowolny            | 0                   | `false`                    | Brak                                      | `false` (`"Brak... w zaznaczonych"`) |
+| Poprawny Tekst, brak akordów w projekcie                 | `both`             | $n_{\text{tekst}}$  | Zależy od Tekstu           | Tekst: A–F, Akordy: brak                  | `false` (`"Tekst OK, ale..."`)       |
 
 ---
 
@@ -123,7 +126,7 @@ Niezwykle istotnym przypadkiem brzegowym są krótkie puenty wokalne . Gdy po ki
 
 ### 4. Specyfika Trybu Both i Agregacja Błędów
 
-Przetwarzanie w trybie `both` realizuje sekwencyjną kompozycję dwóch niezależnych przejść . W pierwszej kolejności wywoływana jest funkcja `placeTekstFromForma(project, scope)` . Jeżeli etap układania tekstu zakończy się niepowodzeniem, algorytm przerywa pracę i zwraca wynik tekstu . 
+Przetwarzanie w trybie `both` realizuje sekwencyjną kompozycję dwóch niezależnych przejść . W pierwszej kolejności wywoływana jest funkcja `placeTekstFromForma(project, scope)` . Jeżeli etap układania tekstu zakończy się niepowodzeniem, algorytm przerywa pracę i zwraca wynik tekstu .
 
 W przypadku sukcesu zmodyfikowany obiekt projektu (`vocals.project`) przekazywany jest do funkcji `placeAkordyFromForma(vocals.project, scope)` . Sytuacja, w której tekst zostanie pomyślnie rozłożony, ale etap układania akordów zwróci błąd, jest obsługiwana w sposób specyficzny: funkcja zwraca wynik ze stanem `ok: false`, ale w polu `project` zachowuje projekt ze zmienionym tekstem . Komunikat błędu przybiera wówczas postać skonsolidowaną: `Tekst OK, ale ${chords.message}` .
 
@@ -150,6 +153,7 @@ Potencjalnym punktem awarii z punktu widzenia wykonywania kodu mogłyby być jed
 Dla zapewnienia pełnego pokrycia kodu modułu [`wand.ts`](../../../../packages/shared/src/wand.ts) należy rozbudować plik [`wand.test.ts`](../../../../packages/shared/src/wand.test.ts) o poniższe zestawy testowe.
 
 ### 1. Test Heurystyki Krótkiej Puenty (Layer F)
+
 Test weryfikuje aktywację rozkładu ważonego przy wystąpieniu krótkiej linii na końcu sekcji, gdzie liczba taktów nie jest podzielna przez liczbę linii.
 
 ```typescript
@@ -160,7 +164,7 @@ it("aktywuje Layer F i oznacza approximate dla krótkiej puenty wokalnej", () =>
   const p = sectionProject(5, [
     "Pierwsza bardzo długa linia tekstu zwrotki",
     "Druga równie długa linia śpiewana",
-    "Tak"
+    "Tak",
   ]);
   const result = placeContentFromForma(p, "tekst");
   expect(result.ok).toBe(true);
@@ -170,6 +174,7 @@ it("aktywuje Layer F i oznacza approximate dla krótkiej puenty wokalnej", () =>
 ```
 
 ### 2. Test Redystrybucji Zerowych Przydziałów w Podsekcjach
+
 Test sprawdza, czy algorytm poprawnie odbiera klip z obszernej podsekcji i przekazuje go do bardzo krótkiego przedziału Content, unikając pozostawienia przydziału zerowego.
 
 ```typescript
@@ -177,18 +182,21 @@ it("redystrybuuje klipy do krótkich podsekcji przy zerowym przydziale początko
   // Sekcja 10 taktów z podsekcjami: Content 9.5 taktu, Gap 0.2 taktu, Content 0.3 taktu
   // 2 linie tekstu: podział proporcjonalny daje przydział [2, 0]. Algorytm musi skorygować na [1, 1].
   const p = sectionProject(10, ["Linia 1", "Linia 2"], {
-    subsections: [Math.floor(9.5 * BAR), Math.floor(9.7 * BAR)]
+    subsections: [Math.floor(9.5 * BAR), Math.floor(9.7 * BAR)],
   });
   const result = placeContentFromForma(p, "tekst");
   expect(result.ok).toBe(true);
   expect(result.placed).toBe(2);
-  const starts = result.project.tekst.clips.map((c) => c.startTicks).sort((a, b) => a - b);
+  const starts = result.project.tekst.clips
+    .map((c) => c.startTicks)
+    .sort((a, b) => a - b);
   expect(starts[0]).toBe(0);
   expect(starts[1]).toBeGreaterThanOrEqual(Math.floor(9.7 * BAR));
 });
 ```
 
 ### 3. Test Częściowego Przypisania Akordów via `sourceLineId`
+
 Test weryfikuje zachowanie algorytmu w sytuacji, gdy tylko część akordów posiada przypisanie do identyfikatorów wersów tekstu.
 
 ```typescript
@@ -199,15 +207,33 @@ it("prawidłowo obsługuje częściowe powiązanie akordów via sourceLineId", (
     ...p,
     tekst: {
       clips: [
-        { id: "line-1", startTicks: intro.startTicks, lengthTicks: BAR, text: "Wers pierwszy", sourceSection: "Intro" },
-        { id: "line-2", startTicks: intro.startTicks + 2 * BAR, lengthTicks: BAR, text: "Wers drugi", sourceSection: "Intro" }
-      ]
+        {
+          id: "line-1",
+          startTicks: intro.startTicks,
+          lengthTicks: BAR,
+          text: "Wers pierwszy",
+          sourceSection: "Intro",
+        },
+        {
+          id: "line-2",
+          startTicks: intro.startTicks + 2 * BAR,
+          lengthTicks: BAR,
+          text: "Wers drugi",
+          sourceSection: "Intro",
+        },
+      ],
     },
     akordy: {
       clips: [
-        { id: "a1", startTicks: 0, lengthTicks: BAR, symbol: "C", sourceLineId: "line-1" }
-      ]
-    }
+        {
+          id: "a1",
+          startTicks: 0,
+          lengthTicks: BAR,
+          symbol: "C",
+          sourceLineId: "line-1",
+        },
+      ],
+    },
   };
   const result = placeContentFromForma(p, "akordy");
   expect(result.ok).toBe(true);
@@ -217,6 +243,7 @@ it("prawidłowo obsługuje częściowe powiązanie akordów via sourceLineId", (
 ```
 
 ### 4. Test Zachowania Projektu w Trybie Both przy Błędzie Akordów
+
 Test weryfikuje, czy w przypadku niepowodzenia na etapie akordów projekt zachowuje pomyślnie zmodyfikowaną ścieżkę tekstu.
 
 ```typescript
@@ -232,6 +259,7 @@ it("w trybie both zachowuje zmieniony Tekst gdy etap Akordów zwróci błąd", (
 ```
 
 ### 5. Testy Wynikowe dla `wandContentToForma`
+
 Testy zapewniają pokrycie skrótowych wywołań pomocniczych dla trybów `"akordy"` oraz `"both"`.
 
 ```typescript
@@ -242,9 +270,9 @@ it("wandContentToForma obsługuje tryb akordy oraz both", () => {
     akordy: {
       clips: [
         { id: "a1", startTicks: 0, lengthTicks: BAR, symbol: "Am" },
-        { id: "a2", startTicks: 0, lengthTicks: BAR, symbol: "F" }
-      ]
-    }
+        { id: "a2", startTicks: 0, lengthTicks: BAR, symbol: "F" },
+      ],
+    },
   };
   const pChords = wandContentToForma(p, "akordy");
   expect(pChords.akordy.clips[1]!.startTicks).toBe(2 * BAR);
@@ -284,23 +312,30 @@ describe("Różdżka — Property-Based Tests (fast-check)", () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 1, max: 32 }),
-        fc.array(fc.string({ minLength: 1, maxLength: 80 }), { minLength: 1, maxLength: 32 }),
+        fc.array(fc.string({ minLength: 1, maxLength: 80 }), {
+          minLength: 1,
+          maxLength: 32,
+        }),
         (bars, lines) => {
-          let p = createProjectV5Seed("pbt-1", "PBT Song", "2026-01-01T00:00:00.000Z");
+          let p = createProjectV5Seed(
+            "pbt-1",
+            "PBT Song",
+            "2026-01-01T00:00:00.000Z",
+          );
           const intro = p.forma.clips[0]!;
           p = {
             ...p,
             forma: {
-              clips: [{ ...intro, lengthTicks: bars * BAR }]
+              clips: [{ ...intro, lengthTicks: bars * BAR }],
             },
             tekst: {
               clips: lines.map((text, i) => ({
                 id: `t-${i}`,
                 startTicks: 0,
                 lengthTicks: BAR,
-                text
-              }))
-            }
+                text,
+              })),
+            },
           };
 
           const formaBefore = JSON.stringify(p.forma);
@@ -321,9 +356,9 @@ describe("Różdżka — Property-Based Tests (fast-check)", () => {
               }
             }
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });
@@ -338,4 +373,5 @@ Logika modułu [`wand.ts`](../../../../packages/shared/src/wand.ts) oraz wszystk
 Ryzyko wystąpienia testów niestabilnych (flaky tests) wynosi 0%. Wyliczenia pozycji w domenie StageSync opierają się na matematyce dyskretnej (całkowitoliczbowe wartości `ticks`), wykluczając operacje niedeterministyczne, losowość oraz zależności od czasu rzeczywistego (`Date.now`) . Zapewnia to pełną powtarzalność wyników w każdym środowisku wykonawczym i w potokach CI/CD.
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

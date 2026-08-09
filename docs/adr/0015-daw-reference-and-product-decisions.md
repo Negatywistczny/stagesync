@@ -17,7 +17,7 @@ Po fali Q&A PO pojawiły się **trwałe decyzje produktowe** oraz wiele pozycji 
 - **Backlog** = praca do zrobienia (TODO / issue). Sam wpis w TODO **nie** jest decyzją OUT.
 - Nie przenoś deferrali z triage / starych docs do „permanent OUT” bez PO.
 
-### 1. Reguła referencji Logic Pro *(amend 2026-07-26 — [ADR 0017](./0017-live-show-control-contracts.md) §4)*
+### 1. Reguła referencji Logic Pro _(amend 2026-07-26 — [ADR 0017](./0017-live-show-control-contracts.md) §4)_
 
 W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia, geometria, import): **Logic Pro jest pierwszą referencją** sprawdzonych mechanik DAW (nie pixel-clone chrome).
 
@@ -32,46 +32,46 @@ W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia
 
 ### 2. Zakres UI
 
-| Decyzja | Treść |
-|---------|--------|
-| Brak funkcji = brak UI | Potwierdzenie [ADR 0011 §1a](./0011-ui-parity-behavior.md) — bez stubów / `disabled` „na zapas” |
-| Multi-out (Out 3–4+) | **Oficjalna decyzja: wprowadzić** (klasyczny DAW). Implementacja = backlog; **nie** „limit bez PO” |
-| Motywy / auth / multi-user | Backlog — **nie** wymyślać permanent OUT bez PO |
+| Decyzja                    | Treść                                                                                              |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| Brak funkcji = brak UI     | Potwierdzenie [ADR 0011 §1a](./0011-ui-parity-behavior.md) — bez stubów / `disabled` „na zapas”    |
+| Multi-out (Out 3–4+)       | **Oficjalna decyzja: wprowadzić** (klasyczny DAW). Implementacja = backlog; **nie** „limit bez PO” |
+| Motywy / auth / multi-user | Backlog — **nie** wymyślać permanent OUT bez PO                                                    |
 
 ### 3. Mixer / audio (stałe)
 
-| Temat | Decyzja |
-|-------|--------|
-| True Balance centrum unity / +3 dB mono↔stereo | Zamierzone OK |
-| Dual-mono equal-power downmix (+3 dB skorelowane) | Zamierzone OK |
-| Track solo vs bus solo | **Track solo wygrywa** |
-| Click w Mixerze | Na start proste Mute/Volume jako Cue; **interfejs otwarty** na ewolucję |
-| Mixer Zoom | Tylko skala UI — **bez** niezależnego Zoom H/V |
-| Safari scratch (WebAudio) | Empty-buffer release po `stop()` (WA-MEM-02 fixed) |
+| Temat                                             | Decyzja                                                                 |
+| ------------------------------------------------- | ----------------------------------------------------------------------- |
+| True Balance centrum unity / +3 dB mono↔stereo    | Zamierzone OK                                                           |
+| Dual-mono equal-power downmix (+3 dB skorelowane) | Zamierzone OK                                                           |
+| Track solo vs bus solo                            | **Track solo wygrywa**                                                  |
+| Click w Mixerze                                   | Na start proste Mute/Volume jako Cue; **interfejs otwarty** na ewolucję |
+| Mixer Zoom                                        | Tylko skala UI — **bez** niezależnego Zoom H/V                          |
+| Safari scratch (WebAudio)                         | Empty-buffer release po `stop()` (WA-MEM-02 fixed)                      |
 
 ### 4. Edycja audio / Timeline
 
-| Temat | Decyzja |
-|-------|--------|
-| Pencil na ścieżce **audio** | Jak Logic: klik w pustym + Pencil → Import → wstawienie w miejscu kliknięcia (**wdrożone**) |
-| No Overlap only; bez time-stretch w MVP | Bez zmiany względem [ADR 0008](./0008-timeline-clip-editing.md) |
+| Temat                                                   | Decyzja                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pencil na ścieżce **audio**                             | Jak Logic: klik w pustym + Pencil → Import → wstawienie w miejscu kliknięcia (**wdrożone**)                                                                                                                                                                                                                                      |
+| No Overlap only; bez time-stretch w MVP                 | Bez zmiany względem [ADR 0008](./0008-timeline-clip-editing.md)                                                                                                                                                                                                                                                                  |
 | Flex Time / MIDI recording / Take Folders / join bounce | **Permanent OUT dla całej linii 5.x** ([ADR 0017](./0017-live-show-control-contracts.md) §5). Powrót rejestracji + proste edit = major **6.0** — IN/OUT wg [ADR 0018](./0018-future-audio-architecture.md) §5; Dual Engine = [ADR 0019](./0019-dual-engine-studio-live.md); Flex / Takes / Comping / DAW Join nadal nie must 6.0 |
-| **Smart Tempo (5.4.2)** | Mapa tempa **podąża za nagraniem** (wall-clock + Beat Mapper) — **nie** time-stretch / warp audio do siatki (to nie Flex Time). Import US+UG: audio = ground truth na krawędzi importu; ticks SSOT bez zmian ([ADR 0002](./0002-timebase-ssot.md)) |
-| Locator vs playhead | Osobne pojęcia (jak Logic); kolory: locator `primary`, playhead `info`; scrub/seek = komenda do serwera (SSOT) |
+| **Smart Tempo (5.4.2)**                                 | Mapa tempa **podąża za nagraniem** (wall-clock + Beat Mapper) — **nie** time-stretch / warp audio do siatki (to nie Flex Time). Import US+UG: audio = ground truth na krawędzi importu; ticks SSOT bez zmian ([ADR 0002](./0002-timebase-ssot.md))                                                                               |
+| Locator vs playhead                                     | Osobne pojęcia (jak Logic); kolory: locator `primary`, playhead `info`; scrub/seek = komenda do serwera (SSOT)                                                                                                                                                                                                                   |
 
 ### 5. MIDI / transport
 
-| Temat | Decyzja |
-|-------|--------|
-| MIDI I/O + clock | Tylko serwer ([ADR 0002](./0002-timebase-ssot.md)) |
-| Playhead klienta | Wygładzanie wyłącznie między tickami serwera |
-| Kanał Program Change IN/OUT | Filtr IN (Omni = `null` albo pojedynczy kanał) + kanał OUT w `MidiHostConfig` + Admin Host — **do wdrożenia teraz** (ochrona przed spill Omni) |
-| Flood PC | **Debounce 50 ms + latest-wins**; **bez** osobnego Hz-limitera |
-| Ujemne ticki | Na krawędzi MIDI I/O mapowane do **0** (SPP / clock) |
-| Encore poza setlistą | `resolveSetlistNext` → `null` + hard **STOP** |
-| FOH Seek/Pause vs late disk I/O | FOH wygrywa (already) |
-| Wsteczne / stale ticki WS | Cichy drop w UI gdy `serverTimeMs` / monotonic seq niższy niż ostatni przyjęty |
-| H-01 throttle displayTicks | Dopiero **po** profilerze @ 120 Hz |
+| Temat                           | Decyzja                                                                                                                                        |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| MIDI I/O + clock                | Tylko serwer ([ADR 0002](./0002-timebase-ssot.md))                                                                                             |
+| Playhead klienta                | Wygładzanie wyłącznie między tickami serwera                                                                                                   |
+| Kanał Program Change IN/OUT     | Filtr IN (Omni = `null` albo pojedynczy kanał) + kanał OUT w `MidiHostConfig` + Admin Host — **do wdrożenia teraz** (ochrona przed spill Omni) |
+| Flood PC                        | **Debounce 50 ms + latest-wins**; **bez** osobnego Hz-limitera                                                                                 |
+| Ujemne ticki                    | Na krawędzi MIDI I/O mapowane do **0** (SPP / clock)                                                                                           |
+| Encore poza setlistą            | `resolveSetlistNext` → `null` + hard **STOP**                                                                                                  |
+| FOH Seek/Pause vs late disk I/O | FOH wygrywa (already)                                                                                                                          |
+| Wsteczne / stale ticki WS       | Cichy drop w UI gdy `serverTimeMs` / monotonic seq niższy niż ostatni przyjęty                                                                 |
+| H-01 throttle displayTicks      | Dopiero **po** profilerze @ 120 Hz                                                                                                             |
 
 ### 6. Priorytet / bramki (polityka operacyjna)
 
@@ -81,16 +81,16 @@ W sytuacjach wątpliwości UX i logiki **edycji na Timeline** (klipy, narzędzia
 
 ### 7. Mobile / Backup / shell / packaging
 
-| Temat | Decyzja |
-|-------|--------|
-| Mobile PWA + lekki Android + `.apk` bez Play | **Zatwierdzony kierunek architektoniczny**; produkty: **Performer** (`apps/performer` → `/client`, read-only) i **Console** (`apps/console` = pełny odpowiednik desktopu: Admin + Timeline + Client + docelowo lokalny host); szczegóły shella → [ADR 0016](./0016-android-performer-console.md) |
-| Console + lokalny host (Android) | **IN jako booth awaryjny/terenowy** ([ADR 0017](./0017-live-show-control-contracts.md) §1). Console nadal niesie lokalny host w APK, ale **domyślna ścieżka UI = LAN** do hosta desktop; lokalny host = CTA wtórne. Pełny SPA (Admin + Timeline + Client) bez zmiany. Thin-shell-only = nadal superseded. |
-| Performer + lokalny host / Admin | **OUT** — Performer zawsze Client-only (read-only); bez sidecara, bez edycji Timeline/Mixer |
-| Backup Przywróć | **IN:** Admin → Przywróć… — `.bak` (pojedynczy / bulk / katalog) oraz archiwum `.zip` (+ PIN gdy włączony) |
-| Auto-update bez operatora | **Permanentnie NIE** na scenie — zawsze akcja człowieka |
-| Pakiet projektu | MVP = `.stagesync.json` (na teraz) |
-| Menubar OS | **OUT:** ustawienia Audio/MIDI/DMX, Tap Tempo/Pre-count, top-level Setlista (sterowanie w Admin); lekki tray OK |
-| git-apply / „Zaktualizuj teraz” | **Permanentnie OUT** |
+| Temat                                        | Decyzja                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mobile PWA + lekki Android + `.apk` bez Play | **Zatwierdzony kierunek architektoniczny**; produkty: **Performer** (`apps/performer` → `/client`, read-only) i **Console** (`apps/console` = pełny odpowiednik desktopu: Admin + Timeline + Client + docelowo lokalny host); szczegóły shella → [ADR 0016](./0016-android-performer-console.md)          |
+| Console + lokalny host (Android)             | **IN jako booth awaryjny/terenowy** ([ADR 0017](./0017-live-show-control-contracts.md) §1). Console nadal niesie lokalny host w APK, ale **domyślna ścieżka UI = LAN** do hosta desktop; lokalny host = CTA wtórne. Pełny SPA (Admin + Timeline + Client) bez zmiany. Thin-shell-only = nadal superseded. |
+| Performer + lokalny host / Admin             | **OUT** — Performer zawsze Client-only (read-only); bez sidecara, bez edycji Timeline/Mixer                                                                                                                                                                                                               |
+| Backup Przywróć                              | **IN:** Admin → Przywróć… — `.bak` (pojedynczy / bulk / katalog) oraz archiwum `.zip` (+ PIN gdy włączony)                                                                                                                                                                                                |
+| Auto-update bez operatora                    | **Permanentnie NIE** na scenie — zawsze akcja człowieka                                                                                                                                                                                                                                                   |
+| Pakiet projektu                              | MVP = `.stagesync.json` (na teraz)                                                                                                                                                                                                                                                                        |
+| Menubar OS                                   | **OUT:** ustawienia Audio/MIDI/DMX, Tap Tempo/Pre-count, top-level Setlista (sterowanie w Admin); lekki tray OK                                                                                                                                                                                           |
+| git-apply / „Zaktualizuj teraz”              | **Permanentnie OUT**                                                                                                                                                                                                                                                                                      |
 
 ## Konsekwencje
 

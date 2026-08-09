@@ -14,15 +14,15 @@
 
 ## Epiki / tematy vs `main` (5.2)
 
-| ID / temat | Stan | Notatka |
-|------------|------|---------|
-| THM-01 light + high-contrast tokeny | `partial` | [`tokens.css`](../../../../apps/desktop/launcher/vendor/tokens.css) + [`appearance.ts`](../../../../apps/web/src/lib/client/appearance.ts) — light / `data-contrast` na `main`; pełna macierz 4 profili MVP z dumpu = hipoteza rozbudowy |
-| THM-02 `localStorage` per urządzenie | `on-tree` | Klucze `stagesync-theme` / `stagesync-contrast`; host default `STAGESYNC_THEME_DEFAULT` → health `themeDefault` gdy brak lokalnej preferencji |
-| THM-02 Scenic Lock (`liveDesk.themeLock`) | `out` | Usunięte z produktu (UI Scena, Live Desk SSOT/WS, Client override) — dump historyczny; nie przywracać bez decyzji PO |
-| THM-03 niezmienniki playhead ≠ locator / Solo·Mute / OSMD paper | `hypothesis` | Sprawdzić tokeny vs dump przed implementacją skinów |
-| AUTH-01 Host Operator PIN (MVP) | `on-tree` | `STAGESYNC_OPERATOR_PIN` + middleware destrukcyjnych REST; `GET/POST /api/system/operator-auth`; Admin/Timeline gate + Client settings unlock; nagłówek `X-Stagesync-Operator-Pin` |
-| AUTH-01 Option C OAuth/JWT | `limit` / **skip** | Dump: Later / OUT w 5.2 — **nie** stubować logowania |
-| AUTH-02 ACL ról na REST/WS | `partial` | PIN-gated mutacje; transport play/stop + MIDI panic ungated; WS klient → serwer nadal tylko `client_hello` (brak destrukcyjnych komend WS) |
+| ID / temat                                                      | Stan               | Notatka                                                                                                                                                                                                                                  |
+| --------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| THM-01 light + high-contrast tokeny                             | `partial`          | [`tokens.css`](../../../../apps/desktop/launcher/vendor/tokens.css) + [`appearance.ts`](../../../../apps/web/src/lib/client/appearance.ts) — light / `data-contrast` na `main`; pełna macierz 4 profili MVP z dumpu = hipoteza rozbudowy |
+| THM-02 `localStorage` per urządzenie                            | `on-tree`          | Klucze `stagesync-theme` / `stagesync-contrast`; host default `STAGESYNC_THEME_DEFAULT` → health `themeDefault` gdy brak lokalnej preferencji                                                                                            |
+| THM-02 Scenic Lock (`liveDesk.themeLock`)                       | `out`              | Usunięte z produktu (UI Scena, Live Desk SSOT/WS, Client override) — dump historyczny; nie przywracać bez decyzji PO                                                                                                                     |
+| THM-03 niezmienniki playhead ≠ locator / Solo·Mute / OSMD paper | `hypothesis`       | Sprawdzić tokeny vs dump przed implementacją skinów                                                                                                                                                                                      |
+| AUTH-01 Host Operator PIN (MVP)                                 | `on-tree`          | `STAGESYNC_OPERATOR_PIN` + middleware destrukcyjnych REST; `GET/POST /api/system/operator-auth`; Admin/Timeline gate + Client settings unlock; nagłówek `X-Stagesync-Operator-Pin`                                                       |
+| AUTH-01 Option C OAuth/JWT                                      | `limit` / **skip** | Dump: Later / OUT w 5.2 — **nie** stubować logowania                                                                                                                                                                                     |
+| AUTH-02 ACL ról na REST/WS                                      | `partial`          | PIN-gated mutacje; transport play/stop + MIDI panic ungated; WS klient → serwer nadal tylko `client_hello` (brak destrukcyjnych komend WS)                                                                                               |
 
 ## Confirmed vs hypothesis
 

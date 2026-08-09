@@ -12,14 +12,14 @@
 
 ## Macierz vs dysk / ADR
 
-| ID / temat | Werdykt dumpu | Stan | Notatka |
-|------------|---------------|------|---------|
-| OAuth / multi-user OUT w 5.2 | KEEP | `limit` | Zgodne z Motywy AUTH-01 Option C — **skip** stubów logowania |
-| Operator PIN MVP | KEEP / REVISE | `on-tree` | `STAGESYNC_OPERATOR_PIN` + gate mutacji; transport ungated — REVISE telemetry OK |
-| Scenic Lock `themeLock` | REVERT | `confirmed` / out | Usunięte post-`5.2.0`; zostaje host default + lokalny motyw |
-| Light + HC residual matrix | KEEP | `hypothesis` | TODO Motywy residual — [TODO 5.3+](../../../TODO.md) |
-| Niezmienniki playhead/locator/solo/mute/OSMD | KEEP | `partial` | Semantyka OK; dump: locator=`warning` — **ADR 0015:** locator=`primary`, playhead=`info` → korekta dumpu |
-| Motywy/Auth w backlogu ≠ permanent OUT | KEEP | `confirmed` | ADR 0015 §0 |
+| ID / temat                                   | Werdykt dumpu | Stan              | Notatka                                                                                                  |
+| -------------------------------------------- | ------------- | ----------------- | -------------------------------------------------------------------------------------------------------- |
+| OAuth / multi-user OUT w 5.2                 | KEEP          | `limit`           | Zgodne z Motywy AUTH-01 Option C — **skip** stubów logowania                                             |
+| Operator PIN MVP                             | KEEP / REVISE | `on-tree`         | `STAGESYNC_OPERATOR_PIN` + gate mutacji; transport ungated — REVISE telemetry OK                         |
+| Scenic Lock `themeLock`                      | REVERT        | `confirmed` / out | Usunięte post-`5.2.0`; zostaje host default + lokalny motyw                                              |
+| Light + HC residual matrix                   | KEEP          | `hypothesis`      | TODO Motywy residual — [TODO 5.3+](../../../TODO.md)                                                     |
+| Niezmienniki playhead/locator/solo/mute/OSMD | KEEP          | `partial`         | Semantyka OK; dump: locator=`warning` — **ADR 0015:** locator=`primary`, playhead=`info` → korekta dumpu |
+| Motywy/Auth w backlogu ≠ permanent OUT       | KEEP          | `confirmed`       | ADR 0015 §0                                                                                              |
 
 ## Confirmed vs hypothesis
 

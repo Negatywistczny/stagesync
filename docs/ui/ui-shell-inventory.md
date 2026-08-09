@@ -20,17 +20,17 @@ Layout paneli = **nowy** ([ADR 0003](../adr/0003-ui-direction-booth.md)); paleta
 
 ## Świadome delty v5 (pozostałe OUT)
 
-| Delta | Uwagi |
-|-------|--------|
-| Countdown widoczny; długość = pre-roll ≤ 0 | Semantyka v5 |
-| − git-apply / „Zaktualizuj teraz” | [ADR 0004](../adr/0004-updates-docker.md) — **nigdy** |
-| SPA: linki Admin → `/timeline`, `/` | Bez labowego ShellNav |
-| React + CSS Modules + `--ss-*` | Stack v5; SSOT warstw: [docs/ui/README.md](./README.md) |
+| Delta                                          | Uwagi                                                                                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Countdown widoczny; długość = pre-roll ≤ 0     | Semantyka v5                                                                                                                         |
+| − git-apply / „Zaktualizuj teraz”              | [ADR 0004](../adr/0004-updates-docker.md) — **nigdy**                                                                                |
+| SPA: linki Admin → `/timeline`, `/`            | Bez labowego ShellNav                                                                                                                |
+| React + CSS Modules + `--ss-*`                 | Stack v5; SSOT warstw: [docs/ui/README.md](./README.md)                                                                              |
 | Admin: Utwory · Set · Scena · Host · Dev (DEV) | IA v5 — **Set + wybór utworów w jednym flow**; `Dev` tylko w buildach deweloperskich ([ADR 0011](../adr/0011-ui-parity-behavior.md)) |
-| Paczka `.stagesync` | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy |
-| Backup restore / path picker FS | Admin Ustawienia → Serwer → Przywróć… (`.bak` / bulk / ZIP + confirm + PIN) |
-| Mixer — fizyczne Out 3–4 / bus→bus | [TODO.md](../TODO.md) § 5.2+ (bez atrap) |
-| Forma scissors = subsections v4 | v5: insert + drag granic + select + 4-bar fill + **inspector list / + / ×** |
+| Paczka `.stagesync`                            | MVP JSON (`.stagesync.json`) — bez zip/archiver legacy                                                                               |
+| Backup restore / path picker FS                | Admin Ustawienia → Serwer → Przywróć… (`.bak` / bulk / ZIP + confirm + PIN)                                                          |
+| Mixer — fizyczne Out 3–4 / bus→bus             | [TODO.md](../TODO.md) § 5.2+ (bez atrap)                                                                                             |
+| Forma scissors = subsections v4                | v5: insert + drag granic + select + 4-bar fill + **inspector list / + / ×**                                                          |
 
 ## Timeline — wymagania layoutu (parity v4, α4+)
 

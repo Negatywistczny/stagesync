@@ -12,10 +12,10 @@
 
 ## Priorytety weryfikacji
 
-| ID | Temat | Priorytet | Stan | Dowód |
-|----|--------|-----------|------|--------|
-| TST-DFM-01 | `saveProjectAs` — OCC + `midiProgramId` | P0 | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
-| TST-DFM-02 | `importLibraryFile` — 17MB / ZIP / JSON | P0 | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
-| TST-DFM-03 | Export blob URL + revoke | P1 | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
-| TST-DFM-04 | `listTemplateIds` | P1 | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
-| TST-DFM-05 | `createSongAndOpen` + recent timeline | P1 | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
+| ID         | Temat                                   | Priorytet | Stan    | Dowód                                                                                    |
+| ---------- | --------------------------------------- | --------- | ------- | ---------------------------------------------------------------------------------------- |
+| TST-DFM-01 | `saveProjectAs` — OCC + `midiProgramId` | P0        | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
+| TST-DFM-02 | `importLibraryFile` — 17MB / ZIP / JSON | P0        | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
+| TST-DFM-03 | Export blob URL + revoke                | P1        | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
+| TST-DFM-04 | `listTemplateIds`                       | P1        | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |
+| TST-DFM-05 | `createSongAndOpen` + recent timeline   | P1        | `fixed` | [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) |

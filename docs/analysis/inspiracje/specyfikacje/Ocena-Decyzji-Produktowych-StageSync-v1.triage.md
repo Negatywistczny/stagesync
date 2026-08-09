@@ -16,16 +16,16 @@
 
 ## Macierz
 
-| ID | Werdykt dumpu | Stan vs repo | Notatka |
-|----|---------------|--------------|---------|
-| CRIT-MX-01.1 Multi-out HW | REVISE → 5.3+ + `maxChannelCount≥4` | `partial` / `on-tree` gate | Zod HW + `hwOutputUiAllowed` on-tree; UI ChannelMerger = TODO residual — **zgodne z bramką**, nie z „odwołać decyzję IN” |
-| CRIT-MX-01.2 Bus→bus freeze | REVISE | `on-tree` / konflikt | bus→bus + anti-cycle już w `5.2.0`; dump chce zamrozić — wymaga PO, nie eng revert bez decyzji |
-| CRIT-MX-01.3 True Balance | REVISE → equal-power −3 dB | `limit` (ADR KEEP) | ADR 0015: zamierzone OK — re-open tylko PO |
-| CRIT-MX-01.4 Dual-mono +3 dB | REVISE → auto −3 dB | `limit` (ADR KEEP) | j.w. |
-| CRIT-MX-01.5 Track solo wins | KEEP | `confirmed` | ADR + mixer triage |
-| CRIT-MX-01.6 Click Mute/Volume Cue | KEEP | `confirmed` | ADR 0015 |
-| CRIT-MX-01.7 Mixer Zoom chrome-only | KEEP | `confirmed` | ADR 0015 |
-| CRIT-MX-01.8 Zakaz atrap Out | KEEP | `confirmed` | ADR 0011 |
+| ID                                  | Werdykt dumpu                       | Stan vs repo               | Notatka                                                                                                                  |
+| ----------------------------------- | ----------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| CRIT-MX-01.1 Multi-out HW           | REVISE → 5.3+ + `maxChannelCount≥4` | `partial` / `on-tree` gate | Zod HW + `hwOutputUiAllowed` on-tree; UI ChannelMerger = TODO residual — **zgodne z bramką**, nie z „odwołać decyzję IN” |
+| CRIT-MX-01.2 Bus→bus freeze         | REVISE                              | `on-tree` / konflikt       | bus→bus + anti-cycle już w `5.2.0`; dump chce zamrozić — wymaga PO, nie eng revert bez decyzji                           |
+| CRIT-MX-01.3 True Balance           | REVISE → equal-power −3 dB          | `limit` (ADR KEEP)         | ADR 0015: zamierzone OK — re-open tylko PO                                                                               |
+| CRIT-MX-01.4 Dual-mono +3 dB        | REVISE → auto −3 dB                 | `limit` (ADR KEEP)         | j.w.                                                                                                                     |
+| CRIT-MX-01.5 Track solo wins        | KEEP                                | `confirmed`                | ADR + mixer triage                                                                                                       |
+| CRIT-MX-01.6 Click Mute/Volume Cue  | KEEP                                | `confirmed`                | ADR 0015                                                                                                                 |
+| CRIT-MX-01.7 Mixer Zoom chrome-only | KEEP                                | `confirmed`                | ADR 0015                                                                                                                 |
+| CRIT-MX-01.8 Zakaz atrap Out        | KEEP                                | `confirmed`                | ADR 0011                                                                                                                 |
 
 ## Następny krok
 

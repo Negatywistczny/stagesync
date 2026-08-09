@@ -40,29 +40,29 @@ Tag na jawną prośbę po closeout kodu 5.0.0 na `main`:
 
 ## Checklista G1–G10
 
-| ID | Kryterium | Status | Weryfikacja |
-|----|-----------|--------|-------------|
-| G1 | `.dmg` z GitHub Release: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika | ⬜ | **Operator** (macHW) — residual po `v5.0.0` |
-| G2 | `.msi` z GitHub Release: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika | ⬜ | **Operator** (WinHW) — residual po `v5.0.0` |
-| G3 | Dane: po starcie `.dmg`/`.msi` runtime zapisuje do katalogu użytkownika (nie w `.app` / Program Files) | ⬜ | **Operator** |
-| G4 | Zamknięcie okna Tauri: proces Node sidecara znika całkowicie (bez sierot) | ⬜ | **Operator** |
-| G5 | Konflikt portu `4000`: aplikacja pokazuje czytelny komunikat błędu (nie biała WebView) | ⬜ | **Operator** |
-| G6 | Desktop update: Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji | ⬜ | **Operator** (pełny flow β1.1→β2); **CI/Release** = prerequisites poniżej |
-| G7 | Docker secondary: `compose.prod.yml up` + `GET /api/health` zwraca 200 | ⬜ | **CI** częściowo (`compose-build`); pełny `up` + health = **Operator** / host |
-| G8 | Host update (Docker secondary): starszy obraz → Admin Sprawdź → Aktualizuj host → nowa wersja, `data/` bez zmian; w przeglądarce bez Tauri desktop update nie jest przyciskiem | ⬜ | **Operator** |
-| G9 | Docker rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian | ⬜ | **Operator** |
-| G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow (Faza A + B/C + update paths) | ⬜ | Docs B/C w DESKTOP — **Review**; smoke flow = **Operator** |
+| ID  | Kryterium                                                                                                                                                                      | Status | Weryfikacja                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------- |
+| G1  | `.dmg` z GitHub Release: uruchamia aplikację i pokazuje Admin bez Dockera/Node u użytkownika                                                                                   | ⬜     | **Operator** (macHW) — residual po `v5.0.0`                                   |
+| G2  | `.msi` z GitHub Release: instaluje i łączy się lokalnie bez Dockera/Node u użytkownika                                                                                         | ⬜     | **Operator** (WinHW) — residual po `v5.0.0`                                   |
+| G3  | Dane: po starcie `.dmg`/`.msi` runtime zapisuje do katalogu użytkownika (nie w `.app` / Program Files)                                                                         | ⬜     | **Operator**                                                                  |
+| G4  | Zamknięcie okna Tauri: proces Node sidecara znika całkowicie (bez sierot)                                                                                                      | ⬜     | **Operator**                                                                  |
+| G5  | Konflikt portu `4000`: aplikacja pokazuje czytelny komunikat błędu (nie biała WebView)                                                                                         | ⬜     | **Operator**                                                                  |
+| G6  | Desktop update: Admin w Tauri → Sprawdź → Aktualizuj aplikację → relaunch nowej wersji                                                                                         | ⬜     | **Operator** (pełny flow β1.1→β2); **CI/Release** = prerequisites poniżej     |
+| G7  | Docker secondary: `compose.prod.yml up` + `GET /api/health` zwraca 200                                                                                                         | ⬜     | **CI** częściowo (`compose-build`); pełny `up` + health = **Operator** / host |
+| G8  | Host update (Docker secondary): starszy obraz → Admin Sprawdź → Aktualizuj host → nowa wersja, `data/` bez zmian; w przeglądarce bez Tauri desktop update nie jest przyciskiem | ⬜     | **Operator**                                                                  |
+| G9  | Docker rollback: poprzedni tag obrazu + `compose.prod.yml up` → stara wersja, `data/` bez zmian                                                                                | ⬜     | **Operator**                                                                  |
+| G10 | Docs INSTALL + DESKTOP kompletne i zgodne z faktycznym flow (Faza A + B/C + update paths)                                                                                      | ⬜     | Docs B/C w DESKTOP — **Review**; smoke flow = **Operator**                    |
 
 ### Co CI / Release może zweryfikować (nie zastępuje G1–G10 na HW)
 
-| Check | Gdzie |
-|-------|--------|
-| lint / types / unit tests / web+server build | workflow `CI` → `lint-types-test-build` |
-| `cargo check` desktop | workflow `CI` → `tauri-cargo-check` |
-| obraz Compose buduje się | workflow `CI` → `compose-build` |
-| instalatory `.dmg` / `.msi` + sidecar smoke w Release | workflow `Release` (`tauri-macos` / `tauri-windows`) |
+| Check                                                         | Gdzie                                                                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| lint / types / unit tests / web+server build                  | workflow `CI` → `lint-types-test-build`                                                          |
+| `cargo check` desktop                                         | workflow `CI` → `tauri-cargo-check`                                                              |
+| obraz Compose buduje się                                      | workflow `CI` → `compose-build`                                                                  |
+| instalatory `.dmg` / `.msi` + sidecar smoke w Release         | workflow `Release` (`tauri-macos` / `tauri-windows`)                                             |
 | `latest.json` zawiera **darwin-aarch64** + **windows-x86_64** | po publish: asset Release (target `app` + `dmg` na mac; `msi` na Win; Release zawsze `--latest`) |
-| Release **nie** jest GitHub prerelease | `gh release view` → `isPrerelease: false` |
+| Release **nie** jest GitHub prerelease                        | `gh release view` → `isPrerelease: false`                                                        |
 
 **Must kodu β2 (done przy tagu):** feature must (Audio / MIDI / menu B+C / Countdown) + CI green na `main` + fix updater (`app` target + `--latest` + sidecar health).  
 **Must kodu 5.0.0 (done przy tagu `v5.0.0`):** A–E + Faza D + residual closeout — **dostarczone**.  
@@ -111,13 +111,13 @@ Wykonane (2026-07-21):
 Aktywny backlog w [TODO.md](../../../TODO.md) = **5.2+ residual** + **G1–G10** operator.  
 Linia 5.2: PIN, Safety Net (manual), Sampler, bus→bus, Performer/Console, motyw hosta — **wydane** (`v5.2.0`).
 
-| Reguła | Status |
-|--------|--------|
-| G1–G10 w tabeli powyżej | nadal **⬜** — **zakaz** odhaczania bez weryfikacji operatora |
-| Must kodu 5.0.0 (A–E) | **done** w tagu `v5.0.0` |
-| Launch & Mix (5.1.0) | **done** w tagu `v5.1.0` |
-| Pocket Stage (5.2.0) | **done** w tagu `v5.2.0` |
-| Claim „G green” w CHANGELOG / release notes | **Zakaz** do czasu sekwencji operatora |
-| Artefakty do weryfikacji | Release [`v5.2.0`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.2.0) (`.dmg` / `.msi` / APK / `latest.json`); poprzedni [`v5.1.3`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.3) |
+| Reguła                                      | Status                                                                                                                                                                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| G1–G10 w tabeli powyżej                     | nadal **⬜** — **zakaz** odhaczania bez weryfikacji operatora                                                                                                                                                      |
+| Must kodu 5.0.0 (A–E)                       | **done** w tagu `v5.0.0`                                                                                                                                                                                           |
+| Launch & Mix (5.1.0)                        | **done** w tagu `v5.1.0`                                                                                                                                                                                           |
+| Pocket Stage (5.2.0)                        | **done** w tagu `v5.2.0`                                                                                                                                                                                           |
+| Claim „G green” w CHANGELOG / release notes | **Zakaz** do czasu sekwencji operatora                                                                                                                                                                             |
+| Artefakty do weryfikacji                    | Release [`v5.2.0`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.2.0) (`.dmg` / `.msi` / APK / `latest.json`); poprzedni [`v5.1.3`](https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.3) |
 
 **Operator:** wykonaj „Sekwencja weryfikacji” powyżej na artefaktach `v5.2.0`. Dopiero wtedy G1–G10 → green w docs.

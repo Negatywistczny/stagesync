@@ -12,15 +12,15 @@
 
 ## Priorytety weryfikacji
 
-| ID | Temat | Priorytet | Stan | Dowód |
-|----|--------|-----------|------|--------|
-| TST-ZOD-01 | `busGraphHasCycle` / cykl bus→bus w `ProjectSchema` | P0 | `rejected` | [`mixer-routing.test.ts`](../../../../packages/shared/src/mixer-routing.test.ts) — „rejects cycle on project” |
-| TST-ZOD-02 | `refineMeterForPpq` — metrum vs PPQ | P0 | `rejected` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — „rejects meters that yield non-integer ticksPerBar” |
-| TST-ZOD-03 | Project V2–V5 — ujemne `startTicks` (poza countdown), invalid `meterMap` | P0 | `fixed` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — FormaClip countdown + meterMap reject |
-| TST-ZOD-04 | `PutProjectBodySchema` / `BatchMidiPcBodySchema` edges | P1 | `fixed` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — stale bus/hw PUT body |
-| TST-ZOD-05 | `CueSampleConfigSchema` + cross-field assetId | P1 | `rejected` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — „accepts Cue sample config and rejects stale…” |
-| TST-ZOD-06 | Setlist `preprocess` — koercja legacy | P2 | `rejected` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — `SetlistSchema coerces projectIds ↔ items` |
-| TST-ZOD-07 | Grupowanie describe per domena | P2 | `limit` | Meta — refaktor pliku testowego |
+| ID         | Temat                                                                    | Priorytet | Stan       | Dowód                                                                                                                    |
+| ---------- | ------------------------------------------------------------------------ | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| TST-ZOD-01 | `busGraphHasCycle` / cykl bus→bus w `ProjectSchema`                      | P0        | `rejected` | [`mixer-routing.test.ts`](../../../../packages/shared/src/mixer-routing.test.ts) — „rejects cycle on project”            |
+| TST-ZOD-02 | `refineMeterForPpq` — metrum vs PPQ                                      | P0        | `rejected` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — „rejects meters that yield non-integer ticksPerBar” |
+| TST-ZOD-03 | Project V2–V5 — ujemne `startTicks` (poza countdown), invalid `meterMap` | P0        | `fixed`    | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — FormaClip countdown + meterMap reject               |
+| TST-ZOD-04 | `PutProjectBodySchema` / `BatchMidiPcBodySchema` edges                   | P1        | `fixed`    | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — stale bus/hw PUT body                               |
+| TST-ZOD-05 | `CueSampleConfigSchema` + cross-field assetId                            | P1        | `rejected` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — „accepts Cue sample config and rejects stale…”      |
+| TST-ZOD-06 | Setlist `preprocess` — koercja legacy                                    | P2        | `rejected` | [`schema.test.ts`](../../../../packages/shared/src/schema.test.ts) — `SetlistSchema coerces projectIds ↔ items`          |
+| TST-ZOD-07 | Grupowanie describe per domena                                           | P2        | `limit`    | Meta — refaktor pliku testowego                                                                                          |
 
 ## Limit
 

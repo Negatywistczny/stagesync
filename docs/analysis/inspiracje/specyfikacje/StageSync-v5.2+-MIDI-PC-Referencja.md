@@ -12,12 +12,12 @@ W profesjonalnych instalacjach scenicznych i systemach Show Control, gdzie magis
 
 Dla zagwarantowania pełnej spójności operacyjnej pomiędzy interfejsem użytkownika, warstwą serwerową oraz fizycznymi urządzeniami wykonawczymi, ustala się kanon indeksowania kanałów MIDI obowiązujący we wszystkich modułach oprogramowania StageSync.
 
-| Warstwa Systemu | Typ Indeksowania | Zakres Dla Konkretnego Kanału | Wartość Dla Trybu Omni | Przykład Reprezentacji |
-| :--- | :--- | :--- | :--- | :--- |
-| **Interfejs Użytkownika (Admin UI / FOH)** | 1-based (Ludzki) | `1` do `16` | `Omni` (wszystkie kanały) | „Channel 1”, „Omni” |
-| **API REST / DTO / Kontrakty Zod** | 0-based (Natywne MIDI) | `0` do `15` | `null` | `{ inputChannel: 0 }`, `{ inputChannel: null }` |
-| **Plik Konfiguracyjny (`midi-config.json`)** | 0-based (Natywne MIDI) | `0` do `15` | `null` | `"inputChannel": null`, `"outputChannel": 0` |
-| **Silnik Wykonawczy (`MidiHost` / Backend)** | 0-based (Bajtowe MIDI) | `0` do `15` | Brak filtru (`null`) | `msg.channel === config.inputChannel` |
+| Warstwa Systemu                              | Typ Indeksowania       | Zakres Dla Konkretnego Kanału | Wartość Dla Trybu Omni    | Przykład Reprezentacji                          |
+| :------------------------------------------- | :--------------------- | :---------------------------- | :------------------------ | :---------------------------------------------- |
+| **Interfejs Użytkownika (Admin UI / FOH)**   | 1-based (Ludzki)       | `1` do `16`                   | `Omni` (wszystkie kanały) | „Channel 1”, „Omni”                             |
+| **API REST / DTO / Kontrakty Zod**           | 0-based (Natywne MIDI) | `0` do `15`                   | `null`                    | `{ inputChannel: 0 }`, `{ inputChannel: null }` |
+| **Plik Konfiguracyjny (`midi-config.json`)** | 0-based (Natywne MIDI) | `0` do `15`                   | `null`                    | `"inputChannel": null`, `"outputChannel": 0`    |
+| **Silnik Wykonawczy (`MidiHost` / Backend)** | 0-based (Bajtowe MIDI) | `0` do `15`                   | Brak filtru (`null`)      | `msg.channel === config.inputChannel`           |
 
 Matematyczną relację pomiędzy wartością prezentowaną w interfejsie użytkownika a wartością przesyłaną w kontraktach API definiuje zależność:
 
@@ -31,15 +31,16 @@ Walidacja po stronie schematów Zod odrzuca wszelkie liczby spoza przedziału od
 
 Różne środowiska Show Control oraz stacje DAW stosują odmienne modele zarządzania kanałami MIDI . W celu właściwego pozycjonowania oprogramowania StageSync v5.2+ przeprowadzono analizę porównawczą wiodących rozwiązań branżowych .
 
-| Oprogramowanie / Standard | Obsługa PC IN | Obsługa PC OUT | Konfiguracja Kanałów |
-| :--- | :--- | :--- | :--- |
-| **Apple MainStage** | Single Channel / Omni per Patch | Single Channel per Channel Strip | Konfigurowana w oknie inspektora sygnału |
-| **Ableton Live** | Single Channel / Omni (MIDI From) | Single Channel (MIDI To) | Wybierana w nagłówku ścieżki MIDI |
-| **OnSong / Pedalboardy** | Single Channel Filter | Single Channel Send | Globalny kanał sterowania w ustawieniach systemu |
-| **QLab MIDI Cues** | Single Channel | Single Channel per Cue | Przypisywana indywidualnie do punktu wyzwolenia |
-| **StageSync v5.2+** | **Single Channel + Omni** | **Single Channel** | **Globalna w `MidiHostConfig` (Host SSOT)** |
+| Oprogramowanie / Standard | Obsługa PC IN                     | Obsługa PC OUT                   | Konfiguracja Kanałów                             |
+| :------------------------ | :-------------------------------- | :------------------------------- | :----------------------------------------------- |
+| **Apple MainStage**       | Single Channel / Omni per Patch   | Single Channel per Channel Strip | Konfigurowana w oknie inspektora sygnału         |
+| **Ableton Live**          | Single Channel / Omni (MIDI From) | Single Channel (MIDI To)         | Wybierana w nagłówku ścieżki MIDI                |
+| **OnSong / Pedalboardy**  | Single Channel Filter             | Single Channel Send              | Globalny kanał sterowania w ustawieniach systemu |
+| **QLab MIDI Cues**        | Single Channel                    | Single Channel per Cue           | Przypisywana indywidualnie do punktu wyzwolenia  |
+| **StageSync v5.2+**       | **Single Channel + Omni**         | **Single Channel**               | **Globalna w `MidiHostConfig` (Host SSOT)**      |
 
 ### Zakres Wspierany w StageSync v5.2+
+
 W wersji v5.2+ StageSync wspiera wyłącznie semantykę **Single Channel** oraz **Omni** dla sygnału wejściowego, a także **Single Channel** dla sygnału wyjściowego :
 
 1. **Tryb IN Omni (`inputChannel: null`)**: Silnik przyjmuje komunikaty Program Change ze wszystkich szesnastu kanałów MIDI . Jest to tryb domyślny, zapewniający całkowitą kompatybilność wsteczną z projektami i plikami konfiguracyjnymi utworzonymi w wersjach v5.0 i v5.1 .
@@ -47,6 +48,7 @@ W wersji v5.2+ StageSync wspiera wyłącznie semantykę **Single Channel** oraz 
 3. **Tryb OUT Single (`outputChannel: 0..15`)**: Zmiana aktywnego projektu wyzwala automatyczną emisję komunikatu PC zawierającego identyfikator `midiProgramId` skojarzony z danym utworem, nadawanego na wskazanym w konfiguracji kanale wyjściowym .
 
 ### Wykluczenie Trybu Multi-Channel w v5.2+
+
 Tryb **Multi-Channel** (rozumiany jako możliwość zdefiniowania niestandardowej listy lub tablicy kilku wybranych kanałów wejściowych, np. jednoczesne nasłuchiwanie na Kanałach 1, 4 oraz 12 przy ignorowaniu pozostałych) zostaje uznany za wykraczający poza zakres wersji v5.2+ (`OUT of scope` / `limit 5.2+`) . Wprowadzenie złożonych struktur tablicowych w konfiguracji portu hosta zwiększałoby skomplikowanie walidacji Zod oraz interfejsu Admin UI bez jednoznacznych korzyści w standardowych setupach koncertowych, gdzie pojedyncza magistrala wyzwalająca działa w oparciu o jeden dedykowany kanał sterujący.
 
 ---
@@ -57,13 +59,13 @@ Kontrakt konfiguracyjny hosta MIDI w paczce `@stagesync/shared` zostaje rozszerz
 
 Payload DTO dla operacji modyfikacji konfiguracji (`PutMidiHostConfigBodySchema`) dopuszcza opcjonalne aktualizacje częściowe .
 
-| Pole API / Config | Typ Zod | Wartość Domyślna | Opis i Kanon Indeksowania |
-| :--- | :--- | :--- | :--- |
-| `inputId` | `z.string().min(1).nullable()` | `null` | Identyfikator portu wejściowego MIDI |
-| `outputId` | `z.string().min(1).nullable()` | `null` | Identyfikator portu wyjściowego MIDI |
-| `clockOutEnabled` | `z.boolean()` | `true` | Flaga emisji sygnału MIDI Clock z SSOT transportu  |
-| `inputChannel` | `z.number().int().min(0).max(15).nullable()` | `null` | Kanał wejściowy PC (`null` = Omni; `0` = Ch 1)  |
-| `outputChannel` | `z.number().int().min(0).max(15)` | `0` | Kanał wyjściowy PC (`0` = Ch 1)  |
+| Pole API / Config | Typ Zod                                      | Wartość Domyślna | Opis i Kanon Indeksowania                         |
+| :---------------- | :------------------------------------------- | :--------------- | :------------------------------------------------ |
+| `inputId`         | `z.string().min(1).nullable()`               | `null`           | Identyfikator portu wejściowego MIDI              |
+| `outputId`        | `z.string().min(1).nullable()`               | `null`           | Identyfikator portu wyjściowego MIDI              |
+| `clockOutEnabled` | `z.boolean()`                                | `true`           | Flaga emisji sygnału MIDI Clock z SSOT transportu |
+| `inputChannel`    | `z.number().int().min(0).max(15).nullable()` | `null`           | Kanał wejściowy PC (`null` = Omni; `0` = Ch 1)    |
+| `outputChannel`   | `z.number().int().min(0).max(15)`            | `0`              | Kanał wyjściowy PC (`0` = Ch 1)                   |
 
 Podczas uruchamiania serwera funkcja `loadMidiHostConfigFile` zawarta w module [`config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts) wczytuje plik konfiguracyjny `data/host/midi-config.json` . W przypadku napotkania pliku wygenerowanego przez wcześniejszą wersję oprogramowania (v5.0/v5.1), który nie zawiera pól `inputChannel` oraz `outputChannel`, proces parsowania Zod automatycznie nakłada wartości domyślne :
 
@@ -86,7 +88,7 @@ Gdy backend natywny lub testowy przekazuje zdarzenie typu `program`, silnik wyko
 
 Podczas występów na żywo zakłócenia sprzętowe lub pętle pętli MIDI mogą generować potok komunikatów (MIDI Flood). StageSync v5.2+ realizuje dwupoziomową ochronę przed przeciążeniem pętli zdarzeń Node.js :
 
-Ochrona pierwszego stopnia (Silent Drop) zapobiega alokacji pamięci oraz operacjom dyskowym I/O na wiadomościach pochodzących z niepożądanych kanałów . 
+Ochrona pierwszego stopnia (Silent Drop) zapobiega alokacji pamięci oraz operacjom dyskowym I/O na wiadomościach pochodzących z niepożądanych kanałów .
 
 Ochrona drugiego stopnia (Coalescing Latest-Wins) obsługuje potok komunikatów napływających na właściwym kanale. Silnik wykorzystuje mechanizm `queueMicrotask` oraz zmienną `pendingProgram` . W sytuacji odebrania serii kilkuset komunikatów PC w jednym cyklu pętli zdarzeń, silnik przetrzymuje w pamięci wyłącznie ostatnio odebraną wartość programu (`latest-wins`), wyzwalając procedurę ładowania projektu `onProgramChange` dokładnie raz .
 
@@ -102,10 +104,10 @@ W zakładce "MIDI" modalu [`ServerSettingsModal.tsx`](../../../../apps/web/src/s
 
 Etykiety interfejsu łączą polską czytelność operacyjną z branżowym żargonem technicznym w języku angielskim:
 
-| Element Interfejsu | Etykieta w UI (PL / EN) | Dostępne Opcje w Dropdownie | Mapowanie na Stan Draft / API |
-| :--- | :--- | :--- | :--- |
-| **Select IN Channel** | Kanał wejściowy Program Change | `Omni (wszystkie kanały)`<br>`Kanał 1`<br>`Kanał 2`<br>...<br>`Kanał 16` | `null`<br>`0`<br>`1`<br>...<br>`15` |
-| **Select OUT Channel** | Kanał wyjściowy Program Change | `Kanał 1`<br>`Kanał 2`<br>...<br>`Kanał 16` | `0`<br>`1`<br>...<br>`15` |
+| Element Interfejsu     | Etykieta w UI (PL / EN)        | Dostępne Opcje w Dropdownie                                              | Mapowanie na Stan Draft / API       |
+| :--------------------- | :----------------------------- | :----------------------------------------------------------------------- | :---------------------------------- |
+| **Select IN Channel**  | Kanał wejściowy Program Change | `Omni (wszystkie kanały)`<br>`Kanał 1`<br>`Kanał 2`<br>...<br>`Kanał 16` | `null`<br>`0`<br>`1`<br>...<br>`15` |
+| **Select OUT Channel** | Kanał wyjściowy Program Change | `Kanał 1`<br>`Kanał 2`<br>...<br>`Kanał 16`                              | `0`<br>`1`<br>...<br>`15`           |
 
 Sekcja podglądu portów w karcie telemetrii komponentu [`SystemView.tsx`](../../../../apps/web/src/shells/admin/SystemView.tsx) została rozbudowana o wizualizację stanu filtrów kanałowych :
 
@@ -119,27 +121,30 @@ Sekcja podglądu portów w karcie telemetrii komponentu [`SystemView.tsx`](../..
 Dla zapewnienia bezawaryjnej pracy w warunkach koncertowych wdrożenie wymaga weryfikacji w oparciu o trójpoziomowy plan testów.
 
 ### Testy Jednostkowe (Unit Tests: [`host.test.ts`](../../../../apps/server/src/midi/host.test.ts))
+
 Zestaw przypadków testowych weryfikujących logikę filtru wewnątrz modułu `createMidiHost` :
 
-| ID Testu | Stan Konfiguracji `inputChannel` | Przychodzący Komunikat MIDI | Oczekiwane Zachowanie Silnika |
-| :--- | :--- | :--- | :--- |
-| **UT-PC-01** | `null` (Omni) | `PC program: 5, channel: 0` | Wywołanie `onProgramChange(5)`. Inkrementacja `pcPerSec` . |
-| **UT-PC-02** | `null` (Omni) | `PC program: 5, channel: 9` | Wywołanie `onProgramChange(5)`. Inkrementacja `pcPerSec` . |
-| **UT-PC-03** | `0` (Kanał 1) | `PC program: 12, channel: 0` | Wywołanie `onProgramChange(12)`. Inkrementacja `pcPerSec` . |
-| **UT-PC-04** | `0` (Kanał 1) | `PC program: 12, channel: 1` | **Silent Drop**. Brak wywołania `onProgramChange`. Wskaźnik `pcPerSec` = 0 . |
-| **UT-PC-05** | `15` (Kanał 16) | `PC program: 1, channel: 15` | Wywołanie `onProgramChange(1)`. Inkrementacja `pcPerSec` . |
-| **UT-PC-06** | `0` (Kanał 1) | Flood 100x `PC ch:1` + 100x `PC ch:0` | Odrzucenie 100 wiadomości ch:1, zsumowanie 100 wiadomości ch:0 do 1 wywołania `onProgramChange` (latest-wins) . |
+| ID Testu     | Stan Konfiguracji `inputChannel` | Przychodzący Komunikat MIDI           | Oczekiwane Zachowanie Silnika                                                                                   |
+| :----------- | :------------------------------- | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
+| **UT-PC-01** | `null` (Omni)                    | `PC program: 5, channel: 0`           | Wywołanie `onProgramChange(5)`. Inkrementacja `pcPerSec` .                                                      |
+| **UT-PC-02** | `null` (Omni)                    | `PC program: 5, channel: 9`           | Wywołanie `onProgramChange(5)`. Inkrementacja `pcPerSec` .                                                      |
+| **UT-PC-03** | `0` (Kanał 1)                    | `PC program: 12, channel: 0`          | Wywołanie `onProgramChange(12)`. Inkrementacja `pcPerSec` .                                                     |
+| **UT-PC-04** | `0` (Kanał 1)                    | `PC program: 12, channel: 1`          | **Silent Drop**. Brak wywołania `onProgramChange`. Wskaźnik `pcPerSec` = 0 .                                    |
+| **UT-PC-05** | `15` (Kanał 16)                  | `PC program: 1, channel: 15`          | Wywołanie `onProgramChange(1)`. Inkrementacja `pcPerSec` .                                                      |
+| **UT-PC-06** | `0` (Kanał 1)                    | Flood 100x `PC ch:1` + 100x `PC ch:0` | Odrzucenie 100 wiadomości ch:1, zsumowanie 100 wiadomości ch:0 do 1 wywołania `onProgramChange` (latest-wins) . |
 
 ### Testy Integracyjne (Integration Tests: `program-change-out.test.ts`)
+
 Weryfikacja procesu nadawania komunikatów na wyjściu przy użyciu backendu testowego (`mock backend`) :
 
-| ID Testu | Scenariusz Testowy | Konfiguracja `outputChannel` | Zdarzenie w Systemie | Oczekiwana Wiadomość Wyjściowa |
-| :--- | :--- | :--- | :--- | :--- |
-| **IT-PC-01** | Wysyłka domyślna | `0` (Kanał 1) | Zmiana projektu na posiadający `midiProgramId: 42`  | Emisja `{ type: "program", channel: 0, program: 42 }` na backendzie . |
-| **IT-PC-02** | Zmiana kanału wyjścia | `3` (Kanał 4) | Zmiana projektu na posiadający `midiProgramId: 10`  | Emisja `{ type: "program", channel: 3, program: 10 }` na backendzie . |
-| **IT-PC-03** | Projekt bez PC | `0` (Kanał 1) | Zmiana projektu bez opcjonalnego `midiProgramId`  | Brak emisji jakichkolwiek wiadomości MIDI . |
+| ID Testu     | Scenariusz Testowy    | Konfiguracja `outputChannel` | Zdarzenie w Systemie                               | Oczekiwana Wiadomość Wyjściowa                                        |
+| :----------- | :-------------------- | :--------------------------- | :------------------------------------------------- | :-------------------------------------------------------------------- |
+| **IT-PC-01** | Wysyłka domyślna      | `0` (Kanał 1)                | Zmiana projektu na posiadający `midiProgramId: 42` | Emisja `{ type: "program", channel: 0, program: 42 }` na backendzie . |
+| **IT-PC-02** | Zmiana kanału wyjścia | `3` (Kanał 4)                | Zmiana projektu na posiadający `midiProgramId: 10` | Emisja `{ type: "program", channel: 3, program: 10 }` na backendzie . |
+| **IT-PC-03** | Projekt bez PC        | `0` (Kanał 1)                | Zmiana projektu bez opcjonalnego `midiProgramId`   | Brak emisji jakichkolwiek wiadomości MIDI .                           |
 
 ### Scenariusz Smoke Test FOH (2 Urządzenia / 2 Kanały)
+
 Weryfikacja stanowiskowa z dwoma fizycznymi interfejsami MIDI w torze sygnałowym:
 
 1. **Konfiguracja Stanowiska**:
@@ -157,15 +162,15 @@ Weryfikacja stanowiskowa z dwoma fizycznymi interfejsami MIDI w torze sygnałowy
 
 Implementacja specyfikacji rozkłada się na poszczególne warstwy architektoniczne aplikacji. Punktem wyjścia jest zamknięcie pozycji audytowych **RSK-MIDI-04** oraz **RSK-MIDI-05** .
 
-| Identyfikator Pliku | Ścieżka Pliku w Repozytorium | Zakres Wprowadzanych Zmian | Relewantne ID Ryzyka / Specyfikacji |
-| :--- | :--- | :--- | :--- |
-| [`schema.ts`](../../../../packages/shared/src/schema.ts) | [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts) | Rozszerzenie `MidiHostConfigSchema` oraz `PutMidiHostConfigBodySchema` o pola `inputChannel` i `outputChannel` z walidacją Zod . | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-02** |
-| [`config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts) | [`apps/server/src/midi/config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts) | Aktualizacja funkcji parsowania i zapisu konfiguracji w celu nakładania domyślnych wartości kanałów przy migracji . | **PC-CH-02** |
-| [`host.ts`](../../../../apps/server/src/midi/host.ts) | [`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts) | Aplikacja filtru kanałowego w `onInputMessage` (Silent Drop) oraz wywoływanie `sendProgramChange` z `config.outputChannel` . | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-03** |
-| [`program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts) | [`apps/server/src/midi/program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts) | Użycie `config.outputChannel` z hosta podczas automatycznej emisji PC po zmianie projektu . | **RSK-MIDI-05**, **PC-CH-03** |
-| [`midi.ts`](../../../../apps/server/src/routes/midi.ts) | [`apps/server/src/routes/midi.ts`](../../../../apps/server/src/routes/midi.ts) | Obsługa zaktualizowanego schematu PUT w routerze Express `/api/midi/config` . | **PC-CH-02** |
-| [`ServerSettingsModal.tsx`](../../../../apps/web/src/shells/ServerSettingsModal.tsx) | `apps/desktop/src/components/ServerSettingsModal.tsx` | Wdrożenie kontrolek `Select` dla kanałów PC IN i OUT w zakładce MIDI . | **PC-CH-04** |
-| [`SystemView.tsx`](../../../../apps/web/src/shells/admin/SystemView.tsx) | `apps/desktop/src/components/views/SystemView.tsx` | Rozbudowa sekcji podglądu portów o wizualizację aktywnych kanałów MIDI . | **PC-CH-04** |
+| Identyfikator Pliku                                                                  | Ścieżka Pliku w Repozytorium                                                                           | Zakres Wprowadzanych Zmian                                                                                                       | Relewantne ID Ryzyka / Specyfikacji            |
+| :----------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| [`schema.ts`](../../../../packages/shared/src/schema.ts)                             | [`packages/shared/src/schema.ts`](../../../../packages/shared/src/schema.ts)                           | Rozszerzenie `MidiHostConfigSchema` oraz `PutMidiHostConfigBodySchema` o pola `inputChannel` i `outputChannel` z walidacją Zod . | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-02** |
+| [`config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts)            | [`apps/server/src/midi/config-persist.ts`](../../../../apps/server/src/midi/config-persist.ts)         | Aktualizacja funkcji parsowania i zapisu konfiguracji w celu nakładania domyślnych wartości kanałów przy migracji .              | **PC-CH-02**                                   |
+| [`host.ts`](../../../../apps/server/src/midi/host.ts)                                | [`apps/server/src/midi/host.ts`](../../../../apps/server/src/midi/host.ts)                             | Aplikacja filtru kanałowego w `onInputMessage` (Silent Drop) oraz wywoływanie `sendProgramChange` z `config.outputChannel` .     | **RSK-MIDI-04**, **RSK-MIDI-05**, **PC-CH-03** |
+| [`program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts)    | [`apps/server/src/midi/program-change-out.ts`](../../../../apps/server/src/midi/program-change-out.ts) | Użycie `config.outputChannel` z hosta podczas automatycznej emisji PC po zmianie projektu .                                      | **RSK-MIDI-05**, **PC-CH-03**                  |
+| [`midi.ts`](../../../../apps/server/src/routes/midi.ts)                              | [`apps/server/src/routes/midi.ts`](../../../../apps/server/src/routes/midi.ts)                         | Obsługa zaktualizowanego schematu PUT w routerze Express `/api/midi/config` .                                                    | **PC-CH-02**                                   |
+| [`ServerSettingsModal.tsx`](../../../../apps/web/src/shells/ServerSettingsModal.tsx) | `apps/desktop/src/components/ServerSettingsModal.tsx`                                                  | Wdrożenie kontrolek `Select` dla kanałów PC IN i OUT w zakładce MIDI .                                                           | **PC-CH-04**                                   |
+| [`SystemView.tsx`](../../../../apps/web/src/shells/admin/SystemView.tsx)             | `apps/desktop/src/components/views/SystemView.tsx`                                                     | Rozbudowa sekcji podglądu portów o wizualizację aktywnych kanałów MIDI .                                                         | **PC-CH-04**                                   |
 
 Niniejsze opracowanie zamyka pozycje o stanie `limit` z audytu bezpieczeństwa silnika :
 
@@ -184,4 +189,5 @@ Naprawione wcześniej ryzyka **RSK-MIDI-01..03** oraz **RSK-MIDI-06..09** (odpor
 4. **Brak Drugiego Zegara**: Zgodnie z zasadą Single Source of Truth (ADR 0002 / ADR 0010), synchronizacja czasu opiera się wyłącznie na serwerowym silniku transportu; filtry kanałowe Program Change pracują niezależnie i nie wpływają na przesyłanie impulsów MIDI Clock .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

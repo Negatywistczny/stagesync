@@ -14,14 +14,14 @@
 
 ## Epiki / tematy vs `main`
 
-| ID / temat | Stan | Notatka |
-|------------|------|---------|
-| SN-01…03 Master vs Spare (MIDI off) | `on-tree` | `STAGESYNC_SAFETY_ROLE`; Spare → `isMidiOutAllowed() === false` w MIDI host |
-| SN-04…06 promote | `on-tree` | `GET /api/system/safety-net`, `POST /api/system/promote` + Admin Host **Przejmij** |
-| SN-07…08 sync projektu | `hypothesis` | Shared data dir — poza tym slice |
-| SN-09…11 split-brain | `hypothesis` | Residual — nie claim HA |
-| SN-12 MVP manual + status | `on-tree` | Env + managed settings + UI |
-| SN-13 auto-election | **skip** / `limit` | Dump: Later — **nie** implementować |
+| ID / temat                          | Stan               | Notatka                                                                            |
+| ----------------------------------- | ------------------ | ---------------------------------------------------------------------------------- |
+| SN-01…03 Master vs Spare (MIDI off) | `on-tree`          | `STAGESYNC_SAFETY_ROLE`; Spare → `isMidiOutAllowed() === false` w MIDI host        |
+| SN-04…06 promote                    | `on-tree`          | `GET /api/system/safety-net`, `POST /api/system/promote` + Admin Host **Przejmij** |
+| SN-07…08 sync projektu              | `hypothesis`       | Shared data dir — poza tym slice                                                   |
+| SN-09…11 split-brain                | `hypothesis`       | Residual — nie claim HA                                                            |
+| SN-12 MVP manual + status           | `on-tree`          | Env + managed settings + UI                                                        |
+| SN-13 auto-election                 | **skip** / `limit` | Dump: Later — **nie** implementować                                                |
 
 ## Confirmed vs hypothesis
 

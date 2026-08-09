@@ -14,15 +14,15 @@ Ocena Niezawodności Decyzji StageSync
 
 Praca w warunkach wydarzeń na żywo wymaga bezwzględnego priorytetu dla stabilności i determinizmu środowiska wykonawczego. Wszystkie mechanizmy automatyczne, które wprowadzają niepewność co do stanu systemu lub stwarzają ryzyko niekontrolowanego przełączenia w trakcie trwania utworu, stanowią bezpośrednie zagrożenie dla przebiegu koncertu. Poniższe zestawienie podsumowuje ocenę siedmiu kluczowych decyzji produktowych StageSync wraz z werdyktami operacyjnymi oraz identyfikacją dominującego ryzyka scenicznego.
 
-| ID | Decyzja Produktowa | Werdykt | Kluczowe Ryzyko Sceniczne |
-| :--- | :--- | :--- | :--- |
-| **D1** | **Safety Net (#437):** Architektura Master/Spare; MVP = tylko ręczny „Przejmij”; auto-election = Later  | **KEEP** | Przerwa w odtwarzaniu dźwięku mid-set wymagająca reakcji operatora i ręcznego wznowienia . |
-| **D2** | **MIDI OUT / Clock:** Wyłączone na węźle Spare (blokada anti dual-send)  | **KEEP** | Nakładanie się sygnałów MIDI Clock oraz pętla komunikatów Program Change na instrumentach . |
-| **D3** | **Backup Przywróć GUI:** Pełne GUI jako backlog (ADR 0015) przy istniejącym shadowBackup  | **REVISE** | Konieczność ręcznej edycji plików w systemie operacyjnym podczas awarii przed koncertem . |
-| **D4** | **Auto-update:** Permanentny zakaz automatycznych aktualizacji bez akcji operatora  | **KEEP** | Niewymuszony restart procesu Node/Tauri lub zużycie pasma I/O i CPU podczas koncertu . |
-| **D5** | **git-apply / Aktualizuj teraz:** Permanentne wykluczenie kompilacji i git pull w runtime  | **KEEP** | Nieusystematyzowany stan repozytorium oraz uszkodzenie zależności w `node_modules` na scenie . |
-| **D6** | **Offline-First UI (#692):** Pobranie zip + jawny dialog „Zastosuj”; zakaz cichego sync mid-set  | **KEEP** | Samoczynne przeładowanie interfejsu PWA/WebView na tabletach muzyków w trakcie utworu . |
-| **D7** | **Shared Data Dir:** Założenie współdzielonego katalogu sieciowego (NFS/SMB) dla węzła Spare  | **REVERT** | Blokada wątku I/O w Node.js na skutek opóźnień sieciowych lub awarii udziału LAN . |
+| ID     | Decyzja Produktowa                                                                                     | Werdykt    | Kluczowe Ryzyko Sceniczne                                                                      |
+| :----- | :----------------------------------------------------------------------------------------------------- | :--------- | :--------------------------------------------------------------------------------------------- |
+| **D1** | **Safety Net (#437):** Architektura Master/Spare; MVP = tylko ręczny „Przejmij”; auto-election = Later | **KEEP**   | Przerwa w odtwarzaniu dźwięku mid-set wymagająca reakcji operatora i ręcznego wznowienia .     |
+| **D2** | **MIDI OUT / Clock:** Wyłączone na węźle Spare (blokada anti dual-send)                                | **KEEP**   | Nakładanie się sygnałów MIDI Clock oraz pętla komunikatów Program Change na instrumentach .    |
+| **D3** | **Backup Przywróć GUI:** Pełne GUI jako backlog (ADR 0015) przy istniejącym shadowBackup               | **REVISE** | Konieczność ręcznej edycji plików w systemie operacyjnym podczas awarii przed koncertem .      |
+| **D4** | **Auto-update:** Permanentny zakaz automatycznych aktualizacji bez akcji operatora                     | **KEEP**   | Niewymuszony restart procesu Node/Tauri lub zużycie pasma I/O i CPU podczas koncertu .         |
+| **D5** | **git-apply / Aktualizuj teraz:** Permanentne wykluczenie kompilacji i git pull w runtime              | **KEEP**   | Nieusystematyzowany stan repozytorium oraz uszkodzenie zależności w `node_modules` na scenie . |
+| **D6** | **Offline-First UI (#692):** Pobranie zip + jawny dialog „Zastosuj”; zakaz cichego sync mid-set        | **KEEP**   | Samoczynne przeładowanie interfejsu PWA/WebView na tabletach muzyków w trakcie utworu .        |
+| **D7** | **Shared Data Dir:** Założenie współdzielonego katalogu sieciowego (NFS/SMB) dla węzła Spare           | **REVERT** | Blokada wątku I/O w Node.js na skutek opóźnień sieciowych lub awarii udziału LAN .             |
 
 ---
 
@@ -48,7 +48,7 @@ Krytyczną pomyłką architektoniczną jest natomiast założenie, że węzeł S
 
 Ręczny mechanizm przełączenia awaryjnego (Manual Failover) nie stanowi technologii przezroczystej wysokiej dostępności typu Zero-Glitch, lecz jest uporządkowaną procedurą odzyskiwania systemu po awarii . W przypadku nagłego padnięcia komputera głównego w trakcie trwania utworu, sygnał audio z Mastera natychmiast zanika. Procedura ręczna wymaga od realizatora FOH zauważenia braku dźwięku, oceny stanu komputera głównego, przełączenia uwagi na ekran zapasowy oraz kliknięcia przycisku „Przejmij” .
 
-Czas potrzebny na wykonanie tej sekwencji w warunkach stresu scenicznego wynosi zazwyczaj od 3 do 10 sekund. W skali profesjonalnego koncertu oznacza to zauważalny incydent w postaci ciszy na scenie, jednak pozwala na kontynuowanie widowiska bez konieczności długotrwałego restartu aplikacji . 
+Czas potrzebny na wykonanie tej sekwencji w warunkach stresu scenicznego wynosi zazwyczaj od 3 do 10 sekund. W skali profesjonalnego koncertu oznacza to zauważalny incydent w postaci ciszy na scenie, jednak pozwala na kontynuowanie widowiska bez konieczności długotrwałego restartu aplikacji .
 
 Implementacja automatycznego przełączania bez dedykowanej magistrali sprzętowej niesie za sobą nieakceptowalne ryzyko wystąpienia podwójnego autorytetu (Split-Brain) . Jeśli algorytm automatyczny błędnie zinterpretuje chwilowy spadek przepustowości sieci LAN jako awarię Mastera, węzeł Spare samoczynnie podniesie własny zegar i zacznie odtwarzać dźwięk . Zjawisko jednoczesnego odtwarzania ścieżek z dwóch niezsynchronizowanych źródeł jest dla przebiegu koncertu znacznie groźniejsze niż kilkusekundowa przerwa .
 
@@ -63,9 +63,10 @@ Gwarancją bezpieczeństwa przy ręcznym przejęciu jest zasada, że po aktywacj
 Wprowadzenie w wersji 5.1.3 modułu aktualizacji w powłoce Tauri z ostrzeżeniem o konieczności restartu aplikacji nie unieważnia permanentnego zakazu automatycznych aktualizacji w tle . Podstawową zasadą niezawodności w branży live production jest utrzymywanie środowiska wykonawczego w stanie całkowitej niezmienności od momentu rozpoczęcia prób do zakończenia koncertu .
 
 Nawet przy obecności mechanizmów ostrzegających, samoczynne procesy sprawdzania i pobierania aktualizacji wywołują szereg zagrożeń operacyjnych:
-* Tłok w paśmie I/O i CPU wywołany pobieraniem i rozpakowywaniem archiwów w tle prowadzi do zwiększenia opóźnień w przetwornikach audio oraz potencjalnego gubienia próbek dźwiękowych .
-* Okna dialogowe aktualizacji mogą przesłonić kluczowe interfejsy sterowania transportem lub spowodować utratę skupienia okna w systemie operacyjnym, blokując skróty klawiszowe .
-* Nieplanowana zmiana wersji na jednym z komputerów prowadzi do niezgodności protokołu (`VERSION_MISMATCH`) pomiędzy Masterem a Spare, uniemożliwiając poprawną replikację stanu .
+
+- Tłok w paśmie I/O i CPU wywołany pobieraniem i rozpakowywaniem archiwów w tle prowadzi do zwiększenia opóźnień w przetwornikach audio oraz potencjalnego gubienia próbek dźwiękowych .
+- Okna dialogowe aktualizacji mogą przesłonić kluczowe interfejsy sterowania transportem lub spowodować utratę skupienia okna w systemie operacyjnym, blokując skróty klawiszowe .
+- Nieplanowana zmiana wersji na jednym z komputerów prowadzi do niezgodności protokołu (`VERSION_MISMATCH`) pomiędzy Masterem a Spare, uniemożliwiając poprawną replikację stanu .
 
 Funkcja aktualizacji w architekturze StageSync powinna być dostępna wyłącznie na ręczne żądanie operatora z poziomu panelu Admina, na przykład w trybie przygotowawczym podczas próby dźwiękowej . Na scenie aplikacja musi działać w trybie całkowitej izolacji od jakichkolwiek samowolnych operacji sieciowych i dyskowych .
 
@@ -85,12 +86,12 @@ Podstawowy panel w Admin UI pozwalający na wskazanie pliku `.bak` i jego natych
 
 Przemysłowe systemy odtwarzania redundantnego wypracowały jednoznaczne wzorce w zakresie zarządzania sygnałami i danymi. Poniższa tabela przedstawia porównanie rozwiązań stosowanych w standardach rynkowych z zalecanym kierunkiem rozwoju dla aplikacji StageSync.
 
-| Obszar / Mechanizm | Standard Branżowy (QLab / Radial SW8 / PlayAUDIO12) | Wzorzec dla StageSync (Co SKOPIOWAĆ) | Zakaz dla StageSync (Czego NIE KOPIOWAĆ) |
-| :--- | :--- | :--- | :--- |
-| **Wyjścia MIDI i Sterowanie** | Wykorzystanie funkcji *Override Controls* w QLab do blokowania transmisji MIDI/OSC na maszynie zapasowej . | Programowa blokada otwierania i nadawania na portach MIDI na serwerze Spare . | Brak mechanizmu blokady i dopuszczenie do otwarcia tych samych portów wyjściowych na obu maszynach . |
-| **Przechowywanie Danych** | Wycofanie się ze współdzielonych dysków SIECIOWYCH (NAS/NFS) na rzecz niezależnych, lokalnych dysków SSD na obu komputerach . | Przechowywanie całości struktury projektu na dysku lokalnym każdej maszyny . | Założenie o istnieniu wspólnego katalogu sieciowego (`Shared data dir`) w warunkach LAN FOH . |
-| **Synchronizacja Projektu** | Tworzenie kopii plików przed koncertem. Brak cichej synchronizacji kodu i mediów w locie podczas trwania show . | Asynchroniczna replikacja stanu setlisty i projektów w tle przed rozpoczęciem odtwarzania . | Próby automatycznego przeładowywania przestrzeni roboczej lub skryptów w trakcie trwania spektaklu . |
-| **Przełączenie Audio** | Zewnętrzne przełączniki sprzętowe sterowane sygnałem kontrolnym (Pilot Tone) . | Zsynchronizowany stan transportu i automatyczna pauza po ręcznym przejęciu ról . | Emulacja bezprzerwowego przełączania audio wyłącznie za pomocą warstwy programowej bez wsparcia HW . |
+| Obszar / Mechanizm            | Standard Branżowy (QLab / Radial SW8 / PlayAUDIO12)                                                                           | Wzorzec dla StageSync (Co SKOPIOWAĆ)                                                        | Zakaz dla StageSync (Czego NIE KOPIOWAĆ)                                                             |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------- |
+| **Wyjścia MIDI i Sterowanie** | Wykorzystanie funkcji _Override Controls_ w QLab do blokowania transmisji MIDI/OSC na maszynie zapasowej .                    | Programowa blokada otwierania i nadawania na portach MIDI na serwerze Spare .               | Brak mechanizmu blokady i dopuszczenie do otwarcia tych samych portów wyjściowych na obu maszynach . |
+| **Przechowywanie Danych**     | Wycofanie się ze współdzielonych dysków SIECIOWYCH (NAS/NFS) na rzecz niezależnych, lokalnych dysków SSD na obu komputerach . | Przechowywanie całości struktury projektu na dysku lokalnym każdej maszyny .                | Założenie o istnieniu wspólnego katalogu sieciowego (`Shared data dir`) w warunkach LAN FOH .        |
+| **Synchronizacja Projektu**   | Tworzenie kopii plików przed koncertem. Brak cichej synchronizacji kodu i mediów w locie podczas trwania show .               | Asynchroniczna replikacja stanu setlisty i projektów w tle przed rozpoczęciem odtwarzania . | Próby automatycznego przeładowywania przestrzeni roboczej lub skryptów w trakcie trwania spektaklu . |
+| **Przełączenie Audio**        | Zewnętrzne przełączniki sprzętowe sterowane sygnałem kontrolnym (Pilot Tone) .                                                | Zsynchronizowany stan transportu i automatyczna pauza po ręcznym przejęciu ról .            | Emulacja bezprzerwowego przełączania audio wyłącznie za pomocą warstwy programowej bez wsparcia HW . |
 
 ---
 
@@ -136,7 +137,7 @@ W celu zagwarantowania pełnej spójności architektonicznej i operacyjnej wersj
 
 ### 1. Formalna Zmiana Modelu Danych dla Węzła Spare
 
-Należy zadać pytanie PO: *Czy wycofujemy formalnie założenie o stosowaniu współdzielonych katalogów sieciowych (NFS/SMB) na rzecz niezależnych dysków lokalnych z asynchroniczną replikacją zmian po gnieździe WebSocket?*
+Należy zadać pytanie PO: _Czy wycofujemy formalnie założenie o stosowaniu współdzielonych katalogów sieciowych (NFS/SMB) na rzecz niezależnych dysków lokalnych z asynchroniczną replikacją zmian po gnieździe WebSocket?_
 
 Rekomenduje się całkowite odrzucenie dysków sieciowych w warunkach FOH . Każda maszyna musi być w pełni samowystarczalna pod kątem operacji dyskowych I/O, aby wyeliminować ryzyko zamrażania pętli zdarzeń aplikacji przy zakłóceniach sieciowych .
 
@@ -144,7 +145,7 @@ Rekomenduje się całkowite odrzucenie dysków sieciowych w warunkach FOH . Każ
 
 ### 2. Podniesienie Priorytetu GUI Przywracania Kopii Zapasowych
 
-Należy zadać pytanie PO: *Czy zgadzasz się na przeniesienie funkcji interfejsu graficznego do przywracania kopii `.bak` z backlogu do podstawowego zakresu wymagań wersji v5.2?*
+Należy zadać pytanie PO: _Czy zgadzasz się na przeniesienie funkcji interfejsu graficznego do przywracania kopii `.bak` z backlogu do podstawowego zakresu wymagań wersji v5.2?_
 
 Rekomenduje się natychmiastowe wdrożenie tego interfejsu . Tworzenie automatycznych kopii zapasowych przez mechanizm `shadowBackup` bez możliwości ich intuicyjnego odzyskania z poziomu panelu Admin UI stanowi istotną lukę w bezpieczeństwie operacyjnym .
 
@@ -152,7 +153,7 @@ Rekomenduje się natychmiastowe wdrożenie tego interfejsu . Tworzenie automatyc
 
 ### 3. Wprowadzenie Zasady Twardego PAUSE po Ręcznym Przejęciu Roli
 
-Należy zadać pytanie PO: *Czy zatwierdzasz regułę, że po kliknięciu „Przejmij” na węźle Spare, silnik transportu nowo promowanego Mastera bezwzględnie wchodzi w stan PAUSE na pozycji ostatnio odebranego stempla czasowego?*
+Należy zadać pytanie PO: _Czy zatwierdzasz regułę, że po kliknięciu „Przejmij” na węźle Spare, silnik transportu nowo promowanego Mastera bezwzględnie wchodzi w stan PAUSE na pozycji ostatnio odebranego stempla czasowego?_
 
 Rekomenduje się zatwierdzenie tej zasady . Samoczynny start odtwarzania audio po przejęciu roli stwarza ryzyko dezorientacji wykonawców na scenie . Wznowienie odtwarzania musi być zawsze świadomą i celową akcją realizatora FOH .
 
@@ -160,9 +161,10 @@ Rekomenduje się zatwierdzenie tej zasady . Samoczynny start odtwarzania audio p
 
 ## Podsumowanie Architektoniczne
 
-Projekt StageSync v5.x prezentuje dojrzałe podejście do inżynierii niezawodności w środowisku koncertowym . Odrzucenie niestabilnych mechanizmów, takich jak automatyczna kompilacja w runtime czy bezobsługowe aktualizacje w tle, znacząco podnosi bezpieczeństwo pracy na scenie . 
+Projekt StageSync v5.x prezentuje dojrzałe podejście do inżynierii niezawodności w środowisku koncertowym . Odrzucenie niestabilnych mechanizmów, takich jak automatyczna kompilacja w runtime czy bezobsługowe aktualizacje w tle, znacząco podnosi bezpieczeństwo pracy na scenie .
 
 Wdrożenie zasady Jednego Źródła Prawdy (SSOT) dla zegara muzycznego oraz programowej blokady wyjść MIDI na maszynie zapasowej skutecznie chroni system przed awariami wynikającymi z konfliktu autorytetów . Wprowadzenie poprawek w zakresie przechowywania danych na lokalnych dyskach SSD oraz wdrożenie interfejsu przywracania kopii zapasowych pozwoli na osiągnięcie pełnej gotowości produkcyjnej w wydaniu v5.2 .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

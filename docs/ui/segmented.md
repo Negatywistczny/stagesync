@@ -13,7 +13,7 @@ import { SegmentedControl } from "@stagesync/ui";
     { value: "mono", label: "M" },
     { value: "stereo", label: "ST" },
   ]}
-/>
+/>;
 ```
 
 Używane m.in. w Mixer channel mode. Layout wrappera może być lokalny

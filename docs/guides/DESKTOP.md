@@ -36,14 +36,14 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 
 ### Nawigacja L1 (OperatorNav vs menu aplikacji)
 
-| Powierzchnia | Admin / Timeline / Klient |
-|--------------|---------------------------|
+| Powierzchnia                      | Admin / Timeline / Klient                                                                                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Tauri desktop (szerokie okno)** | Menu aplikacji (**Widok**, skróty `⌘/Ctrl+1…3`, `Alt+1…4`) + pasek L1 z wordmarkiem i chipami Admin/Timeline/Klient; w buildach DEV Admin ma też sekcję `Dev`. Bez przycisku pełnego ekranu w chrome (jest w menu). |
-| **Tauri desktop (≤640px)** | Ten sam chrome telefonu co Web / Console: **OperatorNav** + kompaktowy L1 |
-| **Tauri `/client`** | Zawsze pełny L1 z chipami **Admin / Timeline** (booth); menu HTML/OS osobno |
-| **Przeglądarka operatora (LAN)** | Po wizycie w Admin/Timeline — sesja operatora: chipy (tablet/desktop) albo **OperatorNav** (≤640px) na `/client`; bez sesji = widok muzyka. Bez title bara okna. |
-| **Console Android** | **OperatorNav** / chipy jak web operator; na `/client` zawsze |
-| **Performer / muzyk `/client`** | Brak przełącznika aplikacji |
+| **Tauri desktop (≤640px)**        | Ten sam chrome telefonu co Web / Console: **OperatorNav** + kompaktowy L1                                                                                                                                           |
+| **Tauri `/client`**               | Zawsze pełny L1 z chipami **Admin / Timeline** (booth); menu HTML/OS osobno                                                                                                                                         |
+| **Przeglądarka operatora (LAN)**  | Po wizycie w Admin/Timeline — sesja operatora: chipy (tablet/desktop) albo **OperatorNav** (≤640px) na `/client`; bez sesji = widok muzyka. Bez title bara okna.                                                    |
+| **Console Android**               | **OperatorNav** / chipy jak web operator; na `/client` zawsze                                                                                                                                                       |
+| **Performer / muzyk `/client`**   | Brak przełącznika aplikacji                                                                                                                                                                                         |
 
 ### Title bar (Windows / Linux) — [#836](https://github.com/Negatywistczny/stagesync/issues/836)
 
@@ -75,15 +75,15 @@ Jak w typowej aplikacji desktop:
 3. Klawiatura: `↑`/`↓` pozycje; `→` otwiera submenu albo następne top-level; `←` zamyka submenu albo poprzednie top-level; `Enter`/`Space` aktywuje; `Escape` zamyka poziom / całe menu; `Home`/`End` w liście.
 4. Klik poza menu albo drugi klik w tę samą pozycję top-level zamyka.
 
-| Menu | Pozycje |
-|------|---------|
-| **StageSync** (tylko macOS) | O programie; Preferencje…; Sprawdź aktualizacje…; Zakończ |
-| **Plik** | Nowy (Utwór / Wzór / Z wzoru…); Otwórz…; Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zapisz jako…; Importuj / Eksportuj bibliotekę…; Zamknij projekt; *(Win/Linux: Preferencje…; Sprawdź aktualizacje…; Zakończ)* |
-| **Edycja** | Cofnij / Ponów; Wytnij / Kopiuj / Wklej (schowek klipów Timeline); Usuń; Zaznacz wszystko |
-| **Widok** | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Powiększ / Pomniejsz / Rzeczywisty rozmiar; Wygląd…; Pełny ekran |
-| **Odtwarzanie** | Odtwórz; Stop; Poprzedni / Następny utwór (`⌥/Alt+←/→`) |
-| **Host** | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia… |
-| **Pomoc** | Skróty klawiszowe…; Dokumentacja online; Zgłoś problem; Eksport logów; O programie (Win/Linux) |
+| Menu                        | Pozycje                                                                                                                                                                                                     |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **StageSync** (tylko macOS) | O programie; Preferencje…; Sprawdź aktualizacje…; Zakończ                                                                                                                                                   |
+| **Plik**                    | Nowy (Utwór / Wzór / Z wzoru…); Otwórz…; Otwórz ostatnie; Zapisz (`⌘/Ctrl+S`); Zapisz jako…; Importuj / Eksportuj bibliotekę…; Zamknij projekt; _(Win/Linux: Preferencje…; Sprawdź aktualizacje…; Zakończ)_ |
+| **Edycja**                  | Cofnij / Ponów; Wytnij / Kopiuj / Wklej (schowek klipów Timeline); Usuń; Zaznacz wszystko                                                                                                                   |
+| **Widok**                   | Admin / Timeline / Klient (`⌘/Ctrl+1…3`); Zakładki Admina (`⌥/Alt+1…4`); Powiększ / Pomniejsz / Rzeczywisty rozmiar; Wygląd…; Pełny ekran                                                                   |
+| **Odtwarzanie**             | Odtwórz; Stop; Poprzedni / Następny utwór (`⌥/Alt+←/→`)                                                                                                                                                     |
+| **Host**                    | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia…                                                                                                                                 |
+| **Pomoc**                   | Skróty klawiszowe…; Dokumentacja online; Zgłoś problem; Eksport logów; O programie (Win/Linux)                                                                                                              |
 
 ### Szczegółowe działanie menu
 
@@ -93,80 +93,80 @@ Kliknięcia nie wykonują akcji bezpośrednio w Rust (poza fullscreen / zewnętr
 
 #### StageSync (macOS) / Plik — Preferencje i wyjście (Windows/Linux)
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| O programie StageSync | Przechodzi do `/admin?section=host` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Preferencje… | Wysyła event `preferences` do WebView | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Sprawdź aktualizacje... | Na launcherze emituje `launcher-check-update`; w SPA hosta przechodzi do `/admin?section=host&action=check-update` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Zakończ | Zamyka aplikację | Zawsze, jeśli system zdąży obsłużyć event | Nie ma osobnego warunku w menu, ale proces może zostać zamknięty przez OS |
+| Pozycja                 | Działanie                                                                                                          | Kiedy działa                              | Kiedy nie działa                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------- |
+| O programie StageSync   | Przechodzi do `/admin?section=host`                                                                                | Gdy istnieje okno `main`                  | Gdy okna `main` nie ma                                                    |
+| Preferencje…            | Wysyła event `preferences` do WebView                                                                              | Gdy istnieje okno `main`                  | Gdy okna `main` nie ma                                                    |
+| Sprawdź aktualizacje... | Na launcherze emituje `launcher-check-update`; w SPA hosta przechodzi do `/admin?section=host&action=check-update` | Gdy istnieje okno `main`                  | Gdy okna `main` nie ma                                                    |
+| Zakończ                 | Zamyka aplikację                                                                                                   | Zawsze, jeśli system zdąży obsłużyć event | Nie ma osobnego warunku w menu, ale proces może zostać zamknięty przez OS |
 
 #### Plik
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| Nowy → Utwór | Event `file-new` | Zawsze z aktywnym menu | Brak `main` |
-| Nowy → Wzór | Event `file-new-template` | Zawsze z aktywnym menu | Brak `main` |
-| Nowy → Z wzoru… | Event `file-new-from-template` | Zawsze z aktywnym menu | Brak `main` |
-| Otwórz… | Event `file-open` | Zawsze z aktywnym menu | Brak `main` |
-| Otwórz ostatnie | Przejście do `/timeline/<id>` dla wybranego projektu | Tylko gdy lista ostatnich projektów nie jest pusta | Gdy `recent_projects` jest puste, pokazuje tylko nieaktywny wpis „Brak ostatnich” |
-| Zapisz | Event `file-save` | Zawsze z aktywnym menu | Brak `main` |
-| Zapisz jako… | Event `file-save-as` | Zawsze z aktywnym menu | Brak `main` |
-| Importuj bibliotekę… | Event `file-import` | Zawsze z aktywnym menu | Brak `main` |
-| Eksportuj bibliotekę… | Event `file-export` | Zawsze z aktywnym menu | Brak `main` |
-| Zamknij projekt | Przechodzi do `/admin` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Pozycja               | Działanie                                            | Kiedy działa                                       | Kiedy nie działa                                                                  |
+| --------------------- | ---------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Nowy → Utwór          | Event `file-new`                                     | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Nowy → Wzór           | Event `file-new-template`                            | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Nowy → Z wzoru…       | Event `file-new-from-template`                       | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Otwórz…               | Event `file-open`                                    | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Otwórz ostatnie       | Przejście do `/timeline/<id>` dla wybranego projektu | Tylko gdy lista ostatnich projektów nie jest pusta | Gdy `recent_projects` jest puste, pokazuje tylko nieaktywny wpis „Brak ostatnich” |
+| Zapisz                | Event `file-save`                                    | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Zapisz jako…          | Event `file-save-as`                                 | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Importuj bibliotekę…  | Event `file-import`                                  | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Eksportuj bibliotekę… | Event `file-export`                                  | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
+| Zamknij projekt       | Przechodzi do `/admin`                               | Gdy istnieje okno `main`                           | Gdy okna `main` nie ma                                                            |
 
 #### Edycja
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| Cofnij | Event `edit-undo` | Gdy frontend ustawi `can_undo = true` przez `set_edit_history_state` | Gdy `can_undo = false` |
-| Ponów | Event `edit-redo` | Gdy frontend ustawi `can_redo = true` przez `set_edit_history_state` | Gdy `can_redo = false` |
-| Wytnij | Event `edit-cut` | Zawsze z aktywnym menu | Brak `main` |
-| Kopiuj | Event `edit-copy` | Zawsze z aktywnym menu | Brak `main` |
-| Wklej | Event `edit-paste` | Zawsze z aktywnym menu | Brak `main` |
-| Usuń | Event `edit-delete` | Zawsze z aktywnym menu | Brak `main` |
-| Zaznacz wszystko | Natywne `select_all` | Zawsze z aktywnym menu | Brak `main` |
+| Pozycja          | Działanie            | Kiedy działa                                                         | Kiedy nie działa       |
+| ---------------- | -------------------- | -------------------------------------------------------------------- | ---------------------- |
+| Cofnij           | Event `edit-undo`    | Gdy frontend ustawi `can_undo = true` przez `set_edit_history_state` | Gdy `can_undo = false` |
+| Ponów            | Event `edit-redo`    | Gdy frontend ustawi `can_redo = true` przez `set_edit_history_state` | Gdy `can_redo = false` |
+| Wytnij           | Event `edit-cut`     | Zawsze z aktywnym menu                                               | Brak `main`            |
+| Kopiuj           | Event `edit-copy`    | Zawsze z aktywnym menu                                               | Brak `main`            |
+| Wklej            | Event `edit-paste`   | Zawsze z aktywnym menu                                               | Brak `main`            |
+| Usuń             | Event `edit-delete`  | Zawsze z aktywnym menu                                               | Brak `main`            |
+| Zaznacz wszystko | Natywne `select_all` | Zawsze z aktywnym menu                                               | Brak `main`            |
 
 #### Widok
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| Admin | Przechodzi do `/admin` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Timeline | Przechodzi do `/timeline/<timeline_project_id>`; jeśli ID nie jest znane, fallback do `/admin` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Klient | Przechodzi do `/client` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Zakładki Admina → Utwory / Setlista / Scena / Host | Przechodzą do odpowiednich sekcji `/admin?section=...` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Powiększ / Pomniejsz / Rzeczywisty rozmiar | Eventy `view-zoom-in`, `view-zoom-out`, `view-zoom-reset` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Wygląd… | Event `appearance` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Pełny ekran | Przełącza natywne fullscreen okna | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Pozycja                                            | Działanie                                                                                      | Kiedy działa             | Kiedy nie działa       |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ | ---------------------- |
+| Admin                                              | Przechodzi do `/admin`                                                                         | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Timeline                                           | Przechodzi do `/timeline/<timeline_project_id>`; jeśli ID nie jest znane, fallback do `/admin` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Klient                                             | Przechodzi do `/client`                                                                        | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Zakładki Admina → Utwory / Setlista / Scena / Host | Przechodzą do odpowiednich sekcji `/admin?section=...`                                         | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Powiększ / Pomniejsz / Rzeczywisty rozmiar         | Eventy `view-zoom-in`, `view-zoom-out`, `view-zoom-reset`                                      | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Wygląd…                                            | Event `appearance`                                                                             | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Pełny ekran                                        | Przełącza natywne fullscreen okna                                                              | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
 
 #### Odtwarzanie
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| Odtwórz | Event `transport-play` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Stop | Event `transport-stop` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Pozycja         | Działanie              | Kiedy działa             | Kiedy nie działa       |
+| --------------- | ---------------------- | ------------------------ | ---------------------- |
+| Odtwórz         | Event `transport-play` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Stop            | Event `transport-stop` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
 | Poprzedni utwór | Event `transport-prev` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Następny utwór | Event `transport-next` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Następny utwór  | Event `transport-next` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
 
 #### Host
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| Status | Przechodzi do `/admin?section=host` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Pozycja              | Działanie                            | Kiedy działa             | Kiedy nie działa       |
+| -------------------- | ------------------------------------ | ------------------------ | ---------------------- |
+| Status               | Przechodzi do `/admin?section=host`  | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
 | Klienci / urządzenia | Przechodzi do `/admin?section=stage` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Kod QR… | Event `host-qr` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Restart hosta | Event `host-restart` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Ustawienia… | Przechodzi do `/admin?section=host` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Kod QR…              | Event `host-qr`                      | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Restart hosta        | Event `host-restart`                 | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
+| Ustawienia…          | Przechodzi do `/admin?section=host`  | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
 
 #### Pomoc
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| Skróty klawiszowe… | Event `help-shortcuts` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Dokumentacja online | Otwiera zewnętrzny URL dokumentacji | Tylko dla `http(s)` i gdy system może otworzyć przeglądarkę | Inne schematy URL są odrzucane |
-| Zgłoś problem | Otwiera zewnętrzny URL issue tracker | Tylko dla `http(s)` i gdy system może otworzyć przeglądarkę | Inne schematy URL są odrzucane |
-| Eksport logów | Event `diagnostics-export` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| O programie (Win/Linux) | Przechodzi do `/admin?section=host` | Tylko poza macOS, gdy istnieje okno `main` | Na macOS pozycja nie występuje |
+| Pozycja                 | Działanie                            | Kiedy działa                                                | Kiedy nie działa               |
+| ----------------------- | ------------------------------------ | ----------------------------------------------------------- | ------------------------------ |
+| Skróty klawiszowe…      | Event `help-shortcuts`               | Gdy istnieje okno `main`                                    | Gdy okna `main` nie ma         |
+| Dokumentacja online     | Otwiera zewnętrzny URL dokumentacji  | Tylko dla `http(s)` i gdy system może otworzyć przeglądarkę | Inne schematy URL są odrzucane |
+| Zgłoś problem           | Otwiera zewnętrzny URL issue tracker | Tylko dla `http(s)` i gdy system może otworzyć przeglądarkę | Inne schematy URL są odrzucane |
+| Eksport logów           | Event `diagnostics-export`           | Gdy istnieje okno `main`                                    | Gdy okna `main` nie ma         |
+| O programie (Win/Linux) | Przechodzi do `/admin?section=host`  | Tylko poza macOS, gdy istnieje okno `main`                  | Na macOS pozycja nie występuje |
 
 #### Zasady aktywności
 
@@ -180,18 +180,17 @@ Kliknięcia nie wykonują akcji bezpośrednio w Rust (poza fullscreen / zewnętr
 
 Menu zasobnika jest osobne od menu systemowego okna.
 
-| Pozycja | Działanie | Kiedy działa | Kiedy nie działa |
-|---------|-----------|--------------|------------------|
-| Otwórz StageSync | Pokazuje główne okno | Zawsze | Brak okna `main` oznacza tylko brak czego pokazać |
-| Status hosta | Pokazuje aktualny stan; przy błędzie otwiera Launcher | Klikalne tylko w stanie Error | W Idle / Starting / Running jest informacyjne |
-| Kopiuj adres LAN | Kopiuje LAN URL hosta | Tylko gdy host działa i ma dostępny URL sieciowy | Gdy host nie działa, startuje albo nie ma URL |
-| Otwórz w przeglądarce | Otwiera LAN URL w domyślnej przeglądarce | Tylko gdy host działa i ma dostępny URL sieciowy | Gdy host nie działa, startuje albo nie ma URL |
-| Uruchom Host / Zatrzymaj Host / Anuluj start | Przełącza lokalny host | Gdy stan pozwala na toggle | Zależnie od stanu może być wyłączone w trayu |
-| Restartuj host | Restartuje zarządzany lokalny host | Tylko gdy host działa, ma child process i jest gotowa sieć | Gdy host jest Idle / Starting / Error albo nie jest zarządzany |
-| Zakończ StageSync | Kończy aplikację i host | Zawsze | Brak osobnego warunku |
+| Pozycja                                      | Działanie                                             | Kiedy działa                                               | Kiedy nie działa                                               |
+| -------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
+| Otwórz StageSync                             | Pokazuje główne okno                                  | Zawsze                                                     | Brak okna `main` oznacza tylko brak czego pokazać              |
+| Status hosta                                 | Pokazuje aktualny stan; przy błędzie otwiera Launcher | Klikalne tylko w stanie Error                              | W Idle / Starting / Running jest informacyjne                  |
+| Kopiuj adres LAN                             | Kopiuje LAN URL hosta                                 | Tylko gdy host działa i ma dostępny URL sieciowy           | Gdy host nie działa, startuje albo nie ma URL                  |
+| Otwórz w przeglądarce                        | Otwiera LAN URL w domyślnej przeglądarce              | Tylko gdy host działa i ma dostępny URL sieciowy           | Gdy host nie działa, startuje albo nie ma URL                  |
+| Uruchom Host / Zatrzymaj Host / Anuluj start | Przełącza lokalny host                                | Gdy stan pozwala na toggle                                 | Zależnie od stanu może być wyłączone w trayu                   |
+| Restartuj host                               | Restartuje zarządzany lokalny host                    | Tylko gdy host działa, ma child process i jest gotowa sieć | Gdy host jest Idle / Starting / Error albo nie jest zarządzany |
+| Zakończ StageSync                            | Kończy aplikację i host                               | Zawsze                                                     | Brak osobnego warunku                                          |
 
 Tray nie otwiera menu po lewym kliknięciu ikony, bo `show_menu_on_left_click(false)`; lewy klik przywraca tylko okno.
-
 
 > **MIDI i zegar muzyczny** obsługuje wyłącznie host (serwer) — nie proces okna desktop. Status MIDI widać w Admin → Host.
 >
@@ -210,10 +209,10 @@ Tray nie otwiera menu po lewym kliknięciu ikony, bo `show_menu_on_left_click(fa
 
 Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases):
 
-| Platforma | Plik |
-|-----------|------|
-| macOS | `StageSync_x.y.z_aarch64.dmg` lub `x64.dmg` |
-| Windows | `StageSync-Setup.exe` |
+| Platforma | Plik                                        |
+| --------- | ------------------------------------------- |
+| macOS     | `StageSync_x.y.z_aarch64.dmg` lub `x64.dmg` |
+| Windows   | `StageSync-Setup.exe`                       |
 
 ### Instalacja bez podpisu cyfrowego
 
@@ -231,6 +230,7 @@ To zdejmuje flagę kwarantanny (Chrome / Safari). Trzeba powtórzyć **po każde
 Alternatywy: prawy klik na `.app` → **Otwórz** → **Otwórz**; albo Ustawienia systemowe → Prywatność i ochrona → **Otwórz mimo to**.
 
 **Windows — SmartScreen:**
+
 1. Kliknij **Więcej informacji** w ostrzeżeniu SmartScreen.
 2. Kliknij **Uruchom mimo to**.
 
@@ -271,16 +271,18 @@ Kanoniczna lista upstream: https://v2.tauri.app/start/prerequisites/
 
 ### Windows
 
-1. **MSVC** — Visual Studio 2022 Build Tools z workloadem *Desktop development with C++* (bez tego `cargo` / linkowanie pada od razu).
+1. **MSVC** — Visual Studio 2022 Build Tools z workloadem _Desktop development with C++_ (bez tego `cargo` / linkowanie pada od razu).
 2. **WebView2** Evergreen Runtime (często już zainstalowany z Edge).
 3. **Rust** przez [rustup](https://rustup.rs/) (`cargo` w `PATH` po nowym terminalu).
 4. **Node 22 + pnpm 11** — [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md#środowisko).
 
 **Najprostsza metoda (Zalecane):**
 Po sklonowaniu repozytorium, uruchom w głównym folderze skrypt:
+
 ```powershell
 .\scripts\setup.ps1
 ```
+
 Skrypt interaktywnie sprawdzi obecność Node.js, pnpm, Rust, MSVC oraz WebView2 i zaoferuje ich automatyczną instalację w razie braków (zwracając kod błędu, jeśli coś pójdzie nie tak).
 
 **Ręczna instalacja (winget):**
@@ -332,10 +334,10 @@ Opcjonalnie (cienki shell bez sidecara):
 pnpm --filter @stagesync/desktop build
 ```
 
-| Platforma | Artefakt |
-|-----------|----------|
-| macOS | `.dmg` |
-| Windows | zoptymalizowany instalator `.exe` (NSIS) |
+| Platforma | Artefakt                                 |
+| --------- | ---------------------------------------- |
+| macOS     | `.dmg`                                   |
+| Windows   | zoptymalizowany instalator `.exe` (NSIS) |
 
 ## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
 

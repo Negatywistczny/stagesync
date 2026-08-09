@@ -10,6 +10,7 @@ CEL ANALIZY
 Uzupełnić pokrycie poza [`assets-api.test.ts`](../../../../apps/server/src/assets-api.test.ts) (E2E) i [`assets-router-unit.test.ts`](../../../../apps/server/src/assets-router-unit.test.ts) (error paths).
 
 PYTANIA BADAWCZE
+
 1. POST upload: audio vs musicxml kind, `trackId`/`startTicks` multipart fields — wszystkie kombinacje?
 2. `mimeForExt` / `extFromName` — pure helpers do wydzielenia i przetestowania?
 3. LIMIT_FILE_SIZE 413 via multer — pokryte w unit test?
@@ -18,11 +19,13 @@ PYTANIA BADAWCZE
 6. Integracja `stores.addProjectAsset` z `createAudioClip` flag — mock Stores wystarczy?
 
 KONTEKST
+
 - Multer memory storage, max 100MB.
 - Zod Project na odpowiedzi; storage przez `Stores` interface.
 - Vitest + supertest-like fetch lub express listen.
 
 OCZEKIWANY OUTPUT
+
 1. Lista testów unit (helpers) + integration (router).
 2. Mocki: Stores partial, fs createReadStream, multer file buffer.
 3. Ryzyka flaky: stream async — pattern dla error mid-pipe.
@@ -64,14 +67,14 @@ Poniższy raport przedstawia szczegółową analizę luki pokrycia, odpowiada na
 
 Router assetów odpowiada za obsługę operacji I/O dotyczących plików audio oraz dokumentów MusicXML przypisanych do konkretnych projektów . Przetwarzanie żądań obejmuje parsowanie formularzy multipart przez middleware Multer, walidację rozszerzeń plików, wyznaczanie odpowiednich typów MIME oraz integrację z interfejsem `Stores` w celu trwałego zapisania assetu na dysku lub utworzenia klipów na ścieżkach audio .
 
-| Komponent lub Ścieżka | Plik [`assets-api.test.ts`](../../../../apps/server/src/assets-api.test.ts) (E2E) | Plik [`assets-router-unit.test.ts`](../../../../apps/server/src/assets-router-unit.test.ts) | Docelowy Plan Testowy |
-| :--- | :--- | :--- | :--- |
-| **Pure Helpers (`extFromName`, `mimeForExt`)** | Testowane pośrednio przez wysyłanie żądań HTTP . | Brak bezpośrednich testów . | Dedykowane testy jednostkowe bez uruchamiania serwera HTTP. |
-| **Kombinacje POST Multipart (`trackId`, `startTicks`)** | Podstawowa obsługa prawidłowych wartości `trackId` i `startTicks` . | Brak pokrycia parametrów formularza . | Pełna matryca kombinacji: zaokrąglanie wartości zmiennoprzecinkowych, ignorowanie wartości ujemnych i niepoprawnych typów. |
-| **Klasyfikacja Assetu (`audio` vs `musicxml`)** | Pliki `.wav` oraz `.musicxml` . | Brak weryfikacji flagi `createAudioClip` . | Matryca rozszerzeń (.mxl, .flac, .aif) i kontrola flag w wywołaniu `stores.addProjectAsset`. |
-| **Przekroczenie Limitu Rozmiaru (HTTP 413)** | Brak testu . | Brak testu . | Symulacja `MulterError('LIMIT_FILE_SIZE')` bez alokacji bufora 100 MB. |
-| **Błędy Strumieniowania (`GET /:assetId/file`)** | Błąd 404 dla nieistniejącego pliku . | Mapowanie błędu `NotFoundError` z magazynu . | Test błędu odczytu z dysku przed wysłaniem nagłówków (500) oraz w trakcie strumieniowania po `headersSent` (zerwanie połączenia). |
-| **Ekstraktory Parametrów (`projectIdFrom`, `assetIdFrom`)** | Prawidłowe identyfikatory UUID . | Prawidłowe identyfikatory w trasie . | Obsługa parametrów tablicowych, pustych ciągów znaków oraz braku wymaganych wartości. |
+| Komponent lub Ścieżka                                       | Plik [`assets-api.test.ts`](../../../../apps/server/src/assets-api.test.ts) (E2E) | Plik [`assets-router-unit.test.ts`](../../../../apps/server/src/assets-router-unit.test.ts) | Docelowy Plan Testowy                                                                                                             |
+| :---------------------------------------------------------- | :-------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| **Pure Helpers (`extFromName`, `mimeForExt`)**              | Testowane pośrednio przez wysyłanie żądań HTTP .                                  | Brak bezpośrednich testów .                                                                 | Dedykowane testy jednostkowe bez uruchamiania serwera HTTP.                                                                       |
+| **Kombinacje POST Multipart (`trackId`, `startTicks`)**     | Podstawowa obsługa prawidłowych wartości `trackId` i `startTicks` .               | Brak pokrycia parametrów formularza .                                                       | Pełna matryca kombinacji: zaokrąglanie wartości zmiennoprzecinkowych, ignorowanie wartości ujemnych i niepoprawnych typów.        |
+| **Klasyfikacja Assetu (`audio` vs `musicxml`)**             | Pliki `.wav` oraz `.musicxml` .                                                   | Brak weryfikacji flagi `createAudioClip` .                                                  | Matryca rozszerzeń (.mxl, .flac, .aif) i kontrola flag w wywołaniu `stores.addProjectAsset`.                                      |
+| **Przekroczenie Limitu Rozmiaru (HTTP 413)**                | Brak testu .                                                                      | Brak testu .                                                                                | Symulacja `MulterError('LIMIT_FILE_SIZE')` bez alokacji bufora 100 MB.                                                            |
+| **Błędy Strumieniowania (`GET /:assetId/file`)**            | Błąd 404 dla nieistniejącego pliku .                                              | Mapowanie błędu `NotFoundError` z magazynu .                                                | Test błędu odczytu z dysku przed wysłaniem nagłówków (500) oraz w trakcie strumieniowania po `headersSent` (zerwanie połączenia). |
+| **Ekstraktory Parametrów (`projectIdFrom`, `assetIdFrom`)** | Prawidłowe identyfikatory UUID .                                                  | Prawidłowe identyfikatory w trasie .                                                        | Obsługa parametrów tablicowych, pustych ciągów znaków oraz braku wymaganych wartości.                                             |
 
 ---
 
@@ -82,25 +85,27 @@ Router assetów odpowiada za obsługę operacji I/O dotyczących plików audio o
 Router dokonuje klasyfikacji pliku na podstawie zestawów `AUDIO_EXT` (.mp3, .wav, .aiff, .aif, .m4a, .flac, .ogg) oraz `MUSICXML_EXT` (.musicxml, .xml, .mxl) . Klasyfikacja ta wpływa na pole `kind` w obiekcie assetu oraz na wartość flagi `createAudioClip` przekazywanej do metody `stores.addProjectAsset` .
 
 Dla plików audio flaga `createAudioClip` ustawiana jest na `true`, natomiast dla plików MusicXML przyjmuje wartość `false` . Router parsuje pola multipart w następujący sposób:
-* `trackId`: Jeśli ciąg znaków jest niepusty, przekazywany jest jako `audioTrackId`. W przeciwnym razie przyjmuje wartość `undefined` .
-* `startTicks`: Parsowany przy użyciu `Number(startTicksRaw)` . Jeśli wynik jest liczbą skończoną i nieujemną ($\ge 0$), zostaje zaokrąglony w dół poprzez `Math.floor()` . W przypadku wartości ujemnych, ciągów tekstowych lub `NaN`, wartość ustawiana jest na `undefined` .
 
-| Typ Pliku | Rozszerzenie | Pole `trackId` | Pole `startTicks` | Przekazywany `kind` | Przekazywana Flaga `createAudioClip` | Oczekiwane `audioTrackId` / `startTicks` |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Audio | `.wav` | `"tr-1"` | `"3840.9"` | `"audio"` | `true` | `"tr-1"` / `3840` |
-| Audio | `.flac` | `""` | `"-100"` | `"audio"` | `true` | `undefined` / `undefined` |
-| Audio | `.mp3` | `undefined` | `"invalid"` | `"audio"` | `true` | `undefined` / `undefined` |
-| MusicXML | `.mxl` | `"tr-1"` | `"1920"` | `"musicxml"` | `false` | `"tr-1"` / `1920` |
-| MusicXML | `.xml` | `undefined` | `undefined` | `"musicxml"` | `false` | `undefined` / `undefined` |
-| Nieobsługiwany | `.txt` | Dowolne | Dowolne | Brak wywołania | Brak wywołania | Odpowiedź HTTP 400 z błędem . |
+- `trackId`: Jeśli ciąg znaków jest niepusty, przekazywany jest jako `audioTrackId`. W przeciwnym razie przyjmuje wartość `undefined` .
+- `startTicks`: Parsowany przy użyciu `Number(startTicksRaw)` . Jeśli wynik jest liczbą skończoną i nieujemną ($\ge 0$), zostaje zaokrąglony w dół poprzez `Math.floor()` . W przypadku wartości ujemnych, ciągów tekstowych lub `NaN`, wartość ustawiana jest na `undefined` .
+
+| Typ Pliku      | Rozszerzenie | Pole `trackId` | Pole `startTicks` | Przekazywany `kind` | Przekazywana Flaga `createAudioClip` | Oczekiwane `audioTrackId` / `startTicks` |
+| :------------- | :----------- | :------------- | :---------------- | :------------------ | :----------------------------------- | :--------------------------------------- |
+| Audio          | `.wav`       | `"tr-1"`       | `"3840.9"`        | `"audio"`           | `true`                               | `"tr-1"` / `3840`                        |
+| Audio          | `.flac`      | `""`           | `"-100"`          | `"audio"`           | `true`                               | `undefined` / `undefined`                |
+| Audio          | `.mp3`       | `undefined`    | `"invalid"`       | `"audio"`           | `true`                               | `undefined` / `undefined`                |
+| MusicXML       | `.mxl`       | `"tr-1"`       | `"1920"`          | `"musicxml"`        | `false`                              | `"tr-1"` / `1920`                        |
+| MusicXML       | `.xml`       | `undefined`    | `undefined`       | `"musicxml"`        | `false`                              | `undefined` / `undefined`                |
+| Nieobsługiwany | `.txt`       | Dowolne        | Dowolne           | Brak wywołania      | Brak wywołania                       | Odpowiedź HTTP 400 z błędem .            |
 
 ### 2. Izolacja i Testowanie Czystych Funkcji Pomocniczych (`mimeForExt` oraz `extFromName`)
 
-Funkcje `extFromName` oraz `mimeForExt` nie posiadają efektów ubocznych i powinny zostać wyeksportowane z modułu [`assets.ts`](../../../../apps/server/src/routes/assets.ts) lub wydzielone do osobnego pliku pomocniczego . 
+Funkcje `extFromName` oraz `mimeForExt` nie posiadają efektów ubocznych i powinny zostać wyeksportowane z modułu [`assets.ts`](../../../../apps/server/src/routes/assets.ts) lub wydzielone do osobnego pliku pomocniczego .
 
 Testy jednostkowe tych funkcji powinny weryfikować następujące przypadki krawędziowe:
-* `extFromName`: konwersja wielkich liter do małych (np. `"VOCAL.WAV"` na `".wav"`), pliki bez rozszerzenia (np. `"README"` na `".bin"`), pliki ukryte (np. `".gitignore"` na `".bin"`) oraz nazwy z wieloma kropkami (np. `"sample.v1.final.flac"` na `".flac"`) .
-* `mimeForExt`: poprawne mapowanie typów audio (np. `.mp3` $\rightarrow$ `"audio/mpeg"`, `.flac` $\rightarrow$ `"audio/flac"`), typów MusicXML (np. `.mxl` $\rightarrow$ `"application/vnd.recordare.musicxml"`, `.musicxml` $\rightarrow$ `"application/vnd.recordare.musicxml+xml"`) oraz domyślnego typu dla nieznanych rozszerzeń (`"application/octet-stream"`) .
+
+- `extFromName`: konwersja wielkich liter do małych (np. `"VOCAL.WAV"` na `".wav"`), pliki bez rozszerzenia (np. `"README"` na `".bin"`), pliki ukryte (np. `".gitignore"` na `".bin"`) oraz nazwy z wieloma kropkami (np. `"sample.v1.final.flac"` na `".flac"`) .
+- `mimeForExt`: poprawne mapowanie typów audio (np. `.mp3` $\rightarrow$ `"audio/mpeg"`, `.flac` $\rightarrow$ `"audio/flac"`), typów MusicXML (np. `.mxl` $\rightarrow$ `"application/vnd.recordare.musicxml"`, `.musicxml` $\rightarrow$ `"application/vnd.recordare.musicxml+xml"`) oraz domyślnego typu dla nieznanych rozszerzeń (`"application/octet-stream"`) .
 
 ### 3. Obsługa Limitów Multer (HTTP 413)
 
@@ -130,26 +135,26 @@ Do przetestowania integracji routera z magazynem wystarczy częściowy mock inte
 ## Moki, Fixtures i Patterny Odporności na Niestabilność Testów
 
 ### Fixtures
+
 Testy wymagają spójnych buforów danych reprezentujących minimalne prawidłowe nagłówki plików:
 
 ```typescript
 // Minimalny bufor nagłówka pliku WAV (44 bajty)
 export const MINIMAL_WAV_BYTES = new Uint8Array([
-  0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00,
-  0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
-  0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
-  0x44, 0xac, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00,
-  0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61,
-  0x00, 0x00, 0x00, 0x00
+  0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66,
+  0x6d, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x44, 0xac,
+  0x00, 0x00, 0x88, 0x58, 0x01, 0x00, 0x02, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74,
+  0x61, 0x00, 0x00, 0x00, 0x00,
 ]);
 
 // Minimalny nagłówek spakowanego pliku MusicXML (.mxl - nagłówek ZIP PK)
 export const MINIMAL_MXL_BYTES = new Uint8Array([
-  0x50, 0x4b, 0x03, 0x04, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00
+  0x50, 0x4b, 0x03, 0x04, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00,
 ]);
 ```
 
 ### Wzorzec Zapobiegania Flakiness przy Błędach Strumieniowania
+
 Testowanie zdarzeń asynchronicznych na strumieniach może prowadzić do zgłaszania nieobsłużonych barier błędów (`UnhandledPromiseRejection` lub `ERR_STREAM_PREMATURE_CLOSE`). Poniższy wzorzec wykorzystuje obiekt `PassThrough` do precyzyjnej kontroli cyklu życia strumienia:
 
 ```typescript
@@ -214,7 +219,9 @@ describe("Assets Router Pure Helpers", () => {
     });
 
     it("returns correct MIME types for MusicXML extensions", () => {
-      expect(mimeForExt(".musicxml")).toBe("application/vnd.recordare.musicxml+xml");
+      expect(mimeForExt(".musicxml")).toBe(
+        "application/vnd.recordare.musicxml+xml",
+      );
       expect(mimeForExt(".xml")).toBe("application/vnd.recordare.musicxml+xml");
       expect(mimeForExt(".mxl")).toBe("application/vnd.recordare.musicxml");
     });
@@ -265,16 +272,28 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
 
   describe("POST / - Multipart Combinations & Store Flag Integration", () => {
     it("handles Audio upload with trackId and floored positive float startTicks", async () => {
-      const addProjectAssetMock = vi.fn().mockResolvedValue({ id: "p1", assets: [], audioTracks: [], audioClips: [] });
+      const addProjectAssetMock = vi.fn().mockResolvedValue({
+        id: "p1",
+        assets: [],
+        audioTracks: [],
+        audioClips: [],
+      });
       const stores: Partial<Stores> = { addProjectAsset: addProjectAssetMock };
       const baseUrl = await listen(stores);
 
       const form = new FormData();
-      form.append("file", new Blob([MINIMAL_WAV_BYTES], { type: "audio/wav" }), "kick.wav");
+      form.append(
+        "file",
+        new Blob([MINIMAL_WAV_BYTES], { type: "audio/wav" }),
+        "kick.wav",
+      );
       form.append("trackId", "track-99");
       form.append("startTicks", "1920.85");
 
-      const res = await fetch(`${baseUrl}/api/projects/p1/assets`, { method: "POST", body: form });
+      const res = await fetch(`${baseUrl}/api/projects/p1/assets`, {
+        method: "POST",
+        body: form,
+      });
       expect(res.status).toBe(201);
       expect(addProjectAssetMock).toHaveBeenCalledOnce();
 
@@ -290,14 +309,22 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
     });
 
     it("handles MusicXML (.mxl) upload and forces createAudioClip to false", async () => {
-      const addProjectAssetMock = vi.fn().mockResolvedValue({ id: "p1", assets: [], audioTracks: [], audioClips: [] });
+      const addProjectAssetMock = vi.fn().mockResolvedValue({
+        id: "p1",
+        assets: [],
+        audioTracks: [],
+        audioClips: [],
+      });
       const stores: Partial<Stores> = { addProjectAsset: addProjectAssetMock };
       const baseUrl = await listen(stores);
 
       const form = new FormData();
       form.append("file", new Blob([MINIMAL_MXL_BYTES]), "score.mxl");
 
-      const res = await fetch(`${baseUrl}/api/projects/p1/assets`, { method: "POST", body: form });
+      const res = await fetch(`${baseUrl}/api/projects/p1/assets`, {
+        method: "POST",
+        body: form,
+      });
       expect(res.status).toBe(201);
 
       const [, assetData, , opts] = addProjectAssetMock.mock.calls[0];
@@ -309,7 +336,12 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
     });
 
     it("ignores negative startTicks and empty string trackId", async () => {
-      const addProjectAssetMock = vi.fn().mockResolvedValue({ id: "p1", assets: [], audioTracks: [], audioClips: [] });
+      const addProjectAssetMock = vi.fn().mockResolvedValue({
+        id: "p1",
+        assets: [],
+        audioTracks: [],
+        audioClips: [],
+      });
       const stores: Partial<Stores> = { addProjectAsset: addProjectAssetMock };
       const baseUrl = await listen(stores);
 
@@ -318,7 +350,10 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
       form.append("trackId", "");
       form.append("startTicks", "-960");
 
-      const res = await fetch(`${baseUrl}/api/projects/p1/assets`, { method: "POST", body: form });
+      const res = await fetch(`${baseUrl}/api/projects/p1/assets`, {
+        method: "POST",
+        body: form,
+      });
       expect(res.status).toBe(201);
 
       const [, , , opts] = addProjectAssetMock.mock.calls[0];
@@ -347,10 +382,13 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
       });
       const { port } = server.address() as AddressInfo;
 
-      const res = await fetch(`http://127.0.0.1:${port}/api/projects/p1/assets`, {
-        method: "POST",
-        body: new FormData(),
-      });
+      const res = await fetch(
+        `http://127.0.0.1:${port}/api/projects/p1/assets`,
+        {
+          method: "POST",
+          body: new FormData(),
+        },
+      );
 
       expect(res.status).toBe(413);
       const body = (await res.json()) as { ok: boolean; error: string };
@@ -364,13 +402,22 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
       const stores: Partial<Stores> = {
         getAssetFilePath: vi.fn().mockResolvedValue({
           path: "/tmp/fake.wav",
-          asset: { id: "a1", storageName: "a1.wav", originalName: "fake.wav", kind: "audio", mimeType: "audio/wav", sizeBytes: 100 },
+          asset: {
+            id: "a1",
+            storageName: "a1.wav",
+            originalName: "fake.wav",
+            kind: "audio",
+            mimeType: "audio/wav",
+            sizeBytes: 100,
+          },
         }),
       };
 
       vi.spyOn(fs, "createReadStream").mockImplementation(() => {
         const stream = new PassThrough();
-        process.nextTick(() => stream.emit("error", new Error("ENOENT: File lost")));
+        process.nextTick(() =>
+          stream.emit("error", new Error("ENOENT: File lost")),
+        );
         return stream as unknown as fs.ReadStream;
       });
 
@@ -386,7 +433,14 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
       const stores: Partial<Stores> = {
         getAssetFilePath: vi.fn().mockResolvedValue({
           path: "/tmp/fake.wav",
-          asset: { id: "a1", storageName: "a1.wav", originalName: "fake.wav", kind: "audio", mimeType: "audio/wav", sizeBytes: 100 },
+          asset: {
+            id: "a1",
+            storageName: "a1.wav",
+            originalName: "fake.wav",
+            kind: "audio",
+            mimeType: "audio/wav",
+            sizeBytes: 100,
+          },
         }),
       };
 
@@ -402,7 +456,9 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
       });
 
       const baseUrl = await listen(stores);
-      await expect(fetch(`${baseUrl}/api/projects/p1/assets/a1/file`)).rejects.toThrow();
+      await expect(
+        fetch(`${baseUrl}/api/projects/p1/assets/a1/file`),
+      ).rejects.toThrow();
     });
   });
 });
@@ -412,12 +468,13 @@ describe("createAssetsRouter — Extended Coverage Suite", () => {
 
 ## Priorytety Wdrożenia
 
-| Priorytet | Obszar Testowy | Uzasadnienie |
-| :--- | :--- | :--- |
-| **P1 (Krytyczny)** | Walidacja POST Multipart i Klasyfikacja Assetów | Zapewnia prawidłowość danych wejściowych, zaokrąglanie wartości `startTicks` oraz poprawne ustawianie flagi `createAudioClip` przy wgrywaniu plików audio i MusicXML . |
-| **P2 (Wysoki)** | Strumieniowanie Błędów Mid-Pipe i Limit Multer (HTTP 413) | Zabezpiecza serwer przed wyciekami zasobów oraz nieobsłużonymi błędami I/O po wysłaniu nagłówków odpowiedzi . |
-| **P3 (Średni)** | Testy Jednostkowe Funkcji `mimeForExt` i `extFromName` | Szybkie testy bez narzutu warstwy sieciowej HTTP, zwiększające pokrycie linii kodu . |
-| **P4 (Niski)** | Dalsza Weryfikacja List i Usuwania Assetów | Obszar w znacznym stopniu pokryty przez istniejące testy E2E i testy ścieżek błędów . |
+| Priorytet          | Obszar Testowy                                            | Uzasadnienie                                                                                                                                                           |
+| :----------------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1 (Krytyczny)** | Walidacja POST Multipart i Klasyfikacja Assetów           | Zapewnia prawidłowość danych wejściowych, zaokrąglanie wartości `startTicks` oraz poprawne ustawianie flagi `createAudioClip` przy wgrywaniu plików audio i MusicXML . |
+| **P2 (Wysoki)**    | Strumieniowanie Błędów Mid-Pipe i Limit Multer (HTTP 413) | Zabezpiecza serwer przed wyciekami zasobów oraz nieobsłużonymi błędami I/O po wysłaniu nagłówków odpowiedzi .                                                          |
+| **P3 (Średni)**    | Testy Jednostkowe Funkcji `mimeForExt` i `extFromName`    | Szybkie testy bez narzutu warstwy sieciowej HTTP, zwiększające pokrycie linii kodu .                                                                                   |
+| **P4 (Niski)**     | Dalsza Weryfikacja List i Usuwania Assetów                | Obszar w znacznym stopniu pokryty przez istniejące testy E2E i testy ścieżek błędów .                                                                                  |
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

@@ -6,7 +6,7 @@ Ocena Strategii Mobile StageSync
 
 ## Wprowadzenie i architektura strategiczna mobile
 
-Wprowadzenie etapu `5.2+` (Pocket Stage) w architekturze StageSync przyniosło przewartościowanie sposobu, w jaki system obsługuje urządzenia mobilne na scenie oraz na stanowisku realizatora Front of House (FOH) . Dokumenty architektoniczne ADR 0015 oraz ADR 0016 formalizują podział na dwa dedykowane produkty mobilne w monorepo: pasywny terminal sceniczny StageSync Performer (`apps/performer`) oraz zaawansowaną konsolę operatorską StageSync Console (`apps/console`) . 
+Wprowadzenie etapu `5.2+` (Pocket Stage) w architekturze StageSync przyniosło przewartościowanie sposobu, w jaki system obsługuje urządzenia mobilne na scenie oraz na stanowisku realizatora Front of House (FOH) . Dokumenty architektoniczne ADR 0015 oraz ADR 0016 formalizują podział na dwa dedykowane produkty mobilne w monorepo: pasywny terminal sceniczny StageSync Performer (`apps/performer`) oraz zaawansowaną konsolę operatorską StageSync Console (`apps/console`) .
 
 Podstawowym założeniem tej strategii jest odrzucenie powłok hybrydowych typu Capacitor czy Cordova traktowanych jako warstwa automatycznie rozwiązująca dostęp do natywnych interfejsów programistycznych API, na rzecz czystych powłok Kotlin WebView ładujących zoptymalizowane jednostronicowe aplikacje webowe (`apps/web`) . Aplikacje te są dystrybuowane w modelu bezpośredniego pobierania (sideloading) z wykluczeniem sklepu Google Play .
 
@@ -18,13 +18,13 @@ Krytyczna analiza pięciu filarowych decyzji architektonicznych ADR 0016 i triag
 4. **Offline-First Hybrid:** Lokalne wbudowanie zasobów w APK z jawnym dialogiem „Zastosuj nowy interfejs” przy niezgodności skrótów weryfikacyjnych UI (zakaz cichej synchronizacji mid-set) .
 5. **Restrykcje audio/MIDI:** Całkowity zakaz generowania audio, zegara MIDI oraz syntezy na tablecie Performer .
 
-| Decyzja Architektoniczna | Stan w Projekcie | Rekomendowany Status | Główne Uzasadnienie |
-| :--- | :--- | :--- | :--- |
-| **1. Performer Read-Only** | Wdrożone (`apps/performer`)  | **KEEP** | Izolacja sceniczna, ochrona transportu SSOT przed zakłóceniami . |
-| **2. Console Full Parity + Host** | Wdrożone (`apps/console`)  | **REVISE** | Parytet UI jest właściwy, ale lokalny host na Androidzie stoi w sprzeczności z multi-out . |
-| **3. Sideload APK z Hosta** | Wdrożone (`/downloads`)  | **KEEP** | Niezależność od WAN/Google Play w zamkniętych sieciach koncertowych . |
-| **4. Offline-First + Explicit Apply** | Wdrożone (`ui-manifest`)  | **KEEP** | Ochrona stabilności interfejsu podczas trwania występów . |
-| **5. Brak Audio/MIDI na Performerze** | Wdrożone (SSOT Server)  | **KEEP** | Eliminacja dryfu zegara, znikome obciążenie CPU/baterii na scenie . |
+| Decyzja Architektoniczna              | Stan w Projekcie            | Rekomendowany Status | Główne Uzasadnienie                                                                        |
+| :------------------------------------ | :-------------------------- | :------------------- | :----------------------------------------------------------------------------------------- |
+| **1. Performer Read-Only**            | Wdrożone (`apps/performer`) | **KEEP**             | Izolacja sceniczna, ochrona transportu SSOT przed zakłóceniami .                           |
+| **2. Console Full Parity + Host**     | Wdrożone (`apps/console`)   | **REVISE**           | Parytet UI jest właściwy, ale lokalny host na Androidzie stoi w sprzeczności z multi-out . |
+| **3. Sideload APK z Hosta**           | Wdrożone (`/downloads`)     | **KEEP**             | Niezależność od WAN/Google Play w zamkniętych sieciach koncertowych .                      |
+| **4. Offline-First + Explicit Apply** | Wdrożone (`ui-manifest`)    | **KEEP**             | Ochrona stabilności interfejsu podczas trwania występów .                                  |
+| **5. Brak Audio/MIDI na Performerze** | Wdrożone (SSOT Server)      | **KEEP**             | Eliminacja dryfu zegara, znikome obciążenie CPU/baterii na scenie .                        |
 
 ---
 
@@ -64,13 +64,13 @@ Z kolei aplikacje klasy GO Remotes, takie jak Mixing Station, Yamaha StageMix cz
 
 StageSync Console w założeniach ADR 0016 próbuje połączyć oba światy: pełnić funkcję bezprzewodowej konsoli sterującej (GO Remote) przy jednoczesnym posiadaniu zdolności do stania się pełnoprawnym hostem (silnikiem wykonawczym) .
 
-| Cecha / Wymiar | OnSong / forScore | GO Remotes (np. Mixing Station) | StageSync Performer | StageSync Console |
-| :--- | :--- | :--- | :--- | :--- |
-| **Główna rola** | Prompter tekstowo-nutowy | Zdalna kontrola DSP / Miksera | Pasywny terminal sceniczny  | Kontroler FOH / Opcjonalny Host  |
-| **Generowanie Audio** | Brak lub lokalny plik backing track | Brak (całość audio w racku) | **Zakaz** (audio na hoście)  | Zdalne (lub lokalne na urządzeniu)  |
-| **Zegar / Transport** | Własny lub prosty MIDI Sync | Brak (przetwarzanie w czasie rzeczywistym) | Odbiornik SSOT z serwera  | Master (przy host) / Remote Control  |
-| **Model Sieciowy** | P2P / Wi-Fi Sync | Zdalny klient UDP/TCP do IP Miksera | Klient WS do hosta StageSync  | Klient WS/HTTP / Lokalny loopback  |
-| **Wpływ awarii Wi-Fi** | Zmiana stron zatrzymana | Miks gra dalej, brak kontroli | Zamrożenie wskaźnika playhead  | Miks gra na hoście / Awaria gdy local  |
+| Cecha / Wymiar         | OnSong / forScore                   | GO Remotes (np. Mixing Station)            | StageSync Performer           | StageSync Console                     |
+| :--------------------- | :---------------------------------- | :----------------------------------------- | :---------------------------- | :------------------------------------ |
+| **Główna rola**        | Prompter tekstowo-nutowy            | Zdalna kontrola DSP / Miksera              | Pasywny terminal sceniczny    | Kontroler FOH / Opcjonalny Host       |
+| **Generowanie Audio**  | Brak lub lokalny plik backing track | Brak (całość audio w racku)                | **Zakaz** (audio na hoście)   | Zdalne (lub lokalne na urządzeniu)    |
+| **Zegar / Transport**  | Własny lub prosty MIDI Sync         | Brak (przetwarzanie w czasie rzeczywistym) | Odbiornik SSOT z serwera      | Master (przy host) / Remote Control   |
+| **Model Sieciowy**     | P2P / Wi-Fi Sync                    | Zdalny klient UDP/TCP do IP Miksera        | Klient WS do hosta StageSync  | Klient WS/HTTP / Lokalny loopback     |
+| **Wpływ awarii Wi-Fi** | Zmiana stron zatrzymana             | Miks gra dalej, brak kontroli              | Zamrożenie wskaźnika playhead | Miks gra na hoście / Awaria gdy local |
 
 ---
 
@@ -105,18 +105,19 @@ Z kolei tablet z aplikacją Console jest niezastąpiony, gdy realizator musi opu
 
 W celu usunięcia niejasności architektonicznych oraz wyeliminowania ryzyka wdrożeniowego, PO powinien przeanalizować następujące kwestie decyzyjne:
 
-1. **Zakres funkcji Hosta na Androidzie:** Czy akceptujemy oficjalne ograniczenie roli lokalnego hosta na systemie Android (Console) do funkcji trybu awaryjnego lub demonstracyjnego (praca mono/stereo), przy jednoczesnym wyznaczeniu platform macOS/Linux/Windows jako jedynych certyfikowanych środowisk dla odtwarzania wielokanałowego Multi-out (Out 3–4+)? 
-2. **Standardy łączności na stanowisku FOH:** Czy dla stanowiska Console FOH wprowadzamy oficjalną rekomendację operatorską wymagającą stosowania dedykowanych adapterów USB-to-Ethernet (połączenie kablowe LAN do tabletu) podczas realizacji imprez masowych, chroniąc łączność przed zagłuszeniem pasma Wi-Fi przez publiczność? 
-3. **Zabezpieczenie przeładowania interfejsu mid-set:** Czy dialog „Zastosuj nowy interfejs” (Offline-First Hybrid UI) ma posiadać blokadę uniemożliwiającą jego zatwierdzenie, gdy stan transportu na hoście wynosi `PLAYING`, chroniąc system przed przypadkowym wywołaniem przeładowania DOM w trakcie utworu? 
-4. **Strategia iOS dla linii Performer:** W ślad za planowanym etapem 5.3+ dla aplikacji Performer na iOS, czy podtrzymujemy decyzję o zakazie przenoszenia silnika Hosta na platformę Apple iOS (z uwagi na ograniczenia procesów w tle), utrzymując iOS wyłącznie w roli pasywnego klienta? 
+1. **Zakres funkcji Hosta na Androidzie:** Czy akceptujemy oficjalne ograniczenie roli lokalnego hosta na systemie Android (Console) do funkcji trybu awaryjnego lub demonstracyjnego (praca mono/stereo), przy jednoczesnym wyznaczeniu platform macOS/Linux/Windows jako jedynych certyfikowanych środowisk dla odtwarzania wielokanałowego Multi-out (Out 3–4+)?
+2. **Standardy łączności na stanowisku FOH:** Czy dla stanowiska Console FOH wprowadzamy oficjalną rekomendację operatorską wymagającą stosowania dedykowanych adapterów USB-to-Ethernet (połączenie kablowe LAN do tabletu) podczas realizacji imprez masowych, chroniąc łączność przed zagłuszeniem pasma Wi-Fi przez publiczność?
+3. **Zabezpieczenie przeładowania interfejsu mid-set:** Czy dialog „Zastosuj nowy interfejs” (Offline-First Hybrid UI) ma posiadać blokadę uniemożliwiającą jego zatwierdzenie, gdy stan transportu na hoście wynosi `PLAYING`, chroniąc system przed przypadkowym wywołaniem przeładowania DOM w trakcie utworu?
+4. **Strategia iOS dla linii Performer:** W ślad za planowanym etapem 5.3+ dla aplikacji Performer na iOS, czy podtrzymujemy decyzję o zakazie przenoszenia silnika Hosta na platformę Apple iOS (z uwagi na ograniczenia procesów w tle), utrzymując iOS wyłącznie w roli pasywnego klienta?
 
 ---
 
 ## Wnioski i rekomendacje strategiczne
 
-Strategia Mobile-for-Live w StageSync v5.2+ przedstawia prawidłowy podział ról w ekosystemie scenicznym, pod warunkiem zachowania dyscypliny w definicji granic sprzętowych . 
+Strategia Mobile-for-Live w StageSync v5.2+ przedstawia prawidłowy podział ról w ekosystemie scenicznym, pod warunkiem zachowania dyscypliny w definicji granic sprzętowych .
 
 Architektura StageSync Performer jako pasywnego terminala read-only — pozbawionego lokalnego audio i MIDI, opartego na zegarze SSOT z serwera i wygładzaniu rAF — stanowi rozwiązanie w pełni dostosowane do potrzeb muzyków na scenie . W przypadku StageSync Console należy wyraźnie rozdzielić parytet interfejsu użytkownika (Admin/Timeline/Client) od funkcji silnika wykonawczego . Console na Androidzie jest skutecznym narzędziem zdalnej kontroli (Remote Control), ale nie powinien być pozycjonowany jako główny węzeł audio dla konfiguracji wielokanałowych . Priorytetem dla dalszych etapów rozwoju musi pozostać dopracowanie natywnej obsługi wielokanałowej (Out 3–4+) na serwerze desktopowym i kontenerowym, przy zachowaniu sprawdzonego modelu hybrydowego Offline-First dla urządzeń mobilnych .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

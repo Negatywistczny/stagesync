@@ -12,13 +12,13 @@
 
 ## Macierz
 
-| Nr | Temat | Werdykt | Stan | Notatka |
-|----|-------|---------|------|---------|
-| 1 | Sample w `CueClip` | KEEP | `on-tree` | Brak osobnego SamplerClip |
-| 2 | MVP one-shot/gated; poly Later | KEEP / REVISE schema|UI | `on-tree` / `partial` | `polyphony` w Zod + playback; UI bez atrap |
-| 3 | Routing tylko Master\|Bus | REVISE → +`hw_out` | `confirmed` (gap) | Unia ≠ `MixerOutputDest`; gate UI przez `hwOutputUiAllowed` gdy PO otworzy |
-| 4 | Tick / next-beat / immediate | KEEP | `on-tree` | |
-| 5 | playPostStop + panic ramp | KEEP | `on-tree` | Testy playback |
+| Nr  | Temat                          | Werdykt              | Stan              | Notatka                                                                    |
+| --- | ------------------------------ | -------------------- | ----------------- | -------------------------------------------------------------------------- |
+| 1   | Sample w `CueClip`             | KEEP                 | `on-tree`         | Brak osobnego SamplerClip                                                  |
+| 2   | MVP one-shot/gated; poly Later | KEEP / REVISE schema | UI                | `on-tree` / `partial`                                                      | `polyphony` w Zod + playback; UI bez atrap |
+| 3   | Routing tylko Master\|Bus      | REVISE → +`hw_out`   | `confirmed` (gap) | Unia ≠ `MixerOutputDest`; gate UI przez `hwOutputUiAllowed` gdy PO otworzy |
+| 4   | Tick / next-beat / immediate   | KEEP                 | `on-tree`         |                                                                            |
+| 5   | playPostStop + panic ramp      | KEEP                 | `on-tree`         | Testy playback                                                             |
 
 ## Confirmed vs hypothesis
 

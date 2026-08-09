@@ -12,21 +12,21 @@
 
 ## Rozstrzygnięte w tej fali
 
-| ID | Temat | Stan | Dowód / fix |
-|----|--------|------|-------------|
-| RSK-MIDI-06 | `backend.send` w clock bez catch → crash USB | `fixed` | `safeSend` + stop clock OUT; test throw |
-| RSK-MIDI-03 | Clock z `setInterval` vs SSOT | `fixed` | Clock z delty ticków transportu (`ticksToMidiClockIndex`) |
-| RSK-MIDI-01 | `inFlight` drop PC IN | `fixed` | Latest-wins `pending` + `pump` |
-| RSK-MIDI-02 | `inFlight` drop PC OUT | `fixed` | Latest-wins w `wireMidiProgramChangeOut` |
-| RSK-MIDI-08 | SPP seek poza koniec projektu | `fixed` | `clampSeekTicks` + cache end w [`app.ts`](../../../../apps/server/src/app.ts) |
-| RSK-MIDI-09 | mock vs native error parity | `fixed` | `safeSend` + mock `throwOnSend` |
-| RSK-MIDI-10 | Podwójne `onChange` po `setConfig` | `rejected` | Jedna subskrypcja przy create; test |
-| RSK-MIDI-07 | Debounce flood PC+SPP IN | `fixed` | Debounce **50 ms + latest-wins**; bez Hz-limitera; flood-test w [`host.test.ts`](../../../../apps/server/src/midi/host.test.ts) |
-| RSK-MIDI-04 / 05 | Omni IN + hardkod OUT ch 0 | `fixed` | `inputChannel` / `outputChannel` w schema + host + Admin Host UI |
+| ID               | Temat                                        | Stan       | Dowód / fix                                                                                                                     |
+| ---------------- | -------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| RSK-MIDI-06      | `backend.send` w clock bez catch → crash USB | `fixed`    | `safeSend` + stop clock OUT; test throw                                                                                         |
+| RSK-MIDI-03      | Clock z `setInterval` vs SSOT                | `fixed`    | Clock z delty ticków transportu (`ticksToMidiClockIndex`)                                                                       |
+| RSK-MIDI-01      | `inFlight` drop PC IN                        | `fixed`    | Latest-wins `pending` + `pump`                                                                                                  |
+| RSK-MIDI-02      | `inFlight` drop PC OUT                       | `fixed`    | Latest-wins w `wireMidiProgramChangeOut`                                                                                        |
+| RSK-MIDI-08      | SPP seek poza koniec projektu                | `fixed`    | `clampSeekTicks` + cache end w [`app.ts`](../../../../apps/server/src/app.ts)                                                   |
+| RSK-MIDI-09      | mock vs native error parity                  | `fixed`    | `safeSend` + mock `throwOnSend`                                                                                                 |
+| RSK-MIDI-10      | Podwójne `onChange` po `setConfig`           | `rejected` | Jedna subskrypcja przy create; test                                                                                             |
+| RSK-MIDI-07      | Debounce flood PC+SPP IN                     | `fixed`    | Debounce **50 ms + latest-wins**; bez Hz-limitera; flood-test w [`host.test.ts`](../../../../apps/server/src/midi/host.test.ts) |
+| RSK-MIDI-04 / 05 | Omni IN + hardkod OUT ch 0                   | `fixed`    | `inputChannel` / `outputChannel` w schema + host + Admin Host UI                                                                |
 
 ## Otwarte / hipotezy z dumpu
 
-*(brak)*
+_(brak)_
 
 ## Kontekst konstytucji
 

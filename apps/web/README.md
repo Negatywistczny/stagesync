@@ -21,7 +21,7 @@ Aplikacja `apps/web` to główny projekt kliencki zrealizowany w technologii **R
    - Sterowanie odtwarzaczem, lokatorami, pętlami oraz zarządzanie biblioteką utworów i setlistą.
 2. **Ekrany Klienta (`/client`):**
    - Synchroniczne renderowanie cyfrowych partytur (OSMD), siatek akordów, tekstów piosenek (karaoke) oraz sekcji tapowania dla wokalistów/perkusistów.
-   - Płynne przesuwanie wskaźnika pozycji (*playhead*) wyłącznie na podstawie informacji synchronizacyjnych przesyłanych przez serwer (wygładzanie pomiędzy tickami, brak własnego zegara).
+   - Płynne przesuwanie wskaźnika pozycji (_playhead_) wyłącznie na podstawie informacji synchronizacyjnych przesyłanych przez serwer (wygładzanie pomiędzy tickami, brak własnego zegara).
 
 ## 🎨 Standardy i Wytyczne
 

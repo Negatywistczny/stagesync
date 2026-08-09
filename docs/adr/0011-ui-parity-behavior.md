@@ -12,8 +12,8 @@ v5 alpha zebrała:
 1. **Inventarz-first** — odhaczanie kontrolek v4 (`disabled` OK) zamiast przywracania
    **gestów i workflow**.
 2. **Clone chrome** — pasek narzędzi / ikony „jak w v4” przy twardych regułach DS
-   (tokeny, `Button`, zakaz gotowców) → wizualny potworek: *mniej spójny przez
-   próby dopasowania*.
+   (tokeny, `Button`, zakaz gotowców) → wizualny potworek: _mniej spójny przez
+   próby dopasowania_.
 3. **Admin IA** — zbyt duże ekrany; Setlista „dodaj zaznaczone” bez zaznaczania na
    tym samym ekranie.
 4. **Client regres** — dopracowany nagłówek, główne widoki ról = suchy tekst /
@@ -30,11 +30,11 @@ Referencja zachowania: `STAGESYNC-APP-LEGACY`
 
 ### 1. Parity = zachowanie, nie lista ikon
 
-| Dozwolone | Zakazane |
-|-----------|----------|
-| Mapować **gesty** v4 → v5 (pencil, drag map, scrub, grid akordów…) | Odhaczać „jest przycisk” bez smoke PO |
-| Jawne OUT z uzasadnieniem | Twierdzić „engineering ready” bez green PO smoke |
-| Referencja kodu legacy jako **spec zachowania** | Kopiować markup / CSS / pasek ikon 1:1 z 4.x |
+| Dozwolone                                                          | Zakazane                                         |
+| ------------------------------------------------------------------ | ------------------------------------------------ |
+| Mapować **gesty** v4 → v5 (pencil, drag map, scrub, grid akordów…) | Odhaczać „jest przycisk” bez smoke PO            |
+| Jawne OUT z uzasadnieniem                                          | Twierdzić „engineering ready” bez green PO smoke |
+| Referencja kodu legacy jako **spec zachowania**                    | Kopiować markup / CSS / pasek ikon 1:1 z 4.x     |
 
 **Done** funkcji Timeline = PO może wykonać ten sam workflow co w 4.x
 (w granicach jawnego OUT), nie „kod wired / partial”.
@@ -85,7 +85,7 @@ Decyzja produktowa (PO):
 
 - Przy PR UI: **najpierw** „czy gest działa jak v4 (smoke)?”, **potem** tokeny /
   gęstość, **na końcu** inventarz.
-- Zakaz zamykania zadania słowami: *wired*, *partial*, *parity done* bez
+- Zakaz zamykania zadania słowami: _wired_, _partial_, _parity done_ bez
   ścieżki smoke PO.
 - „Bliżej v4” = **feel + workflow**, nigdy = „te same przyciski”.
 - **Zakaz disabled-for-inventory:** nie wstawiać `disabled` kontrolek w
@@ -99,11 +99,11 @@ Decyzja produktowa (PO):
 (kolory, affordances, collapsowanie dwóch sygnałów v4 w jeden, rename chrome)
 bez uzasadnienia.
 
-| Wymagane | Zakazane |
-|----------|----------|
-| Uzasadnienie: referencja zachowania v4 **lub** jawna prośba PO | „Bo black/amber / minimalizm / spójność DS” bez pytania |
-| Zostaw jak jest / zapytaj przy wątpliwości | Ciche „ulepszenia” wskaźników (np. playhead → `primary`) |
-| Minimalizm CTA (`primary`/`selected`) | Scalanie **odrębnych** sygnałów operacyjnych (locator ≠ playhead) |
+| Wymagane                                                       | Zakazane                                                          |
+| -------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Uzasadnienie: referencja zachowania v4 **lub** jawna prośba PO | „Bo black/amber / minimalizm / spójność DS” bez pytania           |
+| Zostaw jak jest / zapytaj przy wątpliwości                     | Ciche „ulepszenia” wskaźników (np. playhead → `primary`)          |
+| Minimalizm CTA (`primary`/`selected`)                          | Scalanie **odrębnych** sygnałów operacyjnych (locator ≠ playhead) |
 
 Revert koloru playhead/locator — **tylko** po potwierdzeniu PO (stan obecny może
 być regresją względem v4; nie cofaj automatycznie w tej samej sesji bez prośby).

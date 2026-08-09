@@ -4,25 +4,25 @@ Operator sketch for Android APK install and PWA. Product names: **Performer** / 
 
 ## Performer vs Console
 
-| | **StageSync Performer** | **StageSync Console** |
-|---|-------------------------|------------------------|
-| Rola | Pasywny klient sceniczny (Grid / Karaoke / Score / Drums) | Pełnoprawny odpowiednik desktopu na Androidzie |
-| Po połączeniu | WebView → `/client` | WebView → `/admin` (pełne SPA: Admin + Timeline + Client) |
-| Lokalny host | **Zakaz** (zawsze thin) | **Uruchom lokalny host** startuje Node na urządzeniu (`127.0.0.1:4000`); LAN nadal dostępne |
-| Audio / MIDI w procesie | **Zakaz** | SSOT na hoście (LAN albo lokalny, gdy silnik w APK działa) |
-| Katalog | `apps/performer` | `apps/console` |
+|                         | **StageSync Performer**                                   | **StageSync Console**                                                                       |
+| ----------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Rola                    | Pasywny klient sceniczny (Grid / Karaoke / Score / Drums) | Pełnoprawny odpowiednik desktopu na Androidzie                                              |
+| Po połączeniu           | WebView → `/client`                                       | WebView → `/admin` (pełne SPA: Admin + Timeline + Client)                                   |
+| Lokalny host            | **Zakaz** (zawsze thin)                                   | **Uruchom lokalny host** startuje Node na urządzeniu (`127.0.0.1:4000`); LAN nadal dostępne |
+| Audio / MIDI w procesie | **Zakaz**                                                 | SSOT na hoście (LAN albo lokalny, gdy silnik w APK działa)                                  |
+| Katalog                 | `apps/performer`                                          | `apps/console`                                                                              |
 
 Performer pozostaje read-only Client-only ([ADR 0016](../adr/0016-android-performer-console.md)).
 
 ## Nawigacja operatora (OperatorNav)
 
-| Powierzchnia | Pasek L1 (Admin / Timeline / Klient) |
-|--------------|--------------------------------------|
-| **Console** (APK + przeglądarka LAN) | **Tak** — Admin/Timeline (≤640px OperatorNav; szerzej chipy); na `/client` zawsze |
-| **Performer** | **Nie** — tylko widok muzyka (`/client`) |
-| **PWA / Safari `/client`** (muzyk) | **Nie** (bez sesji operatora) |
-| **Web LAN** (po Admin/Timeline) | **Tak** na `/client` — telefon: OperatorNav; tablet/desktop: chipy Admin/Timeline |
-| **Desktop Tauri** | **Tak** na `/client` — pełny L1 + Admin/Timeline (HTML menubar Win/Linux albo natywny macOS — osobno; bez fullscreen w chrome) |
+| Powierzchnia                         | Pasek L1 (Admin / Timeline / Klient)                                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Console** (APK + przeglądarka LAN) | **Tak** — Admin/Timeline (≤640px OperatorNav; szerzej chipy); na `/client` zawsze                                              |
+| **Performer**                        | **Nie** — tylko widok muzyka (`/client`)                                                                                       |
+| **PWA / Safari `/client`** (muzyk)   | **Nie** (bez sesji operatora)                                                                                                  |
+| **Web LAN** (po Admin/Timeline)      | **Tak** na `/client` — telefon: OperatorNav; tablet/desktop: chipy Admin/Timeline                                              |
+| **Desktop Tauri**                    | **Tak** na `/client` — pełny L1 + Admin/Timeline (HTML menubar Win/Linux albo natywny macOS — osobno; bez fullscreen w chrome) |
 
 Skróty klawiaturowe (gdy podłączona klawiatura): `Ctrl/⌘+1…3` (aplikacje), `Alt+1…4` (zakładki Admina). Desktop: menu OS (macOS) albo HTML menubar (Windows/Linux) — patrz [DESKTOP.md](./DESKTOP.md).
 
@@ -72,11 +72,11 @@ Bez SDK skrypt wychodzi 0 (skip) — CI Node bez Androida nie pada.
 
 W Admin → Host → **Połączenie & Sieć** (lewa kolumna u góry; kafelki Performer / Console obok siebie pod QR i adresami LAN / mDNS):
 
-| QR / link | Cel |
-|-----------|-----|
-| **Dołącz do hosta** | URL LAN (np. `http://192.168.x.x:4000`) — live skan w launcherze Performer/Console (kamera + wklejenie) / przeglądarka |
-| **Pobierz Performer** | `{origin}/downloads/stagesync-performer.apk` |
-| **Pobierz Console** | `{origin}/downloads/stagesync-console.apk` |
+| QR / link             | Cel                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Dołącz do hosta**   | URL LAN (np. `http://192.168.x.x:4000`) — live skan w launcherze Performer/Console (kamera + wklejenie) / przeglądarka |
+| **Pobierz Performer** | `{origin}/downloads/stagesync-performer.apk`                                                                           |
+| **Pobierz Console**   | `{origin}/downloads/stagesync-console.apk`                                                                             |
 
 W launcherze Android (**Skanuj kod QR**): żywy podgląd CameraX + ML Kit odczytuje kod „Dołącz”; przy braku kamery / uprawnień — wklejenie adresu.
 
@@ -105,6 +105,7 @@ Lokalny host zapisuje stderr/stdout Node do `filesDir/local-host-node.log` oraz 
 3. **Po połączeniu z hostem:** porównanie `versionName` z `GET /api/health`. Gdy host jest **nowszy** **oraz** APK leży pod `/downloads/stagesync-*.apk`, dialog z hosta; jeśli host nie oferuje APK — fallback do Releases jak w (1).
 
 **Źródła URL (allowlista):** powłoka pobiera APK wyłącznie z
+
 - hosta sesji: `{origin}/downloads/stagesync-console.apk` albo `…/stagesync-performer.apk`, albo
 - HTTPS GitHub Releases StageSync (`github.com/Negatywistczny/stagesync/…` oraz CDN `objects.githubusercontent.com` / `release-assets.githubusercontent.com`).
 
@@ -150,6 +151,7 @@ Model lokalny + synchronizacja UI **bez** cichej instalacji APK:
 `apps/web` wystawia manifest (`display: standalone`) + Service Worker (warstwa A). Na telefonie: Chrome → „Dodaj do ekranu głównego”; Safari (iOS) → Udostępnij → „Do ekranu początkowego” (pełny ekran, status bar `black-translucent`, `viewport-fit=cover`). Wake Lock API w przeglądarce (+ cichy fallback wideo gdy API niedostępne) oraz `FLAG_KEEP_SCREEN_ON` w APK (dual wake-lock). Po uśpieniu Safari Client wznawia WebSocket od razu po powrocie do karty. Gestami: `overscroll-behavior-y: none` i `touch-action: manipulation` na shellu Client.
 
 **iOS:** brak natywnego APK / App Store Performer — jedyna ścieżka to **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809), [#674](https://github.com/Negatywistczny/stagesync/issues/674)). Natywne powłoki Performer/Console = **tylko Android** ([ADR 0016](../adr/0016-android-performer-console.md)).
+
 ## H-01 (perf Client) — sonda
 
 Opt-in sonda w Client (PWA / Performer WebView):
@@ -164,21 +166,21 @@ Wyłączenie: usuń query / `localStorage.removeItem('stagesync_perf_h01')` i pr
 
 Kryteria **Performer**:
 
-| ID | Kryterium |
-|----|-----------|
-| P-HW1 | Playhead stabilny przy latency sieci do ~150 ms |
-| P-HW2 | Ekran bez uśpienia ≥ 4 h w widoku roli |
-| P-HW3 | Re-connect poniżej ~1,5 s po odzyskaniu Wi‑Fi |
+| ID    | Kryterium                                                        |
+| ----- | ---------------------------------------------------------------- |
+| P-HW1 | Playhead stabilny przy latency sieci do ~150 ms                  |
+| P-HW2 | Ekran bez uśpienia ≥ 4 h w widoku roli                           |
+| P-HW3 | Re-connect poniżej ~1,5 s po odzyskaniu Wi‑Fi                    |
 | P-HW4 | Zmiana stroju/transpozycji widoczna poniżej ~200 ms (Grid/Score) |
 
 Kryteria **Console** (nie mylić z pasywnym Performerem):
 
-| ID | Kryterium |
-|----|-----------|
-| C-HW1 | Launcher → health → `/admin` na tablecie LAN |
-| C-HW2 | Admin / Timeline / Client czytelne i używalne na tablecie (pełne SPA) |
+| ID    | Kryterium                                                                                                      |
+| ----- | -------------------------------------------------------------------------------------------------------------- |
+| C-HW1 | Launcher → health → `/admin` na tablecie LAN                                                                   |
+| C-HW2 | Admin / Timeline / Client czytelne i używalne na tablecie (pełne SPA)                                          |
 | C-HW3 | „Uruchom lokalny host” → `/api/health` na `127.0.0.1:4000` → Admin; przy uszkodzonym buildzie — uczciwy status |
-| C-HW4 | Telefon (≤768): Timeline = podgląd / transport (bez Inspectora i chrome edycji); Admin czytelny |
+| C-HW4 | Telefon (≤768): Timeline = podgląd / transport (bez Inspectora i chrome edycji); Admin czytelny                |
 
 ## Lokalny host na Console
 

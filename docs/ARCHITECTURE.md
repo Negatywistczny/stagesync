@@ -2,36 +2,36 @@
 
 ## Mapa dokumentacji (jedno źródło prawdy)
 
-| Plik | Tylko to | Nie tu |
-|------|----------|--------|
-| [README](./README.md) | Uruchomienie | Historia, backlog, pełne reguły |
-| [CHANGELOG](../CHANGELOG.md) | Historia wydań | Przyszłe zadania |
-| [TODO](./TODO.md) | Checklista residual / następnego etapu (po `5.4.x` → 5.5+) | Odhaczone / historia wydań |
-| [ROADMAP](./ROADMAP.md) | Etapy wydania (α → β → 5.0 → … → 5.5 → 6.0 → …) | Bieżąca checklista (→ TODO) |
-| [docs/ui/README.md](./ui/README.md) | Design system (kolory, typografia, spacing, Button) | Implementacja w `packages/ui` |
-| [ui-shell-inventory](./ui/ui-shell-inventory.md) | Checklista wtórna kontrolek shelli (po geście) | Aktywny backlog (→ TODO); claim Done bez PO smoke |
-| [docs/api/README.md](./api/README.md) | Kontrakt REST / WS (krótko) | OpenAPI / pełne TSDoc |
-| [INSTALL](./guides/INSTALL.md) / [DESKTOP](./guides/DESKTOP.md) / [MOBILE](./guides/MOBILE.md) / [MIGRATION](./guides/MIGRATION.md) | Podręczniki operatorskie | Implementacja w `apps/*` |
-| [docs/analysis/README.md](./analysis/README.md) | `reports/{current,milestones,hygiene}/` + `inspiracje/` + `working/` | Scratch / inspiracje jako SSOT lub claim Done |
-| [STANDARDS](./STANDARDS.md) | Linki do speców zewnętrznych | Treść tych speców |
-| [CONTRIBUTING](../.github/CONTRIBUTING.md) | Język docs + workflow commitów | SemVer / release (→ versioning) |
-| [SECURITY](../.github/SECURITY.md) | Zgłoszenia bezpieczeństwa | Treść ADR / backlog |
-| [docs/adr/README.md](./adr/README.md) | Decyzje z kontekstem i konsekwencjami (indeks) | Checklisty zadań |
-| [ADR 0013](./adr/0013-in-app-vs-github-docs.md) | In-app help vs dokumentacja GitHub / bundle | Treść tutoriali w `.dmg` |
-| `.cursor/rules/` | Reguły egzekwowane przez agenta | Długie tutoriale |
+| Plik                                                                                                                                | Tylko to                                                             | Nie tu                                            |
+| ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------- |
+| [README](./README.md)                                                                                                               | Uruchomienie                                                         | Historia, backlog, pełne reguły                   |
+| [CHANGELOG](../CHANGELOG.md)                                                                                                        | Historia wydań                                                       | Przyszłe zadania                                  |
+| [TODO](./TODO.md)                                                                                                                   | Checklista residual / następnego etapu (po `5.4.x` → 5.5+)           | Odhaczone / historia wydań                        |
+| [ROADMAP](./ROADMAP.md)                                                                                                             | Etapy wydania (α → β → 5.0 → … → 5.5 → 6.0 → …)                      | Bieżąca checklista (→ TODO)                       |
+| [docs/ui/README.md](./ui/README.md)                                                                                                 | Design system (kolory, typografia, spacing, Button)                  | Implementacja w `packages/ui`                     |
+| [ui-shell-inventory](./ui/ui-shell-inventory.md)                                                                                    | Checklista wtórna kontrolek shelli (po geście)                       | Aktywny backlog (→ TODO); claim Done bez PO smoke |
+| [docs/api/README.md](./api/README.md)                                                                                               | Kontrakt REST / WS (krótko)                                          | OpenAPI / pełne TSDoc                             |
+| [INSTALL](./guides/INSTALL.md) / [DESKTOP](./guides/DESKTOP.md) / [MOBILE](./guides/MOBILE.md) / [MIGRATION](./guides/MIGRATION.md) | Podręczniki operatorskie                                             | Implementacja w `apps/*`                          |
+| [docs/analysis/README.md](./analysis/README.md)                                                                                     | `reports/{current,milestones,hygiene}/` + `inspiracje/` + `working/` | Scratch / inspiracje jako SSOT lub claim Done     |
+| [STANDARDS](./STANDARDS.md)                                                                                                         | Linki do speców zewnętrznych                                         | Treść tych speców                                 |
+| [CONTRIBUTING](../.github/CONTRIBUTING.md)                                                                                          | Język docs + workflow commitów                                       | SemVer / release (→ versioning)                   |
+| [SECURITY](../.github/SECURITY.md)                                                                                                  | Zgłoszenia bezpieczeństwa                                            | Treść ADR / backlog                               |
+| [docs/adr/README.md](./adr/README.md)                                                                                               | Decyzje z kontekstem i konsekwencjami (indeks)                       | Checklisty zadań                                  |
+| [ADR 0013](./adr/0013-in-app-vs-github-docs.md)                                                                                     | In-app help vs dokumentacja GitHub / bundle                          | Treść tutoriali w `.dmg`                          |
+| `.cursor/rules/`                                                                                                                    | Reguły egzekwowane przez agenta                                      | Długie tutoriale                                  |
 
 ## Monorepo
 
-| Paczka / app | Stack | Odpowiedzialność |
-|--------------|-------|------------------|
-| `apps/server` | Express (Node 22, `.nvmrc`) | API, persystencja, transport SSOT |
-| `apps/web` | Vite + React | UI; playhead tylko między tickami serwera |
-| `apps/desktop` | Tauri + Node sidecar | Shell desktop + Launcher ([ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md)) |
-| `apps/performer` | Kotlin WebView | StageSync Performer → `/client` ([ADR 0016](./adr/0016-android-performer-console.md)) |
-| `apps/console` | Kotlin WebView | StageSync Console → pełne SPA (Admin+Timeline+Client); lokalny host = Faza 4 IN |
-| `packages/shared` | TypeScript + Zod | Czyste schematy i czas |
-| `packages/ui` | React | Design system (`Button`, `--ss-*`) |
-| `data/` | JSON / katalogi | Biblioteka, `projects/<id>/`, logi, `downloads/` (APK sideload) |
+| Paczka / app      | Stack                       | Odpowiedzialność                                                                                                     |
+| ----------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `apps/server`     | Express (Node 22, `.nvmrc`) | API, persystencja, transport SSOT                                                                                    |
+| `apps/web`        | Vite + React                | UI; playhead tylko między tickami serwera                                                                            |
+| `apps/desktop`    | Tauri + Node sidecar        | Shell desktop + Launcher ([ADR 0010](./adr/0010-desktop-shell-tauri.md), [ADR 0014](./adr/0014-desktop-launcher.md)) |
+| `apps/performer`  | Kotlin WebView              | StageSync Performer → `/client` ([ADR 0016](./adr/0016-android-performer-console.md))                                |
+| `apps/console`    | Kotlin WebView              | StageSync Console → pełne SPA (Admin+Timeline+Client); lokalny host = Faza 4 IN                                      |
+| `packages/shared` | TypeScript + Zod            | Czyste schematy i czas                                                                                               |
+| `packages/ui`     | React                       | Design system (`Button`, `--ss-*`)                                                                                   |
+| `data/`           | JSON / katalogi             | Biblioteka, `projects/<id>/`, logi, `downloads/` (APK sideload)                                                      |
 
 Szczegóły granic i zakazów: [konstytucja](../.cursor/rules/constitution.mdc).
 

@@ -6,24 +6,25 @@ Audyt Silnika AudioLaneEdit
 
 # Audyt i analiza podatności silnika DAW audioLaneEdit.ts
 
-Niniejszy raport przedstawia rygorystyczną analizę techniczną i audyt bezpieczeństwa silnika edycji ścieżek audio na osi czasu (Timeline DAW) zaimplementowanego w module [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) . Choć wszystkie bazowe testy jednostkowe w [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) przechodzą pomyślnie , drobiazgowa weryfikacja kodu ujawniła krytyczne wady w matematyce konwersji jednostek czasu, anomalie w obsłudze gestów interfejsu użytkownika, a także błędy logiczne wywołujące nagłe awarie aplikacji (runtime crashes). 
+Niniejszy raport przedstawia rygorystyczną analizę techniczną i audyt bezpieczeństwa silnika edycji ścieżek audio na osi czasu (Timeline DAW) zaimplementowanego w module [`audioLaneEdit.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.ts) . Choć wszystkie bazowe testy jednostkowe w [`audioLaneEdit.test.ts`](../../../../apps/web/src/lib/audio/audioLaneEdit.test.ts) przechodzą pomyślnie , drobiazgowa weryfikacja kodu ujawniła krytyczne wady w matematyce konwersji jednostek czasu, anomalie w obsłudze gestów interfejsu użytkownika, a także błędy logiczne wywołujące nagłe awarie aplikacji (runtime crashes).
 
 Poniższa tabela przedstawia skonsolidowany wykaz zidentyfikowanych podatności, precyzując mechanizm ich powstawania oraz bezpośredni wpływ na stabilność środowiska uruchomieniowego.
 
-| Identyfikator błędu | Kategoria | Funkcja wyzwalająca | Bezpośrednia przyczyna techniczna | Skutek systemowy |
-| :--- | :--- | :--- | :--- | :--- |
-| **BUG-01** | Matematyczna | `splitAudioClipAt` / `clampAudioClipToAsset` | Utrata precyzji w arytmetyce zmiennoprzecinkowej IEEE 754 przy przejściu ticks $\to$ ms $\to$ ticks . | Powstanie mikroluk (1 tick), uniemożliwienie ponownego scalenia klipów narzędziem "Join" . |
-| **BUG-02** | Architektoniczna | `splitAudioClipAt` | Brak uwzględnienia nieliniowości mapy tempa (`tempoMap`) podczas podziału . | Przesunięcie fazowe odtwarzanego strumienia audio (audialny "skok" dźwięku wstecz lub w przód) . |
-| **BUG-03** | Krytyczny Crash | `commitResizeAudioClip` | Próba pobrania nieistniejącego ziarna klipu (`seedById`) po podziale wywołanym kolizją wsteczną . | Zgłoszenie nieobsługiwanego wyjątku i całkowite zawieszenie wątku renderowania interfejsu . |
-| **BUG-04** | Integralność danych | `gainDbFromPointerDelta` | Brak walidacji wartości specjalnych `NaN` przychodzących ze zdarzeń wskaźnika . | Trwałe uszkodzenie bazy danych projektu (wartość `NaN` w JSON), awaria kalkulacji wzmocnienia DSP . |
-| **BUG-05** | Spójność logiczna | `commitMoveAudioClips` | Wykluczenie klipu wiodącego (`primaryId`) z tablicy przesuwanych klipów pobocznych . | Blokada ruchu klipu pod kursorom, przy jednoczesnym przemieszczeniu pozostałych elementów zaznaczenia . |
-| **BUG-06** | Wyciek pamięci | `removeAudioTrack` / `removeAudioBus` | Brak kaskadowego czyszczenia mapy widoczności ścieżek oraz obiektów automatyzacji i efektów . | Osierocenie kluczy w bazie danych, niepotrzebna alokacja pamięci i potencjalne błędy odczytu referencji. |
+| Identyfikator błędu | Kategoria           | Funkcja wyzwalająca                          | Bezpośrednia przyczyna techniczna                                                                     | Skutek systemowy                                                                                         |
+| :------------------ | :------------------ | :------------------------------------------- | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| **BUG-01**          | Matematyczna        | `splitAudioClipAt` / `clampAudioClipToAsset` | Utrata precyzji w arytmetyce zmiennoprzecinkowej IEEE 754 przy przejściu ticks $\to$ ms $\to$ ticks . | Powstanie mikroluk (1 tick), uniemożliwienie ponownego scalenia klipów narzędziem "Join" .               |
+| **BUG-02**          | Architektoniczna    | `splitAudioClipAt`                           | Brak uwzględnienia nieliniowości mapy tempa (`tempoMap`) podczas podziału .                           | Przesunięcie fazowe odtwarzanego strumienia audio (audialny "skok" dźwięku wstecz lub w przód) .         |
+| **BUG-03**          | Krytyczny Crash     | `commitResizeAudioClip`                      | Próba pobrania nieistniejącego ziarna klipu (`seedById`) po podziale wywołanym kolizją wsteczną .     | Zgłoszenie nieobsługiwanego wyjątku i całkowite zawieszenie wątku renderowania interfejsu .              |
+| **BUG-04**          | Integralność danych | `gainDbFromPointerDelta`                     | Brak walidacji wartości specjalnych `NaN` przychodzących ze zdarzeń wskaźnika .                       | Trwałe uszkodzenie bazy danych projektu (wartość `NaN` w JSON), awaria kalkulacji wzmocnienia DSP .      |
+| **BUG-05**          | Spójność logiczna   | `commitMoveAudioClips`                       | Wykluczenie klipu wiodącego (`primaryId`) z tablicy przesuwanych klipów pobocznych .                  | Blokada ruchu klipu pod kursorom, przy jednoczesnym przemieszczeniu pozostałych elementów zaznaczenia .  |
+| **BUG-06**          | Wyciek pamięci      | `removeAudioTrack` / `removeAudioBus`        | Brak kaskadowego czyszczenia mapy widoczności ścieżek oraz obiektów automatyzacji i efektów .         | Osierocenie kluczy w bazie danych, niepotrzebna alokacja pamięci i potencjalne błędy odczytu referencji. |
 
 ---
 
 ## Matematyka osi czasu i anomalie konwersji
 
 ### Interakcja skrajnych wartości PPQ oraz BPM
+
 Aplikacja StageSync opiera się na konwersji czasu rzeczywistego (milisekundy) na pozycję muzyczną (ticki) przy użyciu stałej rozdzielczości PPQ (Pulses Per Quarter-note) . Zależność tę opisuje funkcja `ticksPerMs` :
 
 $\text{ticksPerMs} = \frac{\text{localTicksPerBeat}(\text{ts}, \text{ppq})}{\frac{60000}{\text{bpm}}}$
@@ -32,7 +33,7 @@ Wprowadzenie skrajnych wartości parametrów wejściowych obnaża brak rygorysty
 
 $\text{Number.MAX_SAFE_INTEGER} = 2^{53} - 1 \approx 9.007 \times 10^{15}$
 
-W konsekwencji, operacja `elapsedToTicks` zwraca wartości obarczone błędem aproksymacji . 
+W konsekwencji, operacja `elapsedToTicks` zwraca wartości obarczone błędem aproksymacji .
 
 Odwrotna anomalia występuje przy skrajnie niskich wartościach tempa (np. $BPM = 0.0001$). Wtedy `ticksPerMs` dąży do zera, a operacja `ticksToMs` wykonuje dzielenie przez skrajnie małą liczbę zmiennoprzecinkową :
 
@@ -49,6 +50,7 @@ $\text{if } (\text{placed.lengthTicks} < 1 \text{ |
 Pominięcie to uniemożliwia automatyczne usunięcie pustego klipu z osi czasu, pozostawiając niewidoczny, uszkodzony obiekt w strukturze danych projektu.
 
 ### Błąd utraty precyzji w splitAudioClipAt i joinAdjacentAudioClips
+
 Podczas dzielenia klipu za pomocą `splitAudioClipAt` , punkt podziału wyrażony w tickach (`atTicks`) jest przekształcany na milisekundy w celu wyznaczenia granic trimowania plików źródłowych . Prześledźmy przypadek, w którym tempo utworu wynosi $113.123$ BPM, a rozdzielczość PPQ to $960$ . Chcemy dokonać podziału na $117$ ticku :
 
 $\text{intoMs} = \text{ticksToMs}(117, 113.123, 4/4, 960) \approx 64.64202682036367\text{ ms}$
@@ -74,6 +76,7 @@ $\text{if } (\text{Math.abs}(\text{leftTrimIn} + \text{leftPlayable} - \text{rig
 jest podatny na błędy akumulacji zmiennoprzecinkowej. Wystarczy drobne przesunięcie fazowe spowodowane zaokrągleniami, by różnica przekroczyła próg $1.5\text{ ms}$ , co zablokuje możliwość scalenia ścieżek nawet wtedy, gdy na osi czasu klipy stykają się idealnie .
 
 ### Wpływ nieliniowości mapy tempa na precyzję podziału
+
 Funkcja `splitAudioClipAt` pobiera kontekst tempa wyłącznie z punktu startowego dzielonego klipu (`tempoCtxAt(project, clip.startTicks)`) . Oznacza to, że silnik zakłada całkowicie liniowe tempo na całym obszarze zajmowanym przez klip . W profesjonalnych środowiskach DAW, gdzie powszechnie stosuje się mapowanie zmian tempa (`tempoMap`) , podejście to wywołuje poważne zaburzenia synchronizacji .
 
 Rozważmy klip rozpoczynający się na pozycji $0$ ticków przy tempie $120$ BPM, podczas gdy na pozycji $4800$ ticków tempo ulega zmianie na $60$ BPM . Całkowita długość klipu wynosi $9600$ ticków . Dokonujemy podziału w punkcie $7200$ ticków . Rzeczywisty czas, jaki upłynął od początku klipu do punktu podziału, uwzględniający nieliniową mapę tempa, wynosi :
@@ -91,6 +94,7 @@ W efekcie, prawy klip otrzymuje parametr `trimInMs` ustawiony na $3750\text{ ms}
 ## Analiza anomalii gestów i mutacji stanów
 
 ### Podatność na awarie czasu wykonania w commitResizeAudioClip
+
 Krytyczny błąd architektury ujawnia się podczas wydłużania klipu w lewo lub w prawo, gdy na jego drodze znajduje się inny klip . Algorytm `commitResizeAudioClip` wyznacza nowy kształt zmienianego obiektu, po czym buduje mapę referencyjną `byId` na podstawie aktualnego stanu ścieżki :
 
 ```typescript
@@ -116,6 +120,7 @@ if (!prev) throw new Error(`Missing audio clip seed for ${c.id}`);
 Ponieważ identyfikator `clip-2-r` został wygenerowany dynamicznie wewnątrz algorytmu kolizji, nie istnieje on w mapie `seedById` . W tym momencie silnik StageSync zgłasza nieobsługiwany błąd i przerywa wykonywanie programu, doprowadzając do awarii aplikacji DAW bezpośrednio podczas gestu zmiany rozmiaru .
 
 ### Problem bezpiecznych granic w geście głośności (Gain)
+
 Narzędzie zmiany głośności klipu opiera się na wyznaczeniu różnicy współrzędnych osi pionowej kursora myszy :
 
 $\text{deltaY} = \text{originClientY} - \text{clientY}$
@@ -143,6 +148,7 @@ Z powodu braku walidacji, wartość `NaN` zostaje bezpośrednio zapisana w struk
 ## Analiza operacji wielokrotnych i problemów routingu
 
 ### Niespójność logiczna w commitMoveAudioClips przy duplikatach i brakach ID
+
 Podczas jednoczesnego przemieszczania wielu klipów, funkcja `commitMoveAudioClips` dokonuje kalkulacji dystansu $\Delta$ na podstawie położenia klipu głównego (`primaryId`) :
 
 $\Delta = \text{snapped} - \text{primary.startTicks}$
@@ -156,12 +162,14 @@ const idSet = new Set(moveIds.filter(Boolean));
 Dzięki zastosowaniu struktury `Set`, wszelkie zduplikowane identyfikatory w tablicy `moveIds` są automatycznie usuwane, co eliminuje ryzyko podwójnego przesunięcia tego samego obiektu . Podobnie, nieistniejące identyfikatory są ignorowane podczas iteracji po klipach ścieżki, nie powodując bezpośredniej awarii programu .
 
 Mimo to, w kodzie występuje poważna luka logiczna związana z brakiem weryfikacji obecności klipu głównego w zbiorze ruchów . Jeżeli z jakiegoś powodu (np. błędu synchronizacji zaznaczenia w komponencie graficznym) identyfikator `primaryId` nie znajdzie się w tablicy `moveIds`, silnik zaklasyfikuje go jako obiekt nieruchomy (`nonMover`) . W konsekwencji:
+
 - Klip główny, który użytkownik bezpośrednio przeciąga kursorem myszy na ekranie, pozostaje zablokowany w miejscu .
 - Wszystkie pozostałe zaznaczone klipy (`moveIds`) zostają przesunięte o wyliczoną wartość $\Delta$ względem nieruchomego lidera .
 
 Tego typu zachowanie całkowicie niszczy spójność fazową kompozycji i prowadzi do dezorientacji użytkownika .
 
 ### Analiza osieroconych powiązań w strukturze miksera i pamięci projektu
+
 Operacje usuwania komponentów, takie jak `removeAudioBus` oraz `removeAudioTrack`, nie oczyszczają w pełni powiązanych struktur danych, co prowadzi do wycieków pamięci i powstawania niespójności w projekcie .
 
 Podczas usuwania szyny miksera (`removeAudioBus`), funkcja filtruje tablicę `audioBusses` i przywraca wyjścia ścieżek audio (`audioTracks`) bezpośrednio powiązanych z usuwanym autobusem na wartość domyślną (Master) :
@@ -173,10 +181,11 @@ audioTracks: project.audioTracks.map((t) => {
     return rest;
   }
   return t;
-})
+});
 ```
 
 Jednakże algorytm ten pomija inne krytyczne powiązania:
+
 - **Szyny efektów i automatyzacja:** Jeżeli usunięty autobus posiadał przypisane łańcuchy wtyczek efektowych lub dedykowane linie automatyzacji głośności i panoramy, obiekty te pozostają osierocone w pamięci operacyjnej projektu. Ponieważ ich identyfikator nadrzędny przestał istnieć, silnik renderowania próbuje odwołać się do nieistniejących węzłów audio, co generuje błędy czasu wykonania podczas odtwarzania.
 - **Krosowanie sygnałów (Sidechaining):** Jeśli usunięty autobus stanowił źródło sterujące (Sidechain) dla efektów dynamicznych osadzonych na innych ścieżkach, powiązania te stają się puste, powodując nieprzewidywalne zachowanie kompresorów.
 
@@ -212,7 +221,11 @@ import {
  * zabezpieczony przed przypadkowymi ograniczeniami długości zasobów.
  */
 function buildControlledAuditProject(bpm: number, ppq: number): Project {
-  const seed = createProjectSeed("audit-project-1", "Audit", "2026-07-21T00:00:00.000Z");
+  const seed = createProjectSeed(
+    "audit-project-1",
+    "Audit",
+    "2026-07-21T00:00:00.000Z",
+  );
   seed.ppq = ppq;
   seed.defaultBpm = bpm;
   if (seed.tempoMap && seed.tempoMap[0]) {
@@ -245,7 +258,6 @@ function buildControlledAuditProject(bpm: number, ppq: number): Project {
 }
 
 describe("audioLaneEdit Audit Verification Tests", () => {
-
   // ==========================================
   // WERYFIKACJA BUG-01: Błędy zaokrągleń IEEE 754
   // ==========================================
@@ -253,7 +265,7 @@ describe("audioLaneEdit Audit Verification Tests", () => {
     const bpm = 113.123;
     const ppq = 960;
     const targetSplitTick = 117; // Punkt podziału wywołujący ułamek .99999999999999 przy powrocie
-    
+
     let project = buildControlledAuditProject(bpm, ppq);
     const initialTicks = project.audioClips[0]!.lengthTicks;
 
@@ -262,8 +274,10 @@ describe("audioLaneEdit Audit Verification Tests", () => {
 
     expect(project.audioClips).toHaveLength(2);
 
-    const left = project.audioClips.find(c => c.startTicks === 0);
-    const right = project.audioClips.find(c => c.startTicks === targetSplitTick);
+    const left = project.audioClips.find((c) => c.startTicks === 0);
+    const right = project.audioClips.find(
+      (c) => c.startTicks === targetSplitTick,
+    );
 
     expect(left).toBeDefined();
     expect(right).toBeDefined();
@@ -287,7 +301,7 @@ describe("audioLaneEdit Audit Verification Tests", () => {
     // Definiujemy nieliniową zmianę tempa w połowie przebiegu
     project.tempoMap = [
       { id: "temp-1", startTicks: 0, bpm: 120 },
-      { id: "temp-2", startTicks: 4800, bpm: 60 }
+      { id: "temp-2", startTicks: 4800, bpm: 60 },
     ];
 
     // Dokonujemy podziału w punkcie 7200 ticków
@@ -298,7 +312,9 @@ describe("audioLaneEdit Audit Verification Tests", () => {
 
     project = splitAudioClipAt(project, "clip-to-audit", splitTick);
 
-    const rightClip = project.audioClips.find(c => c.startTicks === splitTick);
+    const rightClip = project.audioClips.find(
+      (c) => c.startTicks === splitTick,
+    );
     expect(rightClip).toBeDefined();
 
     // PRACOWANIE NA MAPIE TEMPA: trimInMs musi wynosić dokładnie 5000 ms
@@ -330,18 +346,25 @@ describe("audioLaneEdit Audit Verification Tests", () => {
         assetId: "asset-audit-1",
         startTicks: 1500,
         lengthTicks: 2000,
-      }
+      },
     ];
 
     // Akcja: Wydłużamy koniec Klipu A z pozycji 2000 na pozycję 2500
     // Powinno to skrócić Klip B od lewej strony, tworząc nowy fragment po prawej.
     // Kod nie może zgłosić błędu braku ziarna (Missing audio clip seed)
     const runResize = () => {
-      return commitResizeAudioClip(project, trackId, "clip-A", "end", 2500, "off");
+      return commitResizeAudioClip(
+        project,
+        trackId,
+        "clip-A",
+        "end",
+        2500,
+        "off",
+      );
     };
 
     expect(runResize).not.toThrow();
-    
+
     const result = runResize();
     expect(result.audioClips).toBeDefined();
     // Powinniśmy otrzymać 3 klipy bez rzucania wyjątków
@@ -359,15 +382,25 @@ describe("audioLaneEdit Audit Verification Tests", () => {
     const originY = 150;
     const originGainDb = 0;
 
-    const computedGain = gainDbFromPointerDelta(originGainDb, originY, invalidClientY);
+    const computedGain = gainDbFromPointerDelta(
+      originGainDb,
+      originY,
+      invalidClientY,
+    );
 
     // Obliczona wartość dB nie może być wartością NaN
     expect(computedGain).not.toBeNaN();
     expect(Number.isFinite(computedGain)).toBe(true);
 
     // Bezpośredni zapis do bazy danych projektu
-    const updatedProject = setAudioClipGainDb(project, "clip-to-audit", computedGain);
-    const auditedClip = updatedProject.audioClips.find(c => c.id === "clip-to-audit")!;
+    const updatedProject = setAudioClipGainDb(
+      project,
+      "clip-to-audit",
+      computedGain,
+    );
+    const auditedClip = updatedProject.audioClips.find(
+      (c) => c.id === "clip-to-audit",
+    )!;
 
     expect(auditedClip.gainDb).not.toBeNaN();
     expect(Number.isFinite(auditedClip.gainDb)).toBe(true);
@@ -382,9 +415,27 @@ describe("audioLaneEdit Audit Verification Tests", () => {
 
     // Tworzymy trzy powiązane klipy
     project.audioClips = [
-      { id: "leader", trackId, assetId: "asset-audit-1", startTicks: 1000, lengthTicks: 1000 },
-      { id: "follower-1", trackId, assetId: "asset-audit-1", startTicks: 3000, lengthTicks: 1000 },
-      { id: "follower-2", trackId, assetId: "asset-audit-1", startTicks: 5000, lengthTicks: 1000 }
+      {
+        id: "leader",
+        trackId,
+        assetId: "asset-audit-1",
+        startTicks: 1000,
+        lengthTicks: 1000,
+      },
+      {
+        id: "follower-1",
+        trackId,
+        assetId: "asset-audit-1",
+        startTicks: 3000,
+        lengthTicks: 1000,
+      },
+      {
+        id: "follower-2",
+        trackId,
+        assetId: "asset-audit-1",
+        startTicks: 5000,
+        lengthTicks: 1000,
+      },
     ];
 
     // Przemieszczamy grupę, ale wykluczamy 'leader' (primaryId) z tablicy moveIds.
@@ -395,11 +446,11 @@ describe("audioLaneEdit Audit Verification Tests", () => {
       ["follower-1", "follower-2"], // Błąd zaznaczenia: brak lidera w tablicy ruchów
       "leader",
       2000,
-      "off"
+      "off",
     );
 
-    const leaderResult = moved.audioClips.find(c => c.id === "leader")!;
-    const followerResult = moved.audioClips.find(c => c.id === "follower-1")!;
+    const leaderResult = moved.audioClips.find((c) => c.id === "leader")!;
+    const followerResult = moved.audioClips.find((c) => c.id === "follower-1")!;
 
     // SILNIK POWINIEN ALBO ODRZUCIĆ RUCH (NO-OP), ALBO PRZESUNĄĆ LIDERA WRAZ Z GRUPĄ.
     // Obecny kod przesuwa elementy zależne, pozostawiając przeciągany obiekt lidera w miejscu!
@@ -426,4 +477,5 @@ Przeprowadzony audyt jednoznacznie wykazuje, że silnik edycji ścieżek audio [
 5. **Kaskadowe sprzątanie bazy danych:** Funkcje usuwania ścieżek i autobusów powinny wywoływać automatyczne, głębokie czyszczenie referencji, w tym usuwanie linii automatyzacji, efektów insertowych oraz wpisów w mapie widoczności, eliminując ryzyko powstawania osieroconych kluczy i wycieków pamięci .
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

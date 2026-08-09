@@ -10,38 +10,38 @@ Na Timeline można **edytować geometrię Formy** (pencil drag, move/resize, Del
 
 ## IN (must)
 
-| # | Wycinek | Kryterium done |
-|---|---------|----------------|
-| M1 | **Scope + plan** | Ten raport; ADR 0008 → Zaakceptowany |
-| M2 | **Shared no-overlap** | [`clip-collision.ts`](../../../../packages/shared/src/clip-collision.ts): move/resize/insert/delete; Countdown nietykalny; section `startTicks >= 0`; Vitest |
-| M3 | **Pencil drag Forma** | Pointerdown→move→up: sekcja na zakres taktów; snap; overwrite; preview; clamp ≥ 0 |
-| M4 | **Pointer move/resize** | Body → `startTicks`; brzeg → `lengthTicks`; no-overlap; Countdown locked |
-| M5 | **Delete** | Select + Delete/Backspace; eraser = delete zaznaczonego; luki zostają; nie Countdown |
-| M6 | **Smart Tool** | Toolbar `smart`; hit zones tylko `pointer` \| `smart`; Pencil = exclusive draw |
-| M7 | **Snap Cmd/Ctrl-off** | `metaKey \|\| ctrlKey` na **każdym** `pointermove` |
+| #   | Wycinek                 | Kryterium done                                                                                                                                               |
+| --- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1  | **Scope + plan**        | Ten raport; ADR 0008 → Zaakceptowany                                                                                                                         |
+| M2  | **Shared no-overlap**   | [`clip-collision.ts`](../../../../packages/shared/src/clip-collision.ts): move/resize/insert/delete; Countdown nietykalny; section `startTicks >= 0`; Vitest |
+| M3  | **Pencil drag Forma**   | Pointerdown→move→up: sekcja na zakres taktów; snap; overwrite; preview; clamp ≥ 0                                                                            |
+| M4  | **Pointer move/resize** | Body → `startTicks`; brzeg → `lengthTicks`; no-overlap; Countdown locked                                                                                     |
+| M5  | **Delete**              | Select + Delete/Backspace; eraser = delete zaznaczonego; luki zostają; nie Countdown                                                                         |
+| M6  | **Smart Tool**          | Toolbar `smart`; hit zones tylko `pointer` \| `smart`; Pencil = exclusive draw                                                                               |
+| M7  | **Snap Cmd/Ctrl-off**   | `metaKey \|\| ctrlKey` na **każdym** `pointermove`                                                                                                           |
 
 **Zakaz:** mutacja `draftProject` na każdy `pointermove` — tylko `gesturePreview`, commit na pointerup.
 
 ## IN (should — timebox)
 
-| Priorytet | Wycinek | Done minimalny |
-|-----------|---------|----------------|
-| 1 | **Schema v4** | `tekst` / `akordy` / `cue` clips; upgrade v3→v4; seed puste |
-| 2 | **Lane Tekst MVP** | Pencil click + select + Delete + inspector; Client karaoke z linii |
-| 3 | **Akordy / Cue start** | Render + pencil click (cut first przy timebox) |
-| 4 | **Scissors Forma** | Split @ snap (cut first) |
-| — | **Tap / UG / Różdżka** | **Cut first** — disabled shell |
+| Priorytet | Wycinek                | Done minimalny                                                     |
+| --------- | ---------------------- | ------------------------------------------------------------------ |
+| 1         | **Schema v4**          | `tekst` / `akordy` / `cue` clips; upgrade v3→v4; seed puste        |
+| 2         | **Lane Tekst MVP**     | Pencil click + select + Delete + inspector; Client karaoke z linii |
+| 3         | **Akordy / Cue start** | Render + pencil click (cut first przy timebox)                     |
+| 4         | **Scissors Forma**     | Split @ snap (cut first)                                           |
+| —         | **Tap / UG / Różdżka** | **Cut first** — disabled shell                                     |
 
 ## OUT (jawne)
 
-| Temat | Etap |
-|-------|------|
-| Pełny Undo/Redo sesji | β1 / 5.0.0 |
-| Audio playback / trim / waveform | **β1** |
-| Snap UI picker (beat/subdivision) | 5.0.0 |
-| Pełna partytura OSMD | β1+ |
-| Gain/Mute tools, overlap modes | β1 / 5.0.0 |
-| Relative snap | po 5.0.0 |
+| Temat                             | Etap       |
+| --------------------------------- | ---------- |
+| Pełny Undo/Redo sesji             | β1 / 5.0.0 |
+| Audio playback / trim / waveform  | **β1**     |
+| Snap UI picker (beat/subdivision) | 5.0.0      |
+| Pełna partytura OSMD              | β1+        |
+| Gain/Mute tools, overlap modes    | β1 / 5.0.0 |
+| Relative snap                     | po 5.0.0   |
 
 ## Smoke gate α7
 
@@ -52,7 +52,7 @@ Na Timeline można **edytować geometrię Formy** (pencil drag, move/resize, Del
 5. Smart: strefy trim vs move; **Pencil nad krawędzią = insert, nie trim**
 6. Cmd/Ctrl **w trakcie** drag = snap live off; sekcja nie wchodzi w pre-roll &lt; 0
 7. Zapisz → reload → geometria trwała
-8. *(Should)* Tekst: pencil + linie w Client karaoke
+8. _(Should)_ Tekst: pencil + linie w Client karaoke
 9. `pnpm lint && check-types && test && build`
 
 ## Definicja „alpha.7 gotowe”

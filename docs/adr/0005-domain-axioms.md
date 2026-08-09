@@ -30,11 +30,11 @@ ADR szczegółowych — ten dokument tylko **nazywa** niezmienniki i reguły och
 
 ### Pace layers (mapa na StageSync)
 
-| Warstwa | Przykłady u nas | Zmienność |
-|---------|-----------------|-----------|
-| Stuff | UI density, motywy, copy, polish przed 5.0.0 | często |
-| Skin / Services | REST / WS, Docker, CI | średnio |
-| Structure / Site | aksjomaty czasu + folder projects | **Granica 0** |
+| Warstwa          | Przykłady u nas                              | Zmienność     |
+| ---------------- | -------------------------------------------- | ------------- |
+| Stuff            | UI density, motywy, copy, polish przed 5.0.0 | często        |
+| Skin / Services  | REST / WS, Docker, CI                        | średnio       |
+| Structure / Site | aksjomaty czasu + folder projects            | **Granica 0** |
 
 Stuff i Skin wolno zmieniać bez naruszania Site. Infrastruktura (CI, Docker)
 nie jest fundamentem domeny — jest wymienną warstwą dostarczania.
@@ -48,8 +48,8 @@ nie jest fundamentem domeny — jest wymienną warstwą dostarczania.
   - MIDI clock / urządzeniach,
   - audio (sample / ms tylko na krawędzi `tempoMap`),
   - przyszłym Ableton Link (lub podobnym sync sieciowym).
-  Mapowanie obcego formatu → ticks / folder project **tylko na granicy**.
-  Zakaz wciągania semantyki obcego formatu do `@stagesync/shared`.
+    Mapowanie obcego formatu → ticks / folder project **tylko na granicy**.
+    Zakaz wciągania semantyki obcego formatu do `@stagesync/shared`.
 - **Ports & adapters:** jawne porty storage / transport wyciągać dopiero gdy
   adapterów będzie więcej niż jeden (np. FS + paczka ZIP). Nie blokować
   alpha wiringu ceremonią heksagonu „na zapas”.

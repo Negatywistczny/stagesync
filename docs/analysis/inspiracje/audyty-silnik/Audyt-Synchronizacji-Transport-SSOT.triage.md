@@ -12,15 +12,15 @@
 
 ## Rozstrzygnięte w tej fali
 
-| ID | Temat | Stan | Notatka |
-|----|--------|------|---------|
-| BUG-SSV5-02 | `pause-at-end` / `auto-advance` await I/O nadpisuje Seek/Pause FOH | `fixed` | `stillPastEnd` po każdym `await`; testy w [`song-end-race.test.ts`](../../../../apps/server/src/song-end-race.test.ts) |
-| BUG-SSV5-01 / 06 | `getTransport` HTTP vs świeży tick WS przy `onopen` / mount | `fixed` | Usunięte HTTP z `ws.onopen`; mount HTTP zostaje (pierwszy paint); welcome = tick WS |
-| BUG-SSV5-05 | pause-at-end bez twardego cut audio na `endTicks` | `fixed` | Klient: soft-stop WebAudio gdy `displayTicks ≥ projectEnd` i brak loop (bez drugiego zegara); testy w [`audioPlayback.test.ts`](../../../../apps/web/src/lib/audio/audioPlayback.test.ts) |
-| BUG-SSV5-03 | optimistic `applyAnchor` + tick = jitter / łamie ADR 0002 | `rejected` | `runCommand` aplikuje **odpowiedź REST serwera** (nie lokalny zegar muzyczny); SSOT nadal serwer |
-| BUG-SSV5-04 | `samplePosition` side-effect przy loop wrap | `rejected` | Single-thread; wrap+reanchor idempotentny przy stałym `now` — test 10× `getState` |
-| BUG-SSV5-07 | ciche drop ticków wstecznych bez fail-fast UI | `rejected` | Zamierzone (out-of-order); spam błędu na FOH byłby gorszy |
-| BUG-SSV5-08 | StrictMode podwójny WS | `rejected` | Cleanup `cancelled` + close; standard React 18 |
+| ID               | Temat                                                              | Stan       | Notatka                                                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BUG-SSV5-02      | `pause-at-end` / `auto-advance` await I/O nadpisuje Seek/Pause FOH | `fixed`    | `stillPastEnd` po każdym `await`; testy w [`song-end-race.test.ts`](../../../../apps/server/src/song-end-race.test.ts)                                                                    |
+| BUG-SSV5-01 / 06 | `getTransport` HTTP vs świeży tick WS przy `onopen` / mount        | `fixed`    | Usunięte HTTP z `ws.onopen`; mount HTTP zostaje (pierwszy paint); welcome = tick WS                                                                                                       |
+| BUG-SSV5-05      | pause-at-end bez twardego cut audio na `endTicks`                  | `fixed`    | Klient: soft-stop WebAudio gdy `displayTicks ≥ projectEnd` i brak loop (bez drugiego zegara); testy w [`audioPlayback.test.ts`](../../../../apps/web/src/lib/audio/audioPlayback.test.ts) |
+| BUG-SSV5-03      | optimistic `applyAnchor` + tick = jitter / łamie ADR 0002          | `rejected` | `runCommand` aplikuje **odpowiedź REST serwera** (nie lokalny zegar muzyczny); SSOT nadal serwer                                                                                          |
+| BUG-SSV5-04      | `samplePosition` side-effect przy loop wrap                        | `rejected` | Single-thread; wrap+reanchor idempotentny przy stałym `now` — test 10× `getState`                                                                                                         |
+| BUG-SSV5-07      | ciche drop ticków wstecznych bez fail-fast UI                      | `rejected` | Zamierzone (out-of-order); spam błędu na FOH byłby gorszy                                                                                                                                 |
+| BUG-SSV5-08      | StrictMode podwójny WS                                             | `rejected` | Cleanup `cancelled` + close; standard React 18                                                                                                                                            |
 
 ## Otwarte / hipotezy
 

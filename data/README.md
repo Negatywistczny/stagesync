@@ -1,6 +1,6 @@
 # 📂 data/ — Katalog Runtime i Persystencja
 
-Katalog `data/` służy jako lokalny magazyn danych operacyjnych w czasie działania aplikacji (*runtime*). Jest on domyślnie zignorowany w systemie kontroli wersji Git (poza plikami konfiguracyjnymi i tym dokumentem), aby zapobiec commitowaniu lokalnych danych projektów, logów i pobranych zasobów użytkownika.
+Katalog `data/` służy jako lokalny magazyn danych operacyjnych w czasie działania aplikacji (_runtime_). Jest on domyślnie zignorowany w systemie kontroli wersji Git (poza plikami konfiguracyjnymi i tym dokumentem), aby zapobiec commitowaniu lokalnych danych projektów, logów i pobranych zasobów użytkownika.
 
 ## 📁 Struktura katalogu
 
@@ -13,5 +13,6 @@ Katalog `data/` służy jako lokalny magazyn danych operacyjnych w czasie dział
 ## ⚙️ Integracja z systemem
 
 Katalog ten jest wykorzystywany przez:
+
 1. **`apps/server`** jako domyślne miejsce zapisu projektów i logów (zgodnie z decyzjami ADR [0001-storage-layout](../docs/adr/0001-storage-layout.md) i [0012-user-data-location](../docs/adr/0012-user-data-location.md)).
 2. **Docker Compose** jako zamontowany wolumen (`volume`), gwarantujący trwałość danych przy restartach kontenera.

@@ -64,9 +64,9 @@ Nazewnictwo: [docs-analysis-naming.mdc](../../rules/docs-analysis-naming.mdc).
 
 ## Open / merged PRs
 
-| PR | Title | Scope |
-|----|-------|-------|
-| … | … | … |
+| PR  | Title | Scope |
+| --- | ----- | ----- |
+| …   | …     | …     |
 
 ## Ranked backlog (next)
 

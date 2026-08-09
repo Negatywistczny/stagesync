@@ -12,15 +12,15 @@
 
 ## Priorytety weryfikacji
 
-| ID | Temat | Priorytet | Stan | Dowód |
-|----|--------|-----------|------|--------|
-| TST-UG-01 | Negatywy `CHORD_TOKEN` / `SECTION_BRACKET` | P1 | `fixed` | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — invalid slash/parens |
-| TST-UG-02 | `barsPerLine ≠ 1`, `contentFloorTicks` | P1 | `fixed` | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — `barsPerLine: 2` |
-| TST-UG-03 | `clipsFromOnsets` overlapping / empty bar | P1 | `confirmed` | Częściowe pokrycie chord timing; brak macierzy z dumpu |
-| TST-UG-04 | `reflowUgImportSectionBars` po zmianie metrum | P2 | `fixed` | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — meter change reflow |
-| TST-UG-05 | `applyUgImportToProject` merge vs replace | P1 | `fixed` | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — countdown keep + lane replace |
-| TST-UG-06 | `UgImportPayloadSchema` corrupt output | P1 | `confirmed` | Brak testu parse corrupt |
-| TST-UG-07 | `sealAkordyLengths` cross wand | P2 | `rejected` | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — test seal lengths |
+| ID        | Temat                                         | Priorytet | Stan        | Dowód                                                                                                    |
+| --------- | --------------------------------------------- | --------- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| TST-UG-01 | Negatywy `CHORD_TOKEN` / `SECTION_BRACKET`    | P1        | `fixed`     | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — invalid slash/parens          |
+| TST-UG-02 | `barsPerLine ≠ 1`, `contentFloorTicks`        | P1        | `fixed`     | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — `barsPerLine: 2`              |
+| TST-UG-03 | `clipsFromOnsets` overlapping / empty bar     | P1        | `confirmed` | Częściowe pokrycie chord timing; brak macierzy z dumpu                                                   |
+| TST-UG-04 | `reflowUgImportSectionBars` po zmianie metrum | P2        | `fixed`     | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — meter change reflow           |
+| TST-UG-05 | `applyUgImportToProject` merge vs replace     | P1        | `fixed`     | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — countdown keep + lane replace |
+| TST-UG-06 | `UgImportPayloadSchema` corrupt output        | P1        | `confirmed` | Brak testu parse corrupt                                                                                 |
+| TST-UG-07 | `sealAkordyLengths` cross wand                | P2        | `rejected`  | [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) — test seal lengths             |
 
 ## Limit
 

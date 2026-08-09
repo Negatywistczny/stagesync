@@ -21,26 +21,26 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 
 ## Kontrakt IN / OUT
 
-| IN 5.0.0 | OUT 5.0.0 |
-|----------|-----------|
-| Pełny parytet **zachowania v4** (bez stubów) | Stub / „poza 5.0” / atrapa inventarza |
-| Polish UI; zoom/help/snap; audio fade/loop | Clone chrome ([ADR 0011](../../../adr/0011-ui-parity-behavior.md)) |
-| Score/OSMD sync; Live Desk AD-01…03; wand UI; Panic | Flex Time / stretch / pencil audio ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) |
-| Menu OS Faza D residual; migrator bez milczącej utraty krytycznych metadanych | MIDI w procesie Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) |
-| Sampler / Safety Net **jeśli były w v4** | git-apply (nigdy) ([ADR 0004](../../../adr/0004-updates-docker.md)) |
-| Soft-gate G1–G10 (HW = operator) | Motywy systemowe / auth multi-user / Android (**nowości** → 5.1+) |
-| Tag `5.0.0` + nazwa hero | Tag przy otwartych stubach funkcji v4 |
+| IN 5.0.0                                                                      | OUT 5.0.0                                                                                   |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Pełny parytet **zachowania v4** (bez stubów)                                  | Stub / „poza 5.0” / atrapa inventarza                                                       |
+| Polish UI; zoom/help/snap; audio fade/loop                                    | Clone chrome ([ADR 0011](../../../adr/0011-ui-parity-behavior.md))                          |
+| Score/OSMD sync; Live Desk AD-01…03; wand UI; Panic                           | Flex Time / stretch / pencil audio ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) |
+| Menu OS Faza D residual; migrator bez milczącej utraty krytycznych metadanych | MIDI w procesie Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md))                |
+| Sampler / Safety Net **jeśli były w v4**                                      | git-apply (nigdy) ([ADR 0004](../../../adr/0004-updates-docker.md))                         |
+| Soft-gate G1–G10 (HW = operator)                                              | Motywy systemowe / auth multi-user / Android (**nowości** → 5.1+)                           |
+| Tag `5.0.0` + nazwa hero                                                      | Tag przy otwartych stubach funkcji v4                                                       |
 
 ## IN (must) — A: Polish UI — **done (kod)**
 
 Źródło: [TODO](../../../TODO.md) · [ui-density](../../../../.cursor/rules/ui-density.mdc) · [ADR 0011](../../../adr/0011-ui-parity-behavior.md).
 
-| # | Wycinek | Status |
-|---|---------|--------|
-| A1 | Audyt żywych kontrolek Timeline / Admin / Client | ✓ trains + residual |
-| A2 | Typografia / spacing wyłącznie `--ss-*` | ✓ |
-| A3 | Copy PL + proporcje / gęstość | ✓ (+ help/i18n [#468](https://github.com/Negatywistczny/stagesync/pull/468)) |
-| A4 | Bez nowych wariantów `Button` | ✓ |
+| #   | Wycinek                                          | Status                                                                       |
+| --- | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| A1  | Audyt żywych kontrolek Timeline / Admin / Client | ✓ trains + residual                                                          |
+| A2  | Typografia / spacing wyłącznie `--ss-*`          | ✓                                                                            |
+| A3  | Copy PL + proporcje / gęstość                    | ✓ (+ help/i18n [#468](https://github.com/Negatywistczny/stagesync/pull/468)) |
+| A4  | Bez nowych wariantów `Button`                    | ✓                                                                            |
 
 **Powierzchnie (orientacja):** [`TimelineShell.tsx`](../../../../apps/web/src/shells/TimelineShell.tsx) (+ module CSS), Admin (`SetView` / `StageView` / Host), Client shells, `packages/ui` tokeny.
 
@@ -48,92 +48,92 @@ Domknąć **stabilne 5.0.0** jako **kompletny** produkt operatorski względem v4
 
 Źródło: [ADR 0007](../../../adr/0007-snap-grid.md) faza 2 · `TimelineShell` (stan `zoomH`/`zoomV`/`zoomUi`).
 
-| # | Wycinek | Status |
-|---|---------|--------|
-| B1 | Zoom H/V (+ UI) z **ikonami** | ✓ |
-| B2 | Snap picker UI: `off` / `bar` / `beat` / `subdivision` | ✓ |
-| B3 | Pomoc Timeline — pełna treść + skróty sync | ✓ [#468](https://github.com/Negatywistczny/stagesync/pull/468) |
-| B4 | Wiring snap mode → `quantizeTicks` / edycja | ✓ |
+| #   | Wycinek                                                | Status                                                         |
+| --- | ------------------------------------------------------ | -------------------------------------------------------------- |
+| B1  | Zoom H/V (+ UI) z **ikonami**                          | ✓                                                              |
+| B2  | Snap picker UI: `off` / `bar` / `beat` / `subdivision` | ✓                                                              |
+| B3  | Pomoc Timeline — pełna treść + skróty sync             | ✓ [#468](https://github.com/Negatywistczny/stagesync/pull/468) |
+| B4  | Wiring snap mode → `quantizeTicks` / edycja            | ✓                                                              |
 
 ## IN (must) — C: Audio polish (fade / crossfade / loop-region) — **done (kod)**
 
 Źródło: [ADR 0008](../../../adr/0008-timeline-clip-editing.md) · [#462](https://github.com/Negatywistczny/stagesync/pull/462).
 
-| # | Wycinek | Status |
-|---|---------|--------|
-| C1 | Schema: `fadeInMs` / `fadeOutMs` | ✓ |
-| C2 | Playback: envelope fade (WebAudio `AudioParam`) | ✓ |
-| C3 | UI: Smart fade handles | ✓ |
-| C4 | Crossfade przy styku | ✓ (minimal) |
-| C5 | Loop-region audio (clip) vs transport cycle | ✓ |
-| C6 | Testy shared + smoke playback | ✓ (shared); pełny browser matrix = Should |
+| #   | Wycinek                                         | Status                                    |
+| --- | ----------------------------------------------- | ----------------------------------------- |
+| C1  | Schema: `fadeInMs` / `fadeOutMs`                | ✓                                         |
+| C2  | Playback: envelope fade (WebAudio `AudioParam`) | ✓                                         |
+| C3  | UI: Smart fade handles                          | ✓                                         |
+| C4  | Crossfade przy styku                            | ✓ (minimal)                               |
+| C5  | Loop-region audio (clip) vs transport cycle     | ✓                                         |
+| C6  | Testy shared + smoke playback                   | ✓ (shared); pełny browser matrix = Should |
 
 ## IN (must) — D: Desktop OS menu Faza D — **done (kod)**
 
 Źródło: [ROADMAP](../../../ROADMAP.md) · [#460](https://github.com/Negatywistczny/stagesync/pull/460).
 
-| # | Wycinek | Status |
-|---|---------|--------|
-| D1 | **Edycja:** Undo / Redo / Delete (+ grey-out stack) | ✓ |
-| D2 | **Widok:** Zoom in / out / reset | ✓ |
-| D3 | **Pomoc:** Skróty (`help-shortcuts`) | ✓ |
-| D4 | Zero MIDI / clock w Rust | ✓ |
+| #   | Wycinek                                             | Status |
+| --- | --------------------------------------------------- | ------ |
+| D1  | **Edycja:** Undo / Redo / Delete (+ grey-out stack) | ✓      |
+| D2  | **Widok:** Zoom in / out / reset                    | ✓      |
+| D3  | **Pomoc:** Skróty (`help-shortcuts`)                | ✓      |
+| D4  | Zero MIDI / clock w Rust                            | ✓      |
 
 ## IN (must) — E: docs/api + CI + smoke E2E — **done (kod)**
 
-| # | Wycinek | Status |
-|---|---------|--------|
-| E1 | Domknięcie `docs/api` | ✓ |
-| E2 | CI green `lint-types-test-build` (+ compose / tauri-check) | ✓ na `main` po merge residual |
-| E3 | Smoke E2E (health / Forma / transport) | ✓; Playwright Forma drag = Should |
+| #   | Wycinek                                                    | Status                            |
+| --- | ---------------------------------------------------------- | --------------------------------- |
+| E1  | Domknięcie `docs/api`                                      | ✓                                 |
+| E2  | CI green `lint-types-test-build` (+ compose / tauri-check) | ✓ na `main` po merge residual     |
+| E3  | Smoke E2E (health / Forma / transport)                     | ✓; Playwright Forma drag = Should |
 
 ## Soft-gate — G1–G10 (operator; poza oknem HW)
 
 **Brak dostępu do HW w overnight.** Nie zaznaczamy green.
 
-| ID | Status w tym oknie | Akcja overnight |
-|----|--------------------|-----------------|
-| G1–G10 | ⬜ residual operatorski po `v5.0.0` | Checklista + sekwencja w [report-beta-gate.md](./report-beta-gate.md); link z TODO; **bez** fałszywego `[x]` |
-| G6 kod | prerequisites CI/Release done (darwin+windows `latest.json`) | Bez claim relaunch green |
-| Po tagu `5.0.0` | Must green na instalatorach `v5.0.0` (baseline updater z β2) | Operator — residual |
+| ID              | Status w tym oknie                                           | Akcja overnight                                                                                              |
+| --------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| G1–G10          | ⬜ residual operatorski po `v5.0.0`                          | Checklista + sekwencja w [report-beta-gate.md](./report-beta-gate.md); link z TODO; **bez** fałszywego `[x]` |
+| G6 kod          | prerequisites CI/Release done (darwin+windows `latest.json`) | Bez claim relaunch green                                                                                     |
+| Po tagu `5.0.0` | Must green na instalatorach `v5.0.0` (baseline updater z β2) | Operator — residual                                                                                          |
 
 Zob. sekcja „Sekwencja weryfikacji” w [report-beta-gate.md](./report-beta-gate.md) — baseline `v5.0.0-beta.2`.
 
 ## OUT (świadome)
 
-| Temat | Etap |
-|-------|------|
-| Motywy / auth / multi-user | **5.1+** |
-| Android / store auto-update | Poza 5.0.0 |
-| MIDI I/O w procesie Tauri | **Nigdy** ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) |
-| Flex Time / pencil audio / stretch poza plik | OUT |
-| Clone chrome v4 | **Zakaz** ([ADR 0011](../../../adr/0011-ui-parity-behavior.md)) |
-| git-apply | Nigdy ([ADR 0004](../../../adr/0004-updates-docker.md)) |
-| Tag/bump `5.0.0` bez prośby | Zakaz overnight |
-| Merge PR → `main` przez agenta overnight | Zakaz overnight (historyczne) — residual closeout PR docs OK |
-| Draft OSMD / migration / wand bez green CI | Residual — nie claim w must A–E |
+| Temat                                        | Etap                                                             |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| Motywy / auth / multi-user                   | **5.1+**                                                         |
+| Android / store auto-update                  | Poza 5.0.0                                                       |
+| MIDI I/O w procesie Tauri                    | **Nigdy** ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) |
+| Flex Time / pencil audio / stretch poza plik | OUT                                                              |
+| Clone chrome v4                              | **Zakaz** ([ADR 0011](../../../adr/0011-ui-parity-behavior.md))  |
+| git-apply                                    | Nigdy ([ADR 0004](../../../adr/0004-updates-docker.md))          |
+| Tag/bump `5.0.0` bez prośby                  | Zakaz overnight                                                  |
+| Merge PR → `main` przez agenta overnight     | Zakaz overnight (historyczne) — residual closeout PR docs OK     |
+| Draft OSMD / migration / wand bez green CI   | Residual — nie claim w must A–E                                  |
 
 ## Should (jeśli czas po must A–E)
 
-| Temat | Uwagi |
-|-------|--------|
-| Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) | Docs-only jeśli otwarte |
-| E2E Forma drag + transport (carry z β1) | Po E3 bazowym |
-| Admin panel toggle UX | Drobne |
-| AD-01…03 Transpozycja / Lead / Edycja zdalna | Pull-forward tylko jeśli pull |
+| Temat                                           | Uwagi                         |
+| ----------------------------------------------- | ----------------------------- |
+| Doprecyzowanie ADR 0002 (tempo/metrum pre-roll) | Docs-only jeśli otwarte       |
+| E2E Forma drag + transport (carry z β1)         | Po E3 bazowym                 |
+| Admin panel toggle UX                           | Drobne                        |
+| AD-01…03 Transpozycja / Lead / Edycja zdalna    | Pull-forward tylko jeśli pull |
 
 ## Weryfikacja vs ADR / ROADMAP (zero sprzeczności)
 
-| Aksjomat | Status w tym scope |
-|----------|-------------------|
-| SSOT czasu = serwer; klient wygładza między tickami ([ADR 0002](../../../adr/0002-timebase-ssot.md)) | ✓ C2, D4 |
-| Kanon = integer ticks + PPQ; ms na krawędzi audio | ✓ C* |
-| Snap faza 2 = UI picker; default `bar`; nie w [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) ([ADR 0007](../../../adr/0007-snap-grid.md)) | ✓ B2, B4 |
-| Fade/crossfade/loop-region = 5.0.0; no pencil audio ([ADR 0008](../../../adr/0008-timeline-clip-editing.md)) | ✓ C* |
-| MIDI / clock nie w Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md)) | ✓ D4, OUT |
-| Faza D = 5.0.0 ([ROADMAP](../../../ROADMAP.md)) | ✓ D* |
-| Parity = zachowanie, nie clone ([ADR 0011](../../../adr/0011-ui-parity-behavior.md)) | ✓ A*, B1 |
-| G1–G10 = operator HW; CI nie zastępuje | ✓ soft-gate |
+| Aksjomat                                                                                                                                                                                                                               | Status w tym scope |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| SSOT czasu = serwer; klient wygładza między tickami ([ADR 0002](../../../adr/0002-timebase-ssot.md))                                                                                                                                   | ✓ C2, D4           |
+| Kanon = integer ticks + PPQ; ms na krawędzi audio                                                                                                                                                                                      | ✓ C*               |
+| Snap faza 2 = UI picker; default `bar`; nie w [`project.json`](../../../../apps/desktop/src-tauri/resources/sidecar/seed/seed-projects/00000000-0000-4000-8000-000000000001/project.json) ([ADR 0007](../../../adr/0007-snap-grid.md)) | ✓ B2, B4           |
+| Fade/crossfade/loop-region = 5.0.0; no pencil audio ([ADR 0008](../../../adr/0008-timeline-clip-editing.md))                                                                                                                           | ✓ C*               |
+| MIDI / clock nie w Tauri ([ADR 0010](../../../adr/0010-desktop-shell-tauri.md))                                                                                                                                                        | ✓ D4, OUT          |
+| Faza D = 5.0.0 ([ROADMAP](../../../ROADMAP.md))                                                                                                                                                                                        | ✓ D*               |
+| Parity = zachowanie, nie clone ([ADR 0011](../../../adr/0011-ui-parity-behavior.md))                                                                                                                                                   | ✓ A*, B1           |
+| G1–G10 = operator HW; CI nie zastępuje                                                                                                                                                                                                 | ✓ soft-gate        |
 
 ## Architektura (domyślna)
 
@@ -151,18 +151,18 @@ flowchart LR
 
 ## Plan PR (małe; 1 temat = 1 PR; kolejność A→B→C→D→E)
 
-| PR | Branch (propozycja) | Temat | Acceptance (smoke) |
-|----|---------------------|-------|-------------------|
-| **0** | `docs/scope-5.0.0` → `main` (docs OK) | Ten raport + soft-gate note + link w TODO | Plik w `docs/analysis/reports/`; TODO linkuje |
-| **A1** | `feat/ui-polish-live-controls` | Polish UI żywych kontrolek (slice Timeline + transport/status) | Brak regresji layoutu; tokeny `--ss-*`; visual smoke |
-| **B1** | `feat/timeline-zoom-icons` | Zoom H/V/UI z ikonami | Suwaki + ikony; skróty zoom działają |
-| **B2** | `feat/timeline-snap-picker` | Snap picker ADR 0007 faza 2 | Picker zmienia tryb; pencil/drag używa trybu; Cmd-off OK |
-| **B3** | `feat/timeline-help-full` | Pełna treść Pomocy | Overlay pokrywa audio/MIDI/snap/zoom |
-| **C1** | `feat/audio-fade-schema-playback` | Schema fade + playback envelope | Vitest shared; play z fadeIn/Out |
-| **C2** | `feat/audio-fade-ui-loop` | Fade handles UI + loop-region clip (+ overlap jeśli czas) | Gest Smart; persist draft |
-| **D1** | `feat/desktop-menu-phase-d` | Menu Edycja + zoom Widok + Pomoc | Eventy → UI; cargo check |
-| **E1** | `docs/api-closeout-5.0.0` | Domknięcie `docs/api` | README zgodny z serwerem |
-| **E2** | `test/smoke-e2e-5.0.0` | Smoke E2E / CI hook | Job lub skrypt green w CI |
+| PR     | Branch (propozycja)                   | Temat                                                          | Acceptance (smoke)                                       |
+| ------ | ------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------- |
+| **0**  | `docs/scope-5.0.0` → `main` (docs OK) | Ten raport + soft-gate note + link w TODO                      | Plik w `docs/analysis/reports/`; TODO linkuje            |
+| **A1** | `feat/ui-polish-live-controls`        | Polish UI żywych kontrolek (slice Timeline + transport/status) | Brak regresji layoutu; tokeny `--ss-*`; visual smoke     |
+| **B1** | `feat/timeline-zoom-icons`            | Zoom H/V/UI z ikonami                                          | Suwaki + ikony; skróty zoom działają                     |
+| **B2** | `feat/timeline-snap-picker`           | Snap picker ADR 0007 faza 2                                    | Picker zmienia tryb; pencil/drag używa trybu; Cmd-off OK |
+| **B3** | `feat/timeline-help-full`             | Pełna treść Pomocy                                             | Overlay pokrywa audio/MIDI/snap/zoom                     |
+| **C1** | `feat/audio-fade-schema-playback`     | Schema fade + playback envelope                                | Vitest shared; play z fadeIn/Out                         |
+| **C2** | `feat/audio-fade-ui-loop`             | Fade handles UI + loop-region clip (+ overlap jeśli czas)      | Gest Smart; persist draft                                |
+| **D1** | `feat/desktop-menu-phase-d`           | Menu Edycja + zoom Widok + Pomoc                               | Eventy → UI; cargo check                                 |
+| **E1** | `docs/api-closeout-5.0.0`             | Domknięcie `docs/api`                                          | README zgodny z serwerem                                 |
+| **E2** | `test/smoke-e2e-5.0.0`                | Smoke E2E / CI hook                                            | Job lub skrypt green w CI                                |
 
 **Zasady PR:** bez merge przez agenta; push `-u`; CI do green follow-up commitami; nie force-push; nie tagować `5.0.0`.
 
@@ -223,17 +223,17 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 **Otwarte świadomie:** [#61](https://github.com/Negatywistczny/stagesync/pull/61) (ruler split), [#63](https://github.com/Negatywistczny/stagesync/pull/63) (visual help overlay).  
 **G1–G10:** ⬜ — operator HW; **bez claim green** w docs/CI.
 
-| Train | Squash PR | Temat (skrót) |
-|-------|-----------|----------------|
-| 0 | [#408](https://github.com/Negatywistczny/stagesync/pull/408) | Must 5.0.0: fade schema/UI, TimelineHelp, audio crossfade |
-| 1 | [#409](https://github.com/Negatywistczny/stagesync/pull/409) | Should: smoke E2E, docs/api, forma cascade |
-| 2 | [#410](https://github.com/Negatywistczny/stagesync/pull/410) | Shared: timebase, meter map, clip collision |
-| 3 | [#411](https://github.com/Negatywistczny/stagesync/pull/411) | Shared: schema hardening wave 1 |
-| 4 | [#412](https://github.com/Negatywistczny/stagesync/pull/412) | Server: routes, WS, transport engine |
-| 5 | [#413](https://github.com/Negatywistczny/stagesync/pull/413) | Web: Timeline/admin polish, zoom, snap |
-| 6 | [#414](https://github.com/Negatywistczny/stagesync/pull/414) | Web/admin + desktop menu wave |
-| 7 | [#415](https://github.com/Negatywistczny/stagesync/pull/415) | MIDI + desktop transport surfacing |
-| 8 | [#416](https://github.com/Negatywistczny/stagesync/pull/416) | Residual hardening + UI token hygiene |
+| Train | Squash PR                                                    | Temat (skrót)                                             |
+| ----- | ------------------------------------------------------------ | --------------------------------------------------------- |
+| 0     | [#408](https://github.com/Negatywistczny/stagesync/pull/408) | Must 5.0.0: fade schema/UI, TimelineHelp, audio crossfade |
+| 1     | [#409](https://github.com/Negatywistczny/stagesync/pull/409) | Should: smoke E2E, docs/api, forma cascade                |
+| 2     | [#410](https://github.com/Negatywistczny/stagesync/pull/410) | Shared: timebase, meter map, clip collision               |
+| 3     | [#411](https://github.com/Negatywistczny/stagesync/pull/411) | Shared: schema hardening wave 1                           |
+| 4     | [#412](https://github.com/Negatywistczny/stagesync/pull/412) | Server: routes, WS, transport engine                      |
+| 5     | [#413](https://github.com/Negatywistczny/stagesync/pull/413) | Web: Timeline/admin polish, zoom, snap                    |
+| 6     | [#414](https://github.com/Negatywistczny/stagesync/pull/414) | Web/admin + desktop menu wave                             |
+| 7     | [#415](https://github.com/Negatywistczny/stagesync/pull/415) | MIDI + desktop transport surfacing                        |
+| 8     | [#416](https://github.com/Negatywistczny/stagesync/pull/416) | Residual hardening + UI token hygiene                     |
 
 **Weryfikacja po merge:** `pnpm lint && pnpm check-types && pnpm test && pnpm build` green lokalnie i w CI (#416).  
 **Po cutcie:** operator G1–G10 na instalatorach `5.0.0` (⬜); planowanie 5.1+ na prośbę.
@@ -245,19 +245,19 @@ G1–G10 soft-gate; #83 lifecycle token; TimelineShell rebases.
 **Kod zmergowany po trains (kolejność):** [#462](https://github.com/Negatywistczny/stagesync/pull/462) audio fade/loop → [#460](https://github.com/Negatywistczny/stagesync/pull/460) Faza D → [#468](https://github.com/Negatywistczny/stagesync/pull/468) help/skróty + i18n → [#464](https://github.com/Negatywistczny/stagesync/pull/464) mobile.  
 **Zamknięty bez merge:** [#463](https://github.com/Negatywistczny/stagesync/pull/463) (superseded by #468).
 
-| Must | Status |
-|------|--------|
-| A–E | ✓ w kodzie na `main` |
-| Faza D | ✓ #460 |
-| Mobile breakpoints | ✓ #464 |
-| G1–G10 | ⬜ **operator HW — bez claim green** |
+| Must               | Status                               |
+| ------------------ | ------------------------------------ |
+| A–E                | ✓ w kodzie na `main`                 |
+| Faza D             | ✓ #460                               |
+| Mobile breakpoints | ✓ #464                               |
+| G1–G10             | ⬜ **operator HW — bez claim green** |
 | Tag / bump `5.0.0` | ✓ **Overture** `v5.0.0` (2026-07-23) |
 
-| Draft residual | Status |
-|----------------|--------|
-| [#465](https://github.com/Negatywistczny/stagesync/pull/465) OSMD score nav | ✓ merged przed cuttem |
+| Draft residual                                                                     | Status                |
+| ---------------------------------------------------------------------------------- | --------------------- |
+| [#465](https://github.com/Negatywistczny/stagesync/pull/465) OSMD score nav        | ✓ merged przed cuttem |
 | [#466](https://github.com/Negatywistczny/stagesync/pull/466) migration assets meta | ✓ merged przed cuttem |
-| [#467](https://github.com/Negatywistczny/stagesync/pull/467) wand karaoke MIDI | ✓ merged przed cuttem |
+| [#467](https://github.com/Negatywistczny/stagesync/pull/467) wand karaoke MIDI     | ✓ merged przed cuttem |
 
 **Świadome OUT / 5.1+:** Safety Net [#437](https://github.com/Negatywistczny/stagesync/issues/437), Cues Sampler [#430](https://github.com/Negatywistczny/stagesync/issues/430), motywy/auth — bez kodu w 5.0.0.
 

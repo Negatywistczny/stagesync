@@ -11,14 +11,14 @@
 
 ## Rozstrzygnięte
 
-| ID | Temat | Stan | Dowód / fix |
-|----|--------|------|-------------|
-| BUG-01 | Float ticks↔ms → Join fails | `fixed` | Join tolerancja 1.5 ms + split map-aware; test split+join |
-| BUG-02 | Split bez `tempoMap` → zły `trimInMs` | `fixed` | `ticksToMsAlongTempoMap` w `splitAudioClipAt` |
-| BUG-03 | `commitResize` + split sąsiada → brak seed | `fixed` | `resolveSplitParentId` w `mapFormaBack` (+ `-r-N`) |
-| BUG-04 | `gainDb` / NaN z pointera | `fixed` | Guard w `gainDbFromPointerDelta` + `setAudioClipGainDb` |
-| BUG-05 | Multi-move bez primary w `moveIds` | `fixed` | Merge primary przed early-return `length <= 1` |
-| BUG-06 | Orphan visibility / automation po remove | `rejected` | Visibility: `ensureAudioTrackVisibility` w shell; brak automation w schema |
+| ID     | Temat                                      | Stan       | Dowód / fix                                                                |
+| ------ | ------------------------------------------ | ---------- | -------------------------------------------------------------------------- |
+| BUG-01 | Float ticks↔ms → Join fails                | `fixed`    | Join tolerancja 1.5 ms + split map-aware; test split+join                  |
+| BUG-02 | Split bez `tempoMap` → zły `trimInMs`      | `fixed`    | `ticksToMsAlongTempoMap` w `splitAudioClipAt`                              |
+| BUG-03 | `commitResize` + split sąsiada → brak seed | `fixed`    | `resolveSplitParentId` w `mapFormaBack` (+ `-r-N`)                         |
+| BUG-04 | `gainDb` / NaN z pointera                  | `fixed`    | Guard w `gainDbFromPointerDelta` + `setAudioClipGainDb`                    |
+| BUG-05 | Multi-move bez primary w `moveIds`         | `fixed`    | Merge primary przed early-return `length <= 1`                             |
+| BUG-06 | Orphan visibility / automation po remove   | `rejected` | Visibility: `ensureAudioTrackVisibility` w shell; brak automation w schema |
 
 ## Kontekst konstytucji
 

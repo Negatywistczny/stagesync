@@ -18,21 +18,21 @@ nie repozytorium dokumentacji.
 
 Trafia **wyłącznie**:
 
-| Element | Implementacja |
-|---------|----------------|
-| Ściągawka skrótów i gestów | [[`TimelineHelp.tsx`](../../apps/web/src/shells/timeline/TimelineHelp.tsx)](../../apps/web/src/shells/timeline/TimelineHelp.tsx) — overlay `?` / przycisk Pomoc |
-| Podpowiedzi kontekstowe | `title` / `aria-label` przy kontrolkach shelli |
-| O aplikacji | Admin → Host → sekcja „O aplikacji”: wersja, bilan hosta, **link** otwierający pełną instrukcję na GitHubie w przeglądarce systemowej (`open_external_url` w Tauri) |
+| Element                    | Implementacja                                                                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ściągawka skrótów i gestów | [`TimelineHelp.tsx`](../../apps/web/src/shells/timeline/TimelineHelp.tsx) — overlay `?` / przycisk Pomoc                                                            |
+| Podpowiedzi kontekstowe    | `title` / `aria-label` przy kontrolkach shelli                                                                                                                      |
+| O aplikacji                | Admin → Host → sekcja „O aplikacji”: wersja, bilan hosta, **link** otwierający pełną instrukcję na GitHubie w przeglądarce systemowej (`open_external_url` w Tauri) |
 
 Treść operatorska = **React / stringi w kodzie**, nie pliki `.md` w bundlu.
 
 ### Na GitHubie
 
-| Zawartość | Lokalizacja |
-|-----------|-------------|
-| Instrukcje instalacji / Docker / desktop | [[`INSTALL.md`](../guides/INSTALL.md)](../guides/INSTALL.md), [[`DESKTOP.md`](../guides/DESKTOP.md)](../guides/DESKTOP.md) |
-| ADR, architektura, roadmap, audyty | [`docs/`](./), [[`ARCHITECTURE.md`](../ARCHITECTURE.md)](../ARCHITECTURE.md) |
-| Kontrakt API (krótko) | [`docs/api/`](../api/README.md) |
+| Zawartość                                | Lokalizacja                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------- |
+| Instrukcje instalacji / Docker / desktop | [`INSTALL.md`](../guides/INSTALL.md), [`DESKTOP.md`](../guides/DESKTOP.md) |
+| ADR, architektura, roadmap, audyty       | [`docs/`](./), [`ARCHITECTURE.md`](../ARCHITECTURE.md)                     |
+| Kontrakt API (krótko)                    | [`docs/api/`](../api/README.md)                                            |
 
 ### W bundle desktop (Tauri sidecar)
 
@@ -41,10 +41,10 @@ Dozwolone w `resources/sidecar/`:
 - `web/` — Vite `dist`
 - `server/dist/` — skompilowany host
 - `seed/` — [`library.template.json`](../../apps/desktop/src-tauri/resources/sidecar/seed/library.template.json)
-- `server/node_modules/` — zależności runtime (optymalizacja rozmiaru → `pnpm deploy --prod` w [[`build-desktop-sidecar.mjs`](../../apps/desktop/scripts/build-desktop-sidecar.mjs)](../../apps/desktop/scripts/build-desktop-sidecar.mjs); bez `src`/testów workspace)
+- `server/node_modules/` — zależności runtime (optymalizacja rozmiaru → `pnpm deploy --prod` w [`build-desktop-sidecar.mjs`](../../apps/desktop/scripts/build-desktop-sidecar.mjs); bez `src`/testów workspace)
 
 **Zakaz:** katalog `docs/` repo, ADR-y, raporty audytowe, [`README.md`](../../README.md) produktowy w `web/` lub `server/dist/`.
-Build: [[`apps/desktop/scripts/build-desktop-sidecar.mjs`](../../apps/desktop/scripts/build-desktop-sidecar.mjs)](../../apps/desktop/scripts/build-desktop-sidecar.mjs) — assert po pakowaniu.
+Build: [`apps/desktop/scripts/build-desktop-sidecar.mjs`](../../apps/desktop/scripts/build-desktop-sidecar.mjs) — assert po pakowaniu.
 
 ## Konsekwencje
 

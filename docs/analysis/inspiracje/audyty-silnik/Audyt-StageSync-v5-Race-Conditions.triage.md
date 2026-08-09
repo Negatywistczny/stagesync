@@ -12,18 +12,18 @@
 
 ## Rozstrzygnięte
 
-| ID | Temat | Stan | Notatka |
-|----|--------|------|---------|
-| BUG-SET-01 | Auto-advance await I/O vs Seek/Pause FOH | `fixed` | `stillPastEnd` po każdym await |
-| BUG-SET-02 | Brak WS event po `PUT/PATCH` setlisty | `fixed` | `setlist_snapshot` na `/ws/transport` + hub; Client/Admin/Timeline |
-| BUG-SET-03 | Ghost ID → unhandled rejection | `rejected` | Prune + catch/finally |
-| BUG-SET-04 | `resolveSetlistNext` poza setlistą → first | `fixed` | Zwraca `null` (align z Client UI); auto-advance → stop |
-| BUG-SET-05 | HTTP `getTransport` vs WS tick | `fixed` | Brak HTTP w `ws.onopen` |
+| ID         | Temat                                      | Stan       | Notatka                                                            |
+| ---------- | ------------------------------------------ | ---------- | ------------------------------------------------------------------ |
+| BUG-SET-01 | Auto-advance await I/O vs Seek/Pause FOH   | `fixed`    | `stillPastEnd` po każdym await                                     |
+| BUG-SET-02 | Brak WS event po `PUT/PATCH` setlisty      | `fixed`    | `setlist_snapshot` na `/ws/transport` + hub; Client/Admin/Timeline |
+| BUG-SET-03 | Ghost ID → unhandled rejection             | `rejected` | Prune + catch/finally                                              |
+| BUG-SET-04 | `resolveSetlistNext` poza setlistą → first | `fixed`    | Zwraca `null` (align z Client UI); auto-advance → stop             |
+| BUG-SET-05 | HTTP `getTransport` vs WS tick             | `fixed`    | Brak HTTP w `ws.onopen`                                            |
 
 ## Otwarte / hipotezy
 
-| ID | Temat | Impact | Stan | Dlaczego ciekawe |
-|----|--------|--------|------|------------------|
+| ID         | Temat                                  | Impact | Stan         | Dlaczego ciekawe                       |
+| ---------- | -------------------------------------- | ------ | ------------ | -------------------------------------- |
 | BUG-SET-06 | Równoległe PUT + PATCH setlist bez OCC | Średni | `hypothesis` | Last-write-wins; bez repro multi-Admin |
 
 ## Następny krok eng

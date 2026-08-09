@@ -11,21 +11,21 @@ Your goal is to provide a comprehensive technical blueprint for implementing a r
 Please structure your research report to strictly cover the following areas:
 
 1. **The Core Algorithmic Pipeline:**
-   - Detail the current state-of-the-art (SotA) sequence for robust beat tracking.
-   - Explain the exact roles and mathematical necessities of: Multi-band Spectral Flux, Onset Detection functions, Periodicity estimation (Autocorrelation/Comb Filters), and track-routing/smoothing using Hidden Markov Models (HMM) or Dynamic Programming (e.g., Viterbi algorithm). 
-   - How do these algorithms maintain "beat inertia" to distinguish intentional tempo changes (rubato) from syncopation or groove (swing) without causing grid jitter?
+      - Detail the current state-of-the-art (SotA) sequence for robust beat tracking.
+      - Explain the exact roles and mathematical necessities of: Multi-band Spectral Flux, Onset Detection functions, Periodicity estimation (Autocorrelation/Comb Filters), and track-routing/smoothing using Hidden Markov Models (HMM) or Dynamic Programming (e.g., Viterbi algorithm). 
+      - How do these algorithms maintain "beat inertia" to distinguish intentional tempo changes (rubato) from syncopation or groove (swing) without causing grid jitter?
 
 2. **Proprietary Methods & Patents (Apple/Emagic):**
-   - Search for and summarize any publicly available Apple patents, research papers, or reverse-engineering efforts regarding "Smart Tempo", "Flex Time", or dynamic beat mapping. 
+      - Search for and summarize any publicly available Apple patents, research papers, or reverse-engineering efforts regarding "Smart Tempo", "Flex Time", or dynamic beat mapping. 
 
 3. **Modern AI vs. Traditional DSP:**
-   - Compare traditional mathematical DSP methods with modern Neural Network approaches (RNNs / BiLSTMs) for beat and downbeat detection.
-   - Analyze specific open-source Sota libraries: Madmom, Essentia (and essentia.js), and Librosa. Evaluate their accuracy on complex audio and their feasibility for client-side (browser) processing.
+      - Compare traditional mathematical DSP methods with modern Neural Network approaches (RNNs / BiLSTMs) for beat and downbeat detection.
+      - Analyze specific open-source Sota libraries: Madmom, Essentia (and essentia.js), and Librosa. Evaluate their accuracy on complex audio and their feasibility for client-side (browser) processing.
 
 4. **Architectural Blueprint (TypeScript & Web Audio API):**
-   - Provide a system architecture for executing these MIR algorithms without blocking the main UI thread. 
-   - Address data handling: decoding MP3/WAV to raw PCM, passing large Float32Arrays to Web Workers (using Transferables or SharedArrayBuffer), and managing WASM memory limits.
-   - Define a strictly typed Data Structure (AST/JSON) for the resulting tempo map that can be efficiently consumed by a UI grid-rendering engine.
+      - Provide a system architecture for executing these MIR algorithms without blocking the main UI thread. 
+      - Address data handling: decoding MP3/WAV to raw PCM, passing large Float32Arrays to Web Workers (using Transferables or SharedArrayBuffer), and managing WASM memory limits.
+      - Define a strictly typed Data Structure (AST/JSON) for the resulting tempo map that can be efficiently consumed by a UI grid-rendering engine.
 
 Deliver the findings as a deeply technical, well-structured markdown document optimized for a senior software engineer.
 
@@ -54,7 +54,7 @@ Dynamic Tempo Mapping Architecture
 
 # Dynamiczne Mapowanie Tempa i Śledzenie Rytmu w Cyfrowych Stacjach Roboczych Audio: Kompleksowy Projekt Architektoniczny i Algorytmiczny
 
-Automatyczne dopasowywanie cyfrowych środowisk audio do płynnego, niekwantyzowanego w czasie rzeczywistym tempa ludzkich wykonań muzycznych stanowi jedno z najbardziej złożonych wyzwań w dziedzinie cyfrowego przetwarzania sygnałów (DSP) oraz systemów wyszukiwania informacji muzycznej (Music Information Retrieval – MIR). W przeciwieństwie do sztywno sekwencjonowanej muzyki elektronicznej, występy na żywo charakteryzują się naturalnymi fluktuacjami tempa, celowym stosowaniem techniki rubato oraz skomplikowanymi zjawiskami synkopowania. Aby zniwelować tę lukę, nowoczesne cyfrowe stacje robocze audio (Digital Audio Workstations – DAW) opierają się na zaawansowanych systemach dynamicznego mapowania tempa oraz śledzenia rytmu (beat tracking). 
+Automatyczne dopasowywanie cyfrowych środowisk audio do płynnego, niekwantyzowanego w czasie rzeczywistym tempa ludzkich wykonań muzycznych stanowi jedno z najbardziej złożonych wyzwań w dziedzinie cyfrowego przetwarzania sygnałów (DSP) oraz systemów wyszukiwania informacji muzycznej (Music Information Retrieval – MIR). W przeciwieństwie do sztywno sekwencjonowanej muzyki elektronicznej, występy na żywo charakteryzują się naturalnymi fluktuacjami tempa, celowym stosowaniem techniki rubato oraz skomplikowanymi zjawiskami synkopowania. Aby zniwelować tę lukę, nowoczesne cyfrowe stacje robocze audio (Digital Audio Workstations – DAW) opierają się na zaawansowanych systemach dynamicznego mapowania tempa oraz śledzenia rytmu (beat tracking).
 
 Niniejszy raport dostarcza wyczerpującego, technicznego planu architektonicznego, który pozwala na dogłębne zrozumienie wewnętrznych mechanizmów tych systemów. Dokument ten koncentruje się na dostarczeniu kompletnej specyfikacji niezbędnej do wdrożenia wysoce odpornej, działającej w trybie offline funkcji śledzenia rytmu i estymacji tempa wewnątrz przeglądarkowego środowiska DAW, zbudowanego przy użyciu języka TypeScript oraz technologii WebAssembly (WASM). Analiza obejmuje zarówno klasyczne metody matematyczne, zastrzeżone rozwiązania korporacyjne, jak i najnowsze osiągnięcia w dziedzinie sztucznej inteligencji.
 
@@ -108,7 +108,7 @@ Parametr $\alpha$ bezpośrednio steruje inercją uderzenia, działając jako wsp
 
 $F(\Delta t, \tau_p) = - \left( \log \frac{\Delta t}{\tau_p} \right)^2$
 
-Ta symetryczna funkcja logarytmiczna w równym stopniu karze tempa, które są dwukrotnie szybsze, jak i te dwukrotnie wolniejsze w stosunku do tempa bazowego . Poprzez rekurencyjne obliczanie skumulowanego wyniku $C^*(t)$, algorytm wyodrębnia optymalną ścieżkę wzdłuż całego pliku audio, upewniając się, że wygenerowana mapa tempa nie ulega dzikim fluktuacjom w przypadku napotkania sporadycznych, gęstych synkop lub ciszy. 
+Ta symetryczna funkcja logarytmiczna w równym stopniu karze tempa, które są dwukrotnie szybsze, jak i te dwukrotnie wolniejsze w stosunku do tempa bazowego . Poprzez rekurencyjne obliczanie skumulowanego wyniku $C^*(t)$, algorytm wyodrębnia optymalną ścieżkę wzdłuż całego pliku audio, upewniając się, że wygenerowana mapa tempa nie ulega dzikim fluktuacjom w przypadku napotkania sporadycznych, gęstych synkop lub ciszy.
 
 #### Ukryte Modele Markowa (HMM) i Dynamiczne Sieci Bayesowskie (DBN)
 
@@ -128,13 +128,13 @@ Korporacja Apple, bazując na technologiach przejętych wraz z firmą Emagic (tw
 
 Moduł Smart Tempo odpowiada za makroskopowe odwzorowanie czasowe niekwantyzowanego materiału dźwiękowego. Architektura tego systemu charakteryzuje się trzema odrębnymi trybami operacyjnymi, które determinują zachowanie silnika DAW względem analizowanego pliku .
 
-| Tryb Operacyjny | Zachowanie Algorytmiczne i Mechanika | Główne Zastosowanie Produkcyjne |
-| :--- | :--- | :--- |
-| **Keep** | Wymusza dostosowanie importowanego lub nagrywanego materiału audio do sztywnej siatki tempa projektu poprzez agresywne rozciąganie w czasie (time-stretching). Globalna ścieżka tempa pozostaje nienaruszona. | Tworzenie remiksów, produkcja elektronicznej muzyki tanecznej (EDM) opartej na precyzyjnie przyciętych pętlach. |
-| **Adapt** | Analizuje przychodzący materiał dźwiękowy w celu wygenerowania dynamicznej mapy tempa. Globalna ścieżka tempa projektu płynnie ewoluuje, idealnie odzwierciedlając wahania (rubato) ludzkiego wykonania. | Rejestrowanie partii instrumentów akustycznych bez użycia metronomu; synchronizacja projektu do nagrania "na żywo". |
-| **Auto** | Dokonuje analizy kontekstowej stanu projektu oraz przychodzącego dźwięku, aby autonomicznie wybrać tryb Keep lub Adapt na podstawie istniejących muzycznych punktów kotwiczących w osi czasu. | Ogólna praca wielośladowa, komponowanie i rejestracja środowiskowa. |
+| Tryb Operacyjny | Zachowanie Algorytmiczne i Mechanika                                                                                                                                                                          | Główne Zastosowanie Produkcyjne                                                                                     |
+| :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------ |
+| **Keep**        | Wymusza dostosowanie importowanego lub nagrywanego materiału audio do sztywnej siatki tempa projektu poprzez agresywne rozciąganie w czasie (time-stretching). Globalna ścieżka tempa pozostaje nienaruszona. | Tworzenie remiksów, produkcja elektronicznej muzyki tanecznej (EDM) opartej na precyzyjnie przyciętych pętlach.     |
+| **Adapt**       | Analizuje przychodzący materiał dźwiękowy w celu wygenerowania dynamicznej mapy tempa. Globalna ścieżka tempa projektu płynnie ewoluuje, idealnie odzwierciedlając wahania (rubato) ludzkiego wykonania.      | Rejestrowanie partii instrumentów akustycznych bez użycia metronomu; synchronizacja projektu do nagrania "na żywo". |
+| **Auto**        | Dokonuje analizy kontekstowej stanu projektu oraz przychodzącego dźwięku, aby autonomicznie wybrać tryb Keep lub Adapt na podstawie istniejących muzycznych punktów kotwiczących w osi czasu.                 | Ogólna praca wielośladowa, komponowanie i rejestracja środowiskowa.                                                 |
 
-Gdy system działa w trybie "Adapt", oprogramowanie DAW uruchamia opisany wcześniej potok MIR w celu wyodrębnienia transjentów i okresowości. Następnie, na podstawie przypisanych prawdopodobieństw, generowana jest fluktuująca globalna krzywa tempa . Patenty Apple (takie jak US8347210B2 i US8704068B2) szczegółowo opisują metodologie identyfikowania okresowych uderzeń i mapowania ich na ograniczone regiony wizualne w interfejsie użytkownika. Umożliwia to dynamiczną synchronizację ramek wizualnych ze zdarzeniami dźwiękowymi, wraz z wbudowanymi mechanizmami automatycznej kontroli tempa, które modelują subtelne zjawiska takie jak *accelerando* (przyspieszenie) i *rubato* (wahanie) .
+Gdy system działa w trybie "Adapt", oprogramowanie DAW uruchamia opisany wcześniej potok MIR w celu wyodrębnienia transjentów i okresowości. Następnie, na podstawie przypisanych prawdopodobieństw, generowana jest fluktuująca globalna krzywa tempa . Patenty Apple (takie jak US8347210B2 i US8704068B2) szczegółowo opisują metodologie identyfikowania okresowych uderzeń i mapowania ich na ograniczone regiony wizualne w interfejsie użytkownika. Umożliwia to dynamiczną synchronizację ramek wizualnych ze zdarzeniami dźwiękowymi, wraz z wbudowanymi mechanizmami automatycznej kontroli tempa, które modelują subtelne zjawiska takie jak _accelerando_ (przyspieszenie) i _rubato_ (wahanie) .
 
 Warte uwagi są również najnowsze patenty (np. US20240161721A1), które rozszerzają mapowanie tempa na detekcję ruchu. Wskazuje to na przyszłe integracje, w których system na poziomie operacyjnym dostosowuje odtwarzanie dźwięku do kadencji chodu lub biegu użytkownika, płynnie wyrównując fazę uderzeń muzycznych z krokami, z uwzględnieniem opóźnień transmisji algorytmicznej .
 
@@ -142,9 +142,9 @@ Warte uwagi są również najnowsze patenty (np. US20240161721A1), które rozsze
 
 O ile Smart Tempo wyznacza globalną mapę metryczną, o tyle Flex Time dyktuje sposób fizycznej modyfikacji danych audio w celu dostosowania ich do tej mapy . W zależności od zawartości harmonicznej dźwięku, system aplikuje różne strategie przetwarzania.
 
-Tryb *Slicing* (cięcie na plastry) nie wykorzystuje kompresji ani ekspansji czasowej (zero time-stretch) . Algorytm automatycznie tnie ładunek audio w miejscach znaczników transjentów wygenerowanych przez funkcję ODF. W miarę wahań globalnego tempa, te dyskretne plastry są przesuwane bliżej siebie lub od siebie oddalane. Aby zamaskować cyfrową ciszę pojawiającą się między rozsuniętymi fragmentami, algorytm wykorzystuje funkcje sztucznego wybrzmienia (decay) oraz płynnego przenikania (cross-fading) . Ze względu na fakt, że szybkość odtwarzania samego fragmentu audio pozostaje niezmieniona, proces ten całkowicie zapobiega rozmyciu fazowemu, co czyni go najlepszym wyborem dla nietonalnych instrumentów perkusyjnych .
+Tryb _Slicing_ (cięcie na plastry) nie wykorzystuje kompresji ani ekspansji czasowej (zero time-stretch) . Algorytm automatycznie tnie ładunek audio w miejscach znaczników transjentów wygenerowanych przez funkcję ODF. W miarę wahań globalnego tempa, te dyskretne plastry są przesuwane bliżej siebie lub od siebie oddalane. Aby zamaskować cyfrową ciszę pojawiającą się między rozsuniętymi fragmentami, algorytm wykorzystuje funkcje sztucznego wybrzmienia (decay) oraz płynnego przenikania (cross-fading) . Ze względu na fakt, że szybkość odtwarzania samego fragmentu audio pozostaje niezmieniona, proces ten całkowicie zapobiega rozmyciu fazowemu, co czyni go najlepszym wyborem dla nietonalnych instrumentów perkusyjnych .
 
-Dla złożonego materiału harmonicznego (takiego jak pełne miksy, partie fortepianu czy chóry), Logic Pro stosuje algorytm *Polyphonic Flex Time*, który jest niezwykle obciążającym procesor wokoderem fazowym (Phase Vocoder) . Standardowy wokoder fazowy realizuje modyfikację skali czasowej (TSM) poprzez manipulację wielkością kroku analizy (analysis hop size) i kroku syntezy (synthesis hop size) podczas przetwarzania STFT i odwrotnej STFT (ISTFT) . 
+Dla złożonego materiału harmonicznego (takiego jak pełne miksy, partie fortepianu czy chóry), Logic Pro stosuje algorytm _Polyphonic Flex Time_, który jest niezwykle obciążającym procesor wokoderem fazowym (Phase Vocoder) . Standardowy wokoder fazowy realizuje modyfikację skali czasowej (TSM) poprzez manipulację wielkością kroku analizy (analysis hop size) i kroku syntezy (synthesis hop size) podczas przetwarzania STFT i odwrotnej STFT (ISTFT) .
 
 Niestety, tradycyjne wokodery fazowe niszczą pionową spójność fazową sygnału audio, co prowadzi do powstawania irytujących artefaktów dźwiękowych znanych jako "phasiness" (metaliczne, pogłosowe rozmycie) oraz niszczenia precyzji transjentów . Aby rozwiązać ten problem, algorytmy Apple wykorzystują zaawansowane techniki blokady fazy tożsamościowej (identity phase-locking), których pionierami byli Laroche i Dolson . Technika ta identyfikuje piki widmowe wewnątrz ramy czasowej STFT i "blokuje" fazy otaczających koszy o niższej magnitudzie do fazy kanału piku . Poprzez wymuszenie spójności fazowej zarówno w poziomie (w czasie), jak i w pionie (w częstotliwości), algorytm polifoniczny potrafi skutecznie rozciągać szerokopasmowe, nie-sinusoidalne komponenty w czasie bez konieczności przeprowadzania rygorystycznej detekcji transjentów .
 
@@ -160,7 +160,7 @@ Podejście to charakteryzuje się deterministycznym zachowaniem, całkowitą prz
 
 ### Zastosowanie Sieci Neuronowych
 
-Modele głębokiego uczenia omijają problem ręcznie projektowanych funkcji ODF poprzez bezpośrednie uczenie się optymalnych reprezentacji cech z mel-spektrogramów. 
+Modele głębokiego uczenia omijają problem ręcznie projektowanych funkcji ODF poprzez bezpośrednie uczenie się optymalnych reprezentacji cech z mel-spektrogramów.
 
 W systemie Madmom wykorzystywany jest moduł `DBNBeatTracker`, który implementuje dwukierunkową sieć z pamięcią długo-krótkoterminową (BLSTM) w celu generowania funkcji aktywacji uderzeń . Jako dekoder post-processingowy zastosowano dynamiczną sieć bayesowską (DBN) . Choć model ten jest niezwykle dokładny, DBN ogranicza wyjściowe analizy do z góry zdefiniowanych metrum i wymusza sztywne granice tempa. W rezultacie system ten jest podatny na katastrofalne błędy, gdy analizuje utwory z płynnymi, nieprzewidywalnymi zmianami sygnatury czasowej .
 
@@ -168,7 +168,7 @@ Algorytm BeatNet wykorzystuje konwolucyjne rekurencyjne sieci neuronowe (CRNN), 
 
 ### Architektura Transformatora: Model "Beat This!"
 
-Obecnym absolutnym liderem wydajności (State-of-the-Art) w estymacji tempa w trybie offline jest architektura "Beat This!" . Całkowicie eliminuje ona potrzebę stosowania po-przetwarzania za pomocą DBN, polegając w pełni na ogromnym oknie kontekstowym głębokiego transformatora . 
+Obecnym absolutnym liderem wydajności (State-of-the-Art) w estymacji tempa w trybie offline jest architektura "Beat This!" . Całkowicie eliminuje ona potrzebę stosowania po-przetwarzania za pomocą DBN, polegając w pełni na ogromnym oknie kontekstowym głębokiego transformatora .
 
 Model opiera się na wyspecjalizowanym transformatorze obrotowym (RoFormer) z systemem kodowania pozycji obrotowej (RoPE) . Architektura frontendowa naprzemiennie wykorzystuje dwa typy bloków: transformatory ukierunkowane na częstotliwość (frequency-directed) oraz transformatory ukierunkowane na czas (time-directed) . Bloki ukierunkowane na częstotliwość traktują ramki czasowe jako sekwencje w celu wyizolowania struktur harmonicznych i zależności spektralnych, podczas gdy bloki zorientowane na czas skanują wyłącznie postęp temporalny . Dodatkowo model wykorzystuje autorską funkcję błędu binarnej entropii krzyżowej (shift-tolerant BCE loss), która wykazuje tolerancję na niewielkie odchylenia czasowe w adnotacjach uczących, skutecznie rozwiązując problem nadmiernego karania tzw. miękkich początków dźwięku . Dzięki eliminacji DBN, sieć samodzielnie, w sposób naturalny dostosowuje się do zmian metrum, skrajnych spowolnień i swobodnie traktowanego rubato .
 
@@ -176,11 +176,11 @@ Model opiera się na wyspecjalizowanym transformatorze obrotowym (RoFormer) z sy
 
 Poniższa tabela przedstawia porównawczą ocenę wykonalności implementacji tych modeli w przeglądarkowej stacji DAW działającej po stronie klienta (Client-Side).
 
-| Model / Architektura | Mechanizm Wnioskowania | Wykonalność po Stronie Klienta (Przeglądarka Webowa) | Narzut Pamięci / CPU |
-| :--- | :--- | :--- | :--- |
-| **Essentia.js (Klasyczne DSP)** | DP / Dekodowanie Viterbiego | **Znakomita.** Kod przekompilowany na WebAssembly (WASM). Wykonywany synchronicznie bez narzutu na załadowanie modelu wagowego. | Bardzo niski (< 10 MB) |
-| **BeatNet (CRNN)** | Filtrowanie cząsteczkowe (Particle Filtering) | **Średnia.** Wymaga bibliotek takich jak ONNX Runtime for Web lub WebNN. Przyczynowa natura umożliwia strumieniowanie fragmentów (chunking) i omija limity pamięci przeglądarki. | Średni (~50-100 MB) |
-| **Beat This! (RoFormer)** | Bezpośrednia projekcja sieciowa | **Słaba.** Wymaga wczytania ogromnego kontekstu wejściowego bezpośrednio do ograniczonej pamięci RAM przeglądarki. Masywna liczba parametrów uniemożliwia płynne działanie bez agresywnej destylacji wiedzy. | Bardzo wysoki (> 500 MB) |
+| Model / Architektura            | Mechanizm Wnioskowania                        | Wykonalność po Stronie Klienta (Przeglądarka Webowa)                                                                                                                                                         | Narzut Pamięci / CPU     |
+| :------------------------------ | :-------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------- |
+| **Essentia.js (Klasyczne DSP)** | DP / Dekodowanie Viterbiego                   | **Znakomita.** Kod przekompilowany na WebAssembly (WASM). Wykonywany synchronicznie bez narzutu na załadowanie modelu wagowego.                                                                              | Bardzo niski (< 10 MB)   |
+| **BeatNet (CRNN)**              | Filtrowanie cząsteczkowe (Particle Filtering) | **Średnia.** Wymaga bibliotek takich jak ONNX Runtime for Web lub WebNN. Przyczynowa natura umożliwia strumieniowanie fragmentów (chunking) i omija limity pamięci przeglądarki.                             | Średni (~50-100 MB)      |
+| **Beat This! (RoFormer)**       | Bezpośrednia projekcja sieciowa               | **Słaba.** Wymaga wczytania ogromnego kontekstu wejściowego bezpośrednio do ograniczonej pamięci RAM przeglądarki. Masywna liczba parametrów uniemożliwia płynne działanie bez agresywnej destylacji wiedzy. | Bardzo wysoki (> 500 MB) |
 
 Transformatory takie jak "Beat This!" oferują niezrównane wartości wskaźnika F1 , jednak ich liczba parametrów i wymagania pamięciowe są wysoce problematyczne przy wykonywaniu w środowisku JavaScript bez zastosowania technik destylacji modeli . Dla w pełni responsywnego, przeglądarkowego środowiska DAW, optymalnym rozwiązaniem zapewniającym balans między dokładnością a ograniczeniami platformy jest zastosowanie hybrydowego potoku DSP opartego na C++ (takiego jak Essentia.js) lub mocno wydestylowanej sieci CRNN wspomaganej sprzętowo instrukcjami SIMD za pośrednictwem WASM .
 
@@ -212,7 +212,11 @@ const bytesPerSample = 4;
 // Rezerwacja pamięci w module C++
 const bufferPtr = wasmModule._malloc(bufferLength * bytesPerSample);
 // Zmapowanie pamięci binarnej WASM na widok Float32Array
-const wasmHeap = new Float32Array(wasmModule.HEAPF32.buffer, bufferPtr, bufferLength);
+const wasmHeap = new Float32Array(
+  wasmModule.HEAPF32.buffer,
+  bufferPtr,
+  bufferLength,
+);
 
 // Zapisywanie danych z bufora SharedArrayBuffer bezpośrednio na stertę WASM
 wasmHeap.set(sharedAudioData);
@@ -230,20 +234,20 @@ Aby w pełni sfinalizować potok integracyjny, wydrukowane przez analizator offl
  * W systemie dynamicznym, DAW płynnie interpoluje tempo pomiędzy węzłami.
  */
 export interface ITempoNode {
-    readonly id: string;
-    readonly timeSeconds: number;       // Fizyczny czas wystąpienia
-    readonly sampleIndex: number;       // Dokładny wskaźnik próbki PCM
-    readonly bpm: number;               // Oszacowane tempo dla węzła
+  readonly id: string;
+  readonly timeSeconds: number; // Fizyczny czas wystąpienia
+  readonly sampleIndex: number; // Dokładny wskaźnik próbki PCM
+  readonly bpm: number; // Oszacowane tempo dla węzła
 }
 
 /**
  * Definiuje kluczowe struktury sygnatury czasowej.
  */
 export interface ISignatureEvent {
-    readonly timeSeconds: number;
-    readonly measureIndex: number;
-    readonly numerator: number;         // Licznik, np. 4
-    readonly denominator: number;       // Mianownik, np. 4
+  readonly timeSeconds: number;
+  readonly measureIndex: number;
+  readonly numerator: number; // Licznik, np. 4
+  readonly denominator: number; // Mianownik, np. 4
 }
 
 /**
@@ -251,9 +255,9 @@ export interface ISignatureEvent {
  * Element kluczowy dla trybu "Slicing" i kotwiczenia mechanizmów Phase-Vocoder w algorytmach Flex Time.
  */
 export interface IBeatMarker {
-    readonly timeSeconds: number;
-    readonly confidence: number;        // Miara pewności z modelu DBN/Viterbi (0.0 - 1.0)
-    readonly isDownbeat: boolean;       // Status pierwszego uderzenia taktu
+  readonly timeSeconds: number;
+  readonly confidence: number; // Miara pewności z modelu DBN/Viterbi (0.0 - 1.0)
+  readonly isDownbeat: boolean; // Status pierwszego uderzenia taktu
 }
 
 /**
@@ -261,10 +265,10 @@ export interface IBeatMarker {
  * Obiekt ten jest serializowany za pomocą ring buffer i przesyłany do Głównego Wątku.
  */
 export interface ITempoMap {
-    readonly nodes: ITempoNode[];
-    readonly markers: IBeatMarker[];
-    readonly signatures: ISignatureEvent[];
-    readonly averageBpm: number;
+  readonly nodes: ITempoNode[];
+  readonly markers: IBeatMarker[];
+  readonly signatures: ISignatureEvent[];
+  readonly averageBpm: number;
 }
 ```
 
@@ -272,9 +276,10 @@ Powyższa architektura skutecznie odsprzęga obiektywny "fizyczny" czas trwania 
 
 ## Podsumowanie
 
-Inżynieria systemów dynamicznego mapowania tempa i śledzenia uderzeń w czasie wolnym od kwantyzacji to dziedzina łącząca zaawansowaną psychoakustykę, rygorystyczne przetwarzanie sygnałów cyfrowych oraz architekturę oprogramowania na najniższym poziomie. Przejście od klasycznych systemów matematycznych (np. detekcja ODF w dziedzinie zespolonej czy modelowanie sieci DBN) do współczesnych sztucznych inteligencji opartych na sieciach transformatorowych znacznie zwiększyło tolerancję na muzyczne aberracje, takie jak metrum asymetryczne czy potężne wychylenia tempa. 
+Inżynieria systemów dynamicznego mapowania tempa i śledzenia uderzeń w czasie wolnym od kwantyzacji to dziedzina łącząca zaawansowaną psychoakustykę, rygorystyczne przetwarzanie sygnałów cyfrowych oraz architekturę oprogramowania na najniższym poziomie. Przejście od klasycznych systemów matematycznych (np. detekcja ODF w dziedzinie zespolonej czy modelowanie sieci DBN) do współczesnych sztucznych inteligencji opartych na sieciach transformatorowych znacznie zwiększyło tolerancję na muzyczne aberracje, takie jak metrum asymetryczne czy potężne wychylenia tempa.
 
 Skuteczne wdrożenie tych skomplikowanych matematycznie modeli w stacjach DAW opartych na przeglądarce i języku TypeScript wymaga jednak chirurgicznej wręcz precyzji w zarządzaniu pamięcią. Poprzez zastosowanie bezblokujących buforów pierścieniowych na bazie `SharedArrayBuffer`, inteligentne rozdzielenie obowiązków między wątkami oraz ręczną kontrolę sterty WebAssembly, współcześni deweloperzy mogą z powodzeniem przenieść potężne mechanizmy estymacji tempa – znane do tej pory tylko z platform natywnych takich jak Apple Logic Pro – prosto do otwartego świata sieci Web. Architektura ta toruje drogę twórcom poszukującym bezkompromisowej integracji organicznych nagrań akustycznych z sekwencjonowanymi światami produkcji muzycznej nowej generacji.
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)

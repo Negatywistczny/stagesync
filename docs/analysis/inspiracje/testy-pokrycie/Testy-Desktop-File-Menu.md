@@ -10,6 +10,7 @@ CEL ANALIZY
 [`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts) ma minimalne pokrycie (tylko `currentTimelineProjectId` w [`desktopMenuEvents.test.ts`](../../../../apps/web/src/lib/client/desktopMenuEvents.test.ts)). Zaproponuj pełną strategię testów dla async flows.
 
 PYTANIA BADAWCZE
+
 1. Jak mockować `createProject`, `fetchProject`, `putProject`, `importLibraryPack`, `exportLibraryPack`?
 2. `saveProjectAs`: optimistic lock `updatedAt`, zachowanie `midiProgramId` — scenariusze błędów?
 3. `importLibraryFile`: limit 16MB, ZIP rejection (`looksLikeZipBytes`), invalid JSON — testy?
@@ -18,11 +19,13 @@ PYTANIA BADAWCZE
 6. Integracja z [`DesktopMenuBridge.tsx`](../../../../apps/web/src/shells/DesktopMenuBridge.tsx) — co testować w komponencie vs w lib?
 
 KONTEKST
+
 - Tauri shell; web lib musi działać też w przeglądarce (fetch API).
 - Shared: `looksLikeZipBytes`, `ZIP_IMPORT_UNSUPPORTED_PL`.
 - Vitest; wzorzec mock `vi.mock('./libraryApi.js')`.
 
 OCZEKIWANY OUTPUT
+
 1. Lista testów unit per exported function.
 2. Mocki: libraryApi, pushRecentTimelineProject, DOM download, File/ArrayBuffer.
 3. Ryzyka flaky: brak przy mockach; uwaga na global URL APIs.
@@ -116,13 +119,13 @@ Funkcja `createSongAndOpen` weryfikuje poprawne przekazanie opcji opcjonalnych (
 
 Testowanie logiki interfejsu w aplikacji hybrydowej wymaga wyraźnego rozgraniczenia pomiędzy testami czystych funkcji orkiestracyjnych w [`desktopFileMenu.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.ts) a testami integracyjnymi komponentu widoku [`DesktopMenuBridge.tsx`](../../../../apps/web/src/shells/DesktopMenuBridge.tsx) . Komponent [`DesktopMenuBridge.tsx`](../../../../apps/web/src/shells/DesktopMenuBridge.tsx) nasłuchuje zdarzeń globalnych `DESKTOP_MENU_EVENT` i zarządza stanem interfejsu (dialogi, modalne okna wprowadzania nazw, nakładki ładowania `fileBusy`) .
 
-| Obszar Funkcjonalny | Zakres Testów w [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) (Unit / Lib) | Zakres Testów w `DesktopMenuBridge.test.tsx` (Integration / UI) |
-| :--- | :--- | :--- |
-| **Walidacja Danych Wejściowych** | Weryfikacja pustych nazw, walidacja limitu 16MB, detekcja magii ZIP i błędów JSON . | Wyświetlanie dialogu powiadomień `window.alert` z komunikatem błędu zwróconym z biblioteki . |
-| **Komunikacja z API** | Poprawność wywołań `createProject`, `putProject`, `importLibraryPack`, `exportLibraryPack` . | Nie dotyczy – komponent nie wywołuje [`libraryApi.ts`](../../../../apps/web/src/lib/shell-operator/libraryApi.ts) bezpośrednio, deleguje zadania do lib . |
-| **Zarządzanie Stanem UI** | Brak – moduł lib nie posiada stanu i nie reaguje na cykl życia Reacta . | Przełączanie flagi `fileBusy`, wyświetlanie `ShellPromptDialog` dla akcji "Zapisz jako" i "Nowy" . |
-| **Nawigacja i Routing** | Weryfikacja poprawności wyciągania identyfikatora ze ścieżki w `currentTimelineProjectId` . | Reakcja na zwrócenie obiektu projektu i wywołanie `navigate('/timeline/:id')` lub `/admin` . |
-| **Interakcja z Drzewem DOM** | Generowanie Blobów, tworzenie obiektów URL, wywoływanie `a.click()` i `URL.revokeObjectURL` . | Wyzwalanie zdarzenia `.click()` na ukrytym elemencie `<input type="file">` po odebraniu `file-import` . |
+| Obszar Funkcjonalny              | Zakres Testów w [`desktopFileMenu.test.ts`](../../../../apps/web/src/lib/client/desktopFileMenu.test.ts) (Unit / Lib) | Zakres Testów w `DesktopMenuBridge.test.tsx` (Integration / UI)                                                                                           |
+| :------------------------------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Walidacja Danych Wejściowych** | Weryfikacja pustych nazw, walidacja limitu 16MB, detekcja magii ZIP i błędów JSON .                                   | Wyświetlanie dialogu powiadomień `window.alert` z komunikatem błędu zwróconym z biblioteki .                                                              |
+| **Komunikacja z API**            | Poprawność wywołań `createProject`, `putProject`, `importLibraryPack`, `exportLibraryPack` .                          | Nie dotyczy – komponent nie wywołuje [`libraryApi.ts`](../../../../apps/web/src/lib/shell-operator/libraryApi.ts) bezpośrednio, deleguje zadania do lib . |
+| **Zarządzanie Stanem UI**        | Brak – moduł lib nie posiada stanu i nie reaguje na cykl życia Reacta .                                               | Przełączanie flagi `fileBusy`, wyświetlanie `ShellPromptDialog` dla akcji "Zapisz jako" i "Nowy" .                                                        |
+| **Nawigacja i Routing**          | Weryfikacja poprawności wyciągania identyfikatora ze ścieżki w `currentTimelineProjectId` .                           | Reakcja na zwrócenie obiektu projektu i wywołanie `navigate('/timeline/:id')` lub `/admin` .                                                              |
+| **Interakcja z Drzewem DOM**     | Generowanie Blobów, tworzenie obiektów URL, wywoływanie `a.click()` i `URL.revokeObjectURL` .                         | Wyzwalanie zdarzenia `.click()` na ukrytym elemencie `<input type="file">` po odebraniu `file-import` .                                                   |
 
 ---
 
@@ -148,13 +151,13 @@ Zaleca się utworzenie **nowego, dedykowanego pliku testowego** `apps/web/src/li
 
 Priorytetyzacja opiera się na analizie ryzyka utraty danych użytkownika (Data Loss Risk) oraz awarii aplikacji podczas pracy w trybie offline / na scenie.
 
-| Priorytet | Funkcja | Poziom Ryzyka | Uzasadnienie Priorytetu |
-| :---: | :--- | :---: | :--- |
-| **P0** | `importLibraryFile` | **Krytyczny** | Uszkodzenie struktury bazy danych lub wyzwalanie unhandled exceptions przy wczytaniu złego pliku (ZIP, >16MB, bad JSON) . |
-| **P0** | `saveProjectAs` | **Krytyczny** | Ryzyko utraty zmian lub nadpisania projektu źródłowego w przypadku błędnej obsługi `updatedAt` lub `midiProgramId` . |
-| **P1** | `createSongAndOpen` | **Wysoki** | Podstawowy przepływ tworzenia utworów; awaria uniemożliwia rozpoczynanie nowych projektów na scenie . |
-| **P1** | `downloadLibraryExport` | **Średni** | Uniemożliwienie wykonania kopii zapasowej; podatność na wycieki pamięci URL w interfejsie DOM . |
-| **P2** | `listTemplateIds` | **Niski** | Operacja bezpieczna (tylko odczyt); błąd skutkuje jedynie brakiem wyświetlenia listy szablonów . |
+| Priorytet | Funkcja                 | Poziom Ryzyka | Uzasadnienie Priorytetu                                                                                                   |
+| :-------: | :---------------------- | :-----------: | :------------------------------------------------------------------------------------------------------------------------ |
+|  **P0**   | `importLibraryFile`     | **Krytyczny** | Uszkodzenie struktury bazy danych lub wyzwalanie unhandled exceptions przy wczytaniu złego pliku (ZIP, >16MB, bad JSON) . |
+|  **P0**   | `saveProjectAs`         | **Krytyczny** | Ryzyko utraty zmian lub nadpisania projektu źródłowego w przypadku błędnej obsługi `updatedAt` lub `midiProgramId` .      |
+|  **P1**   | `createSongAndOpen`     |  **Wysoki**   | Podstawowy przepływ tworzenia utworów; awaria uniemożliwia rozpoczynanie nowych projektów na scenie .                     |
+|  **P1**   | `downloadLibraryExport` |  **Średni**   | Uniemożliwienie wykonania kopii zapasowej; podatność na wycieki pamięci URL w interfejsie DOM .                           |
+|  **P2**   | `listTemplateIds`       |   **Niski**   | Operacja bezpieczna (tylko odczyt); błąd skutkuje jedynie brakiem wyświetlenia listy szablonów .                          |
 
 ---
 
@@ -216,7 +219,10 @@ describe("desktopFileMenu async flows", () => {
       const result = await createSongAndOpen("Koncert Finale");
 
       expect(createProject).toHaveBeenCalledWith("Koncert Finale", undefined);
-      expect(pushRecentTimelineProject).toHaveBeenCalledWith("proj-101", "Koncert Finale");
+      expect(pushRecentTimelineProject).toHaveBeenCalledWith(
+        "proj-101",
+        "Koncert Finale",
+      );
       expect(result).toEqual({ id: "proj-101", name: "Koncert Finale" });
     });
 
@@ -229,7 +235,9 @@ describe("desktopFileMenu async flows", () => {
 
       await createSongAndOpen("Szablon Pop", { isTemplate: true });
 
-      expect(createProject).toHaveBeenCalledWith("Szablon Pop", { isTemplate: true });
+      expect(createProject).toHaveBeenCalledWith("Szablon Pop", {
+        isTemplate: true,
+      });
     });
   });
 
@@ -266,7 +274,9 @@ describe("desktopFileMenu async flows", () => {
       const result = await saveProjectAs("source-proj-id", "  Utwór Kopia  ");
 
       expect(fetchProject).toHaveBeenCalledWith("source-proj-id");
-      expect(createProject).toHaveBeenCalledWith("Utwór Kopia", { isTemplate: false });
+      expect(createProject).toHaveBeenCalledWith("Utwór Kopia", {
+        isTemplate: false,
+      });
       expect(putProject).toHaveBeenCalledWith("new-copy-id", {
         ...sourceProject,
         name: "Utwór Kopia",
@@ -274,7 +284,10 @@ describe("desktopFileMenu async flows", () => {
         updatedAt: "2026-03-30T12:00:00.000Z",
         midiProgramId: 88,
       });
-      expect(pushRecentTimelineProject).toHaveBeenCalledWith("new-copy-id", "Utwór Kopia");
+      expect(pushRecentTimelineProject).toHaveBeenCalledWith(
+        "new-copy-id",
+        "Utwór Kopia",
+      );
       expect(result).toEqual({ id: "new-copy-id", name: "Utwór Kopia" });
     });
 
@@ -287,7 +300,9 @@ describe("desktopFileMenu async flows", () => {
     });
 
     it("propagates error when fetchProject fails", async () => {
-      vi.mocked(fetchProject).mockRejectedValueOnce(new Error("HTTP 404: Projekt nie istnieje"));
+      vi.mocked(fetchProject).mockRejectedValueOnce(
+        new Error("HTTP 404: Projekt nie istnieje"),
+      );
 
       await expect(saveProjectAs("missing-id", "Nowa Nazwa")).rejects.toThrow(
         "HTTP 404: Projekt nie istnieje",
@@ -311,7 +326,9 @@ describe("desktopFileMenu async flows", () => {
     });
 
     it("rejects ZIP archives identified by looksLikeZipBytes magic bytes", async () => {
-      const zipHeaderBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00]).buffer;
+      const zipHeaderBytes = new Uint8Array([
+        0x50, 0x4b, 0x03, 0x04, 0x00, 0x00,
+      ]).buffer;
       const mockFile = {
         arrayBuffer: async () => zipHeaderBytes,
       } as File;
@@ -323,7 +340,9 @@ describe("desktopFileMenu async flows", () => {
     });
 
     it("throws readable polish error when JSON syntax is invalid", async () => {
-      const invalidJsonBytes = new TextEncoder().encode("{ stagesync: invalid-json ");
+      const invalidJsonBytes = new TextEncoder().encode(
+        "{ stagesync: invalid-json ",
+      );
       const mockFile = {
         arrayBuffer: async () => invalidJsonBytes.buffer,
       } as File;
@@ -339,7 +358,9 @@ describe("desktopFileMenu async flows", () => {
         stagesyncExportVersion: 3,
         projects: [{ name: "Song 1" }, { name: "Song 2" }],
       };
-      const validJsonBytes = new TextEncoder().encode(JSON.stringify(packObject));
+      const validJsonBytes = new TextEncoder().encode(
+        JSON.stringify(packObject),
+      );
       const mockFile = {
         arrayBuffer: async () => validJsonBytes.buffer,
       } as File;
@@ -363,7 +384,9 @@ describe("desktopFileMenu async flows", () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date("2026-03-30T15:00:00.000Z"));
 
-      const mockBlob = new Blob(['{"projects":[]}'], { type: "application/json" });
+      const mockBlob = new Blob(['{"projects":[]}'], {
+        type: "application/json",
+      });
       vi.mocked(exportLibraryPack).mockResolvedValueOnce(mockBlob);
 
       const createObjectURLSpy = vi
@@ -387,19 +410,25 @@ describe("desktopFileMenu async flows", () => {
         click: clickSpy,
       };
 
-      vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
-        if (tagName === "a") return anchorMock as any;
-        return document.createElement(tagName);
-      });
+      vi.spyOn(document, "createElement").mockImplementation(
+        (tagName: string) => {
+          if (tagName === "a") return anchorMock as any;
+          return document.createElement(tagName);
+        },
+      );
 
       await downloadLibraryExport();
 
       expect(exportLibraryPack).toHaveBeenCalled();
       expect(createObjectURLSpy).toHaveBeenCalledWith(mockBlob);
       expect(capturedHref).toBe("blob:http://localhost/stagesync-export-mock");
-      expect(capturedDownload).toBe(`stagesync-export-${Date.now()}.stagesync.json`);
+      expect(capturedDownload).toBe(
+        `stagesync-export-${Date.now()}.stagesync.json`,
+      );
       expect(clickSpy).toHaveBeenCalledTimes(1);
-      expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:http://localhost/stagesync-export-mock");
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith(
+        "blob:http://localhost/stagesync-export-mock",
+      );
 
       vi.useRealTimers();
     });
@@ -429,4 +458,5 @@ describe("desktopFileMenu async flows", () => {
 ```
 
 ---
+
 Powered by [AI Exporter](https://saveai.net)
