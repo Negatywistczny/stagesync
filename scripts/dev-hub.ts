@@ -112,6 +112,19 @@ async function waitReturn() {
   });
 }
 
+async function confirmDanger(
+  message: string,
+  initialValue = false,
+): Promise<boolean> {
+  const ok = await clack.confirm({ message, initialValue });
+  return Boolean(ok) && !clack.isCancel(ok);
+}
+
+function warnSideEffects(lines: string[]) {
+  clack.log.warn("Skutki uboczne / wpływ:");
+  for (const line of lines) clack.log.message(` • ${line}`);
+}
+
 function runCommand(
   command: string,
   args: string[],
@@ -248,6 +261,10 @@ function runCiLikeVerify(): boolean {
 
 /** Codzienny gate: format → CI-like → docs links → knip. */
 function runDailyGate(): boolean {
+  warnSideEffects([
+    "Prettier zapisze zmiany w plikach (format) — sprawdź git diff po zakończeniu",
+    "Reszta kroków tylko sprawdza (types / ss-css / lint / test / links / knip)",
+  ]);
   clack.note(
     "Codzienny gate: format → check-types → lint:ss-css → lint → test → links → knip…",
   );
@@ -448,6 +465,13 @@ function runWebE2eWithBrowserBootstrap(): boolean {
  * Skips interactive Sync Launcher UI and Smart Tempo benchmark.
  */
 function runFullAudit(): boolean {
+  warnSideEffects([
+    "Prettier zapisze pliki (format)",
+    "unlinked: może auto-naprawić linki w Markdown (mutacja docs)",
+    "e2e: może zabić procesy na :3000/:4000 i doinstalować Playwright / pnpm install",
+    "generate:map może zmienić docs/REPO_MAP.md; coverage zapisze katalogi coverage/",
+    "Długi przebieg (często wiele minut)",
+  ]);
   clack.note(
     "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build…",
   );
@@ -661,8 +685,11 @@ function freeDevPortsForE2e(ports: number[] = [3000, 4000]): void {
   }
   if (all.length === 0) return;
   clack.log.warn(
-    `E2E: zwalniam zajęte porty ${ports.map((p) => `:${p}`).join(", ")}…`,
+    `E2E: zwalniam zajęte porty ${ports.map((p) => `:${p}`).join(", ")} (może zabić lokalny pnpm dev / Vite / API)…`,
   );
+  all.forEach((p) => {
+    clack.log.message(` • Port :${p.port} — PID ${p.pid} (${p.name})`);
+  });
   for (const p of all) killProcessTree(p);
 }
 
@@ -840,7 +867,22 @@ async function runDoctorScan() {
   }
 }
 
-function cleanCache() {
+async function cleanCache(): Promise<boolean> {
+  warnSideEffects([
+    "Usunie dist, .vite, .turbo, coverage, node_modules/.cache w apps/ i packages/",
+    "Usunie apps/desktop/src-tauri/target (długi rebuild Tauri przy następnym buildzie)",
+    "Nie rusza node_modules (poza .cache) ani katalogu data/",
+  ]);
+  if (
+    !(await confirmDanger(
+      "Na pewno wyczyścić cache/artefakty buildów monorepo?",
+      false,
+    ))
+  ) {
+    clack.log.info("Pominięto czyszczenie cache.");
+    return false;
+  }
+
   const s = clack.spinner();
   s.start("Głębokie skanowanie i czyszczenie pamięci podręcznej monorepo...");
 
@@ -910,6 +952,7 @@ function cleanCache() {
     );
     lockedPaths.forEach((lp) => clack.log.message(` ⚠️ ${lp}`));
   }
+  return true;
 }
 
 function showGitStatus() {
@@ -950,13 +993,16 @@ async function menuRunAndDev() {
       { value: "desktop", label: "4. 💻  Desktop Shell (Tauri + Launcher)" },
       {
         value: "desktop-build",
-        label: "5. 📦  Buduj instalator (Tauri Build)",
+        label: "5. 📦  Buduj instalator (Tauri Build) ⚠️ długo",
       },
       {
         value: "desktop-nsis-smoke",
         label: "6. 🧪  Pusty instalator NSIS (smoke, bez sidecara)",
       },
-      { value: "docker", label: "7. 🐳  Stack produkcyjny (Docker Compose)" },
+      {
+        value: "docker",
+        label: "7. 🐳  Stack produkcyjny (Docker Compose) ⚠️",
+      },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
@@ -980,6 +1026,13 @@ async function menuRunAndDev() {
     );
     runCommand("pnpm", ["--filter", "@stagesync/desktop", "dev"]);
   } else if (choice === "desktop-build") {
+    warnSideEffects([
+      "Pełny tauri:build — długo, wymaga Rust/Cargo; zapisze artefakty instalatora",
+    ]);
+    if (!(await confirmDanger("Uruchomić pełny build instalatora Tauri?", false))) {
+      clack.log.info("Anulowano tauri:build.");
+      return;
+    }
     clack.note("Budowanie instalatora Tauri (pnpm tauri:build)...");
     runCommand("pnpm", ["--filter", "@stagesync/desktop", "tauri:build"]);
     await waitReturn();
@@ -994,6 +1047,14 @@ async function menuRunAndDev() {
     ]);
     await waitReturn();
   } else if (choice === "docker") {
+    warnSideEffects([
+      "docker compose up --build buduje/uruchamia kontenery; Ctrl+C zatrzymuje foreground",
+      "Może zająć porty i dużo miejsca na obrazy",
+    ]);
+    if (!(await confirmDanger("Uruchomić Docker Compose (up --build)?", false))) {
+      clack.log.info("Anulowano Docker Compose.");
+      return;
+    }
     clack.note("Uruchamianie Docker Compose... Press Ctrl+C to stop.");
     runCommand("docker", ["compose", "up", "--build"]);
   }
@@ -1048,9 +1109,29 @@ async function menuTestingVerify() {
     runCiLikeVerify();
     await waitReturn();
   } else if (choice === "daily") {
+    if (
+      !(await confirmDanger(
+        "Codzienny gate zapisze pliki (Prettier). Uruchomić?",
+        true,
+      ))
+    ) {
+      clack.log.info("Anulowano Codzienny gate.");
+      await waitReturn();
+      return;
+    }
     runDailyGate();
     await waitReturn();
   } else if (choice === "full-audit") {
+    if (
+      !(await confirmDanger(
+        "Kompletny audyt: format, auto-fix docs, e2e może zabić :3000/:4000, długo. Uruchomić?",
+        false,
+      ))
+    ) {
+      clack.log.info("Anulowano Kompletny audyt.");
+      await waitReturn();
+      return;
+    }
     runFullAudit();
     await waitReturn();
   }
@@ -1255,17 +1336,30 @@ async function menuRelease() {
   if (clack.isCancel(choice) || choice === "back") return;
 
   if (choice === "sync") {
+    warnSideEffects([
+      "Nadpisze numery wersji w package.json aplikacji, Tauri, Android, Docker itd.",
+    ]);
+    if (
+      !(await confirmDanger(
+        "Zsynchronizować wersję monorepo z root package.json?",
+        false,
+      ))
+    ) {
+      clack.log.info("Anulowano sync-version.");
+      await waitReturn();
+      return;
+    }
     clack.note(
       "Synchronizowanie wersji w monorepo (node scripts/release/sync-version.mjs)...",
     );
     runCommand("node", ["scripts/release/sync-version.mjs"]);
     await waitReturn();
   } else if (choice === "exec") {
-    const confirmExec = await clack.confirm({
-      message: "Czy na pewno uruchomić exec-release (publikacja / monitor CI)?",
-      initialValue: false,
-    });
-    if (!confirmExec || clack.isCancel(confirmExec)) {
+    const confirmExec = await confirmDanger(
+      "exec-release: publikacja / tag / monitor CI. Kontynuować? (wymaga gh auth)",
+      false,
+    );
+    if (!confirmExec) {
       clack.log.info("Anulowano Release.");
       await waitReturn();
       return;
@@ -1339,11 +1433,11 @@ async function menuRelease() {
     });
     if (clack.isCancel(bumpType) || bumpType === "cancel") return;
 
-    const confirmCut = await clack.confirm({
-      message: `Czy na pewno uruchomić cut-release (${bumpType})?`,
-      initialValue: false,
-    });
-    if (!confirmCut || clack.isCancel(confirmCut)) {
+    const confirmCut = await confirmDanger(
+      `cut-release (${bumpType}): bump SemVer, CHANGELOG, commit/tag. Na pewno?`,
+      false,
+    );
+    if (!confirmCut) {
       clack.log.info("Anulowano cut-release.");
       await waitReturn();
       return;
@@ -1404,16 +1498,23 @@ async function menuData() {
     }
     await waitReturn();
   } else if (choice === "clear-data") {
-    const confirm = await clack.confirm({
-      message: `Czy na pewno wyczyścić katalog danych?\n${dataDir}`,
-      initialValue: false,
-    });
-    if (confirm && !clack.isCancel(confirm)) {
+    const repoData = path.join(rootDir, "data");
+    const isRepoData = path.resolve(dataDir) === path.resolve(repoData);
+    warnSideEffects([
+      `Trwale usunie zawartość: ${dataDir}`,
+      isRepoData
+        ? "To katalog repo data/ (README.md zostanie zachowany)"
+        : "To NIE jest repo data/ — możesz skasować lokalne projekty/logi użytkownika (np. Documents/StageSync)",
+    ]);
+    const confirm = await confirmDanger(
+      `Wyczyścić katalog danych?\n${dataDir}`,
+      false,
+    );
+    if (confirm) {
       if (!fs.existsSync(dataDir)) {
         clack.log.warn("Katalog danych nie istnieje — nic do wyczyszczenia.");
       } else {
-        const repoData = path.join(rootDir, "data");
-        const protectReadme = path.resolve(dataDir) === path.resolve(repoData);
+        const protectReadme = isRepoData;
         for (const file of fs.readdirSync(dataDir)) {
           if (protectReadme && file === "README.md") continue;
           fs.rmSync(path.join(dataDir, file), {
@@ -1453,12 +1554,33 @@ async function menuDependencies() {
     runCommand("pnpm", ["outdated", "-r"]);
     await waitReturn();
   } else if (choice === "up") {
+    warnSideEffects([
+      "pnpm up -i -r --latest może podbić major zależności w całym monorepo",
+      "Po wyborze pakietów zmieni package.json / lockfile — zrób commit świadomie",
+    ]);
+    if (
+      !(await confirmDanger("Uruchomić interaktywną aktualizację pakietów?", true))
+    ) {
+      clack.log.info("Anulowano aktualizację pakietów.");
+      await waitReturn();
+      return;
+    }
     clack.note(
       "Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r --latest)...",
     );
     runCommand("pnpm", ["up", "-i", "-r", "--latest"]);
     await waitReturn();
   } else if (choice === "install") {
+    warnSideEffects([
+      "pnpm install --force przebuduje node_modules (wolne, może zepsuć działające dev servery)",
+    ]);
+    if (
+      !(await confirmDanger("Wymusić ponowną instalację zależności?", false))
+    ) {
+      clack.log.info("Anulowano install --force.");
+      await waitReturn();
+      return;
+    }
     clack.note(
       "Wymuszanie ponownej instalacji zależności (pnpm install --force)...",
     );
@@ -1469,6 +1591,14 @@ async function menuDependencies() {
     runCommand("pnpm", ["audit"]);
     await waitReturn();
   } else if (choice === "prune") {
+    warnSideEffects([
+      "pnpm store prune usuwa nieużywane pakiety z globalnego store — kolejne install może pobierać je ponownie",
+    ]);
+    if (!(await confirmDanger("Wyczyścić pnpm store (prune)?", false))) {
+      clack.log.info("Anulowano store prune.");
+      await waitReturn();
+      return;
+    }
     clack.note("Czyszczenie lokalnego pnpm store (pnpm store prune)...");
     runCommand("pnpm", ["store", "prune"]);
     await waitReturn();
@@ -1571,7 +1701,7 @@ async function main() {
       return;
     }
     if (flag === "clean") {
-      cleanCache();
+      await cleanCache();
       return;
     }
     if (flag === "test") {
@@ -1593,9 +1723,9 @@ async function main() {
         { value: "testing", label: "4. 🧪  Testy & Jakość ›" },
         { value: "release", label: "5. 🐙  GitHub & Wydania ›" },
         { value: "deps", label: "6. 📦  Zależności & Pakiety ›" },
-        { value: "clean", label: "7. 🧹  Konserwacja & Cache" },
+        { value: "clean", label: "7. 🧹  Konserwacja & Cache ⚠️" },
         { value: "data", label: "8. 💾  Zarządzanie danymi & Logi ›" },
-        { value: "setup", label: "9. 🛠   Setup Środowiska" },
+        { value: "setup", label: "9. 🛠   Setup Środowiska ⚠️" },
         { value: "exit", label: "0. 🚪  Wyjście" },
       ],
     });
@@ -1615,13 +1745,27 @@ async function main() {
     if (category === "release") await menuRelease();
     if (category === "deps") await menuDependencies();
     if (category === "clean") {
-      cleanCache();
+      await cleanCache();
       await waitReturn();
     }
     if (category === "data") {
       await menuData();
     }
     if (category === "setup") {
+      warnSideEffects([
+        "Może instalować Node/pnpm/Rust/WebView2 i inne zależności systemowe",
+        "Wymaga uprawnień / interakcji (winget, fnm, brew) — nie uruchamiaj „w tle” bez czytania promptów",
+      ]);
+      if (
+        !(await confirmDanger(
+          "Uruchomić natywny setup środowiska (setup.ps1 / setup.sh)?",
+          false,
+        ))
+      ) {
+        clack.log.info("Anulowano setup.");
+        await waitReturn();
+        continue;
+      }
       const isWin = os.platform() === "win32";
       clack.note("Uruchamianie pełnej procedury setupu...");
       if (isWin) {
