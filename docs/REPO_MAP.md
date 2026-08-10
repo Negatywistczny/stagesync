@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1224
+* **Liczba wszystkich plików:** 1225
 * **Liczba katalogów:** 193
-* **Data aktualizacji:** 2026-08-10T16:43:13.401Z
+* **Data aktualizacji:** 2026-08-10T21:36:50.790Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 800 |
+| Kod | 801 |
 | Docs | 156 |
 | Config | 118 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 460 |
+| `.ts` | 461 |
 | `.tsx` | 161 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -40,11 +40,11 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (888) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (889) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (134) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **server/** (135) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (454) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
@@ -334,6 +334,7 @@ stagesync/
 │   │   │   │   ├── stage.ts
 │   │   │   │   ├── system.ts
 │   │   │   │   ├── transport.ts
+│   │   │   │   ├── youtube-audio-download.test.ts
 │   │   │   │   ├── youtube-audio.test.ts
 │   │   │   │   └── youtube-audio.ts
 │   │   │   ├── storage/

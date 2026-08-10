@@ -358,6 +358,39 @@ E
     expect(importUltrastarText("").ok).toBe(false);
   });
 
+  it("rejects invalid #BPM and #GAP headers", () => {
+    expect(
+      importUltrastarText(`#TITLE:X\n#BPM:0\n: 0 4 0 Hi\nE\n`).ok,
+    ).toBe(false);
+    expect(
+      importUltrastarText(`#TITLE:X\n#BPM:-10\n: 0 4 0 Hi\nE\n`).ok,
+    ).toBe(false);
+    expect(
+      importUltrastarText(`#TITLE:X\n#BPM:notanumber\n: 0 4 0 Hi\nE\n`).ok,
+    ).toBe(false);
+    const badGap = importUltrastarText(
+      `#TITLE:X\n#BPM:400\n#GAP:-1\n: 0 4 0 Hi\nE\n`,
+    );
+    expect(badGap.ok).toBe(false);
+    if (!badGap.ok) expect(badGap.message).toMatch(/GAP/i);
+  });
+
+  it("rejects file with BPM but no notes / empty syllables", () => {
+    const r = importUltrastarText(`#TITLE:Empty\n#BPM:400\n#GAP:0\nE\n`);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.message).toMatch(/Brak nut/i);
+  });
+
+  it("rejects malformed note lines that look like notes", () => {
+    const r = importUltrastarText(`#TITLE:X\n#BPM:400\n: not-a-note\nE\n`);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.message).toMatch(/Nieprawidłowa nuta/i);
+  });
+
+  it("groupUltrastarSyllablesIntoWords handles empty input", () => {
+    expect(groupUltrastarSyllablesIntoWords([])).toEqual([]);
+  });
+
   it("parses #MP3 and #VIDEO headers", () => {
     const src = `#TITLE:Video
 #ARTIST:Band

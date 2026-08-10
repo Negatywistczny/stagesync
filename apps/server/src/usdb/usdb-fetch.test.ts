@@ -194,6 +194,17 @@ describe("usdb-fetch parsers", () => {
       ),
     ).toEqual({ title: "A", artist: "B", language: "Polish" });
   });
+
+  it("parseUsdbSearchHtml returns empty for HTML without songs", () => {
+    expect(parseUsdbSearchHtml("<html><body>There are 0 results</body></html>")).toEqual(
+      [],
+    );
+    expect(parseUsdbSearchHtml("")).toEqual([]);
+  });
+
+  it("parseUsdbTxtFromHtml returns null when textarea missing", () => {
+    expect(parseUsdbTxtFromHtml("<html><body>no txt</body></html>")).toBeNull();
+  });
 });
 
 describe("usdb-fetch session / login", () => {
@@ -369,5 +380,34 @@ describe("usdb-fetch session / login", () => {
     );
     expect(result.content).toContain("#TITLE:Africa");
     expect(result.metadata.songId).toBe(27563);
+  });
+
+  it("searchUsdbSongs returns [] for empty title without network", async () => {
+    await expect(
+      searchUsdbSongs("   ", undefined, { credentials: CREDS }),
+    ).resolves.toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("searchUsdbSongs surfaces network failure", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(LOGIN_POST_OK_HTML, "PHPSESSID=net; Path=/"),
+    );
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(LOGGED_IN_BROWSE_HTML, "PHPSESSID=net; Path=/"),
+    );
+    fetchMock.mockRejectedValueOnce(new Error("ECONNRESET"));
+
+    await expect(
+      searchUsdbSongs("Africa", undefined, { credentials: CREDS }),
+    ).rejects.toThrow(/Błąd wyszukiwania USDB|ECONNRESET/);
+  });
+
+  it("loginUsdb surfaces unreachable network errors", async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError("fetch failed"));
+    await expect(loginUsdb(CREDS)).rejects.toMatchObject({
+      name: "UsdbAuthError",
+      code: "unreachable",
+    });
   });
 });

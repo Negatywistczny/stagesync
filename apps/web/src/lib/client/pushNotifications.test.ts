@@ -180,4 +180,194 @@ describe("pushNotifications (#810)", () => {
     setPushEnabledPreference(false);
     await expect(syncPushRegistration()).resolves.toBe(false);
   });
+
+  it("syncPushRegistration posts native FCM token when preference ON", async () => {
+    setPushEnabledPreference(true);
+    const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+    (
+      window as {
+        StageSyncNative?: { getFcmToken: () => string };
+      }
+    ).StageSyncNative = { getFcmToken: () => "fcm-token-abcdefgh" };
+    await expect(syncPushRegistration("")).resolves.toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/push/tokens",
+      expect.objectContaining({ method: "POST" }),
+    );
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0]![1] as { body: string }).body,
+    ) as { token: string };
+    expect(body.token).toBe("fcm-token-abcdefgh");
+  });
+
+  it("syncPushRegistration returns false when no FCM and config lacks vapid", async () => {
+    setPushEnabledPreference(true);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({ fcmAvailable: false }, { status: 200 }),
+      ),
+    );
+    await expect(syncPushRegistration()).resolves.toBe(false);
+  });
+
+  it("syncPushRegistration Web Push subscribes and posts endpoint", async () => {
+    setPushEnabledPreference(true);
+    const subscription = {
+      toJSON: () => ({
+        endpoint: "https://push.example/endpoint-abcdef",
+        keys: { p256dh: "a", auth: "b" },
+      }),
+    };
+    const pushManager = {
+      getSubscription: vi.fn(async () => null),
+      subscribe: vi.fn(async () => subscription),
+    };
+    vi.stubGlobal("navigator", {
+      serviceWorker: {
+        ready: Promise.resolve({ pushManager }),
+      },
+    });
+    vi.stubGlobal("window", {
+      StageSyncNative: undefined,
+      PushManager: function PushManager() {},
+    });
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).includes("/api/push/config")) {
+        return Response.json({
+          fcmAvailable: false,
+          vapidPublicKey: "dGVzdC1rZXktMTIzNDU2",
+        });
+      }
+      return new Response(null, { status: 204 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(syncPushRegistration("")).resolves.toBe(true);
+    expect(pushManager.subscribe).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/push/tokens",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
+  it("requestNotificationPermission uses native bridge status", async () => {
+    (
+      window as {
+        StageSyncNative?: {
+          requestNotificationPermission: () => void;
+          notificationPermission: () => string;
+        };
+      }
+    ).StageSyncNative = {
+      requestNotificationPermission: vi.fn(),
+      notificationPermission: () => "granted",
+    };
+    await expect(requestNotificationPermission()).resolves.toBe("granted");
+  });
+
+  it("requestNotificationPermission returns unsupported when Notification undefined", async () => {
+    vi.stubGlobal("window", { StageSyncNative: undefined });
+    // Ensure no Notification global
+    vi.stubGlobal("Notification", undefined);
+    await expect(requestNotificationPermission()).resolves.toBe("unsupported");
+  });
+
+  it("showLocalNotification uses Web Notification API when backgrounded", () => {
+    setPushEnabledPreference(true);
+    const instances: Array<{ onclick: (() => void) | null; close: () => void }> =
+      [];
+    const NotificationMock = vi.fn(function (
+      this: { onclick: (() => void) | null; close: () => void },
+      title: string,
+      opts?: NotificationOptions,
+    ) {
+      void title;
+      void opts;
+      this.onclick = null;
+      this.close = vi.fn();
+      instances.push(this);
+    }) as unknown as typeof Notification;
+    Object.defineProperty(NotificationMock, "permission", {
+      value: "granted",
+      configurable: true,
+    });
+    vi.stubGlobal("Notification", NotificationMock);
+    vi.stubGlobal("document", { hidden: true });
+    vi.stubGlobal("window", {
+      StageSyncNative: undefined,
+      focus: vi.fn(),
+      location: { assign: vi.fn() },
+    });
+
+    showLocalNotification({
+      title: "Host",
+      body: "offline",
+      channel: "critical_updates",
+      path: "/client",
+    });
+    expect(NotificationMock).toHaveBeenCalledWith(
+      "Host",
+      expect.objectContaining({ body: "offline", tag: "critical_updates" }),
+    );
+    expect(instances).toHaveLength(1);
+  });
+
+  it("detectPushPlatform returns desktop when __TAURI_INTERNALS__ present", () => {
+    vi.stubGlobal("window", {
+      StageSyncNative: undefined,
+      __TAURI_INTERNALS__: { invoke: vi.fn() },
+    });
+    expect(detectPushPlatform()).toBe("desktop");
+  });
+
+  it("getWebNotificationPermission grants via Tauri shell marker when preference on", () => {
+    setPushEnabledPreference(true);
+    vi.stubGlobal("window", {
+      StageSyncNative: undefined,
+      __STAGESYNC_TAURI_SHELL__: true,
+    });
+    expect(getWebNotificationPermission()).toBe("granted");
+  });
+
+  it("maybeNotifyHostDisconnect skips when document is visible", () => {
+    setPushEnabledPreference(true);
+    const show = vi.fn();
+    (
+      window as {
+        StageSyncNative?: { showLocalNotification: typeof show };
+      }
+    ).StageSyncNative = { showLocalNotification: show };
+    vi.stubGlobal("document", { hidden: false });
+    maybeNotifyHostDisconnect("disconnected");
+    expect(show).not.toHaveBeenCalled();
+  });
+
+  it("maybeNotifyHostDisconnect rate-limits second call within 30s", () => {
+    // Advance past any prior notify timestamp stored in module state.
+    const base = Date.now() + 120_000;
+    vi.useFakeTimers();
+    vi.setSystemTime(base);
+    setPushEnabledPreference(true);
+    const show = vi.fn();
+    (
+      window as {
+        StageSyncNative?: { showLocalNotification: typeof show };
+      }
+    ).StageSyncNative = { showLocalNotification: show };
+    vi.stubGlobal("document", { hidden: true });
+
+    maybeNotifyHostDisconnect("disconnected");
+    expect(show).toHaveBeenCalledTimes(1);
+
+    maybeNotifyHostDisconnect("disconnected");
+    expect(show).toHaveBeenCalledTimes(1);
+
+    vi.setSystemTime(base + 31_000);
+    maybeNotifyHostDisconnect("disconnected");
+    expect(show).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
 });
