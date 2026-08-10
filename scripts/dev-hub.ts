@@ -1049,7 +1049,7 @@ async function main() {
           ".\\scripts\\setup\\setup.ps1",
         ]);
       } else {
-        runCommand("./scripts/setup/setup.sh", []);
+        runCommand("bash", ["./scripts/setup/setup.sh"]);
       }
       await waitReturn();
     }
