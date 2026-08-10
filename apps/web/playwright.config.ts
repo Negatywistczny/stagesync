@@ -56,7 +56,8 @@ export default defineConfig({
       command: "pnpm exec tsx src/index.ts",
       cwd: "../server",
       url: `${apiOrigin}/api/health`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer:
+        !process.env.CI && process.env.STAGESYNC_E2E_FRESH !== "1",
       timeout: 120_000,
       env: {
         ...process.env,
@@ -69,7 +70,8 @@ export default defineConfig({
       command: "pnpm exec vite --host 127.0.0.1 --port 3000 --strictPort",
       cwd: ".",
       url: webOrigin,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer:
+        !process.env.CI && process.env.STAGESYNC_E2E_FRESH !== "1",
       timeout: 120_000,
     },
   ],

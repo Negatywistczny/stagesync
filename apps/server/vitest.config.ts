@@ -8,9 +8,7 @@ const repoRoot = path.resolve(pkgDir, "../..");
 export default defineConfig({
   test: {
     environment: "node",
-    reporters: process.env.CI
-      ? ["default", "github-actions"]
-      : ["default"],
+    reporters: process.env.CI ? ["default", "github-actions"] : ["default"],
     coverage: {
       provider: "v8",
       // Repo-root SF paths so Codecov can map monorepo files.

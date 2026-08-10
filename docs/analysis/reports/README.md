@@ -11,8 +11,8 @@ Kanoniczne raporty analityczne commitowane do repo. Historia wydań → [CHANGEL
 
 ## Podkatalog
 
-| Katalog | Po co | Przykłady |
-| --- | --- | --- |
+| Katalog                  | Po co                                            | Przykłady                                                                                                                                                                                              |
+| ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`current/`](./current/) | Aktywne raporty (bieżący fokus / bramki otwarte) | [`report-scope-5.4.md`](./current/report-scope-5.4.md), [`report-beta-gate.md`](./current/report-beta-gate.md), [`report-adr-dual-engine-vst-align.md`](./current/report-adr-dual-engine-vst-align.md) |
 
 **Nowe raporty** → zawsze `current/`. Po zamknięciu tematu usuń raport (historia w CHANGELOG / git), nie archiwizuj lokalnie.
