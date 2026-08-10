@@ -3,7 +3,7 @@
 Katalog `scripts/` zawiera skrypty automatyzacji, narzędzia wydań SemVer, skrypty pre-flight, generatory dokumentacji oraz pociągi integracyjne CI/CD.
 
 > 📘 **Szukasz instrukcji uruchomienia projektu i pracy deweloperskiej?**  
-> Przejdź do dedykowanego przewodnika: **[StageSync DX Guide](./DX.md)**.
+> Przejdź do dedykowanego przewodnika: **[StageSync DX Guide](../docs/guides/DX.md)**.
 
 ---
 
@@ -16,7 +16,6 @@ scripts/
 ├── quality/        # 📊 Mapa kodu, lintery CSS/Knip i walidacja dokumentacji
 ├── merge-train/    # 🚆 Pociągi integracyjne PR-ów (trunk/batch)
 ├── dev-hub.ts      # 🎛️ Główny skrypt DX Suite (Dev Hub TUI / CLI)
-├── DX.md           # 📘 Przewodnik Deweloperski (Quickstart & Dev Hub Guide)
 └── README.md       # 📚 Niniejsza dokumentacja (Indeks skryptów)
 ```
 

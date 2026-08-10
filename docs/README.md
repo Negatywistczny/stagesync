@@ -18,6 +18,7 @@ Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, mu
 - **[DESKTOP.md](./guides/DESKTOP.md)** — Poradnik konfiguracji, budowania i aktualizacji aplikacji desktopowych opartych na Tauri.
 - **[MOBILE.md](./guides/MOBILE.md)** — Poradnik uruchamiania i dystrybucji (sideloading APK, obsługa QR-kodów) dla platform Android.
 - **[MIGRATION.md](./guides/MIGRATION.md)** — Instrukcje przeniesienia danych z wersji v4 legacy do v5.
+- **[DX.md](./guides/DX.md)** — Poradnik deweloperski, konfiguracja środowiska oraz Dev Hub.
 
 ### Podkatalogi specjalistyczne
 
@@ -26,7 +27,7 @@ Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, mu
 - **`analysis/`** — Raporty kanoniczne (`reports/{current,milestones,hygiene}/`), inspiracje zewnętrzne + triage, oraz lokalny scratch `working/`.
 - **`examples/`** — Przykładowe pliki projektów dla wersji v5 i legacy v4.
 - **`ui/`** — Design system (kolory, typografia, spacing, Button) oraz inwentarz shelli.
-- **`guides/`** — Podręczniki operatorskie (INSTALL / DESKTOP / MOBILE / MIGRATION).
+- **`guides/`** — Podręczniki operatorskie (INSTALL / DESKTOP / MOBILE / MIGRATION / DX).
 
 ## Rola w projekcie
 

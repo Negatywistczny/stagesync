@@ -8,7 +8,7 @@
 
 * **Liczba wszystkich plików:** 1291
 * **Liczba katalogów:** 198
-* **Data aktualizacji:** 2026-08-10T12:48:30.991Z
+* **Data aktualizacji:** 2026-08-10T13:46:50.577Z
 
 ### Kategorie
 
@@ -71,7 +71,7 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (165) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+- **docs/** (166) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
   - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
   - **analysis/** (122) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
     - **inspiracje/** (90) — Dumpy zewnętrzne + triage (nie SSOT produktu)
@@ -79,7 +79,7 @@
     - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
   - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
   - **examples/** (3) — Przykładowe pliki baz danych i pakiety projektowe v5
-  - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
+  - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
 - **packages/** (141) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
@@ -88,7 +88,7 @@
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (24) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+- **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
   - **merge-train/** (4) — Automatyzacja merge train i walidacji PR
   - **quality/** (5) — Narzędzia jakości kodu, linków i generator mapy repozytorium
   - **release/** (9) — Skrypty wydań SemVer, budowania paczek i release notes
@@ -723,6 +723,7 @@ stagesync/
 │   │       └── library.pack.sample.stagesync.json
 │   ├── guides/
 │   │   ├── DESKTOP.md
+│   │   ├── DX.md
 │   │   ├── INSTALL.md
 │   │   ├── MIGRATION.md
 │   │   └── MOBILE.md
@@ -912,7 +913,6 @@ stagesync/
 │   │   ├── setup.ps1
 │   │   └── setup.sh
 │   ├── dev-hub.ts
-│   ├── DX.md
 │   ├── README.md
 │   └── tsconfig.json
 ├── .clineignore

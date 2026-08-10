@@ -10,9 +10,10 @@ const IGNORE_DIRS = new Set([
   'dist',
   'build',
   'coverage',
-  '.github',
-  'data',
 ]);
+
+/** Extensionless / ambiguous basenames that collide with ordinary prose. */
+const AMBIGUOUS_BASENAMES = new Set(['dev', 'dev.cmd', 'dev.ps1']);
 
 function getAllMdFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
@@ -23,7 +24,6 @@ function getAllMdFiles(dir, fileList = []) {
     if (stat.isDirectory()) {
       getAllMdFiles(fullPath, fileList);
     } else if (file.endsWith('.md')) {
-      // Only *.md — not *.mdc (Cursor rules often cite paths as prose/code).
       fileList.push(fullPath);
     }
   }
@@ -33,8 +33,6 @@ function getAllMdFiles(dir, fileList = []) {
 /**
  * Unwrap accidental re-wrapping from older runs of this script:
  *   [[`x`](url)](url)  →  [`x`](url)
- *   [[[`x`](url)](url)](url)  →  … →  [`x`](url)
- * Only unwraps when the inner label is backtick-wrapped (what this tool produces).
  */
 function unwrapNestedBacktickLinks(text) {
   const re = /\[(\[`[^`\n]+`\]\([^)\n]+\))\]\([^)\n]+\)/g;
@@ -48,12 +46,14 @@ function unwrapNestedBacktickLinks(text) {
   return text;
 }
 
-/** True when `code` at [start,end) is already the label of a markdown link [`…`](…). */
 function isAlreadyLinked(line, start) {
   return start > 0 && line[start - 1] === '[';
 }
 
-// Build target map of all files in repo (including extensionless root files like 'dev')
+/**
+ * Dynamic target map: *.md everywhere + root configs (same spirit as check-unlinked).
+ * Does not register extensionless launchers like `dev` (prose false positives).
+ */
 function getTargetMap() {
   const targetMap = new Map();
 
@@ -65,17 +65,27 @@ function getTargetMap() {
       const stat = fs.statSync(fullPath);
       if (stat.isDirectory()) {
         scan(fullPath);
-      } else {
-        const ext = path.extname(file);
-        const relToRoot = path.relative(ROOT, fullPath).replace(/\\/g, '/');
+        continue;
+      }
 
-        if ((ext && ext !== '') || relToRoot === 'dev') {
-          targetMap.set(relToRoot, fullPath);
-          const baseName = path.basename(file);
-          if (!targetMap.has(baseName)) {
-            targetMap.set(baseName, fullPath);
-          }
-        }
+      const ext = path.extname(file);
+      const relToRoot = path.relative(ROOT, fullPath).replace(/\\/g, '/');
+      const baseName = path.basename(file);
+      const isRoot = currentDir === ROOT;
+      const isRootConfig =
+        isRoot &&
+        (file === 'Dockerfile' ||
+          file.endsWith('.json') ||
+          file.endsWith('.yaml') ||
+          file.endsWith('.yml'));
+
+      // *.md anywhere, or config files in repo root — never extensionless `dev`.
+      if (ext !== '.md' && !isRootConfig) continue;
+      if (AMBIGUOUS_BASENAMES.has(baseName)) continue;
+
+      targetMap.set(relToRoot, fullPath);
+      if (!targetMap.has(baseName)) {
+        targetMap.set(baseName, fullPath);
       }
     }
   }
@@ -87,8 +97,9 @@ function getTargetMap() {
 const targetMap = getTargetMap();
 
 /**
- * Find backtick spans and link only those whose full content is a known target.
- * Avoids O(targets × line) regex thrash and never re-wraps [`x`](url).
+ * Convert backtick file refs `target` → [`target`](rel).
+ * Bare prose is intentionally NOT linked (previous linkBareProse caused
+ * false positives like the word "dev" → root launcher).
  */
 function linkBareBackticks(line, mdFile, mdDir, counters) {
   if (!line.includes('`')) return line;
@@ -110,11 +121,7 @@ function linkBareBackticks(line, mdFile, mdDir, counters) {
     const abs = targetMap.get(inner);
     const already = isAlreadyLinked(line, i);
 
-    if (
-      abs &&
-      !already &&
-      path.resolve(mdFile) !== path.resolve(abs)
-    ) {
+    if (abs && !already && path.resolve(mdFile) !== path.resolve(abs)) {
       let relLink = path.relative(mdDir, abs).replace(/\\/g, '/');
       if (!relLink.startsWith('.') && !relLink.startsWith('/')) {
         relLink = './' + relLink;
@@ -168,7 +175,7 @@ function run() {
     }
   }
 
-  console.log(`Files updated: ${filesUpdated}`);
+  console.log(`\nFiles updated: ${filesUpdated}`);
   console.log(`Unwrapped nested markdown links (approx): ${totalUnwrapped}`);
   console.log(
     `Total inline file references converted to markdown links: ${counters.fixed}`,

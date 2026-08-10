@@ -65,9 +65,9 @@ pnpm dev:hub
 - **Node.js**: >= 22 (zalecane użycie `fnm` lub `nvm` do zarządzania wersjami).
 - **pnpm**: Zarządzane przez `corepack` (dołączone w skryptach launchera).
 - **Git**: Do zarządzania repozytorium.
-- **Tauri / Rust**: Wymagane do budowania natywnego shella (sprawdź `docs/guides/DESKTOP.md`).
+- **Tauri / Rust**: Wymagane do budowania natywnego shella (sprawdź [DESKTOP.md](./DESKTOP.md)).
 
-## 🎛️ Centrum Dowodzenia — Dev Hub ([`scripts/dev-hub.ts`](./dev-hub.ts))
+## 🎛️ Centrum Dowodzenia — Dev Hub ([`scripts/dev-hub.ts`](../../scripts/dev-hub.ts))
 
 Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 
@@ -210,4 +210,4 @@ Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywn
 ---
 
 ### 🛠️ Pozostałe Narzędzia (`scripts/`)
-*Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](./README.md).*
+*Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](../../scripts/README.md).*
