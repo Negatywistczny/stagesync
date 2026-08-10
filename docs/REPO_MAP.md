@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1225
-* **Liczba katalogów:** 193
-* **Data aktualizacji:** 2026-08-10T21:36:50.790Z
+* **Liczba wszystkich plików:** 1242
+* **Liczba katalogów:** 194
+* **Data aktualizacji:** 2026-08-10T21:45:02.833Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 801 |
+| Kod | 818 |
 | Docs | 156 |
 | Config | 118 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 461 |
+| `.ts` | 478 |
 | `.tsx` | 161 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -81,11 +81,11 @@
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (139) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (156) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (98) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (115) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -751,6 +751,23 @@ stagesync/
 │   │   ├── src/
 │   │   │   ├── fixtures/
 │   │   │   │   └── us-ug/  … (8 plików, 4 podkatalogi)
+│   │   │   ├── text-anchor-bridge/
+│   │   │   │   ├── align.ts
+│   │   │   │   ├── bridge-api.ts
+│   │   │   │   ├── bridge-chord-ms-plan.ts
+│   │   │   │   ├── bridge-layout-forma.ts
+│   │   │   │   ├── bridge-orchestrator.ts
+│   │   │   │   ├── bridge-place-akords.ts
+│   │   │   │   ├── bridge-resolve-tempo.ts
+│   │   │   │   ├── clip-remap.ts
+│   │   │   │   ├── constants.ts
+│   │   │   │   ├── forma-freeze.ts
+│   │   │   │   ├── onset-grid.ts
+│   │   │   │   ├── pristine-grid.ts
+│   │   │   │   ├── tokenize.ts
+│   │   │   │   ├── types.ts
+│   │   │   │   ├── ug-parse.ts
+│   │   │   │   └── ultrastar-words.ts
 │   │   │   ├── audio-clip.test.ts
 │   │   │   ├── audio-clip.ts
 │   │   │   ├── bracket-spans.ts
@@ -809,6 +826,7 @@ stagesync/
 │   │   │   ├── tempo-map-solver.ts
 │   │   │   ├── tempo-map.test.ts
 │   │   │   ├── tempo-map.ts
+│   │   │   ├── text-anchor-bridge-pure.test.ts
 │   │   │   ├── text-anchor-bridge.test.ts
 │   │   │   ├── text-anchor-bridge.ts
 │   │   │   ├── theme-default.test.ts
