@@ -1,6 +1,10 @@
 # StageSync — aplikacja desktop
 
 Okno desktopowe (Admin / Timeline / Client) z wbudowanym lokalnym hostem albo połączeniem z hostem w sieci.
+
+**Dla kogo:** operator sceny na macOS / Windows.  
+**Aktualizacje:** updater w Launcherze / Adminie (nie Watchtower). Docker host → [INSTALL.md](./INSTALL.md); Android → [MOBILE.md](./MOBILE.md).
+
 Szczegóły decyzji: [ADR 0010](../adr/0010-desktop-shell-tauri.md), [ADR 0014](../adr/0014-desktop-launcher.md).  
 Android (Performer / Console): [MOBILE.md](./MOBILE.md) · [ADR 0016](../adr/0016-android-performer-console.md). Console na tablecie może też uruchomić **lokalny host** na urządzeniu (ten sam tor health → Admin).
 
@@ -12,9 +16,11 @@ Po włączeniu aplikacji widać ekran wyboru hosta (nie od razu Admin):
 - **Wykryte w sieci** — lista hostów z mDNS (`_stagesync._tcp`); kafle pokazują **nazwę hosta w sieci** (TXT / ustawienie w Admin → Ustawienia serwera), projekt (lub „Brak projektu”), stan transportu (Play / Pauza / Stop) oraz w drugiej linii adres IP · wersję. Wymaga włączonego mDNS na hoście i nasłuchu nie tylko na localhost. Preferowane jest IP z LAN (pomijane: loopback, link-local, most Docker `172.17`).
 - **Połącz ręcznie** / **Ostatnio używane** — wpisz `http://host:port` (sprawdzenie health, timeout ~3 s → Admin). Przy ostatnich hostach krótki probe (~1,5 s) z diodą online/offline. Różnica wersji host/aplikacja — ostrzeżenie (nie twardy blok).
 
-Błędy startu lokalnego hosta (port zajęty, timeout, uprawnienia, zła wersja, awaria hosta) pokazuje Launcher z logiem, **Ponów**, dyskretną ikoną **Pobierz logi** w nagłówku oraz — przy awarii — przyciskiem **Pobierz logi diagnostyczne** pod banerem błędu — bez białego ekranu. Gdy lokalny host padnie w trakcie sesji, aplikacja wraca do Launchera z komunikatem. Przy utracie połączenia: banner „Utracono połączenie…” + **Wróć do wyboru hosta**.
+Błędy startu lokalnego hosta (port zajęty, timeout, uprawnienia, zła wersja, awaria hosta) pokazuje Launcher z logiem, **Ponów**, dyskretną ikoną **Pobierz logi** w nagłówku oraz — przy awarii — przyciskiem **Pobierz logi diagnostyczne** pod banerem błędu. Gdy lokalny host padnie w trakcie sesji, aplikacja wraca do Launchera z komunikatem. Przy utracie połączenia: banner „Utracono połączenie…” + **Wróć do wyboru hosta**.
 
 Wygląd Launchera (kolory, przyciski) pochodzi z tego samego design systemu co SPA (`--ss-*`, klasy `ss-btn*`) — bez osobnej palety „na cold-start”.
+
+**Domyślny widok po połączeniu:** Admin (`/admin`). Klient (`/client`) też w aplikacji desktop; w przeglądarce / Dockerze root `/` to Client.
 
 ### Zasobnik systemowy (tray / Menu Bar)
 
@@ -31,8 +37,6 @@ Ikona StageSync zostaje w zasobniku Windows / Menu Bar macOS przez cały czas dz
 - **Pełne wyjście** (gasi host + proces aplikacji): tray **Zakończ StageSync**, menu OS **Zakończ**, ⌘/Ctrl+Q.
 
 Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (np. po Force Quit).
-
-**Domyślny widok po połączeniu:** Admin (`/admin`). Klient (`/client`) też w aplikacji desktop; w przeglądarce / Dockerze root `/` to Client.
 
 ### Nawigacja L1 (OperatorNav vs menu aplikacji)
 
@@ -51,7 +55,7 @@ Okno bez dekoracji OS (`decorations: false`). W WebView:
 
 - Ciemny pasek: menubar | tytuł „StageSync” | min / max / close
 - Szerokie okno: top-level **Plik | Edycja | Widok | Odtwarzanie | Host | Pomoc**
-- Wąskie (≤1024px): jedno **Menu** → kolumna sekcji + panel drugiego poziomu **obok** (nie w tym samym przewijanym okienku)
+- Wąskie (≤1024px): jedno **Menu** → kolumna sekcji + panel drugiego poziomu **obok**
 - Przeciąganie: `data-tauri-drag-region` / mostek `start_dragging`
 - **macOS:** natywne dekoracje + natywny menubar (bez HTML title bara)
 
@@ -62,17 +66,15 @@ Okno bez dekoracji OS (`decorations: false`). W WebView:
 **macOS (pasek systemowy):** **StageSync** | **Plik** | **Edycja** | **Widok** | **Odtwarzanie** | **Host** | **Pomoc**
 
 **Windows / Linux (w oknie, ciemny title bar):** **Plik** | **Edycja** | **Widok** | **Odtwarzanie** | **Host** | **Pomoc**  
-(bez osobnej pozycji top-level z nazwą aplikacji — Preferencje / aktualizacje / Zakończ są w **Plik**, O programie w **Pomoc**).
+(Preferencje / aktualizacje / Zakończ w **Plik**, O programie w **Pomoc**).
 
-**Wąskie okno (≤1024px):** przycisk **Menu** → lista sekcji; po najechaniu/kliknięciu sekcji drugi poziom w **osobnym panelu obok**. Dalsze submenu (np. Otwórz ostatnie) jako panel fixed poza overflow.
+**Wąskie okno (≤1024px):** przycisk **Menu** → lista sekcji; drugi poziom w **osobnym panelu obok**.
 
-### Zachowanie menubara (Windows / Linux HTML)
-
-Jak w typowej aplikacji desktop:
+### Zachowanie menubara (Windows / Linux)
 
 1. Samo najechanie **nie** otwiera menu.
-2. Po **kliknięciu** top-level (lub **Menu**) menubar jest „uzbrojony” — najechanie na sąsiednią pozycję / sekcję **przełącza** otwarte menu.
-3. Klawiatura: `↑`/`↓` pozycje; `→` otwiera submenu albo następne top-level; `←` zamyka submenu albo poprzednie top-level; `Enter`/`Space` aktywuje; `Escape` zamyka poziom / całe menu; `Home`/`End` w liście.
+2. Po **kliknięciu** top-level (lub **Menu**) menubar jest „uzbrojony” — najechanie na sąsiednią pozycję **przełącza** otwarte menu.
+3. Klawiatura: `↑`/`↓` pozycje; `→`/`←` submenu lub sąsiednie top-level; `Enter`/`Space` aktywuje; `Escape` zamyka; `Home`/`End` w liście.
 4. Klik poza menu albo drugi klik w tę samą pozycję top-level zamyka.
 
 | Menu                        | Pozycje                                                                                                                                                                                                     |
@@ -85,112 +87,7 @@ Jak w typowej aplikacji desktop:
 | **Host**                    | Status; Klienci / urządzenia; Kod QR… (LAN URL); Restart hosta; Ustawienia…                                                                                                                                 |
 | **Pomoc**                   | Skróty klawiszowe…; Dokumentacja online; Zgłoś problem; Eksport logów; O programie (Win/Linux)                                                                                                              |
 
-### Szczegółowe działanie menu
-
-Na **macOS** menu buduje proces desktop (Tauri) i instaluje je w `setup`. Na **Windows / Linux** ten sam kontrakt pozycji działa w HTML title barze aplikacji (frameless); skróty klawiszowe (`Ctrl/⌘+S`, `Ctrl/⌘+1…3`, itd.) obsługuje WebView (`desktopMenuShortcuts`).
-
-Kliknięcia nie wykonują akcji bezpośrednio w Rust (poza fullscreen / zewnętrznymi URL na macOS), tylko trafiają do głównego WebView jako event `stagesync:desktop-menu` albo przez nawigację do odpowiedniej trasy. Jeśli główne okno `main` nie istnieje, część akcji kończy się bez efektu.
-
-#### StageSync (macOS) / Plik — Preferencje i wyjście (Windows/Linux)
-
-| Pozycja                 | Działanie                                                                                                          | Kiedy działa                              | Kiedy nie działa                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------- |
-| O programie StageSync   | Przechodzi do `/admin?section=host`                                                                                | Gdy istnieje okno `main`                  | Gdy okna `main` nie ma                                                    |
-| Preferencje…            | Wysyła event `preferences` do WebView                                                                              | Gdy istnieje okno `main`                  | Gdy okna `main` nie ma                                                    |
-| Sprawdź aktualizacje... | Na launcherze emituje `launcher-check-update`; w SPA hosta przechodzi do `/admin?section=host&action=check-update` | Gdy istnieje okno `main`                  | Gdy okna `main` nie ma                                                    |
-| Zakończ                 | Zamyka aplikację                                                                                                   | Zawsze, jeśli system zdąży obsłużyć event | Nie ma osobnego warunku w menu, ale proces może zostać zamknięty przez OS |
-
-#### Plik
-
-| Pozycja               | Działanie                                            | Kiedy działa                                       | Kiedy nie działa                                                                  |
-| --------------------- | ---------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Nowy → Utwór          | Event `file-new`                                     | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Nowy → Wzór           | Event `file-new-template`                            | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Nowy → Z wzoru…       | Event `file-new-from-template`                       | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Otwórz…               | Event `file-open`                                    | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Otwórz ostatnie       | Przejście do `/timeline/<id>` dla wybranego projektu | Tylko gdy lista ostatnich projektów nie jest pusta | Gdy `recent_projects` jest puste, pokazuje tylko nieaktywny wpis „Brak ostatnich” |
-| Zapisz                | Event `file-save`                                    | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Zapisz jako…          | Event `file-save-as`                                 | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Importuj bibliotekę…  | Event `file-import`                                  | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Eksportuj bibliotekę… | Event `file-export`                                  | Zawsze z aktywnym menu                             | Brak `main`                                                                       |
-| Zamknij projekt       | Przechodzi do `/admin`                               | Gdy istnieje okno `main`                           | Gdy okna `main` nie ma                                                            |
-
-#### Edycja
-
-| Pozycja          | Działanie            | Kiedy działa                                                         | Kiedy nie działa       |
-| ---------------- | -------------------- | -------------------------------------------------------------------- | ---------------------- |
-| Cofnij           | Event `edit-undo`    | Gdy frontend ustawi `can_undo = true` przez `set_edit_history_state` | Gdy `can_undo = false` |
-| Ponów            | Event `edit-redo`    | Gdy frontend ustawi `can_redo = true` przez `set_edit_history_state` | Gdy `can_redo = false` |
-| Wytnij           | Event `edit-cut`     | Zawsze z aktywnym menu                                               | Brak `main`            |
-| Kopiuj           | Event `edit-copy`    | Zawsze z aktywnym menu                                               | Brak `main`            |
-| Wklej            | Event `edit-paste`   | Zawsze z aktywnym menu                                               | Brak `main`            |
-| Usuń             | Event `edit-delete`  | Zawsze z aktywnym menu                                               | Brak `main`            |
-| Zaznacz wszystko | Natywne `select_all` | Zawsze z aktywnym menu                                               | Brak `main`            |
-
-#### Widok
-
-| Pozycja                                            | Działanie                                                                                      | Kiedy działa             | Kiedy nie działa       |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ | ---------------------- |
-| Admin                                              | Przechodzi do `/admin`                                                                         | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Timeline                                           | Przechodzi do `/timeline/<timeline_project_id>`; jeśli ID nie jest znane, fallback do `/admin` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Klient                                             | Przechodzi do `/client`                                                                        | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Zakładki Admina → Utwory / Setlista / Scena / Host | Przechodzą do odpowiednich sekcji `/admin?section=...`                                         | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Powiększ / Pomniejsz / Rzeczywisty rozmiar         | Eventy `view-zoom-in`, `view-zoom-out`, `view-zoom-reset`                                      | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Wygląd…                                            | Event `appearance`                                                                             | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Pełny ekran                                        | Przełącza natywne fullscreen okna                                                              | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-
-#### Odtwarzanie
-
-| Pozycja         | Działanie              | Kiedy działa             | Kiedy nie działa       |
-| --------------- | ---------------------- | ------------------------ | ---------------------- |
-| Odtwórz         | Event `transport-play` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Stop            | Event `transport-stop` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Poprzedni utwór | Event `transport-prev` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Następny utwór  | Event `transport-next` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-
-#### Host
-
-| Pozycja              | Działanie                            | Kiedy działa             | Kiedy nie działa       |
-| -------------------- | ------------------------------------ | ------------------------ | ---------------------- |
-| Status               | Przechodzi do `/admin?section=host`  | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Klienci / urządzenia | Przechodzi do `/admin?section=stage` | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Kod QR…              | Event `host-qr`                      | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Restart hosta        | Event `host-restart`                 | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-| Ustawienia…          | Przechodzi do `/admin?section=host`  | Gdy istnieje okno `main` | Gdy okna `main` nie ma |
-
-#### Pomoc
-
-| Pozycja                 | Działanie                            | Kiedy działa                                                | Kiedy nie działa               |
-| ----------------------- | ------------------------------------ | ----------------------------------------------------------- | ------------------------------ |
-| Skróty klawiszowe…      | Event `help-shortcuts`               | Gdy istnieje okno `main`                                    | Gdy okna `main` nie ma         |
-| Dokumentacja online     | Otwiera zewnętrzny URL dokumentacji  | Tylko dla `http(s)` i gdy system może otworzyć przeglądarkę | Inne schematy URL są odrzucane |
-| Zgłoś problem           | Otwiera zewnętrzny URL issue tracker | Tylko dla `http(s)` i gdy system może otworzyć przeglądarkę | Inne schematy URL są odrzucane |
-| Eksport logów           | Event `diagnostics-export`           | Gdy istnieje okno `main`                                    | Gdy okna `main` nie ma         |
-| O programie (Win/Linux) | Przechodzi do `/admin?section=host`  | Tylko poza macOS, gdy istnieje okno `main`                  | Na macOS pozycja nie występuje |
-
-#### Zasady aktywności
-
-- Lista **Otwórz ostatnie** jest zasilana przez `set_nav_recent_projects`, obcięta do 8 elementów i odświeża całe menu po zmianie.
-- `Cofnij` i `Ponów` są włączane wyłącznie przez `set_edit_history_state`.
-- `Timeline` korzysta z `timeline_project_id`; gdy ID brak, kliknięcie prowadzi do `/admin`.
-- `Pełny ekran` przełącza natywne okno, nie HTML fullscreen strony.
-- W menu OS nie ma osobnej obsługi błędów poza cichym no-op, jeśli `main` nie istnieje.
-
-### Tray / Menu Bar
-
-Menu zasobnika jest osobne od menu systemowego okna.
-
-| Pozycja                                      | Działanie                                             | Kiedy działa                                               | Kiedy nie działa                                               |
-| -------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
-| Otwórz StageSync                             | Pokazuje główne okno                                  | Zawsze                                                     | Brak okna `main` oznacza tylko brak czego pokazać              |
-| Status hosta                                 | Pokazuje aktualny stan; przy błędzie otwiera Launcher | Klikalne tylko w stanie Error                              | W Idle / Starting / Running jest informacyjne                  |
-| Kopiuj adres LAN                             | Kopiuje LAN URL hosta                                 | Tylko gdy host działa i ma dostępny URL sieciowy           | Gdy host nie działa, startuje albo nie ma URL                  |
-| Otwórz w przeglądarce                        | Otwiera LAN URL w domyślnej przeglądarce              | Tylko gdy host działa i ma dostępny URL sieciowy           | Gdy host nie działa, startuje albo nie ma URL                  |
-| Uruchom Host / Zatrzymaj Host / Anuluj start | Przełącza lokalny host                                | Gdy stan pozwala na toggle                                 | Zależnie od stanu może być wyłączone w trayu                   |
-| Restartuj host                               | Restartuje zarządzany lokalny host                    | Tylko gdy host działa, ma child process i jest gotowa sieć | Gdy host jest Idle / Starting / Error albo nie jest zarządzany |
-| Zakończ StageSync                            | Kończy aplikację i host                               | Zawsze                                                     | Brak osobnego warunku                                          |
-
-Tray nie otwiera menu po lewym kliknięciu ikony, bo `show_menu_on_left_click(false)`; lewy klik przywraca tylko okno.
+Na **macOS** menu buduje proces desktop (Tauri); na **Windows / Linux** ten sam kontrakt pozycji działa w HTML title barze. Skróty (`Ctrl/⌘+S`, `Ctrl/⌘+1…3`, itd.) obsługuje WebView. Cofnij/Ponów zależą od historii draftu Timeline; **Otwórz ostatnie** — do 8 pozycji.
 
 > **MIDI i zegar muzyczny** obsługuje wyłącznie host (serwer) — nie proces okna desktop. Status MIDI widać w Admin → Host.
 >
@@ -199,11 +96,7 @@ Tray nie otwiera menu po lewym kliknięciu ikony, bo `show_menu_on_left_click(fa
 > Application Support / AppData (bez nadpisywania Dokumentów).
 > Lista ostatnich hostów Launchera zostaje w katalogu aplikacji OS.
 >
-> **Przywróć kopię:** Ustawienia → Serwer → Zaawansowane — **Przywróć…**
-> (`.bak` pojedynczo / zaznaczenie / katalog; albo archiwum `.zip` z drzewem danych;
-> PIN gdy włączony). Szczegóły: [INSTALL.md](./INSTALL.md) § Backup volume.
->
-> **Sentry (opcjonalnie):** ustaw `SENTRY_DSN` / `VITE_SENTRY_DSN` w `.env` hosta — bez DSN brak raportowania (./INSTALL.md) § Sentry).
+> **Przywróć kopię / Sentry / PIN / Safety Net / Mixer:** [INSTALL.md](./INSTALL.md).
 
 ## Instalacja (gotowe instalatory)
 
@@ -256,12 +149,26 @@ Menu **StageSync** → **Sprawdź aktualizacje…** na ekranie Launchera otwiera
 Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji** → **Sprawdź aktualizacje** / **Aktualizuj aplikację** (z potwierdzeniem restartu).
 
 > Aktualizacja wymaga internetu. Dane projektów są u hosta (`~/Documents/StageSync` przy lokalnym hoście) — okno ich nie przechowuje osobno.  
-> Na Androidzie (Performer / Console) aktualizacja to osobny dialog APK z hosta — nie Tauri updater.
+> Na Androidzie (Performer / Console) aktualizacja to osobny dialog APK — [MOBILE.md](./MOBILE.md).
 
 ## Pełny ekran i przeciąganie plików
 
 - **Pełny ekran** w aplikacji desktop przełącza natywne okno; w przeglądarce — tryb pełnoekranowy HTML (np. Client na tablecie).
 - **Przeciąganie plików** (import biblioteki, setlista) działa jak w przeglądarce — drop w Adminie.
+
+## Mixer (UI desktop)
+
+- **HW Out:** gdy urządzenie ma ≥ 4 kanały — strefa **HW Out** w Mixerze; **+ Dodaj**, M/ST, dual L/R, usuwanie przez PPM lub Delete/Backspace. Remap Mastera / zmiana Out zablokowane w Play.
+- **Widoczność stref:** oczko przy nagłówku Audio / Busy / HW Out / Master chowa lub pokazuje faderzy (nagłówek zostaje).
+- Kontrakty i env: [INSTALL.md](./INSTALL.md) · [ADR 0017](../adr/0017-live-show-control-contracts.md) §7.
+
+### Checklist smoke multi-out (operator)
+
+1. Ustaw wyjście systemowe na layout ≥ 4 kanałów (macOS Audio MIDI Setup / Windows Speakers).
+2. Preferencje → Audio: sprawdź „Kanały wyjścia” ≥ 4.
+3. Mixer → **+ Dodaj** w strefie HW Out; skieruj ścieżkę na HW; Play — sygnał na fizycznych Out 3–4+.
+4. Play → próba zmiany Out na/z HW albo remap Master = zablokowana; Pause → OK.
+5. Opcjonalnie: Out na Masterze → inna para (np. CH 5–6), gdy urządzenie ma ≥ 6 kanałów i slot jest wolny.
 
 ## Wymagania (dev / build)
 
@@ -271,22 +178,20 @@ Kanoniczna lista upstream: https://v2.tauri.app/start/prerequisites/
 
 ### Windows
 
-1. **MSVC** — Visual Studio 2022 Build Tools z workloadem _Desktop development with C++_ (bez tego `cargo` / linkowanie pada od razu).
+1. **MSVC** — Visual Studio 2022 Build Tools z workloadem _Desktop development with C++_.
 2. **WebView2** Evergreen Runtime (często już zainstalowany z Edge).
 3. **Rust** przez [rustup](https://rustup.rs/) (`cargo` w `PATH` po nowym terminalu).
 4. **Node 22 + pnpm 11** — [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md#środowisko).
 
-**Najprostsza metoda (Zalecane):**
-Po sklonowaniu repozytorium, uruchom w głównym folderze skrypt:
+**Najprostsza metoda:** po sklonowaniu repozytorium:
 
 ```powershell
 .\scripts\setup\setup.ps1
 ```
 
-Skrypt interaktywnie sprawdzi obecność Node.js, pnpm, Rust, MSVC oraz WebView2 i zaoferuje ich automatyczną instalację w razie braków (zwracając kod błędu, jeśli coś pójdzie nie tak).
+Skrypt sprawdzi Node.js, pnpm, Rust, MSVC oraz WebView2 i zaproponuje instalację przy brakach.
 
-**Ręczna instalacja (winget):**
-Jeśli wolisz zainstalować wymagania ręcznie (po instalacji wymagany **nowy** terminal):
+**Ręczna instalacja (winget)** — po instalacji wymagany **nowy** terminal:
 
 ```powershell
 winget install -e --id OpenJS.NodeJS.22
@@ -296,9 +201,9 @@ winget install -e --id Microsoft.EdgeWebView2Runtime
 winget install -e --id Rustlang.Rustup
 ```
 
-Weryfikacja: `rustc -V`, `cargo -V`, `node -v` oraz że w Installerze VS widać workload C++. Skrypt [`apps/desktop/scripts/check-rust.mjs`](../../apps/desktop/scripts/check-rust.mjs) (uruchamiany przy `pnpm --filter @stagesync/desktop dev`) przypomni o użyciu [`setup.ps1`](../../scripts/setup/setup.ps1) w razie braku Rusta.
+Weryfikacja: `rustc -V`, `cargo -V`, `node -v` oraz workload C++ w Installerze VS. Skrypt [`apps/desktop/scripts/check-rust.mjs`](../../apps/desktop/scripts/check-rust.mjs) (przy `pnpm --filter @stagesync/desktop dev`) przypomni o [`setup.ps1`](../../scripts/setup/setup.ps1) przy braku Rusta.
 
-MSI: jeśli `light.exe` / VBSCRIPT pada przy buildzie instalatora — włącz funkcję opcjonalną VBSCRIPT (Ustawienia → Funkcje opcjonalne / „Więcej funkcji systemu Windows”); szczegóły w docs Tauri.
+MSI: jeśli `light.exe` / VBSCRIPT pada przy buildzie instalatora — włącz funkcję opcjonalną VBSCRIPT (Ustawienia → Funkcje opcjonalne).
 
 ### macOS
 
@@ -312,6 +217,8 @@ MSI: jeśli `light.exe` / VBSCRIPT pada przy buildzie instalatora — włącz fu
 - Pełny build `.dmg` / `.exe` (NSIS) jest w [Release workflow](../../.github/workflows/release.yml) (tagi `v*`). Lokalnie: `cargo check` w `apps/desktop/src-tauri` przed zmianami shella.
 
 ## Dev
+
+Launchery monorepo: [DX.md](./DX.md).
 
 ```sh
 # Terminal A — opcjonalny zewnętrzny host
@@ -338,27 +245,6 @@ pnpm --filter @stagesync/desktop build
 | --------- | ---------------------------------------- |
 | macOS     | `.dmg`                                   |
 | Windows   | zoptymalizowany instalator `.exe` (NSIS) |
-
-## Operator: PIN, Safety Net, Sampler, bus→bus, motyw, multi-out
-
-- **Mixer bus→bus:** wyjście busa na Master albo inny bus (bez pętli).
-- **Mixer multi-out (HW):** gdy urządzenie audio ma ≥ 4 kanały (layout OS Quad/5.1 lub Aggregate Device), Mixer listuje **HW Out**. Master domyślnie idzie na CH 1–2 (można przemapować na inną wolną parę w selektorze Out na pasku Master — zablokowane w Play). Patchy HW: **+ Dodaj** (wyłącza się po wyczerpaniu kanałów), M/ST, dual L/R przy stereo, usuwanie przez PPM albo Delete/Backspace (bez × przy Mute). Ścieżka / bus / próbka Cue mogą iść na HW. Przy stereo-only strefa HW Out jest ukryta. Zmiana wyjścia fizycznego zablokowana w trakcie Play ([ADR 0017](../adr/0017-live-show-control-contracts.md) §7).
-- **Mixer — widoczność stref:** oczko przy nagłówku Audio / Busy / HW Out / Master chowa lub pokazuje faderzy strefy (nagłówek zostaje); wybór w przeglądarce.
-- **PIN operatora** (`STAGESYNC_OPERATOR_PIN` w `.env` hosta) — bramka przy wejściu w Admin / Timeline; destrukcyjne REST wymagają nagłówka PIN. Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu oraz po **15 min** bezczynności ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8a).
-- **Safety Net** — **Operator-Assisted Hot Standby** (ręczny **Przejmij**; bez Zero-Glitch HA). W Admin → Host: rola Master/Spare; na Spare MIDI OUT wyciszony. Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany) ([ADR 0017](../adr/0017-live-show-control-contracts.md) §2–§3).
-- **Panic:** globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s). Performer / Client bez globalnego Panic ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8b).
-- **Cues Sampler** — Inspector klipu Cue: próbka, tryb one-shot/gated, GO, Master/Bus/HW.
-- **Motyw:** picker 5 skór (Booth / Daylight / Midnight / Matrix / Neon); `STAGESYNC_THEME_DEFAULT` dla urządzeń bez lokalnej preferencji.
-
-### Checklist smoke multi-out (operator — bez claim green)
-
-1. Ustaw wyjście systemowe na layout ≥ 4 kanałów (macOS Audio MIDI Setup / Windows Speakers).
-2. Preferencje → Audio: sprawdź „Kanały wyjścia” ≥ 4.
-3. Mixer → **+ Dodaj** w strefie HW Out (przy 4 kanałach zmieści się jedna para stereo poza Masterem); skieruj ścieżkę na HW; Play — sygnał na fizycznych Out 3–4+.
-4. Play → próba zmiany Out na/z HW albo remap Master = zablokowana; Pause → OK.
-5. Opcjonalnie: Out na Masterze → inna para (np. CH 5–6), gdy urządzenie ma ≥ 6 kanałów i slot jest wolny.
-
-Szczegóły env: [INSTALL.md](./INSTALL.md).
 
 ## Ograniczenia (ADR 0010)
 

@@ -1,10 +1,11 @@
-# StageSync — instalacja produkcyjna (Docker — ścieżka drugorzędna)
+# StageSync — instalacja produkcyjna (Docker)
 
-Host na scenie (rack/server): **Docker Compose** + volume `data/`.
+Host na scenie (rack / serwer): **Docker Compose** + volume `data/`.
 Aktualizacja bez git-apply — [ADR 0004](../adr/0004-updates-docker.md).
 
-Desktop operatora (standalone): [DESKTOP.md](./DESKTOP.md) · [ADR 0010](../adr/0010-desktop-shell-tauri.md).  
-Android Performer / Console: [MOBILE.md](./MOBILE.md) · [ADR 0016](../adr/0016-android-performer-console.md).
+**Inne powierzchnie:** desktop operatora — [DESKTOP.md](./DESKTOP.md); Android (Performer / Console) — [MOBILE.md](./MOBILE.md).
+
+**Aktualizacje (mapa):** Docker host = Watchtower z Admina; desktop Tauri = updater w Launcherze / Adminie; Android = dialog APK (nie Watchtower).
 
 ## Wymagania
 
@@ -26,13 +27,17 @@ docker compose up --build -d
 
 Dane użytkownika: volume `./data` → `/app/data` w kontenerze (`STAGESYNC_DATA_DIR`).
 
+## Operator (kontrakty hosta)
+
+Wspólne dla Desktop, Console i przeglądarki LAN — różnice powierzchni: [DESKTOP.md](./DESKTOP.md), [MOBILE.md](./MOBILE.md).
+
 ### Host restart / shutdown (LAN)
 
 `POST /api/system/restart` i `shutdown` są dozwolone z loopback bez tokenu.
 Z LAN wymagają `Authorization: Bearer <STAGESYNC_HOST_TOKEN>` **albo**
 `STAGESYNC_ALLOW_REMOTE_LIFECYCLE=1` (tylko zaufane sieci). Admin wysyła token
 z `localStorage.stagesync.hostToken` gdy ustawiony — w UI: zakładka **Host**
-(przyciski restart / shutdown w nagłówku Admina; PR [#257](https://github.com/Negatywistczny/stagesync/pull/257)).
+(przyciski restart / shutdown w nagłówku Admina).
 
 ### Operator PIN (opcjonalny)
 
@@ -43,10 +48,20 @@ Admin i Timeline proszą o PIN przy wejściu; Client — w ustawieniach przy edy
 notatek/form. Nagłówek: `X-Stagesync-Operator-Pin` (alias `X-StageSync-PIN`).
 Status: `GET /api/system/operator-auth` → `{ required: boolean }`.
 
+Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu
+oraz po **15 min** bezczynności ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8a).
+
 ### Safety Net (Master / Spare)
 
-`STAGESYNC_SAFETY_ROLE=spare` wycisza MIDI OUT na tym hoście (lustro). W Admin → Host
-widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master).
+`STAGESYNC_SAFETY_ROLE=spare` wycisza MIDI OUT na tym hoście (lustro).
+**Operator-Assisted Hot Standby** — ręczny **Przejmij** w Admin → Host (bez Zero-Glitch HA).
+Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany)
+([ADR 0017](../adr/0017-live-show-control-contracts.md) §2–§3).
+
+### Panic
+
+Globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s).
+Performer / Client bez globalnego Panic ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8b).
 
 ### Motyw domyślny hosta
 
@@ -60,10 +75,12 @@ Wyjście busa można skierować na Master albo inny bus (bez pętli).
 
 ### Mixer multi-out (HW Out)
 
-Gdy przeglądarka / WebView raportuje `maxChannelCount ≥ 4` (layout głośników Quad/5.1
-albo Aggregate Device), Mixer udostępnia patchy **HW Out** (ChannelMerger → dyskretne
-kanały destination). Track, bus i Cue Sampler mogą iść na `hw_out`. Przy samym stereo
-strefa HW Out jest ukryta (bez atrap Out 3–4). Zob. [DESKTOP.md](./DESKTOP.md).
+Gdy urządzenie audio ma ≥ 4 kanały (layout OS Quad/5.1 lub Aggregate Device),
+Mixer listuje **HW Out**. Master domyślnie idzie na CH 1–2 (można przemapować).
+Track, bus i Cue Sampler mogą iść na HW. Przy samym stereo strefa HW Out jest ukryta.
+Zmiana wyjścia fizycznego zablokowana w trakcie Play
+([ADR 0017](../adr/0017-live-show-control-contracts.md) §7).
+Szczegóły UI Mixera: [DESKTOP.md](./DESKTOP.md).
 
 ### Cues Sampler
 
@@ -84,8 +101,7 @@ docker login ghcr.io -u <twój-login-github> -p <PAT>
 ```sh
 cp .env.example .env
 # Wypełnij:
-#   STAGESYNC_VERSION=5.3.0
-
+#   STAGESYNC_VERSION=5.4.11
 #   GHCR_USER=<login>
 #   GHCR_TOKEN=<PAT read:packages>
 #   WATCHTOWER_TOKEN=<losowy secret — openssl rand -hex 32>
@@ -148,7 +164,7 @@ Wymagane: [`compose.prod.yml`](../../compose.prod.yml) z Watchtower + zmienne `S
 
 ```sh
 # Przywróć poprzednią wersję w .env, np.:
-# STAGESYNC_VERSION=5.3.0
+# STAGESYNC_VERSION=5.4.11
 docker compose -f compose.prod.yml up -d
 ```
 
@@ -170,7 +186,7 @@ pnpm dev   # web :3000 + server :4000
 
 Wejście na `:4000/admin` z tej samej maszyny przekierowuje do `:3000`, gdy serwer działa bez bundla UI (`STAGESYNC_STATIC_DIR` nieustawione).
 
-Zob. [README.md](../README.md).
+DX / launchery: [DX.md](./DX.md) · indeks docs: [README.md](../README.md).
 
 ## Folder danych użytkownika
 

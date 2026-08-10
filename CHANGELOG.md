@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Zmieniono
+
+#### 📚 Dokumentacja
+- **Przewodniki:** INSTALL / DESKTOP / MOBILE ujednolicone (odbiorca, mapa aktualizacji, kontrakty operatora w INSTALL; odchudzone menu desktop i wall-of-text Android).
+
 ### Naprawiono
 
 #### 📚 Dokumentacja
