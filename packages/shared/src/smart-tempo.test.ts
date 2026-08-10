@@ -9,6 +9,7 @@ import {
   extendBeatGridToDuration,
   extractYoutubeVideoId,
   layoutFormaFromUgBarCounts,
+  layoutFormaFromAlignedWords,
   medianBpmFromBeatMs,
   msPerBarAtBpm,
   placeUsUgBackingAudioClip,
@@ -66,6 +67,15 @@ describe("extractYoutubeVideoId", () => {
     ).toBe("rDQHzGpwQNk");
   });
 
+  it("parses youtu.be and embed URLs", () => {
+    expect(extractYoutubeVideoId("https://youtu.be/dQw4w9WgXcQ")).toBe(
+      "dQw4w9WgXcQ",
+    );
+    expect(
+      extractYoutubeVideoId("https://www.youtube.com/embed/dQw4w9WgXcQ"),
+    ).toBe("dQw4w9WgXcQ");
+  });
+
   it("rejects invalid id", () => {
     expect(extractYoutubeVideoId("short")).toBeNull();
     expect(extractYoutubeVideoId("")).toBeNull();
@@ -113,6 +123,17 @@ describe("evaluateDriftGate", () => {
       gradual: true,
     });
     expect(r.action).toBe("ramp");
+  });
+
+  it("ignores drift exactly at the 1-bar threshold", () => {
+    const barMs = msPerBarAtBpm(120, METER, DEFAULT_PPQ);
+    const r = evaluateDriftGate(1000 + barMs, 1000, {
+      seedBpm: 120,
+      meter: METER,
+      ppq: DEFAULT_PPQ,
+    });
+    expect(r.action).toBe("ignore");
+    expect(r.deltaMs).toBe(barMs);
   });
 });
 
@@ -606,6 +627,34 @@ describe("layoutFormaFromUgBarCounts", () => {
   });
 });
 
+describe("layoutFormaFromAlignedWords", () => {
+  it("places vocal Beat 1 from firstWordTicks and keeps integer bars", () => {
+    const plans = layoutFormaFromAlignedWords(
+      [
+        {
+          name: "Intro",
+          pipeBarCount: 2,
+          firstWordTicks: null,
+          lastWordTicks: null,
+        },
+        {
+          name: "Verse",
+          pipeBarCount: 0,
+          firstWordTicks: 2 * BAR + 100,
+          lastWordTicks: 5 * BAR,
+        },
+      ],
+      0,
+      METER,
+      DEFAULT_PPQ,
+    );
+    expect(plans[0]!.startTicks).toBe(0);
+    expect(plans[1]!.startTicks).toBe(2 * BAR);
+    expect(plans[1]!.lengthTicks % BAR).toBe(0);
+    expect(plans[1]!.pristineBars).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe("medianBpmFromBeatMs / sparsifyTempoNodesFromBeatGrid", () => {
   it("estimates median BPM from intervals", () => {
     expect(medianBpmFromBeatMs([0, 500, 1000, 1500])).toBe(120);
@@ -756,6 +805,16 @@ describe("medianBpmFromBeatMs / sparsifyTempoNodesFromBeatGrid", () => {
     );
     expect(pruned).toHaveLength(2);
     expect(pruned[1]!.bpm).toBe(125);
+  });
+
+  it("sanitizeBeatGridIbis restores a short+long false half-beat pair", () => {
+    const period = 500;
+    const beatMs = [0, 500, 750, 1500, 2000];
+    const cleaned = sanitizeBeatGridIbis(beatMs, 120);
+    expect(cleaned[2]).toBe(1000);
+    for (let i = 1; i < cleaned.length; i++) {
+      expect(cleaned[i]! - cleaned[i - 1]!).toBeCloseTo(period, -1);
+    }
   });
 });
 

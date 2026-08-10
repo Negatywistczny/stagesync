@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1242
-* **Liczba katalogów:** 194
-* **Data aktualizacji:** 2026-08-10T21:45:02.833Z
+* **Liczba wszystkich plików:** 1253
+* **Liczba katalogów:** 195
+* **Data aktualizacji:** 2026-08-10T21:51:10.201Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 818 |
+| Kod | 829 |
 | Docs | 156 |
 | Config | 118 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 478 |
+| `.ts` | 489 |
 | `.tsx` | 161 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -81,11 +81,11 @@
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (156) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (167) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (115) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (126) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -751,6 +751,18 @@ stagesync/
 │   │   ├── src/
 │   │   │   ├── fixtures/
 │   │   │   │   └── us-ug/  … (8 plików, 4 podkatalogi)
+│   │   │   ├── smart-tempo/
+│   │   │   │   ├── backing-clip.ts
+│   │   │   │   ├── beat-grid.ts
+│   │   │   │   ├── beat1-align.ts
+│   │   │   │   ├── constants.ts
+│   │   │   │   ├── drift-gate.ts
+│   │   │   │   ├── epoch-shims.ts
+│   │   │   │   ├── forma-layout.ts
+│   │   │   │   ├── run-audio-smart-tempo.ts
+│   │   │   │   ├── tempo-map.ts
+│   │   │   │   ├── tempo-nodes.ts
+│   │   │   │   └── types.ts
 │   │   │   ├── text-anchor-bridge/
 │   │   │   │   ├── align.ts
 │   │   │   │   ├── bridge-api.ts
