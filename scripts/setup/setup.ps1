@@ -2,6 +2,10 @@ param(
     [switch]$AutoConfirm = $false
 )
 
+# Kotwica w root monorepo (wywołanie spoza roota OK)
+$RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+Set-Location $RepoRoot
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -10,7 +14,7 @@ $SetupErrors = 0
 
 function Write-Step {
     param([string]$Text)
-    Write-Host "`n-> $Text" -ForegroundColor Cyan
+    Write-Host "`n[STEP] $Text" -ForegroundColor Cyan
 }
 
 function Write-Ok {
@@ -25,9 +29,10 @@ function Write-Warn {
 
 function Confirm-Choice {
     param([string]$Message)
+    # [T/n] = Enter/t/y/tak → Tak (domyślnie tak)
     if ($AutoConfirm) { return $true }
-    $response = Read-Host "$Message [T/n]"
-    if ([string]::IsNullOrWhiteSpace($response) -or $response -match "^[tyTY]") {
+    $response = (Read-Host "$Message [T/n]").Trim().ToLowerInvariant()
+    if ([string]::IsNullOrWhiteSpace($response) -or $response -match '^(t|y|tak|yes)$') {
         return $true
     }
     return $false
@@ -42,40 +47,40 @@ Write-Step "Weryfikacja Node.js..."
 $nodeExists = Get-Command "node" -ErrorAction SilentlyContinue
 if (-not $nodeExists) {
     Write-Warn "Nie znaleziono Node.js w systemie."
-    if (Confirm-Choice "Czy chcesz zainstalowac Node.js 22 (LTS) przez winget?") {
+    if (Confirm-Choice "Czy chcesz zainstalować Node.js 22 (LTS) przez winget?") {
         Write-Host "Pobieranie i instalowanie Node.js 22 (OpenJS.NodeJS.22)..."
         winget install -e --id OpenJS.NodeJS.22
         if ($LASTEXITCODE -ne 0) {
-            Write-Warn "Instalacja Node.js za pomoca winget zakonczyla sie bledem (kod: $LASTEXITCODE)."
-            Write-Warn "Skrypt nie moze kontynuowac bez Node.js. Uruchom jako Administrator lub zainstaluj z nodejs.org."
+            Write-Warn "Instalacja Node.js przez winget zakończyła się błędem (kod: $LASTEXITCODE)."
+            Write-Warn "Skrypt nie może kontynuować bez Node.js. Uruchom jako Administrator lub zainstaluj z nodejs.org."
             exit 1
         }
-        
-        Write-Host "Odswiezanie zmiennych srodowiskowych..."
+
+        Write-Host "Odświeżanie zmiennych środowiskowych..."
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-        
+
         $nodeExists = Get-Command "node" -ErrorAction SilentlyContinue
         if (-not $nodeExists) {
-            Write-Warn "Node.js zostal zainstalowany, ale nadal nie jest widoczny w PATH."
-            Write-Warn "ZAMKNIJ TEN TERMINAL, otworz nowy i uruchom skrypt setup.ps1 ponownie!"
+            Write-Warn "Node.js został zainstalowany, ale nadal nie jest widoczny w PATH."
+            Write-Warn "ZAMKNIJ TEN TERMINAL, otwórz nowy i uruchom skrypt setup.ps1 ponownie!"
             exit 0
         } else {
-            Write-Ok "Node.js jest gotowy do uzycia."
+            Write-Ok "Node.js jest gotowy do użycia."
         }
     } else {
-        Write-Warn "Pominieto instalacje Node.js. Skrypt nie moze kontynuowac."
+        Write-Warn "Pominięto instalację Node.js. Skrypt nie może kontynuować."
         exit 1
     }
 } else {
     $nodeVersion = node -v
     Write-Ok "Node.js jest zainstalowany ($nodeVersion)."
     if ($nodeVersion -notmatch "^v22\.") {
-        Write-Warn "Zalecana wersja Node.js to 22.x (obecnie masz $nodeVersion). Moze to powodowac problemy."
+        Write-Warn "Zalecana wersja Node.js to 22.x (obecnie masz $nodeVersion). Może to powodować problemy."
     }
 }
 
 # 2. PNPM i Corepack
-Write-Step "Weryfikacja menedzera pakietow (pnpm)..."
+Write-Step "Weryfikacja menedżera pakietów (pnpm)..."
 $pnpmCmd = Get-Command "pnpm" -ErrorAction SilentlyContinue
 if ($pnpmCmd) {
     $pnpmVer = pnpm -v
@@ -84,14 +89,14 @@ if ($pnpmCmd) {
     try {
         corepack enable pnpm 2>$null
         corepack install 2>$null
-        Write-Ok "Corepack pnpm zostal wlaczony."
+        Write-Ok "Corepack pnpm został włączony."
     } catch {
-        Write-Warn "Nie udalo sie automatycznie aktywowac corepack dla pnpm."
+        Write-Warn "Nie udało się automatycznie aktywować corepack dla pnpm."
     }
 }
 
-# 3. Weryfikacja narzedzi dla Desktop (Tauri)
-Write-Step "Weryfikacja wymagan dla aplikacji Desktopowej (Tauri)..."
+# 3. Weryfikacja narzędzi dla Desktop (Tauri)
+Write-Step "Weryfikacja wymagań dla aplikacji Desktopowej (Tauri)..."
 $rustExists = Get-Command "cargo" -ErrorAction SilentlyContinue
 
 $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -107,11 +112,11 @@ $hasWv2 = (Test-Path $wv2Key) -or (Test-Path $wv2KeyUser)
 
 if ($rustExists -and $hasMsvc -and $hasWv2) {
     $rustVersion = cargo -V
-    Write-Ok "Narzedzia Desktop (Rust $rustVersion, MSVC, WebView2) sa w pelni obecne."
+    Write-Ok "Narzędzia Desktop (Rust $rustVersion, MSVC, WebView2) są w pełni obecne."
 } else {
-    Write-Warn "Niektore narzedzia dla Desktop (Rust / MSVC) nie sa jeszcze obecne w systemie."
-    if (Confirm-Choice "Czy chcesz dociagnac brakujacy Rust / MSVC dla aplikacji Desktop (Tauri)? (MSVC to ~5-10 GB)") {
-        
+    Write-Warn "Niektóre narzędzia dla Desktop (Rust / MSVC) nie są jeszcze obecne w systemie."
+    if (Confirm-Choice "Czy chcesz dociągnąć brakujący Rust / MSVC dla aplikacji Desktop (Tauri)? (MSVC to ~5-10 GB)") {
+
         # 3.1 Rust
         if (-not $rustExists) {
             Write-Host "Instalacja Rusta..."
@@ -120,7 +125,7 @@ if ($rustExists -and $hasMsvc -and $hasWv2) {
                 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
                 $cargoPath = "$env:USERPROFILE\.cargo\bin"
                 if (Test-Path "$cargoPath\cargo.exe") { $env:Path += ";$cargoPath" }
-                Write-Ok "Rust zostal zainstalowany."
+                Write-Ok "Rust został zainstalowany."
             }
         }
 
@@ -138,34 +143,34 @@ if ($rustExists -and $hasMsvc -and $hasWv2) {
             if ($LASTEXITCODE -eq 0) { Write-Ok "WebView2 zainstalowane." }
         }
     } else {
-        Write-Host "Pominieto pobieranie narzedzi Desktop. Srodowisko dla Web/API jest w pelni gotowe."
+        Write-Host "Pominięto pobieranie narzędzi Desktop. Środowisko dla Web/API jest w pełni gotowe."
     }
 }
 
-# 4. Instalacja pakietow NPM
-Write-Step "Instalacja zaleznosci Node..."
+# 4. Instalacja pakietów NPM
+Write-Step "Instalacja zależności Node..."
 try {
     pnpm install
     if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
-        Write-Warn "Blad podczas 'pnpm install'. Kod: $LASTEXITCODE"
+        Write-Warn "Błąd podczas 'pnpm install'. Kod: $LASTEXITCODE"
         $SetupErrors++
     } else {
-        Write-Ok "Zaleznosci zostaly zainstalowane."
+        Write-Ok "Zależności zostały zainstalowane."
     }
 } catch {
-    Write-Warn "Wyjatek podczas 'pnpm install'. Upewnij sie, ze pnpm jest w PATH."
+    Write-Warn "Wyjątek podczas 'pnpm install'. Upewnij się, że pnpm jest w PATH."
     $SetupErrors++
 }
 
 Write-Host "========================================" -ForegroundColor Magenta
 if ($SetupErrors -eq 0) {
-    Write-Ok "Setup zostal zakonczony pomyslnie!"
+    Write-Ok "Setup został zakończony pomyślnie!"
 } else {
-    Write-Warn "Setup zakonczyl sie z ostrzezeniami ($SetupErrors). Upewnij sie, ze przesledziles logi!"
+    Write-Warn "Setup zakończył się z ostrzeżeniami ($SetupErrors). Upewnij się, że prześledziłeś logi!"
 }
-Write-Host "Aby uruchomic aplikacje Web:" -ForegroundColor Cyan
+Write-Host "Aby uruchomić aplikację Web:" -ForegroundColor Cyan
 Write-Host "  .\dev web" -ForegroundColor White
-Write-Host "Aby uruchomic powloke Desktop (wymaga Rust+MSVC):" -ForegroundColor Cyan
+Write-Host "Aby uruchomić powłokę Desktop (wymaga Rust+MSVC):" -ForegroundColor Cyan
 Write-Host "  .\dev desktop" -ForegroundColor White
 Write-Host "========================================" -ForegroundColor Magenta
 

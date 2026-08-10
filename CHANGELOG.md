@@ -7,6 +7,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
+### Naprawiono
+
+#### 📚 Dokumentacja
+- **Desktop (dev):** w przewodniku DESKTOP poprawiona ścieżka skryptu setupu Windows (`scripts/setup/setup.ps1`).
+
 ### Usunięto
 
 #### 🖥️ App Shell & UI

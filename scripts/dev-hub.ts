@@ -112,12 +112,25 @@ async function waitReturn() {
   });
 }
 
+/** Potwierdzenie PL: etykiety Tak/Nie; initialValue = domyślna odpowiedź (jak [T/n] vs [t/N]). */
+async function confirmPl(
+  message: string,
+  initialValue = false,
+): Promise<boolean> {
+  const ok = await clack.confirm({
+    message,
+    initialValue,
+    active: "Tak",
+    inactive: "Nie",
+  });
+  return Boolean(ok) && !clack.isCancel(ok);
+}
+
 async function confirmDanger(
   message: string,
   initialValue = false,
 ): Promise<boolean> {
-  const ok = await clack.confirm({ message, initialValue });
-  return Boolean(ok) && !clack.isCancel(ok);
+  return confirmPl(message, initialValue);
 }
 
 function warnSideEffects(lines: string[]) {
@@ -708,12 +721,12 @@ async function managePortsAndZombies() {
       clack.log.message(` • Port :${p.port} — PID ${p.pid} (${p.name})`);
     });
 
-    const confirmKill = await clack.confirm({
-      message: "Czy chcesz zamknąć te procesy?",
-      initialValue: true,
-    });
+    const confirmKill = await confirmPl(
+      "Czy chcesz zamknąć te procesy?",
+      true,
+    );
 
-    if (confirmKill && !clack.isCancel(confirmKill)) {
+    if (confirmKill) {
       for (const p of allProcs) killProcessTree(p);
       clack.log.success("Zakończono procedurę czyszczenia portów.");
     } else {
@@ -1165,12 +1178,12 @@ async function runUnlinkedScanAndMaybeFix() {
     return;
   }
 
-  const doFix = await clack.confirm({
-    message: `Znaleziono ${total} niepodlinkowanych odniesień. Naprawić teraz?`,
-    initialValue: true,
-  });
+  const doFix = await confirmPl(
+    `Znaleziono ${total} niepodlinkowanych odniesień. Naprawić teraz?`,
+    true,
+  );
 
-  if (!doFix || clack.isCancel(doFix)) {
+  if (!doFix) {
     clack.log.info("Pominięto naprawę.");
     await waitReturn();
     return;

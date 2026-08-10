@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+# Kotwica w root monorepo (wywołanie spoza roota OK)
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$REPO_ROOT"
+
 # Kolory
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
@@ -25,9 +29,10 @@ ask_confirm() {
     if [ "$AUTO_CONFIRM" = true ]; then
         return 0
     fi
-    read -p "$(echo -e "${YELLOW}${message} [T/n]: ${NC}")" response
+    # [T/n] = Enter/t/y → Tak (domyślnie tak)
+    read -p "$(echo -e "${YELLOW}${message} [T/n] ${NC}")" response
     response=${response,,}
-    if [[ -z "$response" || "$response" == "t" || "$response" == "y" ]]; then
+    if [[ -z "$response" || "$response" == "t" || "$response" == "y" || "$response" == "tak" || "$response" == "yes" ]]; then
         return 0
     else
         return 1
@@ -66,18 +71,21 @@ else
     fi
 fi
 
+if ! command -v node &> /dev/null; then
+    echo -e "${RED}Node.js nadal niedostępny w PATH. Zainstaluj Node 22+ i uruchom setup ponownie.${NC}"
+    exit 1
+fi
+
 # 2. Weryfikacja pnpm
 echo -e "\n${CYAN}➤ Weryfikacja menedżera pakietów (pnpm)...${NC}"
-if command -v pnpm &> /dev/null; (corepack enable pnpm && corepack install) &>/dev/null; then
-    PNPM_VER=$(pnpm -v 2>/dev/null || echo "")
+if command -v pnpm >/dev/null 2>&1; then
+    PNPM_VER=$(pnpm -v)
     echo -e "${GREEN}✅ pnpm jest gotowy ($PNPM_VER).${NC}"
+elif corepack enable pnpm && corepack install; then
+    echo -e "${GREEN}✅ Corepack pnpm został włączony.${NC}"
 else
-    echo -e "${YELLOW}⚠️ Próba włączenia corepack pnpm...${NC}"
-    if corepack enable pnpm && corepack install; then
-        echo -e "${GREEN}✅ Corepack pnpm został włączony.${NC}"
-    else
-        echo -e "${YELLOW}⚠️ Upewnij się, że pnpm jest zainstalowany w systemie.${NC}"
-    fi
+    echo -e "${YELLOW}⚠️ Upewnij się, że pnpm jest zainstalowany w systemie.${NC}"
+    SETUP_ERRORS=$((SETUP_ERRORS + 1))
 fi
 
 # 3. Weryfikacja narzedzi dla Desktop (Tauri)
@@ -122,6 +130,10 @@ else
                 echo "Instalacja zależności WebKit2GTK przez apt-get (sudo)..."
                 sudo apt-get update || true
                 sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev || true
+            else
+                echo -e "${YELLOW}⚠️ Brak apt-get — automatyczna instalacja zależności systemowych nie jest wspierana na tej dystrybucji.${NC}"
+                echo -e "${YELLOW}   Zainstaluj WebKitGTK / GTK ręcznie wg docs/guides/DESKTOP.md${NC}"
+                SETUP_ERRORS=$((SETUP_ERRORS + 1))
             fi
         elif [[ "$OSTYPE" == "darwin"* ]] && [ "$HAS_SYS_DEPS" = false ]; then
             xcode-select --install || true

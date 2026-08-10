@@ -280,7 +280,7 @@ Kanoniczna lista upstream: https://v2.tauri.app/start/prerequisites/
 Po sklonowaniu repozytorium, uruchom w głównym folderze skrypt:
 
 ```powershell
-.\scripts\setup.ps1
+.\scripts\setup\setup.ps1
 ```
 
 Skrypt interaktywnie sprawdzi obecność Node.js, pnpm, Rust, MSVC oraz WebView2 i zaoferuje ich automatyczną instalację w razie braków (zwracając kod błędu, jeśli coś pójdzie nie tak).

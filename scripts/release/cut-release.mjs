@@ -275,8 +275,9 @@ async function confirm(message, yes) {
   }
   const rl = createInterface({ input, output });
   try {
-    const answer = (await rl.question(`${message} [y/N] `)).trim().toLowerCase();
-    return answer === "y" || answer === "yes";
+    // [t/N] = tylko t/y/tak → Tak; Enter/n → Nie (domyślnie nie — operacja destrukcyjna)
+    const answer = (await rl.question(`${message} [t/N] `)).trim().toLowerCase();
+    return answer === "t" || answer === "y" || answer === "tak" || answer === "yes";
   } finally {
     rl.close();
   }

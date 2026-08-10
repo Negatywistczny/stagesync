@@ -4,71 +4,59 @@ Informacje dotyczące trybu deweloperskiego, uruchamiania i automatyzacji w proj
 
 ## 🚀 Uruchamianie (Entrypoint)
 
-Użyj odpowiedniego pliku w zależności od używanego systemu i powłoki:
+Launchery (`dev`, `dev.cmd`, `dev.ps1`) same przechodzą do roota monorepo. Z innego katalogu podaj ścieżkę do pliku (np. `…/stagesync/dev`, `…\stagesync\dev.cmd`).
 
-<details>
-<summary><b>🪟 Windows</b></summary>
-<br>
+**🪟 Windows**
 
-**CMD (Wiersz Poleceń) — skrypt `.cmd`**
+**CMD**
 
 ```cmd
 dev
 ```
 
-**PowerShell — skrypt `.cmd` (zalecane)**
+**PowerShell**
 
 ```powershell
 .\dev.cmd
 ```
 
-**PowerShell — natywny skrypt `.ps1`**
+**PowerShell (`.ps1`)**
 
 ```powershell
-# Jednorazowe przyznanie uprawnień
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
 .\dev
 # lub
 .\dev.ps1
 ```
 
-<br>
-</details>
-<details>
-<summary><b>🍏 macOS / 🐧 Linux</b></summary>
-<br>
-
-**Bash (zalecane)**
+**🍏 macOS / 🐧 Linux**
 
 ```bash
 bash dev
-```
-
-**Wywołanie pliku**
-
-```bash
+# lub
 ./dev
 ```
 
-<br>
-</details>
-<details>
-<summary><b>🌐 Uniwersalne (wymaga node.js & pnpm)</b></summary>
-<br>
+**🌐 Bez launchera** — wymaga już Node.js, pnpm i zależności
 
 ```bash
 pnpm dev:hub
 ```
 
-</details>
+## ⚙️ Środowisko i potwierdzenia
 
-## ⚙️ Wymagania środowiskowe
+**Wymagania**
 
-- **Node.js**: >= 22 (zalecane użycie `fnm` lub `nvm` do zarządzania wersjami).
-- **pnpm**: Zarządzane przez `corepack` (dołączone w skryptach launchera).
-- **Git**: Do zarządzania repozytorium.
-- **Tauri / Rust**: Wymagane do budowania natywnego shella (sprawdź [DESKTOP.md](./DESKTOP.md)).
+- **Node.js**: >= 22 (zalecane `fnm` lub `nvm`).
+- **pnpm**: przez `corepack` (launchery włączają go w razie potrzeby).
+- **Git**: do zarządzania repozytorium.
+- **Tauri / Rust**: do budowania natywnego shella (zob. [DESKTOP.md](./DESKTOP.md)).
+
+**Potwierdzenia** (setup / launchery / cut-release)
+
+- `[T/n]` — domyślnie **Tak** (Enter / `t` / `y`); instalacje bezpieczne.
+- `[t/N]` — domyślnie **Nie** (Enter = odmawia); operacje destrukcyjne (np. cut release).
+- W Dev Hub (clack): etykiety **Tak** / **Nie**; domyślna opcja = `initialValue`.
 
 ## 🎛️ Centrum Dowodzenia — Dev Hub ([`scripts/dev-hub.ts`](../../scripts/dev-hub.ts))
 
@@ -78,8 +66,7 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 
 W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›`). Pozycje bez `›` uruchamiają akcję od razu.
 
-<details>
-<summary><b>1. 🏥 Szybka Diagnostyka</b> - Automatyczny, bezinwazyjny skan środowiska deweloperskiego (Preflight Scan)</summary>
+**1. 🏥 Szybka Diagnostyka** - Automatyczny, bezinwazyjny skan środowiska deweloperskiego (Preflight Scan)
 
 > - **Node.js**: Weryfikacja wersji w systemie (wymagany min. Node 22 LTS).
 > - **pnpm**: Sprawdzenie dostępności menedżera pakietów.
@@ -90,10 +77,7 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 > - **Port Guard**: Skan procesów w stanie LISTEN na portach `:3000` (Web UI) oraz `:4000` (Server API).
 > - **Konfiguracja Środowiska**: Plik `.env`, efektywny katalog danych (ADR 0012) oraz `STAGESYNC_REPO_DEV` / `STAGESYNC_DATA_DIR`.
 
-</details>
-
-<details>
-<summary><b>2. 🚀 Uruchomienie & Dev</b> - Profile uruchomieniowe i procesy deweloperskie w monorepo</summary>
+**2. 🚀 Uruchomienie & Dev** - Profile uruchomieniowe i procesy deweloperskie w monorepo
 
 > 1. **🚀 Web UI + API**: Równoległe uruchomienie Vite UI (:3000) oraz serwera API (:4000) (`pnpm dev`).
 > 2. **🌐 Web Only**: Uruchomienie wyłącznie frontendu Vite (`pnpm --filter @stagesync/web dev`).
@@ -103,18 +87,12 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 > 6. **🧪 Pusty instalator NSIS**: Szybki test wyglądu instalatora Windows NSIS bez budowania sidecarów (`tauri:build:nsis-smoke`).
 > 7. **🐳 Stack produkcyjny**: Uruchomienie kontenerów za pomocą Docker Compose (`docker compose up --build`).
 
-</details>
-
-<details>
-<summary><b>3. 🌐 Sieć & Diagnostyka LAN</b> - Narzędzia sieciowe i orkiestracja procesów</summary>
+**3. 🌐 Sieć & Diagnostyka LAN** - Narzędzia sieciowe i orkiestracja procesów
 
 > 1. **📱 Podgląd LAN IP + Kod QR**: Wybór karty sieciowej (NIC), wygenerowanie adresów LAN (`/client`, `/admin`, `/api/health`) oraz wyrysowanie kodu QR dla urządzeń mobilnych.
 > 2. **🔌 Port Guard & Kill-Zombies**: Wykrywanie i zamykanie procesów blokujących porty `:3000`/`:4000` oraz czyszczenie zablokowanych sidecarów Tauri.
 
-</details>
-
-<details>
-<summary><b>4. 🧪 Testy & Jakość</b> - Podmenu: Verify / Docs i quality / Unit i bench / Build</summary>
+**4. 🧪 Testy & Jakość** - Podmenu: Verify / Docs i quality / Unit i bench / Build
 
 > **✅ Verify** (rosnąco wg zakresu)
 >
@@ -142,10 +120,7 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 > 1. **Pełny Build (Turbo)**: `pnpm build`.
 > 2. **Sync Launcher UI**: `pnpm sync:launcher-ui`.
 
-</details>
-
-<details>
-<summary><b>5. 🐙 GitHub & Wydania (Release Hub)</b> - Orkiestracja cyklu wydań i wersji SemVer</summary>
+**5. 🐙 GitHub & Wydania (Release Hub)** - Orkiestracja cyklu wydań i wersji SemVer
 
 > 1. **🔍 Status Git & Hygiene**: Odczyt bieżącej gałęzi, ostatnich commitów i modyfikowanych plików.
 > 2. **🏷 Synchronizacja Wersji Monorepo**: Propagacja numeru wersji z [`package.json`](../../package.json) do aplikacji web, server, Tauri, Android i Docker.
@@ -155,10 +130,7 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 > 6. **🚀 Przygotowanie Taga (`cut-release`)**: Podbicie SemVer (`patch` / `minor` / `major` / `alpha` / `beta`) z potwierdzeniem.
 > 7. **⚡ Release (`exec-release`)**: Publikacja wydania z potwierdzeniem.
 
-</details>
-
-<details>
-<summary><b>6. 📦 Zależności & Pakiety</b> - Zarządzanie pakietami monorepo przez pnpm</summary>
+**6. 📦 Zależności & Pakiety** - Zarządzanie pakietami monorepo przez pnpm
 
 > 1. **🔍 Sprawdź nieaktualne pakiety**: Podgląd nieaktualnych zależności (`pnpm outdated -r`).
 > 2. **🆙 Interaktywna aktualizacja pakietów**: Wygodna aktualizacja pakietów (`pnpm up -i -r --latest`).
@@ -166,46 +138,34 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 > 4. **🛡️ Audyt bezpieczeństwa**: Skanowanie podatności w pakietach (`pnpm audit`).
 > 5. **🧹 Czyszczenie pnpm store**: Usuwanie nieużywanych pakietów z magazynu pnpm (`pnpm store prune`).
 
-</details>
-
-<details>
-<summary><b>7. 🧹 Konserwacja & Cache</b> - Głębokie czyszczenie środowiska kompilacji</summary>
+**7. 🧹 Konserwacja & Cache** - Głębokie czyszczenie środowiska kompilacji
 
 > - Automatyczne wykrywanie i usuwanie katalogów `dist`, `.vite`, `.turbo`, `coverage`, `.cache` ze wszystkich aplikacji i pakietów.
 > - Czyszczenie katalogu `src-tauri/target` dla aplikacji desktopowej.
 > - Precyzyjne raportowanie usuniętych i zablokowanych katalogów.
 
-</details>
-
-<details>
-<summary><b>8. 💾 Zarządzanie danymi & Logi</b> - Operacje na efektywnym katalogu danych (ADR 0012)</summary>
+**8. 💾 Zarządzanie danymi & Logi** - Operacje na efektywnym katalogu danych (ADR 0012)
 
 > Efektywna ścieżka: `STAGESYNC_DATA_DIR` → `STAGESYNC_REPO_DEV` (`<repo>/data`) → `~/Documents/StageSync` → fallback `<repo>/data`.
 >
 > 1. **📝 Podgląd ostatnich logów**: Ostatnie 2000 znaków z najnowszego pliku w `<dataDir>/logs/` (sortowanie po `mtime`).
 > 2. **🗑 Wyczyść katalog danych**: Czyszczenie efektywnego katalogu (confirm z pełną ścieżką); w repo `data/` zachowywany jest `README.md`.
 
-</details>
-
-<details>
-<summary><b>9. 🛠 Setup Środowiska</b> - Natywny instalator zależności systemowych</summary>
+**9. 🛠 Setup Środowiska** - Natywny instalator zależności systemowych
 
 > - Automatyczne rozróżnienie systemu operacyjnego.
 > - Uruchomienie natywnego skryptu `setup.ps1` (Windows via PowerShell) lub `setup.sh` (macOS/Linux via Bash).
-
-</details>
-<br>
 
 ---
 
 ### 💡 Wszystkie Bezpośrednie Skróty CLI (Headless Mode)
 
-Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywnego menu
+Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywnego menu.
 
 > `[cmd]` oznacza polecenie uruchomienia np. `dev`, `.\dev` lub `./dev`
 
 | Skrót CLI        | Aliasy                        | Opis i Działanie                                                                           |
-| :--------------- | :---------------------------- | :----------------------------------------------------------------------------------------- |
+| ---------------- | ----------------------------- | ------------------------------------------------------------------------------------------ |
 | `[cmd] doctor`   | —                             | **Preflight Scan**: Skan środowiska (Node, pnpm, Rust, `gh`, porty, data dir, `.env`).     |
 | `[cmd] ports`    | —                             | **Safe Port Guard**: Wykrywanie i zamykanie procesów LISTEN (:3000 / :4000).               |
 | `[cmd] clean`    | —                             | **Cache Cleaner**: Głębokie czyszczenie pamięci podręcznej i artefaktów buildów.           |
@@ -231,4 +191,4 @@ Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywn
 
 ### 🛠️ Pozostałe Narzędzia (`scripts/`)
 
-_Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](../../scripts/README.md)._
+*Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](../../scripts/README.md).*
