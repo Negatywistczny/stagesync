@@ -4,7 +4,7 @@ Audyty kodu (DEFER / partial — nie zamknięte). Zamknięte audyty usunięte; h
 
 Indeks nadrzędny: [../README.md](../README.md).
 
-| Dump | Triage |
-| --- | --- |
+| Dump                                                                                 | Triage                                                     |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
 | [Audyt-Lifecycle-StageSync-v5-Desktop.md](./Audyt-Lifecycle-StageSync-v5-Desktop.md) | [triage](./Audyt-Lifecycle-StageSync-v5-Desktop.triage.md) |
-| [Audyt-StageSync-v5-Race-Conditions.md](./Audyt-StageSync-v5-Race-Conditions.md) | [triage](./Audyt-StageSync-v5-Race-Conditions.triage.md) |
+| [Audyt-StageSync-v5-Race-Conditions.md](./Audyt-StageSync-v5-Race-Conditions.md)     | [triage](./Audyt-StageSync-v5-Race-Conditions.triage.md)   |

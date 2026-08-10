@@ -68,11 +68,11 @@ transport `play`/`pause`/`stop`/`seek`/`loop`, MIDI panic, restart/shutdown
 
 ### Library
 
-| Metoda | Ścieżka                      | Opis                                                                                            |
-| ------ | ---------------------------- | ----------------------------------------------------------------------------------------------- |
-| `GET`  | `/api/library`               | Indeks biblioteki (cold-seed z template jeśli brak pliku)                                       |
-| `POST` | `/api/library/batch-midi-pc` | Batch `midiProgramId` po `assignments[]`                                                        |
-| `POST` | `/api/library/export`        | Pakiet JSON (`stagesyncExportVersion: 3`); opcjonalnie `projectIds`                             |
+| Metoda | Ścieżka                      | Opis                                                                                                                                  |
+| ------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/library`               | Indeks biblioteki (cold-seed z template jeśli brak pliku)                                                                             |
+| `POST` | `/api/library/batch-midi-pc` | Batch `midiProgramId` po `assignments[]`                                                                                              |
+| `POST` | `/api/library/export`        | Pakiet JSON (`stagesyncExportVersion: 3`); opcjonalnie `projectIds`                                                                   |
 | `POST` | `/api/library/import`        | Import pakietu v5 (`{ projects }`) → projekty; **201** `{ ok, created, format, warnings, library }`; format 4.x (`songs[]`) → **400** |
 
 ### Import (Ultimate Guitar)

@@ -22,9 +22,7 @@ export default defineConfig({
     // Playwright lives under e2e/ (*.spec.ts) — do not run under Vitest.
     exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
     // GitHub Actions annotations for failed assertions (CI only).
-    reporters: process.env.CI
-      ? ["default", "github-actions"]
-      : ["default"],
+    reporters: process.env.CI ? ["default", "github-actions"] : ["default"],
     coverage: {
       provider: "v8",
       // Repo-root SF paths so Codecov can map monorepo files.

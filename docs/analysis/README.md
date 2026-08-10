@@ -2,11 +2,11 @@
 
 Trzy typy artefaktów:
 
-| Typ | Katalog | Git | Wzorzec nazwy |
-| --- | --- | --- | --- |
-| Raport kanoniczny | [`reports/current/`](./reports/README.md) | tak | `report-<temat>.md` |
-| Inspiracja (zewn. audyt) | [`inspiracje/`](./inspiracje/README.md) | tak | dump + `*.triage.md` |
-| Notatka robocza | [`working/`](./working/README.md) | nie | `working-<temat>.md` |
+| Typ                      | Katalog                                   | Git | Wzorzec nazwy        |
+| ------------------------ | ----------------------------------------- | --- | -------------------- |
+| Raport kanoniczny        | [`reports/current/`](./reports/README.md) | tak | `report-<temat>.md`  |
+| Inspiracja (zewn. audyt) | [`inspiracje/`](./inspiracje/README.md)   | tak | dump + `*.triage.md` |
+| Notatka robocza          | [`working/`](./working/README.md)         | nie | `working-<temat>.md` |
 
 Historia wydań / zamkniętych cutów → [CHANGELOG.md](../../CHANGELOG.md). Bez lokalnego archiwum milestones / hygiene.
 
@@ -16,11 +16,11 @@ Finalne dokumenty, do których można linkować z `TODO`, `ROADMAP` i PR. Nowe r
 
 ### Indeks (aktywne)
 
-| Temat | Raport |
-| --- | --- |
-| **Syllables / residual** | [report-scope-5.4](./reports/current/report-scope-5.4.md) |
-| **G1–G10 ops residual** | [report-beta-gate](./reports/current/report-beta-gate.md) |
-| **Dual Engine align** | [report-adr-dual-engine-vst-align](./reports/current/report-adr-dual-engine-vst-align.md) |
+| Temat                    | Raport                                                                                    |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| **Syllables / residual** | [report-scope-5.4](./reports/current/report-scope-5.4.md)                                 |
+| **G1–G10 ops residual**  | [report-beta-gate](./reports/current/report-beta-gate.md)                                 |
+| **Dual Engine align**    | [report-adr-dual-engine-vst-align](./reports/current/report-adr-dual-engine-vst-align.md) |
 
 Powiązane: [ui-shell-inventory.md](../ui/ui-shell-inventory.md), [ROADMAP.md](../ROADMAP.md), [TODO.md](../TODO.md), [ADR 0011](../adr/0011-ui-parity-behavior.md).
 
