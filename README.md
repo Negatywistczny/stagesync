@@ -124,7 +124,7 @@ Więcej informacji znajdziesz w pełnej [Dokumentacji DX](./docs/guides/DX.md).
 | 🔌 **[API](docs/api/README.md)**                             | Specyfikacja powierzchni REST API i punktów końcowych                 |
 | 💡 **[ADR](docs/adr/README.md)**                             | Dziennik decyzji architektonicznych (_Architecture Decision Records_) |
 | 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista                 |
-| 📜 **[CHANGELOG](CHANGELOG.md)**                             | Historia wydań (`5.4` Syllables, …)                                   |
+| 📜 **[CHANGELOG](CHANGELOG.md)**                             | Historia wydań                                                        |
 | 🎨 **[UI](docs/ui/README.md)**                               | Przewodnik po Design Systemie i tokenach CSS                          |
 | 🔒 **[SECURITY](.github/SECURITY.md)**                       | Polityka bezpieczeństwa i zgłaszanie podatności                       |
 | 🤝 **[CONTRIBUTING](.github/CONTRIBUTING.md)**               | Standardy commitów, obsługa PR-ów i praca na gałęziach                |

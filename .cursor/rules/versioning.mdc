@@ -44,6 +44,9 @@ Nie podbijaj wersji przy zwykłych commitach — tylko gdy użytkownik prosi o r
 | **5.3** | **Colors & Channels** |
 | **5.4** | **Syllables** |
 | **5.5** | **Pitch & FX** |
+| **5.6** | **Studio Shell** |
+| **5.7** | **Extended Notation** |
+| **5.8** | **Advanced Timeline** |
 
 ### Linie 6.x
 
@@ -51,6 +54,17 @@ Nie podbijaj wersji przy zwykłych commitach — tylko gdy użytkownik prosi o r
 |-------|-------|
 | **6.0** | **Live Suite** |
 | **6.1** | **Karaoke & Jukebox** |
+| **6.2** | **Pre-flight & Hardware** |
+| **6.3** | **Live Show Automation** |
+| **6.4** | **Smart Ingest** |
+
+### Linie 7.x
+
+| Linia | Nazwa |
+|-------|-------|
+| **7.0** | **Notation Studio** |
+| **7.1** | **Enterprise Rig** |
+| **7.2** | **Studio Ecosystem** |
 
 ## Release (gdy użytkownik prosi)
 

@@ -1,6 +1,6 @@
 # StageSync v5 — TODO
 
-**Stan:** cut **`5.4.6`** — następny fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
+**Stan:** trunk **`5.4.11`** — następny fokus: **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox**.
 Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP.md). Higiena: [todo-hygiene.mdc](../.cursor/rules/todo-hygiene.mdc).
 
 **Polityka:** zakaz stubów. [ADR 0011](./adr/0011-ui-parity-behavior.md).  
@@ -10,7 +10,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 **Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/current/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone.
 
-**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** — Smart Tempo **5.4.2**, polish do **5.4.6**.
+**Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); post-6.1: **6.2** Pre-flight → **6.3** DMX → **6.4** Smart Ingest; linia **5.4 Syllables** — Smart Tempo **5.4.2**, polish w trunku `package.json`.
 
 ## Must (najbliższy cut 5.5 Pitch & FX)
 
@@ -26,8 +26,10 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 - [ ] **Perf (observe first):** profil animacji chord-hero w Client Grid przy `prefers-reduced-motion`; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — w toku: lokalne alerty + rejestracja tokenów + kanały; FCM wymaga `google-services.json` (opt-in, ADR 0016 — zero sekretów w APK). Nie mylić z FG notification lokalnego hosta Console.
 - [ ] **Import US+UG:** higiena mostka / zero-length chords / coverage Formy — Smart Tempo **5.4.2** wydane; tu residual mostka (nie drugi silnik tempa) · [AST triage](./analysis/inspiracje/specyfikacje/Implementacja-Smart-Tempo-w-Antigravity.triage.md)
+- [ ] [#834](https://github.com/Negatywistczny/stagesync/issues/834) **Split monolitów >500 LOC:** ESLint `max-lines` warn=500; split przy touch (nie big-bang)
+- [ ] [#835](https://github.com/Negatywistczny/stagesync/issues/835) **Coverage Top 10:** najpierw I/O o niskim % (`youtube-audio`, `pushNotifications`, `import` routes); potem duży wolumen domenowy
 
-## Etap 5.6+ / Later (zgodnie z nową Roadmapą)
+## Etap 5.6+ / Later (zgodnie z Roadmapą)
 
 ### 5.6 Studio Shell & Multi-Window / 5.7 Extended Notation / 5.8 Advanced Timeline
 
@@ -37,15 +39,17 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 
 ### 6.0+ Live Suite & Dual Engine
 
-- [ ] **6.0.0 — Live Suite + Dual Engine (Studio vs Live):** Tryby SSOT Studio/Live ([ADR 0019](./adr/0019-dual-engine-studio-live.md)); sandboxowany Plugin Host (Studio) + Freeze → WAV przed Live; Lock Lane; filary Live Suite (Input, Automation, Standalone VSTi, recording + proste edit, MIDI Patch Matrix, STEM) — [ADR 0018](./adr/0018-future-audio-architecture.md).
-- [ ] **6.1.0 — Live Show Automation & DMX:** Track Delays (ms), warstwa sterowania DMX / Art-Net (UDP 30 Hz). _(Numeracja vs hero Karaoke w tabeli ROADMAP / ADR 0018 — residual align; nie mylić z Dual Engine.)_
+- [ ] **6.0.0 — Live Suite + Dual Engine (Studio vs Live):** Tryby SSOT Studio/Live ([ADR 0019](./adr/0019-dual-engine-studio-live.md)); sandboxowany Plugin Host (Studio) + Freeze → WAV przed Live; Lock Lane; filary Live Suite (Input, Automation, Standalone VSTi, recording + proste edit, MIDI Patch Matrix, STEM w tym lokalny split Demucs [#832](https://github.com/Negatywistczny/stagesync/issues/832)) — [ADR 0018](./adr/0018-future-audio-architecture.md).
+- [ ] **6.1.0 — Karaoke & Jukebox:** `/karaoke`, `/request`, Gig vs Jukebox, multi-role Lyrics AST — [#824](https://github.com/Negatywistczny/stagesync/issues/824).
 - [ ] **6.2.0 — Pre-flight & Hardware Setup:** Rig Manager (aliasy MIDI), MIDI Learn, Tuner instrumentalny w `/client`, Setlist Pre-flight Check.
-- [ ] **6.3.0 — Karaoke & Jukebox:** Moduł LAN `/karaoke` i `/request` z moderacją w Adminie.
+- [ ] **6.3.0 — Live Show Automation & DMX:** Track Delays (ms), warstwa sterowania DMX / Art-Net (UDP 30 Hz).
+- [ ] **6.4.0 — Smart Ingest ACL:** satellite/CLI + `import-bundle`; core bez scrapingu — [#840](https://github.com/Negatywistczny/stagesync/issues/840).
 
-### 7.x — Notation Studio & Enterprise Rig
+### 7.x — Notation Studio, Enterprise Rig & Studio Ecosystem
 
-- [ ] **7.0.0 — Studio Notation Edit:** Edycja partytur MusicXML bezpośrednio w drzewie projektu.
+- [ ] **7.0.0 — Studio Notation Edit:** Edycja partytur MusicXML w drzewie projektu + most MuseScore — [#837](https://github.com/Negatywistczny/stagesync/issues/837).
 - [ ] **7.1.0 — Enterprise Rig & OSC:** Podgląd logów MIDI/OSC, OSC Matrix & Zero-Glitch HA Master/Spare.
+- [ ] **7.2.0 — Studio Ecosystem:** Virtual Performers [#838](https://github.com/Negatywistczny/stagesync/issues/838) + Muse Sounds manager [#839](https://github.com/Negatywistczny/stagesync/issues/839); legal/ADR przed kodem.
 
 ### Residual ops / mobile
 
