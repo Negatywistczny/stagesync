@@ -2,6 +2,7 @@ process.env.NODE_NO_WARNINGS = "1";
 
 import * as clack from "@clack/prompts";
 import { spawnSync, execSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -153,6 +154,162 @@ function runCommand(
   return result.status === 0;
 }
 
+type CommandResult = { ok: boolean; output: string };
+
+/** Like `runCommand`, but captures stdout/stderr for gate summaries (echoes after exit). */
+function runCommandCaptured(
+  command: string,
+  args: string[],
+  options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
+): CommandResult {
+  console.log();
+  const result = spawnSync(command, args, {
+    cwd: options.cwd || rootDir,
+    encoding: "utf8",
+    shell: true,
+    env: { ...process.env, NODE_NO_WARNINGS: "1", ...options.env },
+  });
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  if (output) {
+    process.stdout.write(output.endsWith("\n") ? output : `${output}\n`);
+  }
+  return { ok: result.status === 0, output };
+}
+
+function stripAnsi(text: string): string {
+  return text.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
+}
+
+function firstFailureHint(output: string, maxLen = 96): string | undefined {
+  const lines = stripAnsi(output)
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const interesting = lines.find(
+    (l) =>
+      /error TS\d+|✖|FAIL |Error:|ELIFECYCLE| failed|broken=/i.test(l) &&
+      !/DeprecationWarning|ExperimentalWarning/.test(l),
+  );
+  if (!interesting) return undefined;
+  return interesting.length > maxLen
+    ? `${interesting.slice(0, maxLen - 1)}…`
+    : interesting;
+}
+
+function hashFileContent(relPath: string): string | null {
+  try {
+    const abs = path.join(rootDir, relPath);
+    const buf = fs.readFileSync(abs);
+    return createHash("sha256").update(buf).digest("hex");
+  } catch {
+    return null;
+  }
+}
+
+/** Dirty paths (vs HEAD + untracked) → content hash. Detects writes even when already dirty. */
+function gitDirtyContentMap(): Map<string, string> {
+  const map = new Map<string, string>();
+  const tracked = spawnSync("git", ["diff", "HEAD", "--name-only"], {
+    cwd: rootDir,
+    encoding: "utf8",
+  });
+  const untracked = spawnSync(
+    "git",
+    ["ls-files", "--others", "--exclude-standard"],
+    { cwd: rootDir, encoding: "utf8" },
+  );
+  for (const raw of `${tracked.stdout ?? ""}\n${untracked.stdout ?? ""}`.split(
+    /\r?\n/,
+  )) {
+    const filePath = raw.trim().replace(/\\/g, "/");
+    if (!filePath) continue;
+    map.set(filePath, hashFileContent(filePath) ?? "missing");
+  }
+  return map;
+}
+
+function gitContentChangedPaths(
+  before: Map<string, string>,
+  after: Map<string, string>,
+): string[] {
+  const paths = new Set<string>();
+  for (const [p, h] of after) {
+    if (before.get(p) !== h) paths.add(p);
+  }
+  for (const p of before.keys()) {
+    if (!after.has(p)) paths.add(p);
+  }
+  return [...paths].sort();
+}
+
+function formatChangedFilesDetail(paths: string[], verb = "zapisano"): string {
+  if (paths.length === 0) return "bez zmian w git";
+  const preview = paths.slice(0, 3).join(", ");
+  const more = paths.length > 3 ? ` (+${paths.length - 3})` : "";
+  return `${verb} ${paths.length}: ${preview}${more}`;
+}
+
+/** Sum final Vitest `Tests` lines across turbo packages. */
+function parseVitestTestsDetail(output: string): string | undefined {
+  const plain = stripAnsi(output);
+  const byPkg = new Map<
+    string,
+    { passed: number; failed: number; skipped: number }
+  >();
+  const re =
+    /(?:^|\n)(?:(@stagesync\/[\w-]+):.*?:\s*)?Tests\s+(\d+)\s+passed(?:\s*\|\s*(\d+)\s+failed)?(?:\s*\|\s*(\d+)\s+skipped)?/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(plain)) !== null) {
+    byPkg.set(m[1] ?? "_", {
+      passed: Number(m[2]),
+      failed: m[3] ? Number(m[3]) : 0,
+      skipped: m[4] ? Number(m[4]) : 0,
+    });
+  }
+  if (byPkg.size === 0) return undefined;
+  let passed = 0;
+  let failed = 0;
+  let skipped = 0;
+  for (const v of byPkg.values()) {
+    passed += v.passed;
+    failed += v.failed;
+    skipped += v.skipped;
+  }
+  const parts = [`${passed} passed`];
+  if (failed) parts.push(`${failed} failed`);
+  if (skipped) parts.push(`${skipped} skipped`);
+  if (byPkg.size > 1) parts.push(`${byPkg.size} pkg`);
+  return parts.join(", ");
+}
+
+function parseCoverageStmtsDetail(output: string): string | undefined {
+  const m = stripAnsi(output).match(
+    /All files\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)/,
+  );
+  if (!m) return undefined;
+  return `stmts ${m[1]}%`;
+}
+
+function parsePlaywrightDetail(output: string): string | undefined {
+  const plain = stripAnsi(output);
+  const passedMatches = [
+    ...plain.matchAll(/^\s*(\d+)\s+passed(?:\s*\(([^)]+)\))?/gm),
+  ];
+  const last = passedMatches.at(-1);
+  if (!last) return undefined;
+  const failed = [...plain.matchAll(/^\s*(\d+)\s+failed/gm)].at(-1);
+  let s = `${last[1]} passed`;
+  if (last[2]) s += ` (${last[2]})`;
+  if (failed && Number(failed[1]) > 0) s += `, ${failed[1]} failed`;
+  return s;
+}
+
+function parseDocsLinksDetail(output: string, ok: boolean): string {
+  const m = stripAnsi(output).match(/checked=(\d+)\s+broken=(\d+)/);
+  if (!m) return ok ? "OK" : (firstFailureHint(output) ?? "błąd");
+  return ok ? `${m[1]} checked` : `${m[2]} broken / ${m[1]} checked`;
+}
+
 /** Load unset STAGESYNC_* keys from root `.env` (mirrors server dotenv for hub). */
 function hydrateStagesyncEnvFromDotenv() {
   const envPath = path.join(rootDir, ".env");
@@ -224,14 +381,29 @@ function readRootPackageVersion(): string | null {
   }
 }
 
-type GateStep = { id: string; label: string; ok: boolean };
+type GateStep = {
+  id: string;
+  label: string;
+  ok: boolean;
+  /** One-line summary (counts, mutations, fail hint). */
+  detail?: string;
+  /** Step wrote tracked files (git dirty delta). */
+  mutated?: boolean;
+};
 
 function summarizeGate(title: string, steps: GateStep[]): boolean {
   console.log();
   clack.log.info(`Podsumowanie — ${title}:`);
   for (const step of steps) {
-    if (step.ok) clack.log.success(` ✓  ${step.label}`);
-    else clack.log.error(` ✗  ${step.label}`);
+    const suffix = step.detail ? ` — ${step.detail}` : "";
+    if (step.ok) clack.log.success(` ✓  ${step.label}${suffix}`);
+    else clack.log.error(` ✗  ${step.label}${suffix}`);
+  }
+  const mutated = steps.filter((s) => s.mutated);
+  if (mutated.length > 0) {
+    clack.log.warn(
+      `Zmienione pliki: ${mutated.map((s) => s.id).join(", ")}. Sprawdź git diff.`,
+    );
   }
   const failed = steps.filter((s) => !s.ok);
   if (failed.length === 0) {
@@ -242,26 +414,57 @@ function summarizeGate(title: string, steps: GateStep[]): boolean {
   }
   clack.log.error(
     `❌ ${title} — nieudane (${failed.length}/${steps.length}): ${failed
-      .map((s) => s.label)
+      .map((s) => (s.detail ? `${s.label} (${s.detail})` : s.label))
       .join(", ")}`,
   );
   return false;
 }
 
+function gateStepFromCaptured(
+  id: string,
+  label: string,
+  command: string,
+  args: string[],
+  detailFrom?: {
+    ok?: (output: string) => string | undefined;
+    fail?: (output: string) => string | undefined;
+  },
+): GateStep {
+  const { ok, output } = runCommandCaptured(command, args);
+  const detail = ok
+    ? detailFrom?.ok?.(output)
+    : (detailFrom?.fail?.(output) ?? firstFailureHint(output) ?? "błąd");
+  return { id, label, ok, detail };
+}
+
+function gateStepMutatingPnpm(
+  id: string,
+  label: string,
+  args: string[],
+): GateStep {
+  const before = gitDirtyContentMap();
+  const { ok, output } = runCommandCaptured("pnpm", args);
+  const changed = gitContentChangedPaths(before, gitDirtyContentMap());
+  const detail = ok
+    ? formatChangedFilesDetail(changed)
+    : (firstFailureHint(output) ?? formatChangedFilesDetail(changed));
+  return {
+    id,
+    label,
+    ok,
+    detail,
+    mutated: changed.length > 0,
+  };
+}
+
 function runCiLikeVerifySteps(): GateStep[] {
   return [
-    {
-      id: "types",
-      label: "check-types",
-      ok: runCommand("pnpm", ["check-types"]),
-    },
-    {
-      id: "ss-css",
-      label: "lint:ss-css",
-      ok: runCommand("pnpm", ["lint:ss-css"]),
-    },
-    { id: "lint", label: "lint", ok: runCommand("pnpm", ["lint"]) },
-    { id: "test", label: "test", ok: runCommand("pnpm", ["test"]) },
+    gateStepFromCaptured("types", "check-types", "pnpm", ["check-types"]),
+    gateStepFromCaptured("ss-css", "lint:ss-css", "pnpm", ["lint:ss-css"]),
+    gateStepFromCaptured("lint", "lint", "pnpm", ["lint"]),
+    gateStepFromCaptured("test", "test", "pnpm", ["test"], {
+      ok: parseVitestTestsDetail,
+    }),
   ];
 }
 
@@ -282,18 +485,19 @@ function runDailyGate(): boolean {
     "Codzienny gate: format → check-types → lint:ss-css → lint → test → links → knip…",
   );
   const steps: GateStep[] = [
-    {
-      id: "format",
-      label: "format (Prettier)",
-      ok: runCommand("pnpm", ["format"]),
-    },
+    gateStepMutatingPnpm("format", "format (Prettier)", ["format"]),
     ...runCiLikeVerifySteps(),
-    {
-      id: "links",
-      label: "docs links",
-      ok: runCommand("node", ["scripts/quality/check-docs-links.mjs"]),
-    },
-    { id: "knip", label: "knip", ok: runCommand("pnpm", ["lint:knip"]) },
+    gateStepFromCaptured(
+      "links",
+      "docs links",
+      "node",
+      ["scripts/quality/check-docs-links.mjs"],
+      {
+        ok: (output) => parseDocsLinksDetail(output, true),
+        fail: (output) => parseDocsLinksDetail(output, false),
+      },
+    ),
+    gateStepFromCaptured("knip", "knip", "pnpm", ["lint:knip"]),
   ];
   return summarizeGate("Codzienny gate", steps);
 }
@@ -314,11 +518,14 @@ function scanUnlinkedCount(): { ok: boolean; total: number; output: string } {
   return { ok: true, total, output };
 }
 
+const UNLINKED_STEP_LABEL = "unlinked";
+
 /**
  * Unlinked docs gate. With `autoFix`, runs fix-unlinked-links once and rechecks.
  */
-function runUnlinkedGate(options: { autoFix?: boolean } = {}): boolean {
+function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
   const autoFix = options.autoFix === true;
+  const label = UNLINKED_STEP_LABEL;
   clack.note("Skan niepodlinkowanych odniesień (check-unlinked.mjs)…");
   const first = scanUnlinkedCount();
   if (first.output) {
@@ -326,21 +533,52 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): boolean {
       first.output.endsWith("\n") ? first.output : `${first.output}\n`,
     );
   }
-  if (!first.ok) return false;
-  if (first.total === 0) return true;
+  if (!first.ok) {
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: firstFailureHint(first.output) ?? "błąd skanu",
+    };
+  }
+  if (first.total === 0) {
+    return {
+      id: "unlinked",
+      label,
+      ok: true,
+      detail: "0 niepodlinkowanych",
+    };
+  }
 
   if (!autoFix) {
     clack.log.error(
       `Gate unlinked: znaleziono ${first.total} odniesień (napraw w Docs i quality).`,
     );
-    return false;
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: `znaleziono ${first.total}`,
+    };
   }
 
   clack.log.warn(
     `Gate unlinked: ${first.total} odniesień — auto-fix (fix-unlinked-links.mjs)…`,
   );
-  const fixed = runCommand("node", ["scripts/quality/fix-unlinked-links.mjs"]);
-  if (!fixed) return false;
+  const before = gitDirtyContentMap();
+  const fixed = runCommandCaptured("node", [
+    "scripts/quality/fix-unlinked-links.mjs",
+  ]);
+  const changed = gitContentChangedPaths(before, gitDirtyContentMap());
+  if (!fixed.ok) {
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: firstFailureHint(fixed.output) ?? "auto-fix failed",
+      mutated: changed.length > 0,
+    };
+  }
 
   clack.note("Ponowny skan po auto-fix…");
   const second = scanUnlinkedCount();
@@ -349,15 +587,35 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): boolean {
       second.output.endsWith("\n") ? second.output : `${second.output}\n`,
     );
   }
-  if (!second.ok) return false;
+  if (!second.ok) {
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: firstFailureHint(second.output) ?? "błąd skanu po fix",
+      mutated: changed.length > 0,
+    };
+  }
   if (second.total > 0) {
     clack.log.error(
       `Gate unlinked: po auto-fix nadal ${second.total} odniesień.`,
     );
-    return false;
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: `po auto-fix nadal ${second.total}`,
+      mutated: changed.length > 0,
+    };
   }
   clack.log.success("Gate unlinked: auto-fix usunął wszystkie odniesienia.");
-  return true;
+  return {
+    id: "unlinked",
+    label,
+    ok: true,
+    detail: `auto-fix ${first.total} → 0 (${changed.length} plików)`,
+    mutated: changed.length > 0,
+  };
 }
 
 function looksLikeMissingPlaywrightBrowser(output: string): boolean {
@@ -411,15 +669,25 @@ function spawnWebE2e(): { status: number | null; output: string } {
  * - fresh webServers (STAGESYNC_E2E_FRESH)
  * - on fail: Playwright browser install / port kill / pnpm install + one retry
  */
-function runWebE2eWithBrowserBootstrap(): boolean {
+function runWebE2eWithBrowserBootstrap(): GateStep {
+  const label = "web e2e";
   clack.note(
     "E2E bootstrap: shared build → wolne porty → Playwright (@stagesync/web)…",
   );
   if (!runCommand("pnpm", ["--filter", "@stagesync/shared", "build"])) {
     clack.log.error("E2E: nie udało się zbudować @stagesync/shared.");
-    return false;
+    return {
+      id: "e2e",
+      label,
+      ok: false,
+      detail: "shared build failed",
+    };
   }
   freeDevPortsForE2e();
+
+  /** Side-effects that actually ran (omit from summary when empty). */
+  const fixes: string[] = [];
+  let lastOutput = "";
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     clack.note(
@@ -428,11 +696,36 @@ function runWebE2eWithBrowserBootstrap(): boolean {
         : "Ponawianie Playwright E2E po auto-fix…",
     );
     const { status, output } = spawnWebE2e();
+    lastOutput = output;
     if (output) {
       process.stdout.write(output.endsWith("\n") ? output : `${output}\n`);
     }
-    if (status === 0) return true;
-    if (attempt === 2) return false;
+    if (status === 0) {
+      const counts = parsePlaywrightDetail(output);
+      const parts = [
+        counts,
+        fixes.length > 0 ? fixes.join(", ") : undefined,
+      ].filter(Boolean);
+      return {
+        id: "e2e",
+        label,
+        ok: true,
+        detail: parts.length > 0 ? parts.join("; ") : undefined,
+      };
+    }
+    if (attempt === 2) {
+      const counts = parsePlaywrightDetail(output);
+      const fixNote = fixes.length > 0 ? `po: ${fixes.join(", ")}` : undefined;
+      return {
+        id: "e2e",
+        label,
+        ok: false,
+        detail:
+          [counts ?? firstFailureHint(output) ?? "fail", fixNote]
+            .filter(Boolean)
+            .join("; ") || "fail",
+      };
+    }
 
     if (looksLikeMissingPlaywrightBrowser(output)) {
       clack.log.warn(
@@ -447,29 +740,58 @@ function runWebE2eWithBrowserBootstrap(): boolean {
           "install",
         ])
       ) {
-        return false;
+        return {
+          id: "e2e",
+          label,
+          ok: false,
+          detail: "playwright install failed",
+        };
       }
+      fixes.push("zainstalowano Playwright");
       continue;
     }
 
     if (looksLikeE2ePortConflict(output)) {
       clack.log.warn("Konflikt portów e2e — zwalniam :3000/:4000 i retry…");
       freeDevPortsForE2e();
+      fixes.push("zwolniono porty");
       continue;
     }
 
     if (looksLikeMissingNodeModule(output)) {
       clack.log.warn("Brak modułu Node — `pnpm install`, potem retry e2e…");
-      if (!runCommand("pnpm", ["install"])) return false;
+      if (!runCommand("pnpm", ["install"])) {
+        return {
+          id: "e2e",
+          label,
+          ok: false,
+          detail: "pnpm install failed",
+        };
+      }
       freeDevPortsForE2e();
+      fixes.push("pnpm install");
       continue;
     }
 
     // Prawdziwy fail testu / inny błąd — bez retry (nie zamazywać wyniku)
-    return false;
+    return {
+      id: "e2e",
+      label,
+      ok: false,
+      detail:
+        parsePlaywrightDetail(output) ?? firstFailureHint(output) ?? "fail",
+    };
   }
 
-  return false;
+  return {
+    id: "e2e",
+    label,
+    ok: false,
+    detail:
+      parsePlaywrightDetail(lastOutput) ??
+      firstFailureHint(lastOutput) ??
+      "fail",
+  };
 }
 
 /**
@@ -489,39 +811,44 @@ function runFullAudit(): boolean {
     "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build…",
   );
   const steps: GateStep[] = [
-    {
-      id: "format",
-      label: "format (Prettier)",
-      ok: runCommand("pnpm", ["format"]),
-    },
+    gateStepMutatingPnpm("format", "format (Prettier)", ["format"]),
     ...runCiLikeVerifySteps(),
-    {
-      id: "links",
-      label: "docs links",
-      ok: runCommand("node", ["scripts/quality/check-docs-links.mjs"]),
-    },
-    {
-      id: "unlinked",
-      label: "unlinked (gate + auto-fix)",
-      ok: runUnlinkedGate({ autoFix: true }),
-    },
-    { id: "knip", label: "knip", ok: runCommand("pnpm", ["lint:knip"]) },
-    {
-      id: "map",
-      label: "generate:map",
-      ok: runCommand("pnpm", ["generate:map"]),
-    },
-    {
-      id: "coverage",
-      label: "test:coverage",
-      ok: runCommand("pnpm", ["test:coverage"]),
-    },
-    {
-      id: "e2e",
-      label: "web e2e (Playwright + env auto-fix)",
-      ok: runWebE2eWithBrowserBootstrap(),
-    },
-    { id: "build", label: "build", ok: runCommand("pnpm", ["build"]) },
+    gateStepFromCaptured(
+      "links",
+      "docs links",
+      "node",
+      ["scripts/quality/check-docs-links.mjs"],
+      {
+        ok: (output) => parseDocsLinksDetail(output, true),
+        fail: (output) => parseDocsLinksDetail(output, false),
+      },
+    ),
+    runUnlinkedGate({ autoFix: true }),
+    gateStepFromCaptured("knip", "knip", "pnpm", ["lint:knip"]),
+    gateStepMutatingPnpm("map", "generate:map", ["generate:map"]),
+    (() => {
+      const { ok, output } = runCommandCaptured("pnpm", ["test:coverage"]);
+      if (!ok) {
+        return {
+          id: "coverage",
+          label: "test:coverage",
+          ok: false,
+          detail: firstFailureHint(output) ?? "błąd",
+        } satisfies GateStep;
+      }
+      const detail =
+        [parseVitestTestsDetail(output), parseCoverageStmtsDetail(output)]
+          .filter(Boolean)
+          .join("; ") || undefined;
+      return {
+        id: "coverage",
+        label: "test:coverage",
+        ok: true,
+        detail,
+      } satisfies GateStep;
+    })(),
+    runWebE2eWithBrowserBootstrap(),
+    gateStepFromCaptured("build", "build", "pnpm", ["build"]),
   ];
   return summarizeGate("Kompletny audyt", steps);
 }
@@ -721,10 +1048,7 @@ async function managePortsAndZombies() {
       clack.log.message(` • Port :${p.port} — PID ${p.pid} (${p.name})`);
     });
 
-    const confirmKill = await confirmPl(
-      "Czy chcesz zamknąć te procesy?",
-      true,
-    );
+    const confirmKill = await confirmPl("Czy chcesz zamknąć te procesy?", true);
 
     if (confirmKill) {
       for (const p of allProcs) killProcessTree(p);
@@ -1042,7 +1366,9 @@ async function menuRunAndDev() {
     warnSideEffects([
       "Pełny tauri:build — długo, wymaga Rust/Cargo; zapisze artefakty instalatora",
     ]);
-    if (!(await confirmDanger("Uruchomić pełny build instalatora Tauri?", false))) {
+    if (
+      !(await confirmDanger("Uruchomić pełny build instalatora Tauri?", false))
+    ) {
       clack.log.info("Anulowano tauri:build.");
       return;
     }
@@ -1064,7 +1390,9 @@ async function menuRunAndDev() {
       "docker compose up --build buduje/uruchamia kontenery; Ctrl+C zatrzymuje foreground",
       "Może zająć porty i dużo miejsca na obrazy",
     ]);
-    if (!(await confirmDanger("Uruchomić Docker Compose (up --build)?", false))) {
+    if (
+      !(await confirmDanger("Uruchomić Docker Compose (up --build)?", false))
+    ) {
       clack.log.info("Anulowano Docker Compose.");
       return;
     }
@@ -1572,7 +1900,10 @@ async function menuDependencies() {
       "Po wyborze pakietów zmieni package.json / lockfile — zrób commit świadomie",
     ]);
     if (
-      !(await confirmDanger("Uruchomić interaktywną aktualizację pakietów?", true))
+      !(await confirmDanger(
+        "Uruchomić interaktywną aktualizację pakietów?",
+        true,
+      ))
     ) {
       clack.log.info("Anulowano aktualizację pakietów.");
       await waitReturn();

@@ -100,6 +100,8 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 > 2. **Codzienny gate**: j.w. + `format` + docs links + knip (domyślny check przed pushem).
 > 3. **Kompletny audyt**: j.w. + unlinked (gate, **auto-fix** linków) → map → coverage → e2e (**env auto-fix**: shared build, wolne :3000/:4000, świeże webServery, Playwright install / `pnpm install` przy typowych brakach + 1 retry) → build. Bez Sync Launcher UI i Smart Tempo.
 >
+> Podsumowanie każdego Verify wypisuje krótkie `detail` per krok (liczby testów / links; auto-fix / instalacja e2e **tylko gdy faktycznie zaszły**) oraz linię **Zmienione pliki** gdy krok zapisał pliki (`format`, `unlinked`, `generate:map`).
+>
 > **📚 Docs i quality**
 >
 > 1. **Wygeneruj mapę kodu**: Aktualizacja [`docs/REPO_MAP.md`](../REPO_MAP.md) (`pnpm generate:map`).
@@ -191,4 +193,4 @@ Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywn
 
 ### 🛠️ Pozostałe Narzędzia (`scripts/`)
 
-*Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](../../scripts/README.md).*
+_Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](../../scripts/README.md)._
