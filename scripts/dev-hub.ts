@@ -198,19 +198,52 @@ function readRootPackageVersion(): string | null {
   }
 }
 
-function runCiLikeVerifySteps(): boolean {
-  const typesOk = runCommand("pnpm", ["check-types"]);
-  const cssOk = runCommand("pnpm", ["lint:ss-css"]);
-  const lintOk = runCommand("pnpm", ["lint"]);
-  const testOk = runCommand("pnpm", ["test"]);
-  return typesOk && cssOk && lintOk && testOk;
+type GateStep = { id: string; label: string; ok: boolean };
+
+function summarizeGate(title: string, steps: GateStep[]): boolean {
+  console.log();
+  clack.log.info(`Podsumowanie — ${title}:`);
+  for (const step of steps) {
+    if (step.ok) clack.log.success(` ✓  ${step.label}`);
+    else clack.log.error(` ✗  ${step.label}`);
+  }
+  const failed = steps.filter((s) => !s.ok);
+  if (failed.length === 0) {
+    clack.log.success(
+      `✅ ${title} — wszystkie kroki OK (${steps.length}/${steps.length}).`,
+    );
+    return true;
+  }
+  clack.log.error(
+    `❌ ${title} — nieudane (${failed.length}/${steps.length}): ${failed
+      .map((s) => s.label)
+      .join(", ")}`,
+  );
+  return false;
+}
+
+function runCiLikeVerifySteps(): GateStep[] {
+  return [
+    {
+      id: "types",
+      label: "check-types",
+      ok: runCommand("pnpm", ["check-types"]),
+    },
+    {
+      id: "ss-css",
+      label: "lint:ss-css",
+      ok: runCommand("pnpm", ["lint:ss-css"]),
+    },
+    { id: "lint", label: "lint", ok: runCommand("pnpm", ["lint"]) },
+    { id: "test", label: "test", ok: runCommand("pnpm", ["test"]) },
+  ];
 }
 
 function runCiLikeVerify(): boolean {
   clack.note(
     "Lustrzane CI: check-types → lint:ss-css → lint → test (bez formatu)…",
   );
-  return runCiLikeVerifySteps();
+  return summarizeGate("Lustrzane CI", runCiLikeVerifySteps());
 }
 
 /** Codzienny gate: format → CI-like → docs links → knip. */
@@ -218,73 +251,242 @@ function runDailyGate(): boolean {
   clack.note(
     "Codzienny gate: format → check-types → lint:ss-css → lint → test → links → knip…",
   );
-  const formatOk = runCommand("pnpm", ["format"]);
-  const ciOk = runCiLikeVerifySteps();
-  const linksOk = runCommand("node", [
-    "scripts/quality/check-docs-links.mjs",
-  ]);
-  const knipOk = runCommand("pnpm", ["lint:knip"]);
-  return formatOk && ciOk && linksOk && knipOk;
+  const steps: GateStep[] = [
+    {
+      id: "format",
+      label: "format (Prettier)",
+      ok: runCommand("pnpm", ["format"]),
+    },
+    ...runCiLikeVerifySteps(),
+    {
+      id: "links",
+      label: "docs links",
+      ok: runCommand("node", ["scripts/quality/check-docs-links.mjs"]),
+    },
+    { id: "knip", label: "knip", ok: runCommand("pnpm", ["lint:knip"]) },
+  ];
+  return summarizeGate("Codzienny gate", steps);
 }
 
-/** Fail if check-unlinked reports any bare references (exit is often 0). */
-function runUnlinkedGate(): boolean {
-  clack.note("Skan niepodlinkowanych odniesień (check-unlinked.mjs)…");
+/** Parse check-unlinked.mjs stdout; returns null on tool failure. */
+function scanUnlinkedCount(): { ok: boolean; total: number; output: string } {
   const result = spawnSync("node", ["scripts/quality/check-unlinked.mjs"], {
     cwd: rootDir,
     encoding: "utf8",
     env: { ...process.env, NODE_NO_WARNINGS: "1" },
   });
-  const out = result.stdout ?? "";
-  const err = result.stderr ?? "";
-  if (out) process.stdout.write(out.endsWith("\n") ? out : `${out}\n`);
-  if (err) process.stderr.write(err.endsWith("\n") ? err : `${err}\n`);
-  if (result.status !== 0 && result.status !== null) return false;
-  const match = out.match(/TOTAL UNLINKED REFERENCES FOUND:\s*(\d+)/);
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  if (result.status !== 0 && result.status !== null) {
+    return { ok: false, total: -1, output };
+  }
+  const match = output.match(/TOTAL UNLINKED REFERENCES FOUND:\s*(\d+)/);
   const total = match ? Number(match[1]) : 0;
-  if (total > 0) {
+  return { ok: true, total, output };
+}
+
+/**
+ * Unlinked docs gate. With `autoFix`, runs fix-unlinked-links once and rechecks.
+ */
+function runUnlinkedGate(options: { autoFix?: boolean } = {}): boolean {
+  const autoFix = options.autoFix === true;
+  clack.note("Skan niepodlinkowanych odniesień (check-unlinked.mjs)…");
+  const first = scanUnlinkedCount();
+  if (first.output) {
+    process.stdout.write(
+      first.output.endsWith("\n") ? first.output : `${first.output}\n`,
+    );
+  }
+  if (!first.ok) return false;
+  if (first.total === 0) return true;
+
+  if (!autoFix) {
     clack.log.error(
-      `Gate unlinked: znaleziono ${total} odniesień (napraw w Docs i quality).`,
+      `Gate unlinked: znaleziono ${first.total} odniesień (napraw w Docs i quality).`,
     );
     return false;
   }
+
+  clack.log.warn(
+    `Gate unlinked: ${first.total} odniesień — auto-fix (fix-unlinked-links.mjs)…`,
+  );
+  const fixed = runCommand("node", ["scripts/quality/fix-unlinked-links.mjs"]);
+  if (!fixed) return false;
+
+  clack.note("Ponowny skan po auto-fix…");
+  const second = scanUnlinkedCount();
+  if (second.output) {
+    process.stdout.write(
+      second.output.endsWith("\n") ? second.output : `${second.output}\n`,
+    );
+  }
+  if (!second.ok) return false;
+  if (second.total > 0) {
+    clack.log.error(
+      `Gate unlinked: po auto-fix nadal ${second.total} odniesień.`,
+    );
+    return false;
+  }
+  clack.log.success("Gate unlinked: auto-fix usunął wszystkie odniesienia.");
   return true;
+}
+
+function looksLikeMissingPlaywrightBrowser(output: string): boolean {
+  return (
+    output.includes("Executable doesn't exist") ||
+    output.includes("Looks like Playwright was just installed") ||
+    /Please run the following command to download new browsers/i.test(output)
+  );
+}
+
+function looksLikeE2ePortConflict(output: string): boolean {
+  return (
+    /EADDRINUSE/i.test(output) ||
+    /address already in use/i.test(output) ||
+    /Port \d+ is already in use/i.test(output) ||
+    /strictPort/i.test(output)
+  );
+}
+
+function looksLikeMissingNodeModule(output: string): boolean {
+  return (
+    /ERR_MODULE_NOT_FOUND/i.test(output) ||
+    /Cannot find module/i.test(output) ||
+    /Cannot find package/i.test(output) ||
+    /Cannot find dependency/i.test(output)
+  );
+}
+
+function spawnWebE2e(): { status: number | null; output: string } {
+  const result = spawnSync("pnpm", ["--filter", "@stagesync/web", "test:e2e"], {
+    cwd: rootDir,
+    encoding: "utf8",
+    shell: true,
+    env: {
+      ...process.env,
+      NODE_NO_WARNINGS: "1",
+      // Force fresh Vite/API (no reuseExistingServer) — see playwright.config.ts
+      STAGESYNC_E2E_FRESH: "1",
+    },
+  });
+  return {
+    status: result.status,
+    output: `${result.stdout ?? ""}${result.stderr ?? ""}`,
+  };
+}
+
+/**
+ * Web e2e with env auto-fix (no false reds from setup):
+ * - build @stagesync/shared (server needs dist)
+ * - free :3000/:4000
+ * - fresh webServers (STAGESYNC_E2E_FRESH)
+ * - on fail: Playwright browser install / port kill / pnpm install + one retry
+ */
+function runWebE2eWithBrowserBootstrap(): boolean {
+  clack.note(
+    "E2E bootstrap: shared build → wolne porty → Playwright (@stagesync/web)…",
+  );
+  if (!runCommand("pnpm", ["--filter", "@stagesync/shared", "build"])) {
+    clack.log.error("E2E: nie udało się zbudować @stagesync/shared.");
+    return false;
+  }
+  freeDevPortsForE2e();
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    clack.note(
+      attempt === 1
+        ? "Uruchamianie Playwright E2E…"
+        : "Ponawianie Playwright E2E po auto-fix…",
+    );
+    const { status, output } = spawnWebE2e();
+    if (output) {
+      process.stdout.write(output.endsWith("\n") ? output : `${output}\n`);
+    }
+    if (status === 0) return true;
+    if (attempt === 2) return false;
+
+    if (looksLikeMissingPlaywrightBrowser(output)) {
+      clack.log.warn(
+        "Brak binarki Playwright — `playwright install`, potem retry…",
+      );
+      if (
+        !runCommand("pnpm", [
+          "--filter",
+          "@stagesync/web",
+          "exec",
+          "playwright",
+          "install",
+        ])
+      ) {
+        return false;
+      }
+      continue;
+    }
+
+    if (looksLikeE2ePortConflict(output)) {
+      clack.log.warn("Konflikt portów e2e — zwalniam :3000/:4000 i retry…");
+      freeDevPortsForE2e();
+      continue;
+    }
+
+    if (looksLikeMissingNodeModule(output)) {
+      clack.log.warn("Brak modułu Node — `pnpm install`, potem retry e2e…");
+      if (!runCommand("pnpm", ["install"])) return false;
+      freeDevPortsForE2e();
+      continue;
+    }
+
+    // Prawdziwy fail testu / inny błąd — bez retry (nie zamazywać wyniku)
+    return false;
+  }
+
+  return false;
 }
 
 /**
  * Kompletny audyt: Codzienny gate + unlinked + map + coverage + e2e + build.
- * Skips interactive fix-unlinked, Sync Launcher UI, and Smart Tempo benchmark.
+ * Auto-fix: unlinked links; Playwright browser install+retry on missing binary.
+ * Skips interactive Sync Launcher UI and Smart Tempo benchmark.
  */
 function runFullAudit(): boolean {
   clack.note(
     "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build…",
   );
-  const formatOk = runCommand("pnpm", ["format"]);
-  const ciOk = runCiLikeVerifySteps();
-  const linksOk = runCommand("node", [
-    "scripts/quality/check-docs-links.mjs",
-  ]);
-  const unlinkedOk = runUnlinkedGate();
-  const knipOk = runCommand("pnpm", ["lint:knip"]);
-  const mapOk = runCommand("pnpm", ["generate:map"]);
-  const covOk = runCommand("pnpm", ["test:coverage"]);
-  const e2eOk = runCommand("pnpm", [
-    "--filter",
-    "@stagesync/web",
-    "test:e2e",
-  ]);
-  const buildOk = runCommand("pnpm", ["build"]);
-  return (
-    formatOk &&
-    ciOk &&
-    linksOk &&
-    unlinkedOk &&
-    knipOk &&
-    mapOk &&
-    covOk &&
-    e2eOk &&
-    buildOk
-  );
+  const steps: GateStep[] = [
+    {
+      id: "format",
+      label: "format (Prettier)",
+      ok: runCommand("pnpm", ["format"]),
+    },
+    ...runCiLikeVerifySteps(),
+    {
+      id: "links",
+      label: "docs links",
+      ok: runCommand("node", ["scripts/quality/check-docs-links.mjs"]),
+    },
+    {
+      id: "unlinked",
+      label: "unlinked (gate + auto-fix)",
+      ok: runUnlinkedGate({ autoFix: true }),
+    },
+    { id: "knip", label: "knip", ok: runCommand("pnpm", ["lint:knip"]) },
+    {
+      id: "map",
+      label: "generate:map",
+      ok: runCommand("pnpm", ["generate:map"]),
+    },
+    {
+      id: "coverage",
+      label: "test:coverage",
+      ok: runCommand("pnpm", ["test:coverage"]),
+    },
+    {
+      id: "e2e",
+      label: "web e2e (Playwright + env auto-fix)",
+      ok: runWebE2eWithBrowserBootstrap(),
+    },
+    { id: "build", label: "build", ok: runCommand("pnpm", ["build"]) },
+  ];
+  return summarizeGate("Kompletny audyt", steps);
 }
 
 function previewReleaseNotes(pkgVer: string) {
@@ -422,6 +624,48 @@ function findListeningProcessesOnPort(port: number): ProcessInfo[] {
   return list;
 }
 
+function killProcessTree(p: ProcessInfo) {
+  const isWin = os.platform() === "win32";
+  try {
+    clack.log.message(`Zamykanie PID ${p.pid} (${p.name}) na :${p.port}…`);
+    if (isWin) {
+      execSync(
+        `powershell -NoProfile -Command "Stop-Process -Id ${p.pid} -ErrorAction SilentlyContinue"`,
+        { stdio: "inherit" },
+      );
+    } else {
+      execSync(`kill -15 ${p.pid}`, { stdio: "inherit" });
+    }
+  } catch {
+    // soft kill failed
+  }
+  const remaining = findListeningProcessesOnPort(p.port);
+  if (remaining.some((r) => r.pid === p.pid)) {
+    try {
+      if (isWin) {
+        execSync(`taskkill /F /PID ${p.pid}`, { stdio: "inherit" });
+      } else {
+        execSync(`kill -9 ${p.pid}`, { stdio: "inherit" });
+      }
+    } catch {
+      // ignore
+    }
+  }
+}
+
+/** Non-interactive: free LISTEN on Vite/API ports (e2e auto-fix). */
+function freeDevPortsForE2e(ports: number[] = [3000, 4000]): void {
+  const all: ProcessInfo[] = [];
+  for (const port of ports) {
+    all.push(...findListeningProcessesOnPort(port));
+  }
+  if (all.length === 0) return;
+  clack.log.warn(
+    `E2E: zwalniam zajęte porty ${ports.map((p) => `:${p}`).join(", ")}…`,
+  );
+  for (const p of all) killProcessTree(p);
+}
+
 async function managePortsAndZombies() {
   clack.log.info("🔌 Bezpieczny Port Guard & Kill-Zombies...");
 
@@ -443,38 +687,7 @@ async function managePortsAndZombies() {
     });
 
     if (confirmKill && !clack.isCancel(confirmKill)) {
-      const isWin = os.platform() === "win32";
-      for (const p of allProcs) {
-        try {
-          clack.log.message(`Zamykanie PID ${p.pid} (${p.name})...`);
-          if (isWin) {
-            execSync(
-              `powershell -NoProfile -Command "Stop-Process -Id ${p.pid} -ErrorAction SilentlyContinue"`,
-              { stdio: "inherit" },
-            );
-          } else {
-            execSync(`kill -15 ${p.pid}`, { stdio: "inherit" });
-          }
-        } catch {
-          // Soft kill nie powiódł się — próba force kill
-        }
-
-        const remaining = findListeningProcessesOnPort(p.port);
-        if (remaining.some((r) => r.pid === p.pid)) {
-          clack.log.warn(
-            `Proces PID ${p.pid} nie zareagował na soft kill — wymuszanie zamknięcia (force kill)...`,
-          );
-          try {
-            if (isWin) {
-              execSync(`taskkill /F /PID ${p.pid}`, { stdio: "inherit" });
-            } else {
-              execSync(`kill -9 ${p.pid}`, { stdio: "inherit" });
-            }
-          } catch {
-            // ignore
-          }
-        }
-      }
+      for (const p of allProcs) killProcessTree(p);
       clack.log.success("Zakończono procedurę czyszczenia portów.");
     } else {
       clack.log.info("Pominięto zamykanie procesów.");
@@ -823,8 +1036,7 @@ async function menuTestingVerify() {
       },
       {
         value: "full-audit",
-        label:
-          "3. 🧨  Kompletny audyt (+ unlinked, map, coverage, e2e, build)",
+        label: "3. 🧨  Kompletny audyt (+ unlinked, map, coverage, e2e, build)",
       },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
@@ -833,34 +1045,13 @@ async function menuTestingVerify() {
   if (clack.isCancel(choice) || choice === "back") return;
 
   if (choice === "ci-mirror") {
-    const ok = runCiLikeVerify();
-    if (ok) {
-      clack.log.success("✅ Lustrzane CI — OK!");
-    } else {
-      clack.log.error(
-        "❌ Lustrzane CI — wykryto błędy! Przejrzyj logi powyżej.",
-      );
-    }
+    runCiLikeVerify();
     await waitReturn();
   } else if (choice === "daily") {
-    const ok = runDailyGate();
-    if (ok) {
-      clack.log.success("✅ Codzienny gate — OK!");
-    } else {
-      clack.log.error(
-        "❌ Codzienny gate — wykryto błędy! Przejrzyj logi powyżej.",
-      );
-    }
+    runDailyGate();
     await waitReturn();
   } else if (choice === "full-audit") {
-    const ok = runFullAudit();
-    if (ok) {
-      clack.log.success("✅ Kompletny audyt — OK!");
-    } else {
-      clack.log.error(
-        "❌ Kompletny audyt — wykryto błędy! Przejrzyj logi powyżej.",
-      );
-    }
+    runFullAudit();
     await waitReturn();
   }
 }
@@ -983,8 +1174,7 @@ async function menuTestingUnit() {
     runCommand("pnpm", ["--filter", "@stagesync/ui", "test"]);
     await waitReturn();
   } else if (choice === "e2e") {
-    clack.note("Uruchamianie Playwright E2E (@stagesync/web test:e2e)...");
-    runCommand("pnpm", ["--filter", "@stagesync/web", "test:e2e"]);
+    runWebE2eWithBrowserBootstrap();
     await waitReturn();
   } else if (choice === "test-cov") {
     clack.note("Uruchamianie testów z pokryciem (turbo run test:coverage)...");
