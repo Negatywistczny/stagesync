@@ -112,9 +112,6 @@ cd stagesync
 - **Wywołanie pliku**
 
    ```bash
-   # Jednorazowe przyznanie uprawnień
-   chmod +x dev
-
    ./dev
    ```
 
