@@ -306,8 +306,12 @@ export function parseMeterString(
     const o = raw as { numerator?: unknown; denominator?: unknown };
     const numRaw = Number(o.numerator);
     const denRaw = Number(o.denominator);
-    const num = Math.floor(Number.isFinite(numRaw) ? numRaw : fallback.numerator);
-    const den = Math.floor(Number.isFinite(denRaw) ? denRaw : fallback.denominator);
+    const num = Math.floor(
+      Number.isFinite(numRaw) ? numRaw : fallback.numerator,
+    );
+    const den = Math.floor(
+      Number.isFinite(denRaw) ? denRaw : fallback.denominator,
+    );
     if (num > 0 && den > 0) return { numerator: num, denominator: den };
   }
   const s = raw == null ? "" : String(raw).trim();
@@ -318,4 +322,3 @@ export function parseMeterString(
   if (!(numerator > 0) || !(denominator > 0)) return fallback;
   return { numerator, denominator };
 }
-

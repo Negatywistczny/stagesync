@@ -68,10 +68,12 @@
 ### 🛠️ Uruchomienie ze źródeł (Dla deweloperów)
 
 #### 1. Sklonuj repozytorium
+
 ```bash
 git clone https://github.com/Negatywistczny/stagesync
 cd stagesync
 ```
+
 #### 2. Uruchom DX Hub
 
 ```bash
@@ -116,7 +118,7 @@ Więcej informacji znajdziesz w pełnej [Dokumentacji DX](./docs/guides/DX.md).
 | 🚀 **[INSTALL](./docs/guides/INSTALL.md)**                   | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw)  |
 | 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)**                   | Instalatory Tauri (`.dmg`, `.exe`), Launcher i aktualizacja           |
 | 📱 **[MOBILE](./docs/guides/MOBILE.md)**                     | Performer / Console — sideload APK, QR, Offline-First                 |
-| 🛠️ **[DX](./docs/guides/DX.md)**                             | Przewodnik deweloperski, środowisko oraz Dev Hub                     |
+| 🛠️ **[DX](./docs/guides/DX.md)**                             | Przewodnik deweloperski, środowisko oraz Dev Hub                      |
 | 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)**                  | Mapa architektura monorepo i przepływ danych SSOT                     |
 | 🗺️ **[REPO_MAP](docs/REPO_MAP.md)**                          | Automatycznie generowana mapa struktury i statystyki kodu dla LLM     |
 | 🔌 **[API](docs/api/README.md)**                             | Specyfikacja powierzchni REST API i punktów końcowych                 |
