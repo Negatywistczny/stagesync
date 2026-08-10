@@ -12,7 +12,7 @@
     "build:console": "vite build --mode console",
     "preview": "vite preview",
     "check-types": "tsc --noEmit",
-    "lint": "eslint . --max-warnings 32",
+    "lint": "eslint . --max-warnings 31",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test"
