@@ -54,10 +54,10 @@ function enableClackFullRedrawOnResize() {
   );
   const coreEntry = require.resolve("@clack/core", { paths: [promptsPkg] });
   // Wersja 1.x biblioteki może mieć inną strukturę plików niż 0.x
-  const corePath = fs.existsSync(coreEntry) 
-    ? coreEntry 
+  const corePath = fs.existsSync(coreEntry)
+    ? coreEntry
     : coreEntry.replace(/index\.mjs$/, "index.cjs");
-    
+
   const { Prompt } = require(corePath) as {
     Prompt: {
       prototype: {
@@ -830,7 +830,7 @@ async function menuData() {
     message: "Zarządzanie danymi & Logi:",
     options: [
       { value: "logs", label: "1. 📝  Podgląd ostatnich logów" },
-      { value: "clear-data", label: "2.  🗑  Wyczyść katalog danych (data/)" },
+      { value: "clear-data", label: "2. 🗑  Wyczyść katalog danych (data/)" },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
