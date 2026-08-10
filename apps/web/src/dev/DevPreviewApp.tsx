@@ -69,6 +69,7 @@ export function DevPreviewApp() {
 
   useEffect(() => {
     const onMessage = (ev: MessageEvent) => {
+      if (ev.origin !== window.location.origin) return;
       if (
         ev.data &&
         ev.data.type === "stagesync-dev-preview-navigate" &&

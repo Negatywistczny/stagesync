@@ -19,6 +19,8 @@ export const config = [
     },
     rules: {
       "turbo/no-undeclared-env-vars": "warn",
+      // #834 — warn only; legacy monoliths may exceed until split-on-touch.
+      "max-lines": ["warn", { max: 500, skipBlankLines: true, skipComments: true }],
     },
   },
   {

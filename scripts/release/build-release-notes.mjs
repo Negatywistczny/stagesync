@@ -213,7 +213,8 @@ function bulletSnippet(line) {
 function summarizeBody(raw) {
   let body = raw
     .replace(/\[([^\]]*)\]\([^)]+\)/g, "$1")
-    .replace(/\s*\((?:\s*#\d+\s*,?)+\s*\)/g, "")
+    // Linear form — avoid nested `(?:…#…,?)+` which CodeQL flags as ReDoS.
+    .replace(/\s*\(\s*#\d+(?:\s*,\s*#\d+)*\s*\)/g, "")
     .replace(/\s+/g, " ")
     .trim();
   if (!body) return "";

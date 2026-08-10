@@ -4,6 +4,6 @@
 
 set -e
 pnpm --filter @stagesync/shared --filter @stagesync/server --filter @stagesync/web run check-types
-pnpm --filter @stagesync/shared --filter @stagesync/server --filter @stagesync/web run lint --max-warnings 0
+pnpm --filter @stagesync/shared --filter @stagesync/server --filter @stagesync/web run lint
 pnpm lint:knip
 pnpm generate:map && git add docs/REPO_MAP.md

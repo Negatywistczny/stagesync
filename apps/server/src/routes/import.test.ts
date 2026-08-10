@@ -164,6 +164,32 @@ describe("POST /api/import/ultimate-guitar", () => {
     expect(body.results).toHaveLength(1);
     expect(body.results[0]!.url).toContain("ultimate-guitar.com");
   });
+
+  it("search returns empty message when no hits", async () => {
+    const { searchUgChords } = await import("../ug/ug-fetch.js");
+    vi.mocked(searchUgChords).mockResolvedValueOnce([]);
+    const res = await fetch(`${baseUrl}/api/import/ultimate-guitar/search`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ title: "Missing", artist: "Nobody" }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      results: unknown[];
+      message?: string;
+    };
+    expect(body.results).toEqual([]);
+    expect(body.message).toMatch(/Brak wyników/i);
+  });
+
+  it("search rejects missing title", async () => {
+    const res = await fetch(`${baseUrl}/api/import/ultimate-guitar/search`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ artist: "Tester" }),
+    });
+    expect(res.status).toBe(400);
+  });
 });
 
 describe("POST /api/import/ultrastar", () => {
