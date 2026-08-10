@@ -5,6 +5,16 @@ Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [Unreleased]
+
+### Usunięto
+
+#### 🖥️ App Shell & UI
+- **Admin Utwory:** import biblioteki przyjmuje wyłącznie pakiet v5 (`.stagesync.json` / `{ projects }`) — bez autodetekcji i migracji monolitu 4.x `database.json`.
+
+#### ⚙️ Serwer & API
+- **`POST /api/library/import`:** wyłącznie pakiet v5; format 4.x (`songs[]`) jest odrzucany z czytelnym błędem.
+
 ## [5.4.11](https://github.com/Negatywistczny/stagesync/compare/v5.4.10...v5.4.11) - 2026-08-10
 
 ### Naprawiono
@@ -1101,7 +1111,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline:** panel narzędzi pod **T** (menu przy kursorze + litery jak v4); **Alt/⌥+drag** = duplikat clipów (TE-07); live preview multi-drag; loop region **snap na podglądzie** (beat; Cmd/Ctrl = off).
 - Docs: playbook PO smoke P8 ([report-po-smoke-p8.md](docs/analysis/reports/milestones/report-po-smoke-p8.md)); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
 - **Client stage content (override ADR 0011 — treść tylko):** wizualny port Karaoke / Grid / Forma / Score stub z v4 `client.css` (fonty, kafelki, hero Formy + poziomy strip, pasek taktów karaoke); chrome (header, settings, role buttons) zostaje v5. CL-P0: progress `--beat-progress` w sekcjach bez tekstu, karuzela Grid + hero „nast.”, Forma past/current. Inventarz CL-R-* = content clone.
-- **Migrator M9:** fixture [`docs/examples/legacy/database.typical.json`](./docs/examples/legacy/database.typical.json) + pack v5 [`docs/examples/v5/library.pack.sample.stagesync.json`](./docs/examples/v5/library.pack.sample.stagesync.json); smoke testy + dry-run w CI.
+- **Migrator M9:** fixture `docs/examples/legacy/database.typical.json` (usunięty po #841) + pack v5 [`docs/examples/v5/library.pack.sample.stagesync.json`](./docs/examples/v5/library.pack.sample.stagesync.json); smoke testy + dry-run w CI.
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
 - **Admin Utwory (pod Wybrany):** import legacy `database.json` z auto-detect (v5 pack vs 4.x `songs[]`) + migracja `migrateLegacy`* przy `POST /api/library/import`; ZIP odroczony (komunikat PL).
 - **Timeline:** marquee + multi-select (`items` id+lane / `primaryId`; zaznaczenie **cross-lane** jak v4) + multi-drag same lane (live preview całej grupy; po puścieniu zachowane zaznaczenie) + clipboard ⌘C/X/V/D (Forma/Tekst/Akordy/Cue; paste przy locatorze; copy = primary lane); hit-test `data-clip-lane`; pusty obszar pod trackami = marquee/clear — parity zachowania v4, nie clone CSS.

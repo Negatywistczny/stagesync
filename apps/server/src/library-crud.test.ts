@@ -314,7 +314,7 @@ describe("library / projects CRUD", () => {
     expect(ids.size).toBe(6);
   });
 
-  it("POST /api/library/import auto-detects legacy database.json", async () => {
+  it("POST /api/library/import rejects 4.x songs[] JSON", async () => {
     const legacy = {
       schemaVersion: 4,
       songs: [
@@ -336,24 +336,9 @@ describe("library / projects CRUD", () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(legacy),
     });
-    expect(res.status).toBe(201);
-    const body = (await res.json()) as {
-      ok: boolean;
-      format: string;
-      created: string[];
-      library: unknown;
-    };
-    expect(body.ok).toBe(true);
-    expect(body.format).toBe("legacy-database");
-    expect(body.created).toHaveLength(1);
-    const library = LibrarySchema.parse(body.library);
-    expect(library.projects.some((p) => p.name === "Legacy Import")).toBe(true);
-
-    const project = ProjectSchema.parse(
-      await (await fetch(`${baseUrl}/api/projects/${body.created[0]}`)).json(),
-    );
-    expect(project.formatVersion).toBe(6);
-    expect(project.forma.clips.length).toBeGreaterThan(0);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toMatch(/tylko pakiet v5|projects/);
   });
 
   it("POST /api/library/import rejects unknown JSON", async () => {
@@ -364,37 +349,7 @@ describe("library / projects CRUD", () => {
     });
     expect(res.status).toBe(400);
     const body = (await res.json()) as { error: string };
-    expect(body.error).toMatch(/Nieznany format|projects|songs/);
-  });
-
-  it("POST /api/library/import accepts docs typical legacy fixture", async () => {
-    const { readFile } = await import("node:fs/promises");
-    const { resolve, dirname } = await import("node:path");
-    const { fileURLToPath } = await import("node:url");
-    const repoRoot = resolve(
-      dirname(fileURLToPath(import.meta.url)),
-      "../../..",
-    );
-    const raw = JSON.parse(
-      await readFile(
-        join(repoRoot, "docs/examples/legacy/database.typical.json"),
-        "utf8",
-      ),
-    );
-    const res = await fetch(`${baseUrl}/api/library/import`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(raw),
-    });
-    expect(res.status).toBe(201);
-    const body = (await res.json()) as {
-      ok: boolean;
-      format: string;
-      created: string[];
-    };
-    expect(body.ok).toBe(true);
-    expect(body.format).toBe("legacy-database");
-    expect(body.created).toHaveLength(2);
+    expect(body.error).toMatch(/Nieznany format|projects|pakiet v5/);
   });
 
   it("POST /api/library/import accepts v5 pack fixture", async () => {

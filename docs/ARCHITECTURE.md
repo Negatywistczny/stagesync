@@ -11,7 +11,7 @@
 | [docs/ui/README.md](./ui/README.md)                                                                                                 | Design system (kolory, typografia, spacing, Button)                  | Implementacja w `packages/ui`                     |
 | [ui-shell-inventory](./ui/ui-shell-inventory.md)                                                                                    | Checklista wtórna kontrolek shelli (po geście)                       | Aktywny backlog (→ TODO); claim Done bez PO smoke |
 | [docs/api/README.md](./api/README.md)                                                                                               | Kontrakt REST / WS (krótko)                                          | OpenAPI / pełne TSDoc                             |
-| [INSTALL](./guides/INSTALL.md) / [DESKTOP](./guides/DESKTOP.md) / [MOBILE](./guides/MOBILE.md) / [MIGRATION](./guides/MIGRATION.md) | Podręczniki operatorskie                                             | Implementacja w `apps/*`                          |
+| [INSTALL](./guides/INSTALL.md) / [DESKTOP](./guides/DESKTOP.md) / [MOBILE](./guides/MOBILE.md) | Podręczniki operatorskie                                             | Implementacja w `apps/*`                          |
 | [docs/analysis/README.md](./analysis/README.md)                                                                                     | `reports/{current,milestones,hygiene}/` + `inspiracje/` + `working/` | Scratch / inspiracje jako SSOT lub claim Done     |
 | [STANDARDS](./STANDARDS.md)                                                                                                         | Linki do speców zewnętrznych                                         | Treść tych speców                                 |
 | [CONTRIBUTING](../.github/CONTRIBUTING.md)                                                                                          | Język docs + workflow commitów                                       | SemVer / release (→ versioning)                   |
@@ -78,4 +78,4 @@ Dane runtime: `STAGESYNC_DATA_DIR` (domyślnie `data/`).
 
 ## Legacy
 
-**4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import → [MIGRATION.md](./guides/MIGRATION.md) (`pnpm migrate:legacy`).
+**4.x** tylko w **STAGESYNC-APP-LEGACY**. Nie mieszaj hotfixów 4.x tutaj. Import biblioteki w v5 przyjmuje wyłącznie pakiet `{ projects }` (`.stagesync.json`) — bez migracji z monolitu 4.x.

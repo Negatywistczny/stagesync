@@ -2,7 +2,7 @@
 
 **Wersja:** `5.0.0-alpha.9` — **wydana 2026-07-21** (tag `v5.0.0-alpha.9`)  
 **Podstawa:** [ROADMAP.md](../../../ROADMAP.md) · [TODO.md](../../../TODO.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0005](../../../adr/0005-domain-axioms.md) · [α8 freeze](./report-alpha8-code-freeze.md)  
-**Fixture:** [docs/examples/legacy/database.sample.json](../../../examples/legacy/database.sample.json)
+**Fixture:** historyczny `docs/examples/legacy/database.sample.json` (usunięty po #841; import v5 = tylko pakiet `{ projects }`)
 
 ## Cel
 
@@ -20,7 +20,7 @@
 | M5  | Zod fail-fast na wyjściu (`ProjectSchema`)                                                 | ✓    |
 | M6  | Vitest happy + broken path                                                                 | ✓    |
 | M7  | CLI `--dry-run` / `--apply` + shadow `.bak`                                                | ✓    |
-| M8  | Docs użytkownika [MIGRATION.md](../../../guides/MIGRATION.md)                              | ✓    |
+| M8  | Docs użytkownika `MIGRATION.md` (usunięty po #841)                                         | ✓    |
 | M9  | Fixtures / smoke na typowej bazie 4.x + regresja Admin import                              | ✓    |
 
 ## IN (must) — Residual parity (z α8 freeze)

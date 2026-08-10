@@ -17,7 +17,6 @@ Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, mu
 - **[INSTALL.md](./guides/INSTALL.md)** — Instrukcja wdrożenia produkcyjnego w środowisku Docker (Docker Compose, rejestr GHCR, porty, zmienne środowiskowe).
 - **[DESKTOP.md](./guides/DESKTOP.md)** — Poradnik konfiguracji, budowania i aktualizacji aplikacji desktopowych opartych na Tauri.
 - **[MOBILE.md](./guides/MOBILE.md)** — Poradnik uruchamiania i dystrybucji (sideloading APK, obsługa QR-kodów) dla platform Android.
-- **[MIGRATION.md](./guides/MIGRATION.md)** — Instrukcje przeniesienia danych z wersji v4 legacy do v5.
 - **[DX.md](./guides/DX.md)** — Poradnik deweloperski, konfiguracja środowiska oraz Dev Hub.
 
 ### Podkatalogi specjalistyczne
@@ -25,9 +24,9 @@ Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, mu
 - **`adr/`** — Indeks decyzji architektonicznych (_Architecture Decision Records_).
 - **`api/`** — Specyfikacja punktów końcowych interfejsu REST i WebSockets.
 - **`analysis/`** — Raporty kanoniczne (`reports/{current,milestones,hygiene}/`), inspiracje zewnętrzne + triage, oraz lokalny scratch `working/`.
-- **`examples/`** — Przykładowe pliki projektów dla wersji v5 i legacy v4.
+- **`examples/`** — Przykładowe pliki projektów / pakietów biblioteki v5.
 - **`ui/`** — Design system (kolory, typografia, spacing, Button) oraz inwentarz shelli.
-- **`guides/`** — Podręczniki operatorskie (INSTALL / DESKTOP / MOBILE / MIGRATION / DX).
+- **`guides/`** — Podręczniki operatorskie (INSTALL / DESKTOP / MOBILE / DX).
 
 ## Rola w projekcie
 

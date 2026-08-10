@@ -125,8 +125,7 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 > 13. **🧹 Auto-Fixer (Format & Lint)**: Automatyczne poprawki lintera i formatowanie kodu (`pnpm format` + `pnpm lint`).
 > 14. **🏗 Pełny Build (Turbo)**: Kompilacja produkcyjna całego monorepo (`pnpm build`).
 > 15. **📊 Testy z pokryciem (Coverage)**: Generowanie raportów pokrycia kodu testami (`pnpm test:coverage`).
-> 16. **💾 Migracja Legacy**: Skrypty migracyjne starych struktur danych (`pnpm migrate:legacy`).
-> 17. **🔄 Sync Launcher UI**: Synchronizacja zasobów interfejsu użytkownika launchera (`pnpm sync:launcher-ui`).
+> 16. **🔄 Sync Launcher UI**: Synchronizacja zasobów interfejsu użytkownika launchera (`pnpm sync:launcher-ui`).
 
 </details>
 

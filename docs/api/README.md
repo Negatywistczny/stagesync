@@ -73,7 +73,7 @@ transport `play`/`pause`/`stop`/`seek`/`loop`, MIDI panic, restart/shutdown
 | `GET`  | `/api/library`               | Indeks biblioteki (cold-seed z template jeśli brak pliku)                                       |
 | `POST` | `/api/library/batch-midi-pc` | Batch `midiProgramId` po `assignments[]`                                                        |
 | `POST` | `/api/library/export`        | Pakiet JSON (`stagesyncExportVersion: 3`); opcjonalnie `projectIds`                             |
-| `POST` | `/api/library/import`        | Import pakietu / legacy → projekty **v5**; **201** `{ ok, created, format, warnings, library }` |
+| `POST` | `/api/library/import`        | Import pakietu v5 (`{ projects }`) → projekty; **201** `{ ok, created, format, warnings, library }`; format 4.x (`songs[]`) → **400** |
 
 ### Import (Ultimate Guitar)
 

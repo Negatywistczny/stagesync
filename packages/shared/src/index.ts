@@ -13,6 +13,7 @@ export {
   quartersToTicks,
   ticksToQuarters,
   absBeatToTicks,
+  parseMeterString,
   type TimeSignature,
   type Bbt,
 } from "./time.js";
@@ -746,24 +747,6 @@ export {
   scrubCountdownDigitClips,
   type CountdownDigitLabel,
 } from "./countdown-content.js";
-
-export {
-  migrateLegacySong,
-  migrateLegacyDatabase,
-  isLegacyCountdownSection,
-  parseLegacyMeter,
-  legacySongIdToProjectId,
-  legacyAssetId,
-  mimeForLegacyAsset,
-  mapLegacySubsectionOffsets,
-  type LegacySong,
-  type LegacyDatabase,
-  type LegacySection,
-  type LegacyPendingAsset,
-  type MigrateLegacySongOptions,
-  type MigrateLegacySongResult,
-  type MigrateLegacyDatabaseResult,
-} from "./legacy-migrate.js";
 
 export {
   normalizeSubsectionOffsets,

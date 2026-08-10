@@ -11,7 +11,6 @@
     "test:coverage": "turbo run test:coverage",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "migrate:legacy": "pnpm --filter @stagesync/server migrate:legacy",
     "sync-version": "node scripts/release/sync-version.mjs",
     "cut-release": "node scripts/release/cut-release.mjs",
     "sync:launcher-ui": "node apps/desktop/scripts/sync-launcher-ui.mjs",

@@ -598,17 +598,13 @@ export function AdminShell() {
                   pack = JSON.parse(new TextDecoder().decode(buf)) as unknown;
                 } catch {
                   throw new Error(
-                    "Nie udało się odczytać JSON. Użyj .stagesync.json (v5) albo legacy database.json.",
+                    "Nie udało się odczytać JSON. Użyj pakietu v5 (.stagesync.json).",
                   );
                 }
                 setActionNotice("Importowanie…");
                 const result = await importLibraryPack(pack);
                 setLibrary(result.library);
                 const n = result.created.length;
-                const kind =
-                  result.format === "legacy-database"
-                    ? "legacy database.json"
-                    : "pakietu v5";
                 const noun =
                   n === 1
                     ? "utwór"
@@ -617,7 +613,7 @@ export function AdminShell() {
                         (n % 100 < 10 || n % 100 >= 20)
                       ? "utwory"
                       : "utworów";
-                setActionNotice(`Zaimportowano ${n} ${noun} z ${kind}.`);
+                setActionNotice(`Zaimportowano ${n} ${noun} z pakietu v5.`);
               })
             }
             onDelete={onDelete}

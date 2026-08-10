@@ -9,9 +9,9 @@ import {
   ZIP_IMPORT_UNSUPPORTED_PL,
 } from "./library-import.js";
 
-const REPO_EXAMPLES = join(
+const V5_PACK_SAMPLE = join(
   dirname(fileURLToPath(import.meta.url)),
-  "../../../docs/examples/legacy/database.sample.json",
+  "../../../docs/examples/v5/library.pack.sample.stagesync.json",
 );
 
 describe("looksLikeZipBytes", () => {
@@ -41,7 +41,7 @@ describe("looksLikeZipBytes", () => {
   });
 
   it("rejects JSON text", () => {
-    const enc = new TextEncoder().encode('{"songs":[]}');
+    const enc = new TextEncoder().encode('{"projects":[]}');
     expect(looksLikeZipBytes(enc)).toBe(false);
   });
 });
@@ -59,10 +59,15 @@ describe("detectLibraryImportFormat", () => {
     });
   });
 
-  it("detects legacy database.json", () => {
-    expect(
-      detectLibraryImportFormat({ schemaVersion: 4, songs: [{ id: "s1" }] }),
-    ).toEqual({ format: "legacy-database" });
+  it("rejects songs[] (4.x) as unknown", () => {
+    const r = detectLibraryImportFormat({
+      schemaVersion: 4,
+      songs: [{ id: "s1" }],
+    });
+    expect(r.format).toBe("unknown");
+    if (r.format === "unknown") {
+      expect(r.reason).toMatch(/tylko pakiet v5/);
+    }
   });
 
   it("prefers projects over songs when both present", () => {
@@ -75,7 +80,7 @@ describe("detectLibraryImportFormat", () => {
     const r = detectLibraryImportFormat({ foo: 1 });
     expect(r.format).toBe("unknown");
     if (r.format === "unknown") {
-      expect(r.reason).toMatch(/projects|songs/);
+      expect(r.reason).toMatch(/projects|pakiet v5/);
     }
   });
 
@@ -119,73 +124,31 @@ describe("normalizeLibraryImport", () => {
     ).toThrow(/max 1024/);
   });
 
-  it("rejects legacy database with more than 1024 migrated songs", () => {
-    const template = {
-      id: "song-1",
-      title: "T",
-      formatVersion: 4,
-      key: { tonic: "C", mode: "major" },
-      tempo: 120,
-      markers: [{ id: "mk-end", kind: "END", startAbs: 8 }],
-      sections: [
-        { id: 0, name: "Countdown", startAbs: 0 },
-        { id: 1, name: "Verse", startAbs: 4 },
-      ],
-      vocal: { lines: [] },
-      chords: { clips: [] },
-    };
-    const songs = Array.from({ length: 1025 }, (_, i) => ({
-      ...template,
-      id: `song-${i}`,
-      title: `Song ${i}`,
-    }));
+  it("rejects songs[] (4.x) format", () => {
     expect(() =>
-      normalizeLibraryImport(
-        {
-          schemaVersion: 4,
-          songFormatMigrationRev: 8,
-          songs,
-        },
-        { updatedAt: "2026-07-20T18:00:00.000Z" },
-      ),
-    ).toThrow(/max 1024/);
+      normalizeLibraryImport({
+        schemaVersion: 4,
+        songs: [{ id: "s1" }],
+      }),
+    ).toThrow(/tylko pakiet v5/);
   });
 
-  it("migrates docs/examples legacy fixture", () => {
-    const raw = JSON.parse(readFileSync(REPO_EXAMPLES, "utf8")) as unknown;
-    expect(detectLibraryImportFormat(raw)).toEqual({
-      format: "legacy-database",
-    });
-    const result = normalizeLibraryImport(raw, {
-      updatedAt: "2026-07-20T18:00:00.000Z",
-    });
-    expect(result.format).toBe("legacy-database");
+  it("normalizes docs/examples v5 pack sample", () => {
+    const raw = JSON.parse(readFileSync(V5_PACK_SAMPLE, "utf8")) as unknown;
+    expect(detectLibraryImportFormat(raw)).toEqual({ format: "v5-pack" });
+    const result = normalizeLibraryImport(raw);
+    expect(result.format).toBe("v5-pack");
     expect(result.projects.length).toBeGreaterThanOrEqual(1);
     const first = result.projects[0] as {
       formatVersion: number;
       name: string;
-      forma: { clips: unknown[] };
     };
-    expect(first.formatVersion).toBe(6);
-    expect(first.name).toBe("Template");
-    expect(first.forma.clips.length).toBeGreaterThan(0);
-  });
-
-  it("migrates docs/examples typical legacy fixture", () => {
-    const typical = join(
-      dirname(fileURLToPath(import.meta.url)),
-      "../../../docs/examples/legacy/database.typical.json",
-    );
-    const raw = JSON.parse(readFileSync(typical, "utf8")) as unknown;
-    const result = normalizeLibraryImport(raw, {
-      updatedAt: "2026-07-20T18:00:00.000Z",
-    });
-    expect(result.format).toBe("legacy-database");
-    expect(result.projects).toHaveLength(2);
+    expect(first.formatVersion).toBeGreaterThanOrEqual(5);
+    expect(typeof first.name).toBe("string");
   });
 
   it("throws on unknown format", () => {
-    expect(() => normalizeLibraryImport({})).toThrow(/Nieznany format/);
+    expect(() => normalizeLibraryImport({})).toThrow(/Nieznany format|pakiet v5/);
   });
 });
 
@@ -193,5 +156,6 @@ describe("ZIP_IMPORT_UNSUPPORTED_PL", () => {
   it("is a non-empty Polish message", () => {
     expect(ZIP_IMPORT_UNSUPPORTED_PL).toMatch(/ZIP/);
     expect(ZIP_IMPORT_UNSUPPORTED_PL.length).toBeGreaterThan(20);
+    expect(ZIP_IMPORT_UNSUPPORTED_PL).not.toMatch(/legacy|database\.json/i);
   });
 });

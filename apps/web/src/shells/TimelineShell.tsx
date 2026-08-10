@@ -21,7 +21,7 @@ import {
   resolveTempoAt,
   resolveKeyAt,
   formatKeySignature,
-  parseLegacyMeter,
+  parseMeterString,
   ticksPerBar,
   ticksToBbt,
   toDisplayBar,
@@ -7469,7 +7469,7 @@ export function TimelineShell() {
                     key={`meter-${draftProject.defaultMeter.numerator}-${draftProject.defaultMeter.denominator}`}
                     aria-label="Metrum domyślne"
                     onBlur={(e) => {
-                      const parsed = parseLegacyMeter(
+                      const parsed = parseMeterString(
                         e.target.value,
                         draftProject.defaultMeter,
                       );

@@ -293,3 +293,29 @@ export function ticksToQuarters(
   }
   return floorDiv(ticks, ppq);
 }
+
+/**
+ * Parse a meter from UI / JSON input: `"4/4"`, `"5 / 8"`, or `{ numerator, denominator }`.
+ * Invalid values return `fallback` (default 4/4).
+ */
+export function parseMeterString(
+  raw: unknown,
+  fallback: TimeSignature = { numerator: 4, denominator: 4 },
+): TimeSignature {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const o = raw as { numerator?: unknown; denominator?: unknown };
+    const numRaw = Number(o.numerator);
+    const denRaw = Number(o.denominator);
+    const num = Math.floor(Number.isFinite(numRaw) ? numRaw : fallback.numerator);
+    const den = Math.floor(Number.isFinite(denRaw) ? denRaw : fallback.denominator);
+    if (num > 0 && den > 0) return { numerator: num, denominator: den };
+  }
+  const s = raw == null ? "" : String(raw).trim();
+  const m = /^(\d+)\s*\/\s*(\d+)$/.exec(s);
+  if (!m) return fallback;
+  const numerator = Number(m[1]);
+  const denominator = Number(m[2]);
+  if (!(numerator > 0) || !(denominator > 0)) return fallback;
+  return { numerator, denominator };
+}
+

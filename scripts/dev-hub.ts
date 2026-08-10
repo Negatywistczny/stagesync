@@ -632,8 +632,7 @@ async function menuTesting() {
       { value: "fix", label: "13.🧹  Auto-Fixer (Format & Lint)" },
       { value: "build", label: "14.🏗   Pełny Build (Turbo)" },
       { value: "test-cov", label: "15.📊  Testy z pokryciem (Coverage)" },
-      { value: "migrate", label: "16.💾  Migracja Legacy" },
-      { value: "sync-ui", label: "17.🔄  Sync Launcher UI" },
+      { value: "sync-ui", label: "16.🔄  Sync Launcher UI" },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
@@ -647,10 +646,6 @@ async function menuTesting() {
   } else if (choice === "test-cov") {
     clack.note("Uruchamianie testów z pokryciem (turbo run test:coverage)...");
     runCommand("pnpm", ["test:coverage"]);
-    await waitReturn();
-  } else if (choice === "migrate") {
-    clack.note("Uruchamianie migracji legacy...");
-    runCommand("pnpm", ["migrate:legacy"]);
     await waitReturn();
   } else if (choice === "sync-ui") {
     clack.note("Synchronizacja UI launchera...");

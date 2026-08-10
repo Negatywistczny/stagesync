@@ -3,7 +3,6 @@ import {
   countdownDigitLabels,
   createProjectV5Seed,
   isCountdownDigitClipId,
-  migrateLegacySong,
   scrubCountdownDigitClips,
   syntheticCountdownAkordClips,
   syntheticCountdownDisplayFromProject,
@@ -237,34 +236,44 @@ describe("countdown-content", () => {
   });
 });
 
-describe("migrateLegacySong countdown digits", () => {
-  it("does not persist digit clips; CD length still correct when rest skipped", () => {
-    const { project } = migrateLegacySong(
-      {
-        id: "song-money",
-        title: "Money",
-        tempo: 120,
-        markers: [{ id: "mk-end", kind: "END", startAbs: 40 }],
-        sections: [
-          { id: 0, name: "Countdown", startAbs: 0 },
-          { id: 1, name: "Intro", startAbs: 8 },
-        ],
-        vocal: {
-          lines: [
-            { id: "vl-cd-2", text: "2", startAbs: 0 },
-            { id: "vl-cd-1", text: "1", startAbs: 4 },
-            { id: "vl-rest", text: "", startAbs: 8, rest: true },
-            // Gap before first lyric — old migrator stretched "1" here
-            { id: "vl-hi", text: "I work all night", startAbs: 31 },
-          ],
-        },
-        chords: { timeSignature: "4/4", clips: [] },
-      },
-      {
-        projectId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
-        updatedAt: "2026-07-20T18:00:00.000Z",
-      },
+describe("v5 countdown digits (display-only)", () => {
+  it("does not persist digit clips; CD length drives synthetic display", () => {
+    const seed = createProjectV5Seed(
+      "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+      "Money",
+      "2026-07-20T18:00:00.000Z",
     );
+    const project = {
+      ...seed,
+      forma: {
+        clips: [
+          {
+            id: "forma-cd",
+            kind: "countdown" as const,
+            name: "Countdown",
+            startTicks: -7680,
+            lengthTicks: 7680,
+          },
+          {
+            id: "forma-intro",
+            kind: "section" as const,
+            name: "Intro",
+            startTicks: 0,
+            lengthTicks: 7680,
+          },
+        ],
+      },
+      tekst: {
+        clips: [
+          {
+            id: "vl-hi",
+            text: "I work all night",
+            startTicks: 22_080,
+            lengthTicks: 3840,
+          },
+        ],
+      },
+    };
     expect(
       project.tekst.clips.every((c) => !isCountdownDigitClipId(c.id)),
     ).toBe(true);

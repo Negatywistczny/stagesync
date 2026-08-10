@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PPQ,
   absBeatToTicks,
+  parseMeterString,
   assertValidTimeSignature,
   bbtToTicks,
   elapsedToTicks,
@@ -313,3 +314,29 @@ describe("ticksToBbt / display / quarters / absBeat guards", () => {
     },
   );
 });
+
+describe("parseMeterString", () => {
+  it("parses N/D strings and object shape", () => {
+    expect(parseMeterString("5/8")).toEqual({ numerator: 5, denominator: 8 });
+    expect(parseMeterString(" 7 / 4 ")).toEqual({
+      numerator: 7,
+      denominator: 4,
+    });
+    expect(parseMeterString({ numerator: 7, denominator: 8 })).toEqual({
+      numerator: 7,
+      denominator: 8,
+    });
+  });
+
+  it("returns fallback for invalid input", () => {
+    expect(parseMeterString("nope")).toEqual({
+      numerator: 4,
+      denominator: 4,
+    });
+    expect(parseMeterString("nope", { numerator: 3, denominator: 4 })).toEqual({
+      numerator: 3,
+      denominator: 4,
+    });
+  });
+});
+

@@ -11,8 +11,7 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "migrate:legacy": "tsx src/cli/migrate-legacy.ts"
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@sentry/node": "^10.69.0",

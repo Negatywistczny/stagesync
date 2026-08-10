@@ -33,7 +33,7 @@ export function LibraryFilesCard({
           if (f) onImportFile(f);
         }}
       >
-        Upuść .stagesync.json (v5) albo legacy database.json
+        Upuść .stagesync.json (pakiet v5)
       </div>
       <input
         ref={inputRef}

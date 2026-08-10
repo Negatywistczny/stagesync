@@ -104,7 +104,7 @@ export async function importLibraryFile(file: File): Promise<{
     pack = JSON.parse(new TextDecoder().decode(buf)) as unknown;
   } catch {
     throw new Error(
-      "Nie udało się odczytać JSON. Użyj .stagesync.json (v5) albo legacy database.json.",
+      "Nie udało się odczytać JSON. Użyj pakietu v5 (.stagesync.json).",
     );
   }
   const result = await importLibraryPack(pack);

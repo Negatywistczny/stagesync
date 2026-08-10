@@ -64,9 +64,7 @@ export function createLibraryRouter(stores: Stores): Router {
     try {
       let normalized;
       try {
-        normalized = normalizeLibraryImport(req.body, {
-          updatedAt: new Date().toISOString(),
-        });
+        normalized = normalizeLibraryImport(req.body);
       } catch (err) {
         sendError(
           res,

@@ -6,17 +6,17 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1291
-* **Liczba katalogów:** 198
-* **Data aktualizacji:** 2026-08-10T13:46:50.577Z
+* **Liczba wszystkich plików:** 1284
+* **Liczba katalogów:** 196
+* **Data aktualizacji:** 2026-08-10T15:34:04.629Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 804 |
-| Docs | 217 |
-| Config | 120 |
+| Kod | 800 |
+| Docs | 216 |
+| Config | 118 |
 | Assety | 120 |
 | Inne | 30 |
 
@@ -24,13 +24,13 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 464 |
-| `.md` | 195 |
+| `.ts` | 460 |
+| `.md` | 194 |
 | `.tsx` | 161 |
 | `.png` | 94 |
 | `.kt` | 71 |
 | `.css` | 52 |
-| `.json` | 38 |
+| `.json` | 36 |
 | `.xml` | 35 |
 | `.mjs` | 29 |
 | `brak rozszerzenia` | 23 |
@@ -40,11 +40,11 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (890) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (888) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (136) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **server/** (134) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (454) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
@@ -71,21 +71,21 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (166) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+- **docs/** (163) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
   - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
   - **analysis/** (122) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
     - **inspiracje/** (90) — Dumpy zewnętrzne + triage (nie SSOT produktu)
     - **reports/** (29) — Raporty kanoniczne (current / milestones / hygiene)
     - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
   - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
-  - **examples/** (3) — Przykładowe pliki baz danych i pakiety projektowe v5
-  - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
+  - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
+  - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (141) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (139) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (98) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -302,9 +302,6 @@ stagesync/
 │   │   └── README.md
 │   ├── server/
 │   │   ├── src/
-│   │   │   ├── cli/
-│   │   │   │   ├── migrate-legacy.smoke.test.ts
-│   │   │   │   └── migrate-legacy.ts
 │   │   │   ├── midi/
 │   │   │   │   ├── backend.ts
 │   │   │   │   ├── config-persist.test.ts
@@ -716,16 +713,12 @@ stagesync/
 │   ├── api/
 │   │   └── README.md
 │   ├── examples/
-│   │   ├── legacy/
-│   │   │   ├── database.sample.json
-│   │   │   └── database.typical.json
 │   │   └── v5/
 │   │       └── library.pack.sample.stagesync.json
 │   ├── guides/
 │   │   ├── DESKTOP.md
 │   │   ├── DX.md
 │   │   ├── INSTALL.md
-│   │   ├── MIGRATION.md
 │   │   └── MOBILE.md
 │   ├── ui/
 │   │   ├── badge.md
@@ -778,8 +771,6 @@ stagesync/
 │   │   │   ├── host-discovery.test.ts
 │   │   │   ├── host-discovery.ts
 │   │   │   ├── index.ts
-│   │   │   ├── legacy-migrate.test.ts
-│   │   │   ├── legacy-migrate.ts
 │   │   │   ├── library-import.test.ts
 │   │   │   ├── library-import.ts
 │   │   │   ├── merge-preserve.test.ts
