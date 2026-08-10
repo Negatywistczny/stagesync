@@ -2,12 +2,12 @@
 
 ## 1. Podsumowanie
 
-Analiza konfiguracji buildów ([`turbo.json`](../../../../turbo.json), `Dockerfile`) oraz plików wykluczających (`.dockerignore`) potwierdza, że proces budowania jest dobrze odizolowany od plików deweloperskich i dokumentacji.
+Analiza konfiguracji buildów ([`turbo.json`](../../../../turbo.json), [`Dockerfile`](../../../../Dockerfile)) oraz plików wykluczających (`.dockerignore`) potwierdza, że proces budowania jest dobrze odizolowany od plików deweloperskich i dokumentacji.
 
 ## 2. Kluczowe spostrzeżenia
 
 - **Izolacja dokumentacji:** Plik `.dockerignore` zawiera regułę `*.md` z wyjątkiem `!README.md`, co skutecznie wyklucza raporty analityczne i inną dokumentację z obrazu Dockerowego.
-- **Proces budowania:** `Dockerfile` wykorzystuje wieloetapowe budowanie. W etapie `build` kopiowane są źródła, ale w etapie `runtime` (finalny obraz) kopiowane są tylko skompilowane pliki z `apps/web/dist` oraz serwer.
+- **Proces budowania:** [`Dockerfile`](../../../../Dockerfile) wykorzystuje wieloetapowe budowanie. W etapie `build` kopiowane są źródła, ale w etapie `runtime` (finalny obraz) kopiowane są tylko skompilowane pliki z `apps/web/dist` oraz serwer.
 - **Narzędzia deweloperskie:** [`knip.jsonc`](../../../../knip.jsonc) poprawnie ignoruje katalogi `dist` oraz `.turbo`, co zapobiega analizowaniu wygenerowanych artefaktów jako kodu źródłowego.
 
 ## 3. Rekomendacje

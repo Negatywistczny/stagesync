@@ -7,7 +7,7 @@ StageSync to monorepo **web + serwer Node** oraz powłoka **desktop Tauri (Rust)
 ### 1) Warstwa JS (web + API) — zawsze
 
 - **Node.js 22** — [`.nvmrc`](../.nvmrc); root `engines`: `>=22 <23`.
-- **pnpm 11** — pole `packageManager` w root `package.json` (np. `pnpm@11.18.0`). **Bez** `npm install` w tym monorepo.
+- **pnpm 11** — pole `packageManager` w root [`package.json`](../package.json) (np. `pnpm@11.18.0`). **Bez** `npm install` w tym monorepo.
 
 ```bash
 corepack enable

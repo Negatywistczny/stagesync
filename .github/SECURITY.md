@@ -10,7 +10,7 @@ ataku zero-day.
 2. Jeśli advisories nie są dostępne — skontaktuj się z właścicielem repozytorium
    przez prywatny kanał GitHub (bez publicznych szczegółów exploita).
 
-Podaj: wersję StageSync (`package.json` / tag), zakres wpływu oraz minimalne
+Podaj: wersję StageSync ([`package.json`](../package.json) / tag), zakres wpływu oraz minimalne
 kroki reprodukcji. Oczekuj potwierdzenia odbioru; nie publikuj poprawki przed
 uzgodnieniem z maintainerami.
 

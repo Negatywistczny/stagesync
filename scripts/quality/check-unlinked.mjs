@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(process.cwd());
-const IGNORED_DIRS = new Set([
+
+const IGNORE_DIRS = new Set([
   'node_modules',
   '.git',
   '.turbo',
@@ -11,10 +12,25 @@ const IGNORED_DIRS = new Set([
   'coverage',
 ]);
 
+/**
+ * Same denylist as fix-unlinked-links.mjs — short names that collide with prose
+ * or duplicate across the repo. Full paths in backticks are still checked.
+ */
+const AMBIGUOUS_BASENAMES = new Set([
+  'dev',
+  'dev.cmd',
+  'dev.ps1',
+  'README.md',
+  'CHANGELOG.md',
+  'LICENSE.md',
+  'CONTRIBUTING.md',
+  'SECURITY.md',
+]);
+
 function getAllMdFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
   for (const file of files) {
-    if (IGNORED_DIRS.has(file)) continue;
+    if (IGNORE_DIRS.has(file)) continue;
     const fullPath = path.join(dir, file);
     const stat = fs.statSync(fullPath);
     if (stat.isDirectory()) {
@@ -26,66 +42,102 @@ function getAllMdFiles(dir, fileList = []) {
   return fileList;
 }
 
+/**
+ * Dynamic targets (aligned with fix-unlinked-links.mjs):
+ * - every *.md (full relative path + safe basename alias)
+ * - root configs: Dockerfile / *.json / *.yaml / *.yml
+ */
+function getTargetSet() {
+  const targets = new Set();
+
+  function scan(currentDir) {
+    for (const file of fs.readdirSync(currentDir)) {
+      if (IGNORE_DIRS.has(file)) continue;
+      const fullPath = path.join(currentDir, file);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        scan(fullPath);
+        continue;
+      }
+
+      const ext = path.extname(file);
+      const relToRoot = path.relative(ROOT, fullPath).replace(/\\/g, '/');
+      const baseName = path.basename(file);
+      const isRoot = currentDir === ROOT;
+      const isRootConfig =
+        isRoot &&
+        (file === 'Dockerfile' ||
+          file.endsWith('.json') ||
+          file.endsWith('.yaml') ||
+          file.endsWith('.yml'));
+
+      if (ext !== '.md' && !isRootConfig) continue;
+
+      targets.add(relToRoot);
+      if (!AMBIGUOUS_BASENAMES.has(baseName)) {
+        targets.add(baseName);
+      }
+    }
+  }
+
+  scan(ROOT);
+  return targets;
+}
+
 const mdFiles = getAllMdFiles(ROOT);
-
-// Dynamic targets: all *.md basenames + root config files (Dockerfile / json / yaml).
-const rootItems = fs
-  .readdirSync(ROOT)
-  .filter((f) => !fs.statSync(path.join(ROOT, f)).isDirectory());
-const rootConfigs = rootItems.filter(
-  (f) =>
-    f === 'Dockerfile' ||
-    f.endsWith('.json') ||
-    f.endsWith('.yaml') ||
-    f.endsWith('.yml'),
-);
-
-const targets = Array.from(
-  new Set([...mdFiles.map((f) => path.basename(f)), ...rootConfigs]),
-);
+const targets = getTargetSet();
 
 let totalUnlinked = 0;
 const unlinkedDetails = [];
 
+/**
+ * Report only what fix-unlinked-links can convert:
+ * backtick spans `target` that are known files and not already [`target`](url).
+ * Bare prose / headings (e.g. "### CHANGELOG.md", "Dockerfile slim gaps") are
+ * intentionally ignored — linking those caused false positives.
+ */
 for (const mdFile of mdFiles) {
   const content = fs.readFileSync(mdFile, 'utf8');
   const relMdPath = path.relative(ROOT, mdFile).replace(/\\/g, '/');
-  const currentFileName = path.basename(mdFile);
-
+  const selfBasename = path.basename(mdFile);
   const lines = content.split('\n');
   let inCodeBlock = false;
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
+    const line = lines[i];
 
     if (line.trim().startsWith('```')) {
       inCodeBlock = !inCodeBlock;
       continue;
     }
-    if (inCodeBlock) continue;
+    if (inCodeBlock || !line.includes('`')) continue;
 
-    // Mask HTML comments, inline code, and existing markdown links.
-    line = line.replace(/<!--[\s\S]*?-->/g, (m) => ' '.repeat(m.length));
-    line = line.replace(/`[^`]+`/g, (m) => ' '.repeat(m.length));
-    line = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m) => ' '.repeat(m.length));
-    line = line.replace(/^\[[^\]]+\]:\s*.*$/g, (m) => ' '.repeat(m.length));
+    let j = 0;
+    while (j < line.length) {
+      if (line[j] !== '`') {
+        j++;
+        continue;
+      }
+      const close = line.indexOf('`', j + 1);
+      if (close < 0) break;
 
-    for (const target of targets) {
-      if (currentFileName === target) continue;
+      const inner = line.slice(j + 1, close);
+      const alreadyLinked = j > 0 && line[j - 1] === '[';
+      const isSelf = inner === relMdPath || inner === selfBasename;
 
-      const escapedTarget = target.replace(/\./g, '\\.');
-      const regex = new RegExp(
-        `(?<![a-zA-Z0-9_\\-\\/.\\\\])\\b${escapedTarget}\\b`,
-        'g',
-      );
-
-      let match;
-      while ((match = regex.exec(line)) !== null) {
+      if (
+        targets.has(inner) &&
+        !alreadyLinked &&
+        !AMBIGUOUS_BASENAMES.has(inner) &&
+        !isSelf
+      ) {
         totalUnlinked++;
         unlinkedDetails.push(
-          `${relMdPath}:${i + 1}: mentions "${target}" without link`,
+          `${relMdPath}:${i + 1}: unlinked backtick \`${inner}\``,
         );
       }
+
+      j = close + 1;
     }
   }
 }

@@ -111,7 +111,7 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 <summary><b>4. 🧪 Testy & Jakość</b> - Kompleksowy zestaw weryfikatorów, linterów i testów jednostkowych</summary>
 
 > 1. **✅ One-Click Full Verify**: Zbiórka głównych weryfikacji w jednym kroku (typy TS, linter, knip, testy).
-> 2. **🗺 Wygeneruj mapę kodu**: Aktualizacja pliku `docs/REPO_MAP.md` (`pnpm generate:map`).
+> 2. **🗺 Wygeneruj mapę kodu**: Aktualizacja pliku [`docs/REPO_MAP.md`](../REPO_MAP.md) (`pnpm generate:map`).
 > 3. **🔍 Sprawdź typy TypeScript**: Statyczna kontrola typowania (`pnpm check-types`).
 > 4. **🎨 CSS Token Guard (ss-css)**: Walidacja zgodności zmiennych CSS (`--ss-*`) i zakaz stosowania ad-hoc kolorów HEX (`pnpm lint:ss-css`).
 > 5. **📦 Dead Code & Dependency Detector (knip)**: Skanowanie nieużywanych plików i pakietów (`pnpm lint:knip`).
@@ -134,7 +134,7 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 <summary><b>5. 🐙 GitHub & Wydania (Release Hub)</b> - Orkiestracja cyklu wydań i wersji SemVer</summary>
 
 > 1. **🔍 Status Git & Hygiene**: Odczyt bieżącej gałęzi, ostatnich commitów i modyfikowanych plików.
-> 2. **🏷 Synchronizacja Wersji Monorepo**: Propagacja numeru wersji z `package.json` do aplikacji web, server, Tauri, Android i Docker.
+> 2. **🏷 Synchronizacja Wersji Monorepo**: Propagacja numeru wersji z [`package.json`](../../package.json) do aplikacji web, server, Tauri, Android i Docker.
 > 3. **📋 Pre-Release Checklist 2.0**: Zbiór testów pre-release (typy, CSS, linki, lint, mapa repo).
 > 4. **👁 Podgląd Informacji o Wydaniu**: Generowanie tytułu i nagłówków notatki wydania (Release Notes) w trybie podglądu.
 > 5. **✂️ Wyodrębnij sekcję Changeloga**: Ekstrakcja pojedynczej wersji z CHANGELOG.
@@ -199,7 +199,7 @@ Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywn
 | `[cmd] knip` | — | **Dead Code Detector**: Wykrywanie nieużywanego kodu i zależności. |
 | `[cmd] ss-css` | `css` | **CSS Token Guard**: Walidacja zmiennych CSS (`--ss-*`). |
 | `[cmd] links` | — | **Docs Link Checker**: Weryfikacja odnośników w dokumentacji Markdown. |
-| `[cmd] map` | — | **Repo Map Generator**: Aktualizacja pliku `docs/REPO_MAP.md`. |
+| `[cmd] map` | — | **Repo Map Generator**: Aktualizacja pliku [`docs/REPO_MAP.md`](../REPO_MAP.md). |
 | `[cmd] test` | — | **Testing Suite**: Przejście do sub-menu testów jednostkowych i benchmarków. |
 | `[cmd] release` | — | **Release Hub**: Interaktywne zarządzanie wydaniami i tagami SemVer. |
 | `[cmd] deps` | `dependencies`, `pnpm` | **Pakiety & Zależności**: Przejście do sub-menu zarządzania pakietami. |

@@ -12,8 +12,22 @@ const IGNORE_DIRS = new Set([
   'coverage',
 ]);
 
-/** Extensionless / ambiguous basenames that collide with ordinary prose. */
-const AMBIGUOUS_BASENAMES = new Set(['dev', 'dev.cmd', 'dev.ps1']);
+/**
+ * Basenames that must never auto-link by short name alone:
+ * - extensionless launchers (`dev`) collide with ordinary prose
+ * - duplicated docs names (`README.md` ×50+) resolve to the wrong file
+ * Full relative paths in backticks (e.g. `docs/REPO_MAP.md`) still work.
+ */
+const AMBIGUOUS_BASENAMES = new Set([
+  'dev',
+  'dev.cmd',
+  'dev.ps1',
+  'README.md',
+  'CHANGELOG.md',
+  'LICENSE.md',
+  'CONTRIBUTING.md',
+  'SECURITY.md',
+]);
 
 function getAllMdFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
@@ -79,12 +93,12 @@ function getTargetMap() {
           file.endsWith('.yaml') ||
           file.endsWith('.yml'));
 
-      // *.md anywhere, or config files in repo root — never extensionless `dev`.
+      // *.md anywhere, or config files in repo root.
       if (ext !== '.md' && !isRootConfig) continue;
-      if (AMBIGUOUS_BASENAMES.has(baseName)) continue;
 
       targetMap.set(relToRoot, fullPath);
-      if (!targetMap.has(baseName)) {
+      // Basename aliases only for non-ambiguous names (avoid README.md → wrong file).
+      if (!AMBIGUOUS_BASENAMES.has(baseName) && !targetMap.has(baseName)) {
         targetMap.set(baseName, fullPath);
       }
     }
@@ -118,6 +132,12 @@ function linkBareBackticks(line, mdFile, mdDir, counters) {
       break;
     }
     const inner = line.slice(i + 1, close);
+    // Ambiguous short names (README.md, dev, …) only link when written as a path.
+    if (AMBIGUOUS_BASENAMES.has(inner)) {
+      out += line.slice(i, close + 1);
+      i = close + 1;
+      continue;
+    }
     const abs = targetMap.get(inner);
     const already = isAlreadyLinked(line, i);
 

@@ -11,4 +11,4 @@
 - [ ] Kod kompiluje się bez błędów (`pnpm build` / `cargo check`)
 - [ ] Testy jednostkowe i e2e przechodzą na zielono (`pnpm test`)
 - [ ] Linter i formatowanie bez uwag (`pnpm lint`)
-- [ ] Zaktualizowano dokumentację (`docs/`, `TODO.md` lub `CHANGELOG.md` – jeśli dotyczy)
+- [ ] Zaktualizowano dokumentację (`docs/`, [`TODO.md`](../docs/TODO.md) lub [`CHANGELOG.md`](../CHANGELOG.md) – jeśli dotyczy)

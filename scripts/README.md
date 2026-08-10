@@ -26,7 +26,7 @@ scripts/
 | Plik | Opis | Przykładowe użycie |
 | :--- | :--- | :--- |
 | [`cut-release.mjs`](./release/cut-release.mjs) | Pełna procedura cut SemVer: zmiana CHANGELOG, bump wersji, propagacja i commit/tag. | `pnpm cut-release patch --yes` |
-| [`sync-version.mjs`](./release/sync-version.mjs) | Propaguje wersję z głównego `package.json` do web, server, Tauri, Android i Docker. | `pnpm sync-version` |
+| [`sync-version.mjs`](./release/sync-version.mjs) | Propaguje wersję z głównego [`package.json`](../package.json) do web, server, Tauri, Android i Docker. | `pnpm sync-version` |
 | [`build-release-notes.mjs`](./release/build-release-notes.mjs) | Generuje opis GitHub Release z sekcji CHANGELOG. | `node scripts/release/build-release-notes.mjs 5.4.8` |
 | [`release-title.mjs`](./release/release-title.mjs) | Formatuje nazwę wydania na podstawie tzw. *hero name* z CHANGELOG. | `node scripts/release/release-title.mjs 5.4.8` |
 | [`extract-changelog-section.mjs`](./release/extract-changelog-section.mjs) | Wyodrębnia pojedynczą sekcję z pliku CHANGELOG. | `node scripts/release/extract-changelog-section.mjs 5.4.8` |
