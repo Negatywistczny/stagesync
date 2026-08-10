@@ -37,7 +37,7 @@ mdns-sd = "0.20"
 url = "2"
 arboard = "3"
 # Setup bootstrapper (immediate splash + silent NSIS)
-wry = "0.55"
+wry = "0.56"
 tao = "0.36"
 
 [profile.release]
