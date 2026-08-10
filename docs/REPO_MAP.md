@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1274
+* **Liczba wszystkich plików:** 1275
 * **Liczba katalogów:** 197
-* **Data aktualizacji:** 2026-08-10T21:57:01.044Z
+* **Data aktualizacji:** 2026-08-10T21:58:26.476Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 850 |
+| Kod | 851 |
 | Docs | 156 |
 | Config | 118 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 510 |
+| `.ts` | 511 |
 | `.tsx` | 161 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -81,11 +81,11 @@
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (167) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (168) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (126) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (127) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -823,6 +823,7 @@ stagesync/
 │   │   │   ├── section-names.ts
 │   │   │   ├── setlist.test.ts
 │   │   │   ├── setlist.ts
+│   │   │   ├── smart-tempo-beat-grid.test.ts
 │   │   │   ├── smart-tempo.test.ts
 │   │   │   ├── smart-tempo.ts
 │   │   │   ├── snap-grid.test.ts

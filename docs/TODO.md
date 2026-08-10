@@ -19,8 +19,6 @@ Otwarte zadania. Plan etapów: [ROADMAP.md](./ROADMAP.md). Historia: [CHANGELOG.
 - [ ] **Perf:** animacja chord-hero w Client Grid przy `prefers-reduced-motion`; OSMD — cursor-only update zamiast full re-render na tick (jeśli API pozwala)
 - [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — lokalne alerty + tokeny + kanały; FCM = opt-in `google-services.json` (ADR 0016)
 - [ ] **Import US+UG:** higiena mostka / zero-length chords / coverage Formy — [AST triage](./analysis/inspiracje/specyfikacje/Implementacja-Smart-Tempo-w-Antigravity.triage.md)
-- [ ] [#834](https://github.com/Negatywistczny/stagesync/issues/834) **Split monolitów >500 LOC** — ESLint `max-lines` warn=500; split przy touch
-- [ ] [#835](https://github.com/Negatywistczny/stagesync/issues/835) **Coverage Top 10** — najpierw I/O (`youtube-audio`, `pushNotifications`, `import`); potem domena
 
 ## Later
 
