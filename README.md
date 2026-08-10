@@ -67,32 +67,66 @@
 
 ### 🛠️ Uruchomienie ze źródeł (Dla deweloperów)
 
-Wszystko w jednej komendzie (automatyczny setup środowiska + interaktywne centrum sterowania):
-
+#### 1. Sklonuj repozytorium
 ```bash
-# 1. Sklonuj repozytorium
-git clone https://github.com/Negatywistczny/stagesync.git
+git clone https://github.com/Negatywistczny/stagesync
 cd stagesync
-
-# 2. Uruchom natywny DX Suite
-# Windows (CMD / Wiersz Poleceń):
-dev
-
-# Windows (PowerShell):
-.\dev
-# Jeśli wystąpi blokada skryptów:
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# macOS / Linux:
-./dev
 ```
+#### 2. Uruchom DX Hub
 
-Skrypt weryfikuje środowisko (Node/pnpm) i uruchamia **Dev Hub**:
+<details>
+<summary><b>🪟 Windows</b></summary>
 
-- **Admin UI:** http://localhost:3000/admin
-- **API / WS:** http://localhost:4000 (`/api/health`)
+- **CMD (Wiersz Poleceń) — skrypt `.cmd`**
 
-> 💡 Komendy test/build/lint, podgląd wymagań kompilacji Tauri/Rust oraz reguły współpracy: [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+   ```cmd
+   dev
+   ```
+- **PowerShell — skrypt `.cmd` (zalecane)**
+
+   ```powershell
+   ./dev.cmd
+   ```
+
+- **PowerShell — natywny skrypt `.ps1`**
+
+   ```powershell
+   # Jednorazowe przyznanie uprawnień
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+   ./dev
+   ```
+
+</details>
+<details>
+<summary><b>🍏 macOS / 🐧 Linux</b></summary>
+
+- **Bash (zalecane)**
+
+   ```bash
+   bash dev
+   ```
+
+- **Wywołanie pliku**
+
+   ```bash
+   # Jednorazowe przyznanie uprawień
+   chmod +x dev
+
+   ./dev
+   ```
+
+</details>
+<details>
+<summary><b>🌐 Uniwersalne (wymage node.js & pnpm)</b></summary>
+
+- **Bezpośrednie wywołanie przez pnpm**
+
+   ```bash
+   pnpm dev:hub
+   ```
+
+</details>
 
 ---
 
