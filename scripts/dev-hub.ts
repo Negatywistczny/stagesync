@@ -198,15 +198,93 @@ function readRootPackageVersion(): string | null {
   }
 }
 
-function runCiLikeVerify(): boolean {
-  clack.note(
-    "CI-like verify: check-types → lint:ss-css → lint → test…",
-  );
+function runCiLikeVerifySteps(): boolean {
   const typesOk = runCommand("pnpm", ["check-types"]);
   const cssOk = runCommand("pnpm", ["lint:ss-css"]);
   const lintOk = runCommand("pnpm", ["lint"]);
   const testOk = runCommand("pnpm", ["test"]);
   return typesOk && cssOk && lintOk && testOk;
+}
+
+function runCiLikeVerify(): boolean {
+  clack.note(
+    "Lustrzane CI: check-types → lint:ss-css → lint → test (bez formatu)…",
+  );
+  return runCiLikeVerifySteps();
+}
+
+/** Codzienny gate: format → CI-like → docs links → knip. */
+function runDailyGate(): boolean {
+  clack.note(
+    "Codzienny gate: format → check-types → lint:ss-css → lint → test → links → knip…",
+  );
+  const formatOk = runCommand("pnpm", ["format"]);
+  const ciOk = runCiLikeVerifySteps();
+  const linksOk = runCommand("node", [
+    "scripts/quality/check-docs-links.mjs",
+  ]);
+  const knipOk = runCommand("pnpm", ["lint:knip"]);
+  return formatOk && ciOk && linksOk && knipOk;
+}
+
+/** Fail if check-unlinked reports any bare references (exit is often 0). */
+function runUnlinkedGate(): boolean {
+  clack.note("Skan niepodlinkowanych odniesień (check-unlinked.mjs)…");
+  const result = spawnSync("node", ["scripts/quality/check-unlinked.mjs"], {
+    cwd: rootDir,
+    encoding: "utf8",
+    env: { ...process.env, NODE_NO_WARNINGS: "1" },
+  });
+  const out = result.stdout ?? "";
+  const err = result.stderr ?? "";
+  if (out) process.stdout.write(out.endsWith("\n") ? out : `${out}\n`);
+  if (err) process.stderr.write(err.endsWith("\n") ? err : `${err}\n`);
+  if (result.status !== 0 && result.status !== null) return false;
+  const match = out.match(/TOTAL UNLINKED REFERENCES FOUND:\s*(\d+)/);
+  const total = match ? Number(match[1]) : 0;
+  if (total > 0) {
+    clack.log.error(
+      `Gate unlinked: znaleziono ${total} odniesień (napraw w Docs i quality).`,
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Kompletny audyt: Codzienny gate + unlinked + map + coverage + e2e + build.
+ * Skips interactive fix-unlinked, Sync Launcher UI, and Smart Tempo benchmark.
+ */
+function runFullAudit(): boolean {
+  clack.note(
+    "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build…",
+  );
+  const formatOk = runCommand("pnpm", ["format"]);
+  const ciOk = runCiLikeVerifySteps();
+  const linksOk = runCommand("node", [
+    "scripts/quality/check-docs-links.mjs",
+  ]);
+  const unlinkedOk = runUnlinkedGate();
+  const knipOk = runCommand("pnpm", ["lint:knip"]);
+  const mapOk = runCommand("pnpm", ["generate:map"]);
+  const covOk = runCommand("pnpm", ["test:coverage"]);
+  const e2eOk = runCommand("pnpm", [
+    "--filter",
+    "@stagesync/web",
+    "test:e2e",
+  ]);
+  const buildOk = runCommand("pnpm", ["build"]);
+  return (
+    formatOk &&
+    ciOk &&
+    linksOk &&
+    unlinkedOk &&
+    knipOk &&
+    mapOk &&
+    covOk &&
+    e2eOk &&
+    buildOk
+  );
 }
 
 function previewReleaseNotes(pkgVer: string) {
@@ -540,9 +618,7 @@ async function runDoctorScan() {
   const { dir: dataDir, rule } = resolveHubDataDir();
   clack.log.success(`Efektywny data dir: ${dataDir} (reguła: ${rule})`);
   if (process.env.STAGESYNC_REPO_DEV) {
-    clack.log.info(
-      `STAGESYNC_REPO_DEV: ${process.env.STAGESYNC_REPO_DEV}`,
-    );
+    clack.log.info(`STAGESYNC_REPO_DEV: ${process.env.STAGESYNC_REPO_DEV}`);
   } else {
     clack.log.info("STAGESYNC_REPO_DEV: nieustawiona");
   }
@@ -737,36 +813,100 @@ async function menuTestingVerify() {
   const choice = await clack.select({
     message: "Verify:",
     options: [
-      { value: "verify", label: "1. ✅  One-Click Full Verify (CI-like)" },
       {
-        value: "fix",
-        label: "2. 🧹  Format (Prettier) + Lint check",
+        value: "ci-mirror",
+        label: "1. ✅  Lustrzane CI (types + ss-css + lint + test, bez zapisu)",
       },
-      { value: "test-cov", label: "3. 📊  Testy z pokryciem (Coverage)" },
+      {
+        value: "daily",
+        label: "2. 🚀  Codzienny gate (+ format + links + knip)",
+      },
+      {
+        value: "full-audit",
+        label:
+          "3. 🧨  Kompletny audyt (+ unlinked, map, coverage, e2e, build)",
+      },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
 
   if (clack.isCancel(choice) || choice === "back") return;
 
-  if (choice === "verify") {
+  if (choice === "ci-mirror") {
     const ok = runCiLikeVerify();
     if (ok) {
-      clack.log.success("✅ Pełna weryfikacja zakończona sukcesem!");
+      clack.log.success("✅ Lustrzane CI — OK!");
     } else {
-      clack.log.error("❌ Wykryto błędy w weryfikacji! Przejrzyj logi powyżej.");
+      clack.log.error(
+        "❌ Lustrzane CI — wykryto błędy! Przejrzyj logi powyżej.",
+      );
     }
     await waitReturn();
-  } else if (choice === "fix") {
-    clack.note("Formatowanie Prettier, potem lint check (bez auto-fix ESLint)…");
-    runCommand("pnpm", ["format"]);
-    runCommand("pnpm", ["lint"]);
+  } else if (choice === "daily") {
+    const ok = runDailyGate();
+    if (ok) {
+      clack.log.success("✅ Codzienny gate — OK!");
+    } else {
+      clack.log.error(
+        "❌ Codzienny gate — wykryto błędy! Przejrzyj logi powyżej.",
+      );
+    }
     await waitReturn();
-  } else if (choice === "test-cov") {
-    clack.note("Uruchamianie testów z pokryciem (turbo run test:coverage)...");
-    runCommand("pnpm", ["test:coverage"]);
+  } else if (choice === "full-audit") {
+    const ok = runFullAudit();
+    if (ok) {
+      clack.log.success("✅ Kompletny audyt — OK!");
+    } else {
+      clack.log.error(
+        "❌ Kompletny audyt — wykryto błędy! Przejrzyj logi powyżej.",
+      );
+    }
     await waitReturn();
   }
+}
+
+/** Docs quality: scan bare backtick file refs, then optionally auto-link them. */
+async function runUnlinkedScanAndMaybeFix() {
+  clack.note("Skanowanie niepodlinkowanych odniesień (check-unlinked.mjs)…");
+  const result = spawnSync("node", ["scripts/quality/check-unlinked.mjs"], {
+    cwd: rootDir,
+    encoding: "utf8",
+    env: { ...process.env, NODE_NO_WARNINGS: "1" },
+  });
+  const out = result.stdout ?? "";
+  const err = result.stderr ?? "";
+  if (out) process.stdout.write(out.endsWith("\n") ? out : `${out}\n`);
+  if (err) process.stderr.write(err.endsWith("\n") ? err : `${err}\n`);
+
+  if (result.status !== 0 && result.status !== null) {
+    clack.log.error("Skan niepodlinkowanych odniesień zakończył się błędem.");
+    await waitReturn();
+    return;
+  }
+
+  const match = out.match(/TOTAL UNLINKED REFERENCES FOUND:\s*(\d+)/);
+  const total = match ? Number(match[1]) : 0;
+
+  if (total === 0) {
+    clack.log.success("Brak niepodlinkowanych odniesień do naprawienia.");
+    await waitReturn();
+    return;
+  }
+
+  const doFix = await clack.confirm({
+    message: `Znaleziono ${total} niepodlinkowanych odniesień. Naprawić teraz?`,
+    initialValue: true,
+  });
+
+  if (!doFix || clack.isCancel(doFix)) {
+    clack.log.info("Pominięto naprawę.");
+    await waitReturn();
+    return;
+  }
+
+  clack.note("Naprawianie niepodlinkowanych linków (fix-unlinked-links.mjs)…");
+  runCommand("node", ["scripts/quality/fix-unlinked-links.mjs"]);
+  await waitReturn();
 }
 
 async function menuTestingDocs() {
@@ -778,8 +918,10 @@ async function menuTestingDocs() {
       { value: "ss-css", label: "2. 🎨  CSS Token Guard (ss-css)" },
       { value: "knip", label: "3. 📦  Dead Code & Dependency Detector (knip)" },
       { value: "links", label: "4. 🔗  Weryfikacja linków w dokumentacji" },
-      { value: "unlinked", label: "5. 🔍  Znajdź niepodlinkowane pliki" },
-      { value: "fix-unlinked", label: "6. 🛠   Napraw niepodlinkowane linki" },
+      {
+        value: "unlinked",
+        label: "5. 🔍  Niepodlinkowane odniesienia (skan → naprawa)",
+      },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
@@ -803,13 +945,7 @@ async function menuTestingDocs() {
     runCommand("node", ["scripts/quality/check-docs-links.mjs"]);
     await waitReturn();
   } else if (choice === "unlinked") {
-    clack.note("Znajdowanie niepodlinkowanych plików...");
-    runCommand("node", ["scripts/quality/check-unlinked.mjs"]);
-    await waitReturn();
-  } else if (choice === "fix-unlinked") {
-    clack.note("Naprawianie niepodlinkowanych linków...");
-    runCommand("node", ["scripts/quality/fix-unlinked-links.mjs"]);
-    await waitReturn();
+    await runUnlinkedScanAndMaybeFix();
   }
 }
 
@@ -826,7 +962,8 @@ async function menuTestingUnit() {
       { value: "web", label: "3. 🎨  Testy UI Admin/Client (@stagesync/web)" },
       { value: "ui", label: "4. 🧩  Testy design system (@stagesync/ui)" },
       { value: "e2e", label: "5. 🎭  E2E Playwright (@stagesync/web)" },
-      { value: "benchmark", label: "6. 🎯  Smart Tempo DSP Benchmark" },
+      { value: "test-cov", label: "6. 📊  Testy z pokryciem (Coverage)" },
+      { value: "benchmark", label: "7. 🎯  Smart Tempo DSP Benchmark" },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
@@ -848,6 +985,10 @@ async function menuTestingUnit() {
   } else if (choice === "e2e") {
     clack.note("Uruchamianie Playwright E2E (@stagesync/web test:e2e)...");
     runCommand("pnpm", ["--filter", "@stagesync/web", "test:e2e"]);
+    await waitReturn();
+  } else if (choice === "test-cov") {
+    clack.note("Uruchamianie testów z pokryciem (turbo run test:coverage)...");
+    runCommand("pnpm", ["test:coverage"]);
     await waitReturn();
   } else if (choice === "benchmark") {
     clack.note("Uruchamianie Smart Tempo DSP Benchmark...");
@@ -931,8 +1072,7 @@ async function menuRelease() {
     await waitReturn();
   } else if (choice === "exec") {
     const confirmExec = await clack.confirm({
-      message:
-        "Czy na pewno uruchomić exec-release (publikacja / monitor CI)?",
+      message: "Czy na pewno uruchomić exec-release (publikacja / monitor CI)?",
       initialValue: false,
     });
     if (!confirmExec || clack.isCancel(confirmExec)) {
@@ -1020,10 +1160,7 @@ async function menuRelease() {
     }
 
     clack.note(`Wykonywanie procedury cut-release dla typu: ${bumpType}...`);
-    runCommand("node", [
-      "scripts/release/cut-release.mjs",
-      bumpType as string,
-    ]);
+    runCommand("node", ["scripts/release/cut-release.mjs", bumpType as string]);
     await waitReturn();
   } else if (choice === "git") {
     showGitStatus();
@@ -1188,8 +1325,26 @@ async function main() {
       runCommand("pnpm", ["check-types"]);
       return;
     }
-    if (flag === "verify") {
+    if (flag === "verify" || flag === "ci") {
       const ok = runCiLikeVerify();
+      process.exit(ok ? 0 : 1);
+    }
+    if (
+      flag === "pr" ||
+      flag === "before-pr" ||
+      flag === "daily" ||
+      flag === "gate"
+    ) {
+      const ok = runDailyGate();
+      process.exit(ok ? 0 : 1);
+    }
+    if (
+      flag === "all" ||
+      flag === "full" ||
+      flag === "everything" ||
+      flag === "audit"
+    ) {
+      const ok = runFullAudit();
       process.exit(ok ? 0 : 1);
     }
     if (flag === "release") {
