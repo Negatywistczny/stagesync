@@ -27,6 +27,20 @@ import {
   youtubeAudioJobsForTests,
 } from "./youtube-audio.js";
 
+/** Stub network only for real GitHub / yt-dlp download hosts (not substring matches). */
+function isYtDlpBundleDownloadUrl(input: RequestInfo | URL): boolean {
+  try {
+    const href = typeof input === "string" ? input : String(input);
+    const { hostname, pathname } = new URL(href);
+    if (hostname === "github.com" || hostname.endsWith(".github.com")) {
+      return true;
+    }
+    return /yt-dlp/i.test(pathname);
+  } catch {
+    return /yt-dlp/i.test(String(input));
+  }
+}
+
 function mockSpawnProcess(opts: {
   code?: number | null;
   stdoutChunks?: string[];
@@ -365,8 +379,7 @@ describe("youtube-audio router", () => {
     const fetchSpy = vi
       .spyOn(globalThis, "fetch")
       .mockImplementation(async (input, init) => {
-        const url = String(input);
-        if (url.includes("github.com") || /yt-dlp/i.test(url)) {
+        if (isYtDlpBundleDownloadUrl(input as RequestInfo | URL)) {
           return new Response(null, { status: 503 });
         }
         return realFetch(input as RequestInfo | URL, init as RequestInit);
