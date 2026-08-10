@@ -8,8 +8,6 @@ import * as path from "node:path";
 import * as os from "node:os";
 import qrcode from "qrcode-terminal";
 
-import * as readline from "node:readline";
-
 const rootDir = path.resolve(__dirname, "..");
 const require = createRequire(__filename);
 
@@ -129,6 +127,98 @@ function runCommand(
   return result.status === 0;
 }
 
+/** Load unset STAGESYNC_* keys from root `.env` (mirrors server dotenv for hub). */
+function hydrateStagesyncEnvFromDotenv() {
+  const envPath = path.join(rootDir, ".env");
+  if (!fs.existsSync(envPath)) return;
+  const text = fs.readFileSync(envPath, "utf8");
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eq = line.indexOf("=");
+    if (eq <= 0) continue;
+    const key = line.slice(0, eq).trim();
+    if (key !== "STAGESYNC_DATA_DIR" && key !== "STAGESYNC_REPO_DEV") continue;
+    if (process.env[key] !== undefined) continue;
+    let val = line.slice(eq + 1).trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    process.env[key] = val;
+  }
+}
+
+hydrateStagesyncEnvFromDotenv();
+
+type HubDataDirRule =
+  | "STAGESYNC_DATA_DIR"
+  | "STAGESYNC_REPO_DEV"
+  | "Documents/StageSync"
+  | "repo/data (fallback)";
+
+/** Same priority as apps/server `defaultDataDir()` (ADR 0012). */
+function resolveHubDataDir(): { dir: string; rule: HubDataDirRule } {
+  const fromEnv = process.env.STAGESYNC_DATA_DIR;
+  if (fromEnv) {
+    const dir = path.isAbsolute(fromEnv)
+      ? fromEnv
+      : path.resolve(rootDir, fromEnv);
+    return { dir, rule: "STAGESYNC_DATA_DIR" };
+  }
+  if (process.env.STAGESYNC_REPO_DEV) {
+    return {
+      dir: path.join(rootDir, "data"),
+      rule: "STAGESYNC_REPO_DEV",
+    };
+  }
+  const home = process.env.HOME ?? process.env.USERPROFILE ?? null;
+  if (home) {
+    return {
+      dir: path.join(home, "Documents", "StageSync"),
+      rule: "Documents/StageSync",
+    };
+  }
+  return {
+    dir: path.join(rootDir, "data"),
+    rule: "repo/data (fallback)",
+  };
+}
+
+function readRootPackageVersion(): string | null {
+  try {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(rootDir, "package.json"), "utf8"),
+    ) as { version?: string };
+    return typeof pkg.version === "string" && pkg.version ? pkg.version : null;
+  } catch {
+    return null;
+  }
+}
+
+function runCiLikeVerify(): boolean {
+  clack.note(
+    "CI-like verify: check-types → lint:ss-css → lint → test…",
+  );
+  const typesOk = runCommand("pnpm", ["check-types"]);
+  const cssOk = runCommand("pnpm", ["lint:ss-css"]);
+  const lintOk = runCommand("pnpm", ["lint"]);
+  const testOk = runCommand("pnpm", ["test"]);
+  return typesOk && cssOk && lintOk && testOk;
+}
+
+function previewReleaseNotes(pkgVer: string) {
+  clack.log.info(
+    `👁  Podgląd informacji o wydaniu dla wersji v${pkgVer} (Preview Mode):`,
+  );
+  console.log("\n--- TYTUŁ WYDANIA ---");
+  runCommand("node", ["scripts/release/release-title.mjs", pkgVer]);
+  console.log("\n\n--- OPIS WYDANIA (RELEASE NOTES) ---");
+  runCommand("node", ["scripts/release/build-release-notes.mjs", pkgVer]);
+}
+
 interface NICInfo {
   name: string;
   address: string;
@@ -229,7 +319,7 @@ function findListeningProcessesOnPort(port: number): ProcessInfo[] {
         }
       }
     } else {
-      const output = execSync(`lsof -t -i:${port}`, {
+      const output = execSync(`lsof -nP -iTCP:${port} -sTCP:LISTEN -t`, {
         encoding: "utf8",
         stdio: ["pipe", "pipe", "ignore"],
       });
@@ -371,7 +461,33 @@ async function runDoctorScan() {
     clack.log.warn("Docker: Brak klienta Docker (opcjonalny dla kontenerów)");
   }
 
-  // 5. WebView2 (Windows)
+  // 5. GitHub CLI (Release Hub)
+  try {
+    const ghVer = execSync("gh --version", {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "ignore"],
+    })
+      .trim()
+      .split("\n")[0];
+    const auth = spawnSync("gh", ["auth", "status"], {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+      shell: true,
+    });
+    if (auth.status === 0) {
+      clack.log.success(`GitHub CLI (gh): ${ghVer} — zalogowany`);
+    } else {
+      clack.log.warn(
+        `GitHub CLI (gh): ${ghVer} — brak auth (wymagane dla Release Hub)`,
+      );
+    }
+  } catch {
+    clack.log.warn(
+      "GitHub CLI (gh): Nie znaleziono (opcjonalne; potrzebne dla Release Hub)",
+    );
+  }
+
+  // 6. WebView2 (Windows)
   if (os.platform() === "win32") {
     const wv2Key =
       "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}";
@@ -397,7 +513,7 @@ async function runDoctorScan() {
     }
   }
 
-  // 6. Dostępność Portów
+  // 7. Dostępność Portów
   const p3000 = findListeningProcessesOnPort(3000);
   const p4000 = findListeningProcessesOnPort(4000);
   if (p3000.length === 0) clack.log.success("Port :3000: Wolny");
@@ -412,7 +528,7 @@ async function runDoctorScan() {
       `Port :4000: Zajęty przez PID ${p4000[0].pid} (${p4000[0].name})`,
     );
 
-  // 7. Pliki .env & Zmienna STAGESYNC_DATA_DIR
+  // 8. Pliki .env
   const envExists = fs.existsSync(path.join(rootDir, ".env"));
   const envExampleExists = fs.existsSync(path.join(rootDir, ".env.example"));
   if (envExists) clack.log.success("Plik .env: Obecny w korzeniu");
@@ -420,12 +536,19 @@ async function runDoctorScan() {
     clack.log.warn("Plik .env: Brak (dostępny .env.example)");
   else clack.log.warn("Plik .env: Brak pliku konfiguracji");
 
-  const dataDir = process.env.STAGESYNC_DATA_DIR;
-  if (dataDir) clack.log.success(`STAGESYNC_DATA_DIR: ${dataDir}`);
-  else
+  // 9. Efektywny data dir (ADR 0012)
+  const { dir: dataDir, rule } = resolveHubDataDir();
+  clack.log.success(`Efektywny data dir: ${dataDir} (reguła: ${rule})`);
+  if (process.env.STAGESYNC_REPO_DEV) {
     clack.log.info(
-      "STAGESYNC_DATA_DIR: Nieustawiona (używa domyślnego katalogu domowego)",
+      `STAGESYNC_REPO_DEV: ${process.env.STAGESYNC_REPO_DEV}`,
     );
+  } else {
+    clack.log.info("STAGESYNC_REPO_DEV: nieustawiona");
+  }
+  if (process.env.STAGESYNC_DATA_DIR) {
+    clack.log.info(`STAGESYNC_DATA_DIR: ${process.env.STAGESYNC_DATA_DIR}`);
+  }
 }
 
 function cleanCache() {
@@ -609,55 +732,63 @@ async function menuNetwork() {
   }
 }
 
-async function menuTesting() {
+async function menuTestingVerify() {
   clearTerminalScreen();
   const choice = await clack.select({
-    message: "Testy & Jakość Kodów:",
+    message: "Verify:",
     options: [
-      { value: "verify", label: "1. ✅  One-Click Full Verify" },
-      { value: "map", label: "2. 🗺   Wygeneruj mapę kodu" },
-      { value: "types", label: "3. 🔍  Sprawdź typy TypeScript" },
-      { value: "ss-css", label: "4. 🎨  CSS Token Guard (ss-css)" },
-      { value: "knip", label: "5. 📦  Dead Code & Dependency Detector (knip)" },
-      { value: "links", label: "6. 🔗  Weryfikacja linków w dokumentacji" },
-      { value: "unlinked", label: "7. 🔍  Znajdź niepodlinkowane pliki" },
-      { value: "fix-unlinked", label: "8. 🛠   Napraw niepodlinkowane linki" },
-      { value: "shared", label: "9. ⚡  Testy PPQ/Ticks (@stagesync/shared)" },
+      { value: "verify", label: "1. ✅  One-Click Full Verify (CI-like)" },
       {
-        value: "server",
-        label: "10.🎼  Testy serwera transportu (@stagesync/server)",
+        value: "fix",
+        label: "2. 🧹  Format (Prettier) + Lint check",
       },
-      { value: "web", label: "11.🎨  Testy UI Admin/Client (@stagesync/web)" },
-      { value: "benchmark", label: "12.🎯  Smart Tempo DSP Benchmark" },
-      { value: "fix", label: "13.🧹  Auto-Fixer (Format & Lint)" },
-      { value: "build", label: "14.🏗   Pełny Build (Turbo)" },
-      { value: "test-cov", label: "15.📊  Testy z pokryciem (Coverage)" },
-      { value: "sync-ui", label: "16.🔄  Sync Launcher UI" },
+      { value: "test-cov", label: "3. 📊  Testy z pokryciem (Coverage)" },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
 
   if (clack.isCancel(choice) || choice === "back") return;
 
-  if (choice === "build") {
-    clack.note("Uruchamianie pełnego buildu (turbo run build)...");
-    runCommand("pnpm", ["build"]);
+  if (choice === "verify") {
+    const ok = runCiLikeVerify();
+    if (ok) {
+      clack.log.success("✅ Pełna weryfikacja zakończona sukcesem!");
+    } else {
+      clack.log.error("❌ Wykryto błędy w weryfikacji! Przejrzyj logi powyżej.");
+    }
+    await waitReturn();
+  } else if (choice === "fix") {
+    clack.note("Formatowanie Prettier, potem lint check (bez auto-fix ESLint)…");
+    runCommand("pnpm", ["format"]);
+    runCommand("pnpm", ["lint"]);
     await waitReturn();
   } else if (choice === "test-cov") {
     clack.note("Uruchamianie testów z pokryciem (turbo run test:coverage)...");
     runCommand("pnpm", ["test:coverage"]);
     await waitReturn();
-  } else if (choice === "sync-ui") {
-    clack.note("Synchronizacja UI launchera...");
-    runCommand("pnpm", ["sync:launcher-ui"]);
-    await waitReturn();
-  } else if (choice === "map") {
+  }
+}
+
+async function menuTestingDocs() {
+  clearTerminalScreen();
+  const choice = await clack.select({
+    message: "Docs i quality:",
+    options: [
+      { value: "map", label: "1. 🗺   Wygeneruj mapę kodu" },
+      { value: "ss-css", label: "2. 🎨  CSS Token Guard (ss-css)" },
+      { value: "knip", label: "3. 📦  Dead Code & Dependency Detector (knip)" },
+      { value: "links", label: "4. 🔗  Weryfikacja linków w dokumentacji" },
+      { value: "unlinked", label: "5. 🔍  Znajdź niepodlinkowane pliki" },
+      { value: "fix-unlinked", label: "6. 🛠   Napraw niepodlinkowane linki" },
+      { value: "back", label: "0. ↩️   Powrót" },
+    ],
+  });
+
+  if (clack.isCancel(choice) || choice === "back") return;
+
+  if (choice === "map") {
     clack.note("Generowanie mapy repozytorium (pnpm generate:map)...");
     runCommand("pnpm", ["generate:map"]);
-    await waitReturn();
-  } else if (choice === "types") {
-    clack.note("Sprawdzanie typów TypeScript (pnpm check-types)...");
-    runCommand("pnpm", ["check-types"]);
     await waitReturn();
   } else if (choice === "ss-css") {
     clack.note("Sprawdzanie tokenów CSS (pnpm lint:ss-css)...");
@@ -679,7 +810,30 @@ async function menuTesting() {
     clack.note("Naprawianie niepodlinkowanych linków...");
     runCommand("node", ["scripts/quality/fix-unlinked-links.mjs"]);
     await waitReturn();
-  } else if (choice === "shared") {
+  }
+}
+
+async function menuTestingUnit() {
+  clearTerminalScreen();
+  const choice = await clack.select({
+    message: "Unit i bench:",
+    options: [
+      { value: "shared", label: "1. ⚡  Testy PPQ/Ticks (@stagesync/shared)" },
+      {
+        value: "server",
+        label: "2. 🎼  Testy serwera transportu (@stagesync/server)",
+      },
+      { value: "web", label: "3. 🎨  Testy UI Admin/Client (@stagesync/web)" },
+      { value: "ui", label: "4. 🧩  Testy design system (@stagesync/ui)" },
+      { value: "e2e", label: "5. 🎭  E2E Playwright (@stagesync/web)" },
+      { value: "benchmark", label: "6. 🎯  Smart Tempo DSP Benchmark" },
+      { value: "back", label: "0. ↩️   Powrót" },
+    ],
+  });
+
+  if (clack.isCancel(choice) || choice === "back") return;
+
+  if (choice === "shared") {
     runCommand("pnpm", ["--filter", "@stagesync/shared", "test"]);
     await waitReturn();
   } else if (choice === "server") {
@@ -688,31 +842,66 @@ async function menuTesting() {
   } else if (choice === "web") {
     runCommand("pnpm", ["--filter", "@stagesync/web", "test"]);
     await waitReturn();
+  } else if (choice === "ui") {
+    runCommand("pnpm", ["--filter", "@stagesync/ui", "test"]);
+    await waitReturn();
+  } else if (choice === "e2e") {
+    clack.note("Uruchamianie Playwright E2E (@stagesync/web test:e2e)...");
+    runCommand("pnpm", ["--filter", "@stagesync/web", "test:e2e"]);
+    await waitReturn();
   } else if (choice === "benchmark") {
     clack.note("Uruchamianie Smart Tempo DSP Benchmark...");
     runCommand("pnpm", ["benchmark:record"], {
       env: { RUN_SMART_TEMPO_BENCHMARK: "1" },
     });
     await waitReturn();
-  } else if (choice === "verify") {
-    clack.note("Uruchamianie pełnej weryfikacji (Full Verify)...");
-    const typesOk = runCommand("pnpm", ["check-types"]);
-    const lintOk = runCommand("pnpm", ["lint"]);
-    const knipOk = runCommand("pnpm", ["lint:knip"]);
-    const testOk = runCommand("pnpm", ["test"]);
-    if (typesOk && lintOk && knipOk && testOk) {
-      clack.log.success("✅ Pełna weryfikacja zakończona sukcesem!");
-    } else {
-      clack.log.error("❌ Wykryto błędy w weryfikacji! Przejrzyj logi powyżej.");
-    }
+  }
+}
+
+async function menuTestingBuild() {
+  clearTerminalScreen();
+  const choice = await clack.select({
+    message: "Build:",
+    options: [
+      { value: "build", label: "1. 🏗   Pełny Build (Turbo)" },
+      { value: "sync-ui", label: "2. 🔄  Sync Launcher UI" },
+      { value: "back", label: "0. ↩️   Powrót" },
+    ],
+  });
+
+  if (clack.isCancel(choice) || choice === "back") return;
+
+  if (choice === "build") {
+    clack.note("Uruchamianie pełnego buildu (turbo run build)...");
+    runCommand("pnpm", ["build"]);
     await waitReturn();
-  } else if (choice === "fix") {
-    clack.note(
-      "Uruchamianie automatycznego formatowania i poprawek lintera...",
-    );
-    runCommand("pnpm", ["format"]);
-    runCommand("pnpm", ["lint"]);
+  } else if (choice === "sync-ui") {
+    clack.note("Synchronizacja UI launchera...");
+    runCommand("pnpm", ["sync:launcher-ui"]);
     await waitReturn();
+  }
+}
+
+async function menuTesting() {
+  while (true) {
+    clearTerminalScreen();
+    const choice = await clack.select({
+      message: "Testy & Jakość:",
+      options: [
+        { value: "verify", label: "1. ✅  Verify ›" },
+        { value: "docs", label: "2. 📚  Docs i quality ›" },
+        { value: "unit", label: "3. 🧪  Unit i bench ›" },
+        { value: "build", label: "4. 🏗   Build ›" },
+        { value: "back", label: "0. ↩️   Powrót" },
+      ],
+    });
+
+    if (clack.isCancel(choice) || choice === "back") return;
+
+    if (choice === "verify") await menuTestingVerify();
+    else if (choice === "docs") await menuTestingDocs();
+    else if (choice === "unit") await menuTestingUnit();
+    else if (choice === "build") await menuTestingBuild();
   }
 }
 
@@ -724,7 +913,7 @@ async function menuRelease() {
       { value: "git", label: "1. 🔍  Status Git & Hygiene" },
       { value: "sync", label: "2. 🏷   Synchronizacja Wersji Monorepo" },
       { value: "checklist", label: "3. 📋  Pre-Release Checklist 2.0" },
-      { value: "preview", label: "4. 👁   Podgląd Information o Wydaniu" },
+      { value: "preview", label: "4. 👁   Podgląd Informacji o Wydaniu" },
       { value: "extract", label: "5. ✂️   Wyodrębnij sekcję Changeloga" },
       { value: "cut", label: "6. 🚀  Przygotowanie Taga" },
       { value: "exec", label: "7. ⚡  Release" },
@@ -741,48 +930,61 @@ async function menuRelease() {
     runCommand("node", ["scripts/release/sync-version.mjs"]);
     await waitReturn();
   } else if (choice === "exec") {
+    const confirmExec = await clack.confirm({
+      message:
+        "Czy na pewno uruchomić exec-release (publikacja / monitor CI)?",
+      initialValue: false,
+    });
+    if (!confirmExec || clack.isCancel(confirmExec)) {
+      clack.log.info("Anulowano Release.");
+      await waitReturn();
+      return;
+    }
     clack.note(
       "Wykonywanie właściwego release (node scripts/release/exec-release.mjs)...",
     );
     runCommand("node", ["scripts/release/exec-release.mjs"]);
     await waitReturn();
   } else if (choice === "extract") {
-    clack.note("Wyodrębnianie sekcji Changeloga...");
-    runCommand("node", ["scripts/release/extract-changelog-section.mjs"]);
+    const defaultVer = readRootPackageVersion() ?? "";
+    const version = await clack.text({
+      message: "Wersja sekcji CHANGELOG do wyodrębnienia:",
+      placeholder: "np. 5.4.11",
+      initialValue: defaultVer,
+      validate: (v) => (v?.trim() ? undefined : "Podaj wersję SemVer"),
+    });
+    if (clack.isCancel(version)) return;
+    clack.note(`Wyodrębnianie sekcji Changeloga dla ${version}...`);
+    runCommand("node", [
+      "scripts/release/extract-changelog-section.mjs",
+      version.trim(),
+    ]);
     await waitReturn();
   } else if (choice === "checklist") {
-    clack.note("Uruchamianie Pre-Release Checklist 2.0...");
-    const typesOk = runCommand("pnpm", ["check-types"]);
-    const cssOk = runCommand("pnpm", ["lint:ss-css"]);
-    const linksOk = runCommand("node", [
-      "scripts/quality/check-docs-links.mjs",
-    ]);
-    const lintOk = runCommand("pnpm", ["lint"]);
-    const mapOk = runCommand("pnpm", ["generate:map"]);
-    if (typesOk && cssOk && linksOk && lintOk && mapOk) {
-      clack.log.success("✅ Pre-Release Checklist 2.0 zakończona sukcesem!");
+    clack.note("Uruchamianie Pre-Release Checklist 2.0 (CI-like + preview)…");
+    const ok = runCiLikeVerify();
+    if (ok) {
+      const pkgVer = readRootPackageVersion();
+      if (pkgVer) {
+        previewReleaseNotes(pkgVer);
+        clack.log.success("✅ Pre-Release Checklist 2.0 zakończona sukcesem!");
+      } else {
+        clack.log.error(
+          "CI-like OK, ale nie udało się odczytać version z package.json — pominięto preview.",
+        );
+      }
     } else {
       clack.log.error("❌ Wykryto błędy w Checklist! Przejrzyj logi powyżej.");
     }
     await waitReturn();
   } else if (choice === "preview") {
-    let pkgVer = "5.4.8";
-    try {
-      const pkg = JSON.parse(
-        fs.readFileSync(path.join(rootDir, "package.json"), "utf8"),
-      );
-      pkgVer = pkg.version || "5.4.8";
-    } catch {
-      // ignore
+    const pkgVer = readRootPackageVersion();
+    if (!pkgVer) {
+      clack.log.error("Nie udało się odczytać version z package.json.");
+      await waitReturn();
+      return;
     }
-
-    clack.log.info(
-      `👁  Podgląd informacji o wydaniu dla wersji v${pkgVer} (Preview Mode):`,
-    );
-    console.log("\n--- TYTUŁ WYDANIA ---");
-    runCommand("node", ["scripts/release/release-title.mjs", pkgVer]);
-    console.log("\n\n--- OPIS WYDANIA (RELEASE NOTES) ---");
-    runCommand("node", ["scripts/release/build-release-notes.mjs", pkgVer]);
+    previewReleaseNotes(pkgVer);
     await waitReturn();
   } else if (choice === "cut") {
     const bumpType = await clack.select({
@@ -805,14 +1007,24 @@ async function menuRelease() {
         { value: "cancel", label: "0. ↩️   Anuluj" },
       ],
     });
-    if (!clack.isCancel(bumpType) && bumpType !== "cancel") {
-      clack.note(`Wykonywanie procedury cut-release dla typu: ${bumpType}...`);
-      runCommand("node", [
-        "scripts/release/cut-release.mjs",
-        bumpType as string,
-      ]);
+    if (clack.isCancel(bumpType) || bumpType === "cancel") return;
+
+    const confirmCut = await clack.confirm({
+      message: `Czy na pewno uruchomić cut-release (${bumpType})?`,
+      initialValue: false,
+    });
+    if (!confirmCut || clack.isCancel(confirmCut)) {
+      clack.log.info("Anulowano cut-release.");
       await waitReturn();
+      return;
     }
+
+    clack.note(`Wykonywanie procedury cut-release dla typu: ${bumpType}...`);
+    runCommand("node", [
+      "scripts/release/cut-release.mjs",
+      bumpType as string,
+    ]);
+    await waitReturn();
   } else if (choice === "git") {
     showGitStatus();
     await waitReturn();
@@ -825,41 +1037,69 @@ async function menuData() {
     message: "Zarządzanie danymi & Logi:",
     options: [
       { value: "logs", label: "1. 📝  Podgląd ostatnich logów" },
-      { value: "clear-data", label: "2. 🗑  Wyczyść katalog danych (data/)" },
+      { value: "clear-data", label: "2. 🗑  Wyczyść katalog danych" },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
   });
 
   if (clack.isCancel(choice) || choice === "back") return;
 
+  const { dir: dataDir, rule } = resolveHubDataDir();
+  clack.log.info(`Efektywny data dir: ${dataDir} (reguła: ${rule})`);
+
   if (choice === "logs") {
-    const logDir = path.join(rootDir, "data", "logs");
+    const logDir = path.join(dataDir, "logs");
     if (fs.existsSync(logDir)) {
-      const files = fs.readdirSync(logDir).sort().reverse();
-      if (files.length > 0) {
-        const latest = path.join(logDir, files[0]);
-        clack.log.info(`Ostatni log: ${files[0]}`);
-        console.log(fs.readFileSync(latest, "utf8").slice(-2000));
+      const entries = fs
+        .readdirSync(logDir)
+        .map((name) => {
+          const full = path.join(logDir, name);
+          try {
+            const st = fs.statSync(full);
+            if (!st.isFile()) return null;
+            return { name, full, mtime: st.mtimeMs };
+          } catch {
+            return null;
+          }
+        })
+        .filter((e): e is { name: string; full: string; mtime: number } => !!e)
+        .sort((a, b) => b.mtime - a.mtime);
+
+      if (entries.length > 0) {
+        const latest = entries[0];
+        clack.log.info(`Ostatni log: ${latest.name}`);
+        console.log(fs.readFileSync(latest.full, "utf8").slice(-2000));
       } else {
         clack.log.warn("Brak plików logów.");
       }
     } else {
-      clack.log.error("Katalog logów nie istnieje.");
+      clack.log.error(`Katalog logów nie istnieje: ${logDir}`);
     }
+    await waitReturn();
   } else if (choice === "clear-data") {
     const confirm = await clack.confirm({
-      message: "Czy na pewno wyczyścić katalog data/?",
+      message: `Czy na pewno wyczyścić katalog danych?\n${dataDir}`,
       initialValue: false,
     });
-    if (confirm) {
-      const dataDir = path.join(rootDir, "data");
-      fs.readdirSync(dataDir).forEach((file) => {
-        if (file !== "README.md") {
-          fs.rmSync(path.join(dataDir, file), { recursive: true, force: true });
+    if (confirm && !clack.isCancel(confirm)) {
+      if (!fs.existsSync(dataDir)) {
+        clack.log.warn("Katalog danych nie istnieje — nic do wyczyszczenia.");
+      } else {
+        const repoData = path.join(rootDir, "data");
+        const protectReadme = path.resolve(dataDir) === path.resolve(repoData);
+        for (const file of fs.readdirSync(dataDir)) {
+          if (protectReadme && file === "README.md") continue;
+          fs.rmSync(path.join(dataDir, file), {
+            recursive: true,
+            force: true,
+          });
         }
-      });
-      clack.log.success("Katalog data/ wyczyszczony.");
+        clack.log.success(`Katalog danych wyczyszczony: ${dataDir}`);
+      }
+    } else {
+      clack.log.info("Pominięto czyszczenie danych.");
     }
+    await waitReturn();
   }
 }
 
@@ -948,6 +1188,10 @@ async function main() {
       runCommand("pnpm", ["check-types"]);
       return;
     }
+    if (flag === "verify") {
+      const ok = runCiLikeVerify();
+      process.exit(ok ? 0 : 1);
+    }
     if (flag === "release") {
       await menuRelease();
       return;
@@ -999,13 +1243,13 @@ async function main() {
       message: "Wybierz kategorię zadań:",
       options: [
         { value: "doctor", label: "1. 🏥  Szybka Diagnostyka" },
-        { value: "dev", label: "2. 🚀  Uruchomienie & Dev" },
-        { value: "network", label: "3. 🌐  Sieć & Diagnostyka LAN" },
-        { value: "testing", label: "4. 🧪  Testy & Jakość" },
-        { value: "release", label: "5. 🐙  GitHub & Wydania" },
-        { value: "deps", label: "6. 📦  Zależności & Pakiety" },
+        { value: "dev", label: "2. 🚀  Uruchomienie & Dev ›" },
+        { value: "network", label: "3. 🌐  Sieć & Diagnostyka LAN ›" },
+        { value: "testing", label: "4. 🧪  Testy & Jakość ›" },
+        { value: "release", label: "5. 🐙  GitHub & Wydania ›" },
+        { value: "deps", label: "6. 📦  Zależności & Pakiety ›" },
         { value: "clean", label: "7. 🧹  Konserwacja & Cache" },
-        { value: "data", label: "8. 💾  Zarządzanie danymi & Logi" },
+        { value: "data", label: "8. 💾  Zarządzanie danymi & Logi ›" },
         { value: "setup", label: "9. 🛠   Setup Środowiska" },
         { value: "exit", label: "0. 🚪  Wyjście" },
       ],
@@ -1031,7 +1275,6 @@ async function main() {
     }
     if (category === "data") {
       await menuData();
-      await waitReturn();
     }
     if (category === "setup") {
       const isWin = os.platform() === "win32";
