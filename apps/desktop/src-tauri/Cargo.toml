@@ -38,7 +38,7 @@ url = "2"
 arboard = "3"
 # Setup bootstrapper (immediate splash + silent NSIS)
 wry = "0.55"
-tao = "0.35"
+tao = "0.36"
 
 [profile.release]
 panic = "abort"
