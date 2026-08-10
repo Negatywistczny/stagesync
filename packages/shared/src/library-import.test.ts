@@ -148,7 +148,9 @@ describe("normalizeLibraryImport", () => {
   });
 
   it("throws on unknown format", () => {
-    expect(() => normalizeLibraryImport({})).toThrow(/Nieznany format|pakiet v5/);
+    expect(() => normalizeLibraryImport({})).toThrow(
+      /Nieznany format|pakiet v5/,
+    );
   });
 });
 

@@ -12,27 +12,28 @@ Użyj odpowiedniego pliku w zależności od używanego systemu i powłoki:
 
 **CMD (Wiersz Poleceń) — skrypt `.cmd`**
 
-   ```cmd
-   dev
-   ```
+```cmd
+dev
+```
 
 **PowerShell — skrypt `.cmd` (zalecane)**
 
-   ```powershell
-   .\dev.cmd
-   ```
+```powershell
+.\dev.cmd
+```
 
 **PowerShell — natywny skrypt `.ps1`**
 
-   ```powershell
-   # Jednorazowe przyznanie uprawnień
-   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```powershell
+# Jednorazowe przyznanie uprawnień
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-   .\dev
-   # lub
-   .\dev.ps1
-   ```
+.\dev
+# lub
+.\dev.ps1
+```
 
+<br>
 </details>
 <details>
 <summary><b>🍏 macOS / 🐧 Linux</b></summary>
@@ -40,15 +41,15 @@ Użyj odpowiedniego pliku w zależności od używanego systemu i powłoki:
 
 **Bash (zalecane)**
 
-   ```bash
-   bash dev
-   ```
+```bash
+bash dev
+```
 
 **Wywołanie pliku**
 
-   ```bash
-   ./dev
-   ```
+```bash
+./dev
+```
 
 <br>
 </details>
@@ -59,9 +60,11 @@ Użyj odpowiedniego pliku w zależności od używanego systemu i powłoki:
 ```bash
 pnpm dev:hub
 ```
+
 </details>
 
 ## ⚙️ Wymagania środowiskowe
+
 - **Node.js**: >= 22 (zalecane użycie `fnm` lub `nvm` do zarządzania wersjami).
 - **pnpm**: Zarządzane przez `corepack` (dołączone w skryptach launchera).
 - **Git**: Do zarządzania repozytorium.
@@ -73,6 +76,8 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 
 ### 📂 Kategorie Zadań w Interaktywnym Menu Dev Hub
 
+W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›`). Pozycje bez `›` uruchamiają akcję od razu.
+
 <details>
 <summary><b>1. 🏥 Szybka Diagnostyka</b> - Automatyczny, bezinwazyjny skan środowiska deweloperskiego (Preflight Scan)</summary>
 
@@ -80,9 +85,10 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 > - **pnpm**: Sprawdzenie dostępności menedżera pakietów.
 > - **Rust / Cargo**: Weryfikacja środowiska dla powłoki desktopowej (Tauri).
 > - **Docker**: Sprawdzenie obecności klienta Docker.
+> - **GitHub CLI (`gh`)**: Obecność i status `gh auth` (Release Hub).
 > - **WebView2 Runtime**: Sprawdzenie wpisów rejestru systemowego Windows dla Tauri.
-> - **Port Guard**: Skan dostępności i zajętości portów `:3000` (Web UI) oraz `:4000` (Server API).
-> - **Konfiguracja Środowiska**: Sprawdzenie pliku `.env` oraz zmiennej `STAGESYNC_DATA_DIR`.
+> - **Port Guard**: Skan procesów w stanie LISTEN na portach `:3000` (Web UI) oraz `:4000` (Server API).
+> - **Konfiguracja Środowiska**: Plik `.env`, efektywny katalog danych (ADR 0012) oraz `STAGESYNC_REPO_DEV` / `STAGESYNC_DATA_DIR`.
 
 </details>
 
@@ -108,24 +114,33 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 </details>
 
 <details>
-<summary><b>4. 🧪 Testy & Jakość</b> - Kompleksowy zestaw weryfikatorów, linterów i testów jednostkowych</summary>
+<summary><b>4. 🧪 Testy & Jakość</b> - Podmenu: Verify / Docs i quality / Unit i bench / Build</summary>
 
-> 1. **✅ One-Click Full Verify**: Zbiórka głównych weryfikacji w jednym kroku (typy TS, linter, knip, testy).
-> 2. **🗺 Wygeneruj mapę kodu**: Aktualizacja pliku [`docs/REPO_MAP.md`](../REPO_MAP.md) (`pnpm generate:map`).
-> 3. **🔍 Sprawdź typy TypeScript**: Statyczna kontrola typowania (`pnpm check-types`).
-> 4. **🎨 CSS Token Guard (ss-css)**: Walidacja zgodności zmiennych CSS (`--ss-*`) i zakaz stosowania ad-hoc kolorów HEX (`pnpm lint:ss-css`).
-> 5. **📦 Dead Code & Dependency Detector (knip)**: Skanowanie nieużywanych plików i pakietów (`pnpm lint:knip`).
-> 6. **🔗 Weryfikacja linków w dokumentacji**: Skanowanie odnośników w dokumentacji Markdown (`node scripts/quality/check-docs-links.mjs`).
-> 7. **🔍 Znajdź niepodlinkowane pliki**: Wykrywanie sierocych dokumentów (`check-unlinked.mjs`).
-> 8. **🛠 Napraw niepodlinkowane linki**: Automatyczny naprawiacz odnośników (`fix-unlinked-links.mjs`).
-> 9. **⚡ Testy PPQ/Ticks (@stagesync/shared)**: Testy jednostkowe pakietu współdzielonego.
-> 10. **🎼 Testy serwera transportu (@stagesync/server)**: Testy jednostkowe backendu.
-> 11. **🎨 Testy UI Admin/Client (@stagesync/web)**: Testy interfejsu użytkownika.
-> 12. **🎯 Smart Tempo DSP Benchmark**: Benchmark wydajnościowy algorytmów audio DSP.
-> 13. **🧹 Auto-Fixer (Format & Lint)**: Automatyczne poprawki lintera i formatowanie kodu (`pnpm format` + `pnpm lint`).
-> 14. **🏗 Pełny Build (Turbo)**: Kompilacja produkcyjna całego monorepo (`pnpm build`).
-> 15. **📊 Testy z pokryciem (Coverage)**: Generowanie raportów pokrycia kodu testami (`pnpm test:coverage`).
-> 16. **🔄 Sync Launcher UI**: Synchronizacja zasobów interfejsu użytkownika launchera (`pnpm sync:launcher-ui`).
+> **✅ Verify** (rosnąco wg zakresu)
+>
+> 1. **Lustrzane CI**: tylko `check-types` → `lint:ss-css` → `lint` → `test` (bez formatu / mutacji).
+> 2. **Codzienny gate**: j.w. + `format` + docs links + knip (domyślny check przed pushem).
+> 3. **Kompletny audyt**: j.w. + unlinked (gate, **auto-fix** linków) → map → coverage → e2e (**env auto-fix**: shared build, wolne :3000/:4000, świeże webServery, Playwright install / `pnpm install` przy typowych brakach + 1 retry) → build. Bez Sync Launcher UI i Smart Tempo.
+>
+> **📚 Docs i quality**
+>
+> 1. **Wygeneruj mapę kodu**: Aktualizacja [`docs/REPO_MAP.md`](../REPO_MAP.md) (`pnpm generate:map`).
+> 2. **CSS Token Guard (ss-css)**: Walidacja tokenów `--ss-*` (`pnpm lint:ss-css`).
+> 3. **Dead Code & Dependency Detector (knip)**: `pnpm lint:knip`.
+> 4. **Weryfikacja linków w dokumentacji**: `check-docs-links.mjs`.
+> 5. **Niepodlinkowane odniesienia (skan → naprawa)**: najpierw `check-unlinked.mjs`, potem pytanie o `fix-unlinked-links.mjs`.
+>
+> **🧪 Unit i bench**
+>
+> 1. **@stagesync/shared**, **@stagesync/server**, **@stagesync/web**, **@stagesync/ui** — testy jednostkowe.
+> 2. **E2E Playwright** (`pnpm --filter @stagesync/web test:e2e`).
+> 3. **Coverage** (`pnpm test:coverage`).
+> 4. **Smart Tempo DSP Benchmark**.
+>
+> **🏗 Build**
+>
+> 1. **Pełny Build (Turbo)**: `pnpm build`.
+> 2. **Sync Launcher UI**: `pnpm sync:launcher-ui`.
 
 </details>
 
@@ -134,11 +149,11 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 
 > 1. **🔍 Status Git & Hygiene**: Odczyt bieżącej gałęzi, ostatnich commitów i modyfikowanych plików.
 > 2. **🏷 Synchronizacja Wersji Monorepo**: Propagacja numeru wersji z [`package.json`](../../package.json) do aplikacji web, server, Tauri, Android i Docker.
-> 3. **📋 Pre-Release Checklist 2.0**: Zbiór testów pre-release (typy, CSS, linki, lint, mapa repo).
-> 4. **👁 Podgląd Informacji o Wydaniu**: Generowanie tytułu i nagłówków notatki wydania (Release Notes) w trybie podglądu.
-> 5. **✂️ Wyodrębnij sekcję Changeloga**: Ekstrakcja pojedynczej wersji z CHANGELOG.
-> 6. **🚀 Przygotowanie Taga (`cut-release`)**: Podbicie wersji SemVer (`patch`, `minor`, `major`, `alpha`, `beta`).
-> 7. **⚡ Release (`exec-release`)**: Wykonanie procedury publikacji wydania.
+> 3. **📋 Pre-Release Checklist 2.0**: Lustrzane CI (`check-types` → `lint:ss-css` → `lint` → `test`), potem podgląd tytułu i Release Notes.
+> 4. **👁 Podgląd Informacji o Wydaniu**: Tytuł i notatka wydania z wersji w [`package.json`](../../package.json).
+> 5. **✂️ Wyodrębnij sekcję Changeloga**: Prompt o wersję (domyślnie z [`package.json`](../../package.json)), potem ekstrakcja sekcji CHANGELOG.
+> 6. **🚀 Przygotowanie Taga (`cut-release`)**: Podbicie SemVer (`patch` / `minor` / `major` / `alpha` / `beta`) z potwierdzeniem.
+> 7. **⚡ Release (`exec-release`)**: Publikacja wydania z potwierdzeniem.
 
 </details>
 
@@ -163,10 +178,12 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 </details>
 
 <details>
-<summary><b>8. 💾 Zarządzanie danymi & Logi</b> - Operacje na plikach wykonawczych i dziennikach zdarzeń</summary>
+<summary><b>8. 💾 Zarządzanie danymi & Logi</b> - Operacje na efektywnym katalogu danych (ADR 0012)</summary>
 
-> 1. **📝 Podgląd ostatnich logów**: Wyświetlenie ostatnich 2000 znaków z najnowszego pliku w `data/logs/`.
-> 2. **🗑 Wyczyść katalog danych (data/)**: Czyszczenie plików danych aplikacji z pominięciem pliku `README.md`.
+> Efektywna ścieżka: `STAGESYNC_DATA_DIR` → `STAGESYNC_REPO_DEV` (`<repo>/data`) → `~/Documents/StageSync` → fallback `<repo>/data`.
+>
+> 1. **📝 Podgląd ostatnich logów**: Ostatnie 2000 znaków z najnowszego pliku w `<dataDir>/logs/` (sortowanie po `mtime`).
+> 2. **🗑 Wyczyść katalog danych**: Czyszczenie efektywnego katalogu (confirm z pełną ścieżką); w repo `data/` zachowywany jest `README.md`.
 
 </details>
 
@@ -183,30 +200,35 @@ Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
 
 ### 💡 Wszystkie Bezpośrednie Skróty CLI (Headless Mode)
 
-Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywnego menu 
->`[cmd]` oznacza polecenie uruchomienia np. `dev`, `.\dev` lub `./dev`
+Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywnego menu
 
-| Skrót CLI | Aliasy | Opis i Działanie |
-| :--- | :--- | :--- |
-| `[cmd] doctor` | — | **Preflight Scan**: Skan środowiska (Node, pnpm, Rust, porty, `.env`). |
-| `[cmd] ports` | — | **Safe Port Guard**: Wykrywanie i zamykanie kolizyjnych procesów (:3000 / :4000). |
-| `[cmd] clean` | — | **Cache Cleaner**: Głębokie czyszczenie pamięci podręcznej i artefaktów buildów. |
-| `[cmd] network` | `ip` | **LAN Info & QR**: Podgląd IP w sieci lokalnej i kod QR dla urządzeń mobilnych. |
-| `[cmd] web` | `dev` | **Dev Profile**: Web UI (:3000) + API Server (:4000). |
-| `[cmd] desktop` | — | **Dev Profile**: Powłoka Tauri w trybie deweloperskim. |
-| `[cmd] types` | — | **TypeScript Check**: Weryfikacja typów w całym monorepo. |
-| `[cmd] knip` | — | **Dead Code Detector**: Wykrywanie nieużywanego kodu i zależności. |
-| `[cmd] ss-css` | `css` | **CSS Token Guard**: Walidacja zmiennych CSS (`--ss-*`). |
-| `[cmd] links` | — | **Docs Link Checker**: Weryfikacja odnośników w dokumentacji Markdown. |
-| `[cmd] map` | — | **Repo Map Generator**: Aktualizacja pliku [`docs/REPO_MAP.md`](../REPO_MAP.md). |
-| `[cmd] test` | — | **Testing Suite**: Przejście do sub-menu testów jednostkowych i benchmarków. |
-| `[cmd] release` | — | **Release Hub**: Interaktywne zarządzanie wydaniami i tagami SemVer. |
-| `[cmd] deps` | `dependencies`, `pnpm` | **Pakiety & Zależności**: Przejście do sub-menu zarządzania pakietami. |
-| `[cmd] outdated` | — | **Outdated Check**: Sprawdzanie nieaktualnych pakietów w monorepo. |
-| `[cmd] up` | `update` | **Interactive Update**: Interaktywna aktualizacja pakietów (`pnpm up`). |
-| `[cmd] audit` | — | **Security Audit**: Audyt bezpieczeństwa zależności (`pnpm audit`). |
+> `[cmd]` oznacza polecenie uruchomienia np. `dev`, `.\dev` lub `./dev`
+
+| Skrót CLI        | Aliasy                        | Opis i Działanie                                                                           |
+| :--------------- | :---------------------------- | :----------------------------------------------------------------------------------------- |
+| `[cmd] doctor`   | —                             | **Preflight Scan**: Skan środowiska (Node, pnpm, Rust, `gh`, porty, data dir, `.env`).     |
+| `[cmd] ports`    | —                             | **Safe Port Guard**: Wykrywanie i zamykanie procesów LISTEN (:3000 / :4000).               |
+| `[cmd] clean`    | —                             | **Cache Cleaner**: Głębokie czyszczenie pamięci podręcznej i artefaktów buildów.           |
+| `[cmd] network`  | `ip`                          | **LAN Info & QR**: Podgląd IP w sieci lokalnej i kod QR dla urządzeń mobilnych.            |
+| `[cmd] web`      | `dev`                         | **Dev Profile**: Web UI (:3000) + API Server (:4000).                                      |
+| `[cmd] desktop`  | —                             | **Dev Profile**: Powłoka Tauri w trybie deweloperskim.                                     |
+| `[cmd] types`    | —                             | **TypeScript Check**: Weryfikacja typów w całym monorepo.                                  |
+| `[cmd] verify`   | `ci`                          | **Lustrzane CI**: `check-types` → `lint:ss-css` → `lint` → `test` (bez format; exit code). |
+| `[cmd] pr`       | `before-pr`, `daily`, `gate`  | **Codzienny gate**: Lustrzane CI + `format` + docs links + knip (exit code).               |
+| `[cmd] all`      | `full`, `everything`, `audit` | **Kompletny audyt**: + unlinked (auto-fix) + map + coverage + e2e (env auto-fix) + build.  |
+| `[cmd] knip`     | —                             | **Dead Code Detector**: Wykrywanie nieużywanego kodu i zależności.                         |
+| `[cmd] ss-css`   | `css`                         | **CSS Token Guard**: Walidacja zmiennych CSS (`--ss-*`).                                   |
+| `[cmd] links`    | —                             | **Docs Link Checker**: Weryfikacja odnośników w dokumentacji Markdown.                     |
+| `[cmd] map`      | —                             | **Repo Map Generator**: Aktualizacja pliku [`docs/REPO_MAP.md`](../REPO_MAP.md).           |
+| `[cmd] test`     | —                             | **Testing Suite**: Sub-menu Verify / Docs / Unit / Build.                                  |
+| `[cmd] release`  | —                             | **Release Hub**: Interaktywne zarządzanie wydaniami i tagami SemVer.                       |
+| `[cmd] deps`     | `dependencies`, `pnpm`        | **Pakiety & Zależności**: Przejście do sub-menu zarządzania pakietami.                     |
+| `[cmd] outdated` | —                             | **Outdated Check**: Sprawdzanie nieaktualnych pakietów w monorepo.                         |
+| `[cmd] up`       | `update`                      | **Interactive Update**: Interaktywna aktualizacja pakietów (`pnpm up`).                    |
+| `[cmd] audit`    | —                             | **Security Audit**: Audyt bezpieczeństwa zależności (`pnpm audit`).                        |
 
 ---
 
 ### 🛠️ Pozostałe Narzędzia (`scripts/`)
-*Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](../../scripts/README.md).*
+
+_Szczegółowe opisy automatyzacji znajdują się w [scripts/README.md](../../scripts/README.md)._

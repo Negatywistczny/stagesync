@@ -8,7 +8,7 @@
 
 * **Liczba wszystkich plików:** 1224
 * **Liczba katalogów:** 193
-* **Data aktualizacji:** 2026-08-10T16:01:34.886Z
+* **Data aktualizacji:** 2026-08-10T16:43:13.401Z
 
 ### Kategorie
 
