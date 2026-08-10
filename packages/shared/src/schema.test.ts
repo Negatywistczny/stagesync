@@ -897,9 +897,22 @@ describe("HealthResponseSchema + UI meta (#692)", () => {
         version: "5.2.0",
         protocolVersion: PROTOCOL_VERSION,
         uiHash: "x",
-        themeDefault: "light-high",
+        themeDefault: "daylight",
       }).themeDefault,
     ).toBe("daylight");
+  });
+
+  it("rejects legacy themeDefault aliases", () => {
+    expect(() =>
+      HealthResponseSchema.parse({
+        ok: true,
+        service: "stagesync-server",
+        version: "5.2.0",
+        protocolVersion: PROTOCOL_VERSION,
+        uiHash: "x",
+        themeDefault: "light-high",
+      }),
+    ).toThrow();
   });
 
   it("rejects health missing uiHash (strict)", () => {

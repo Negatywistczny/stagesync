@@ -3,7 +3,6 @@ import {
   applyAppearance,
   applyHostThemeDefault,
   hasStoredAppearance,
-  initAppearance,
   readAppearance,
   setAppearance,
 } from "./appearance.js";
@@ -72,23 +71,7 @@ describe("appearance", () => {
     expect(themeMetaContent).toBe("#000000");
   });
 
-  it("migrates legacy light/high to daylight", () => {
-    store.set("stagesync-theme", "light");
-    store.set("stagesync-contrast", "high");
-    const state = initAppearance();
-    expect(state.profile).toBe("daylight");
-    expect(store.get("stagesync-appearance-profile")).toBe("daylight");
-    expect(store.has("stagesync-theme")).toBe(false);
-    expect(rootAttrs.get("data-theme")).toBe("daylight");
-  });
-
-  it("migrates legacy dark-high to booth", () => {
-    store.set("stagesync-theme", "dark");
-    store.set("stagesync-contrast", "high");
-    expect(readAppearance().profile).toBe("booth");
-  });
-
-  it("applyAppearance clears legacy contrast attr", () => {
+  it("applyAppearance clears data-contrast attr", () => {
     rootAttrs.set("data-contrast", "high");
     applyAppearance({ profile: "midnight" });
     expect(rootAttrs.get("data-theme")).toBe("midnight");
@@ -122,7 +105,7 @@ describe("appearance", () => {
 
   it("applyHostThemeDefault only when localStorage empty", () => {
     expect(hasStoredAppearance()).toBe(false);
-    expect(applyHostThemeDefault("light")).toEqual({ profile: "daylight" });
+    expect(applyHostThemeDefault("daylight")).toEqual({ profile: "daylight" });
     expect(rootAttrs.get("data-theme")).toBe("daylight");
     expect(hasStoredAppearance()).toBe(false);
 

@@ -15,8 +15,8 @@ Atrybut `html[data-theme="<id>"]` — jeden profil, bez osobnego `data-contrast`
 | `matrix`   | Matrix Green  | Fosfor / niski spill               |
 | `neon`     | Neon Ember    | Ciemny + ember/orange CTA          |
 
-Host: `STAGESYNC_THEME_DEFAULT` (te ID; aliasy legacy `dark`/`light`/`*-high` → booth/daylight).  
-Klient: `localStorage` `stagesync-appearance-profile` (migracja ze starych `stagesync-theme` / `stagesync-contrast`).
+Host: `STAGESYNC_THEME_DEFAULT` (wyłącznie te ID profili).  
+Klient: `localStorage` `stagesync-appearance-profile`.
 
 ### Niezmienniki THM-03 (nie remapowane per skin)
 

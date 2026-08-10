@@ -1,22 +1,20 @@
 # reports/
 
-Kanoniczne raporty analityczne commitowane do repo.
+Kanoniczne raporty analityczne commitowane do repo. Historia wydań → [CHANGELOG.md](../../../CHANGELOG.md).
 
 ## Konwencja
 
 - Wzorzec nazwy: `report-<temat>.md` (lowercase `kebab-case`)
 - Jeden raport = jeden temat produktu / decyzji
-- Linki między raportami w tym samym podkatalogu: `./report-<temat>.md`
-- Linki między podkatalogami: `../milestones/report-…`, `../current/report-…`
+- Linki w tym samym katalogu: `./report-<temat>.md`
+- Tylko aktywne raporty — bez archiwum milestones / hygiene (git history + CHANGELOG)
 
-## Podkatalogi
+## Podkatalog
 
-| Katalog                        | Po co                                                    | Przykłady                                                                                                                                                                                                          |
-| ------------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`current/`](./current/)       | Aktywne raporty (bieżący fokus / audyty)                 | [`report-scope-5.4.md`](./current/report-scope-5.4.md), [`report-audit-2026-07-21.md`](./current/report-audit-2026-07-21.md), [`report-build-artifacts-analysis.md`](./current/report-build-artifacts-analysis.md) |
-| [`milestones/`](./milestones/) | Historyczne etapy α/β/5.0, freeze, QA, parity, beta-gate | [`report-scope-alpha8.md`](./milestones/report-scope-alpha8.md), [`report-beta-gate.md`](./milestones/report-beta-gate.md), [`report-po-smoke-p8.md`](./milestones/report-po-smoke-p8.md)                          |
-| [`hygiene/`](./hygiene/)       | Logi przeglądów evening / nightshift                     | [`report-evening-hygiene-2026-07-24.md`](./hygiene/report-evening-hygiene-2026-07-24.md)                                                                                                                           |
+| Katalog | Po co | Przykłady |
+| --- | --- | --- |
+| [`current/`](./current/) | Aktywne raporty (bieżący fokus / bramki otwarte) | [`report-scope-5.4.md`](./current/report-scope-5.4.md), [`report-beta-gate.md`](./current/report-beta-gate.md), [`report-adr-dual-engine-vst-align.md`](./current/report-adr-dual-engine-vst-align.md) |
 
-**Nowe raporty produktowe / bramki** → domyślnie `current/`. Po cutcie etapu przenieś scope/freeze do `milestones/`.
+**Nowe raporty** → zawsze `current/`. Po zamknięciu tematu usuń raport (historia w CHANGELOG / git), nie archiwizuj lokalnie.
 
-Indeks aktywnych + archiwum potrzebne do bramek: [../README.md](../README.md).
+Indeks: [../README.md](../README.md).

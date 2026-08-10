@@ -11,9 +11,11 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 - **Admin Utwory:** import biblioteki przyjmuje wyłącznie pakiet v5 (`.stagesync.json` / `{ projects }`) — bez autodetekcji i migracji monolitu 4.x `database.json`.
+- **Motyw:** tylko profile `booth` / `daylight` / `midnight` / `matrix` / `neon` — bez aliasów `dark`/`light`/`*-high` i bez migracji starych kluczy `localStorage`.
 
 #### ⚙️ Serwer & API
 - **`POST /api/library/import`:** wyłącznie pakiet v5; format 4.x (`songs[]`) jest odrzucany z czytelnym błędem.
+- **Transport tick:** klient wymaga pełnej koperty `transport_tick` (bez bare `TransportState`).
 
 ## [5.4.11](https://github.com/Negatywistczny/stagesync/compare/v5.4.10...v5.4.11) - 2026-08-10
 
@@ -1109,7 +1111,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **Timeline:** panel narzędzi pod **T** (menu przy kursorze + litery jak v4); **Alt/⌥+drag** = duplikat clipów (TE-07); live preview multi-drag; loop region **snap na podglądzie** (beat; Cmd/Ctrl = off).
-- Docs: playbook PO smoke P8 ([report-po-smoke-p8.md](docs/analysis/reports/milestones/report-po-smoke-p8.md)); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
+- Docs: playbook PO smoke P8 (`report-po-smoke-p8.md`); higiena scope α8 (suwaki Zoom H/V/UI wchłonięte w rebuild, tool lupa OUT).
 - **Client stage content (override ADR 0011 — treść tylko):** wizualny port Karaoke / Grid / Forma / Score stub z v4 `client.css` (fonty, kafelki, hero Formy + poziomy strip, pasek taktów karaoke); chrome (header, settings, role buttons) zostaje v5. CL-P0: progress `--beat-progress` w sekcjach bez tekstu, karuzela Grid + hero „nast.”, Forma past/current. Inventarz CL-R-* = content clone.
 - **Migrator M9:** fixture `docs/examples/legacy/database.typical.json` (usunięty po #841) + pack v5 [`docs/examples/v5/library.pack.sample.stagesync.json`](./docs/examples/v5/library.pack.sample.stagesync.json); smoke testy + dry-run w CI.
 - **Admin:** przycisk pełnego ekranu w headerze (jak Timeline / Client).
@@ -1134,7 +1136,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Scena:** kolumna **Klienci** szersza (`fr` / `minmax`, nie cap MIDI Host) — listy presence mniej ściśnięte.
 - **Admin Host MIDI:** kafelki liczników wypełniają panel (siatka 2×2); wartość pod etykietą, wycentrowane.
 - **Admin Host:** Ustawienia / Restart / Wyłącz w chrome headerze (`ShellIconButton`, kolejność jak v4); Sieć na pełną szerokość rzędu.
-- **Proces:** α8 rebuild = **code freeze** (engineering); α9 must (migrator + **P8 green 2026-07-21**); β1 na prośbę ([report-parity-blocker-alpha8.md](docs/analysis/reports/milestones/report-parity-blocker-alpha8.md)).
+- **Proces:** α8 rebuild = **code freeze** (engineering); α9 must (migrator + **P8 green 2026-07-21**); β1 na prośbę (`report-parity-blocker-alpha8.md`).
 - **Admin Wybrany:** przycisk „Zapisz nazwę” w tym samym rzędzie co pole nazwy.
 - **Admin Utwory:** lista pokazuje `tytuł - artysta` (artysta po „-” bez pogrubienia, muted), gdy `artist` jest ustawiony.
 - **Countdown cyfry:** nie są już zapisywane jako clipy Tekst/Akordy (`vl-cd-`*); Client (karaoke / grid) syntetyzuje „2…1” z długości Forma Countdown; migracja / `setCountdownBars` tylko scrubuje stare digit clipy (TE-21).

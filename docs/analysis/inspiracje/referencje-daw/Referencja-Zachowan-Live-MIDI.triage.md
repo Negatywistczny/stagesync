@@ -7,7 +7,7 @@
 
 ## Werdykt przydatności
 
-**Wysoka wartość jako macierz IN/LATER/OUT + scenariusze FOH (PC-01…08).** Hipotezy `RSK-MIDI-*` w dumpie **duplikują** [Audyt MIDI](../audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md) — rozstrzygać tam, nie tu. Ten plik = referencja behawioralna (kiedy PC OUT, debounce, batch, OUT Defer/pass-through), nie drugi backlog bugów.
+**Wysoka wartość jako macierz IN/LATER/OUT + scenariusze FOH (PC-01…08).** Hipotezy `RSK-MIDI-*` w dumpie historycznie pokrywały się z audytem MIDI (usunięty; git) — rozstrzygać w kodzie / ADR 0015, nie tu. Ten plik = referencja behawioralna (kiedy PC OUT, debounce, batch, OUT Defer/pass-through), nie drugi backlog bugów.
 
 ## Macierz REF (dump) — status triage
 
@@ -23,7 +23,7 @@
 
 ## RSK w dumpie (nie dublować pracy)
 
-Rozstrzygnięcia: [Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md](../audyty-silnik/Audyt-MIDI-StageSync-v5-Ryzyka-i-Testy.triage.md). Cross-link: 01–03/06/08–10 zamknięte; **04/05/07 w implementacji** (ADR 0015).
+Rozstrzygnięcia: ADR 0015 + kod MIDI host. Cross-link: 01–03/06/08–10 zamknięte; **04/05/07 w implementacji**.
 
 ## FOH edge (PC-01…08)
 

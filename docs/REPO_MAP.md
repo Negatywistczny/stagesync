@@ -6,16 +6,16 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1284
-* **Liczba katalogów:** 196
-* **Data aktualizacji:** 2026-08-10T15:34:04.629Z
+* **Liczba wszystkich plików:** 1224
+* **Liczba katalogów:** 193
+* **Data aktualizacji:** 2026-08-10T16:01:34.886Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
 | Kod | 800 |
-| Docs | 216 |
+| Docs | 156 |
 | Config | 118 |
 | Assety | 120 |
 | Inne | 30 |
@@ -25,8 +25,8 @@
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
 | `.ts` | 460 |
-| `.md` | 194 |
 | `.tsx` | 161 |
+| `.md` | 134 |
 | `.png` | 94 |
 | `.kt` | 71 |
 | `.css` | 52 |
@@ -71,11 +71,11 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (163) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+- **docs/** (103) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
   - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
-  - **analysis/** (122) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
-    - **inspiracje/** (90) — Dumpy zewnętrzne + triage (nie SSOT produktu)
-    - **reports/** (29) — Raporty kanoniczne (current / milestones / hygiene)
+  - **analysis/** (62) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
+    - **inspiracje/** (55) — Dumpy zewnętrzne + triage (nie SSOT produktu)
+    - **reports/** (4) — Raporty kanoniczne (current / milestones / hygiene)
     - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
   - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
@@ -690,21 +690,16 @@ stagesync/
 │   │   └── README.md
 │   ├── analysis/
 │   │   ├── inspiracje/
-│   │   │   ├── audyty-silnik/  … (17 plików: .md ×17)
+│   │   │   ├── audyty-silnik/  … (5 plików: .md ×5)
 │   │   │   ├── referencje-daw/  … (9 plików: .md ×9)
-│   │   │   ├── specyfikacje/  … (37 plików: .md ×37)
-│   │   │   ├── testy-pokrycie/  … (23 pliki: .md ×23)
-│   │   │   ├── www/  … (3 pliki: .md ×3)
+│   │   │   ├── specyfikacje/  … (25 plików: .md ×25)
+│   │   │   ├── testy-pokrycie/  … (15 plików: .md ×15)
 │   │   │   └── README.md
 │   │   ├── reports/
 │   │   │   ├── current/
 │   │   │   │   ├── report-adr-dual-engine-vst-align.md
-│   │   │   │   ├── report-audit-2026-07-21.md
-│   │   │   │   ├── report-build-artifacts-analysis.md
-│   │   │   │   ├── report-project-summary-llm.md
+│   │   │   │   ├── report-beta-gate.md
 │   │   │   │   └── report-scope-5.4.md
-│   │   │   ├── hygiene/  … (4 pliki: .md ×4)
-│   │   │   ├── milestones/  … (19 plików: .md ×19)
 │   │   │   └── README.md
 │   │   ├── working/
 │   │   │   ├── .gitignore

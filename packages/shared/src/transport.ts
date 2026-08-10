@@ -194,21 +194,10 @@ export type TransportWsServerMessage = z.infer<
 >;
 
 /**
- * Parse REST/WS tick payloads. Accepts a full tick, or a legacy bare
- * `TransportState` (pre-envelope hosts) coerced to a tick with `serverTimeMs: 0`.
+ * Parse REST/WS tick payloads. Requires a full `transport_tick` envelope.
  */
 export function parseTransportTickPayload(data: unknown): TransportTickMessage {
-  const asTick = TransportTickMessageSchema.safeParse(data);
-  if (asTick.success) return asTick.data;
-  const asState = TransportStateSchema.safeParse(data);
-  if (asState.success) {
-    return {
-      type: "transport_tick",
-      ...asState.data,
-      serverTimeMs: 0,
-    };
-  }
-  throw asTick.error;
+  return TransportTickMessageSchema.parse(data);
 }
 
 export const DEFAULT_TRANSPORT_BPM = 120;

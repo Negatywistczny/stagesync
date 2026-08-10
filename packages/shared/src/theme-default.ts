@@ -57,24 +57,16 @@ export const APPEARANCE_PROFILE_SWATCHES: Record<
 
 /**
  * Host default when a client has no localStorage profile yet
- * (`STAGESYNC_THEME_DEFAULT`). Accepts new profile IDs and legacy
- * dark/light/*-high aliases.
+ * (`STAGESYNC_THEME_DEFAULT`). Accepts current profile IDs only.
  */
 export { AppearanceProfileIdSchema as ThemeDefaultIdSchema };
 
 export type ThemeDefaultId = AppearanceProfileId;
 
-/** @deprecated Use AppearanceProfileId — kept for call-site migration. */
+/** @deprecated Use AppearanceProfileId — kept for call-site compatibility. */
 export type ThemeAppearance = { profile: AppearanceProfileId };
 
-const LEGACY_THEME_MAP: Record<string, AppearanceProfileId> = {
-  dark: "booth",
-  light: "daylight",
-  "dark-high": "booth",
-  "light-high": "daylight",
-};
-
-/** Normalize raw id / legacy alias → profile, or null. */
+/** Normalize raw profile id → profile, or null. */
 export function normalizeAppearanceProfile(
   raw: string | undefined | null,
 ): AppearanceProfileId | null {
@@ -82,8 +74,6 @@ export function normalizeAppearanceProfile(
     .trim()
     .toLowerCase();
   if (!t) return null;
-  const legacy = LEGACY_THEME_MAP[t];
-  if (legacy) return legacy;
   const parsed = AppearanceProfileIdSchema.safeParse(t);
   return parsed.success ? parsed.data : null;
 }

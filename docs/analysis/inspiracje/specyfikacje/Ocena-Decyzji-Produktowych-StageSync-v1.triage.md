@@ -8,7 +8,7 @@
 
 ## Provenance
 
-**Nie** supersedowany draft kanonu reliability — to **osobny** raport (tytuł: decyzje miksera FOH). Zapisany jako `-v1`, bo krótszy sibling Downloads o tej samej bazie nazwy. Cross-link z [Ocena-Decyzji-Produktowych-StageSync.triage.md](./Ocena-Decyzji-Produktowych-StageSync.triage.md) (CRIT-RES).
+**Nie** supersedowany draft kanonu reliability — to **osobny** raport (tytuł: decyzje miksera FOH). Zapisany jako `-v1`, bo krótszy sibling Downloads o tej samej bazie nazwy.
 
 ## Werdykt przydatności
 

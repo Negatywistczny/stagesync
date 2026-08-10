@@ -8,7 +8,7 @@ alwaysApply: false
 
 | Typ | Katalog | Commitowane | Wzorzec nazwy |
 |-----|---------|-------------|---------------|
-| Raport kanoniczny | `docs/analysis/reports/{current,milestones,hygiene}/` | tak | `report-<temat>.md` |
+| Raport kanoniczny | `docs/analysis/reports/current/` | tak | `report-<temat>.md` |
 | Inspiracja (zewn.) | `docs/analysis/inspiracje/<kategoria>/` | tak | dump + `*.triage.md` |
 | Notatka robocza | `docs/analysis/working/` | nie | `working-<temat>.md` |
 
@@ -16,19 +16,17 @@ alwaysApply: false
 
 - Lowercase `kebab-case`, prefiks `report-`.
 - Jeden plik = jeden temat / decyzja.
-- Podkatalogi:
-  - `current/` — aktywne raporty (domyślne miejsce nowych)
-  - `milestones/` — historyczne etapy α/β/5.0, freeze, QA, parity
-  - `hygiene/` — logi evening / nightshift
-- Linki względne w tym samym podkatalogu: `./report-<temat>.md`.
-- Linki między podkatalogami: `../milestones/report-…` itd.
+- Tylko `current/` — aktywne raporty (bez milestones / hygiene).
+- Linki względne: `./report-<temat>.md`.
 - Po syntezie z `working/`: wnioski → `reports/current/report-<temat>.md`.
+- Po zamknięciu tematu: usuń raport; historia wydań → `CHANGELOG.md` / git.
 
 ## Inspiracje (`inspiracje/`)
 
-- Kategorie: `audyty-silnik/`, `referencje-daw/`, `specyfikacje/`, `testy-pokrycie/`, `www/`.
+- Kategorie: `audyty-silnik/`, `referencje-daw/`, `specyfikacje/`, `testy-pokrycie/` (oraz inne aktywne).
 - Dump + obowiązkowy `*.triage.md` (status dokumentu — zob. `inspiracje/README.md`).
 - **Nie** są SSOT; nie linkuj z CHANGELOG jako Done.
+- Trzymaj tylko hipotezy wpływające na otwartą / przyszłą pracę.
 
 ## Notatki robocze (`working/`)
 
@@ -39,5 +37,6 @@ alwaysApply: false
 ## Zakazy
 
 - Nie tworz plikow bezposrednio w `docs/analysis/` (tylko `README.md`).
-- Nie tworz raportow plasko w `reports/` (tylko w `current/` / `milestones/` / `hygiene/`).
+- Nie tworz raportow plasko w `reports/` (tylko w `current/`).
+- Nie tworz `milestones/` / `hygiene/` — archiwum lokalne zakazane.
 - Nie linkuj do `working/` z zewnatrz katalogu.

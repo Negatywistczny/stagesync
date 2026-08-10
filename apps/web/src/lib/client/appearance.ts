@@ -7,9 +7,6 @@ import {
 } from "@stagesync/shared";
 
 const PROFILE_KEY = "stagesync-appearance-profile";
-/** Legacy keys (pre-5.3 boolean pair). */
-const LEGACY_THEME_KEY = "stagesync-theme";
-const LEGACY_CONTRAST_KEY = "stagesync-contrast";
 
 /** Fallbacks when `--ss-color-bg` is unset (jsdom / early boot). */
 const THEME_COLOR_BY_PROFILE: Record<AppearanceProfileId, string> = {
@@ -37,42 +34,10 @@ function readThemeColorHex(fallback: string): string {
   return fallback;
 }
 
-function migrateLegacyProfile(): AppearanceProfileId | null {
-  try {
-    const theme = localStorage.getItem(LEGACY_THEME_KEY);
-    const contrast = localStorage.getItem(LEGACY_CONTRAST_KEY);
-    if (theme == null && contrast == null) return null;
-    const legacyId =
-      theme === "light"
-        ? contrast === "high"
-          ? "light-high"
-          : "light"
-        : contrast === "high"
-          ? "dark-high"
-          : "dark";
-    return normalizeAppearanceProfile(legacyId) ?? "booth";
-  } catch {
-    return null;
-  }
-}
-
-function clearLegacyKeys(): void {
-  try {
-    localStorage.removeItem(LEGACY_THEME_KEY);
-    localStorage.removeItem(LEGACY_CONTRAST_KEY);
-  } catch {
-    /* ignore */
-  }
-}
-
 /** True when the device already chose a theme (host default must not override). */
 export function hasStoredAppearance(): boolean {
   try {
-    if (localStorage.getItem(PROFILE_KEY) != null) return true;
-    return (
-      localStorage.getItem(LEGACY_THEME_KEY) != null ||
-      localStorage.getItem(LEGACY_CONTRAST_KEY) != null
-    );
+    return localStorage.getItem(PROFILE_KEY) != null;
   } catch {
     return false;
   }
@@ -83,17 +48,6 @@ export function readAppearance(): AppearanceState {
     const stored = localStorage.getItem(PROFILE_KEY);
     const fromStored = normalizeAppearanceProfile(stored);
     if (fromStored) return { profile: fromStored };
-
-    const migrated = migrateLegacyProfile();
-    if (migrated) {
-      try {
-        localStorage.setItem(PROFILE_KEY, migrated);
-        clearLegacyKeys();
-      } catch {
-        /* ignore write */
-      }
-      return { profile: migrated };
-    }
   } catch {
     /* ignore */
   }
@@ -122,7 +76,6 @@ export function setAppearance(
   };
   try {
     localStorage.setItem(PROFILE_KEY, next.profile);
-    clearLegacyKeys();
   } catch {
     /* ignore */
   }

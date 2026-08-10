@@ -36,13 +36,12 @@ Pełny „model BBT w silniku” bywa mylony z bezpieczeństwem całkowitym: **B
    - **Stop / home:** gdy projekt ma clip Countdown → `transportHomeTicks` = jego `startTicks` (nie snap past CD na 0); bez Countdown → `0` ([#41](https://github.com/Negatywistczny/stagesync/issues/41)).
    - MIDI clock / SPP: ujemne ticki mapowane na 0 po stronie serwera (`midi-clock`) — clock nie „gra” pre-rollu jako ujemnego SPP.
 8. **Float `absBeat`** — **usunięty** z `@stagesync/shared`. Nie przywracać jako
-   kanonu pozycji; legacy `startAbs` tylko na granicy migratora → ticks.
+   kanonu pozycji.
 
 ## Konsekwencje
 
 - Testy czasu żyją obok helperów w shared (Vitest), w tym metra nieparzyste (5/8, 7/8) na osi ticków.
 - Animacje UI są kosmetyczne; seek / komendy transportu idą przez serwer.
 - Integracja MIDI / zewnętrznego clocka podłącza się do serwera (mapowanie ticków ↔ 24 PPQN / SPP), nie do wygładzacza playhead w kliencie.
-- Migrator 4.x → v5: `startAbs * PPQ` z **jedną** regułą zaokrąglenia na granicy importu + przesunięcie osi (countdown dodatni w 4.x → pre-roll ≤ 0 w v5).
 - Odrzucone jako kanon silnika: same sekundy, same ułamkowe „takty” float bez PPQ, oraz „BBT-only storage” bez stałej siatki ticków.
 - **Kwantyzacja edycji Timeline** (snap bar/beat/subdivision): [ADR 0007](./0007-snap-grid.md) — osobna warstwa od storage ticków.

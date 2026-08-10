@@ -98,7 +98,7 @@ Poniższy zestaw scenariuszy testowych przeznaczony jest do bezwzględnej weryfi
 
 ## Checklist Operatorska (Bramka G1–G10)
 
-Zgodnie z wymogami bramki jakościowej Beta Gate ([`report-beta-gate.md`](../../reports/milestones/report-beta-gate.md)), żaden z poniższych punktów nie może zostać oznaczony jako spełniony (`green`) bez przeprowadzenia pełnej weryfikacji na fizycznych maszynach testowych (macOS HW / Windows HW) . Wszystkie pozycje zachowują status do weryfikacji (`⬜`) .
+Zgodnie z wymogami bramki jakościowej Beta Gate ([`report-beta-gate.md`](../../reports/current/report-beta-gate.md)), żaden z poniższych punktów nie może zostać oznaczony jako spełniony (`green`) bez przeprowadzenia pełnej weryfikacji na fizycznych maszynach testowych (macOS HW / Windows HW) . Wszystkie pozycje zachowują status do weryfikacji (`⬜`) .
 
 | ID      | Kryterium Bramki Operacyjnej                                                                                                                                                        | Status | Weryfikacja i Uwagi Audytorskie                                                                                                                         |
 | :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |

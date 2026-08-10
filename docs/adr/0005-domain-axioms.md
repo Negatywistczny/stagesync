@@ -44,7 +44,7 @@ nie jest fundamentem domeny — jest wymienną warstwą dostarczania.
 - **Zależności do wewnątrz:** `@stagesync/shared` bez FS / DOM; UI bez
   autorytetu czasu muzycznego (konstytucja).
 - **Anti-Corruption Layer (ACL)** na krawędziach przy:
-  - migratorze legacy 4.x → v5,
+  - imporcie pakietu biblioteki v5 / obcych formatów ingestii,
   - MIDI clock / urządzeniach,
   - audio (sample / ms tylko na krawędzi `tempoMap`),
   - przyszłym Ableton Link (lub podobnym sync sieciowym).

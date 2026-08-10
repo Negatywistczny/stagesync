@@ -202,9 +202,8 @@ snapshot także przy zmianie stanu (play / pause / stop / seek / load / loop)
 oraz przy pierwszym połączeniu.
 
 Klient powinien **nie** traktować `stage_cue` / `stage_cue_dismiss` / `live_desk`
-jako ticka. Parser `parseTransportTickPayload` toleruje legacy bare
-`TransportState` (bez `type` / `serverTimeMs`) → coerce do ticka z
-`serverTimeMs: 0`.
+jako ticka. Parser `parseTransportTickPayload` wymaga pełnej koperty
+`transport_tick` (z `type` + `serverTimeMs`).
 
 ### Klient → serwer (presence)
 

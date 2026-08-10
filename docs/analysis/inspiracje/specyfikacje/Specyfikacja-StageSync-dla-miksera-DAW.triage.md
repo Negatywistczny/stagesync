@@ -10,7 +10,7 @@
 
 ## Werdykt przydatności
 
-**Wysoka — rekomendacja modelu (logical HW patch table + unified target) + anti-cycle DFS + ograniczenia `maxChannelCount`.** **Kolizja / companion:** DEF-ADR-01/02 w [Audyt Routingu Miksera](../audyty-silnik/Audyt-Routingu-Miksera-StageSync.triage.md). **Out 3–4 = decyzja produktowa wprowadzić** ([ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md)); ten dump = design implementacji, nie claim że multi-out działa. Recenzja FOH: KEEP patch table / DAG / zakaz atrap; REVISE = gate runtime (już `hwOutputUiAllowed`).
+**Wysoka — rekomendacja modelu (logical HW patch table + unified target) + anti-cycle DFS + ograniczenia `maxChannelCount`.** **Out 3–4 = decyzja produktowa wprowadzić** ([ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md)); ten dump = design implementacji, nie claim że multi-out działa. Recenzja FOH: KEEP patch table / DAG / zakaz atrap; REVISE = gate runtime (już `hwOutputUiAllowed`).
 
 ## Epiki / tematy vs `main` (5.2.0)
 

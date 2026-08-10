@@ -222,13 +222,8 @@ describe("parseTransportTickPayload", () => {
     expect(parseTransportTickPayload(msg)).toEqual(msg);
   });
 
-  it("coerces legacy bare TransportState (no type / serverTimeMs)", () => {
-    const state = defaultTransportState();
-    expect(parseTransportTickPayload(state)).toEqual({
-      ...state,
-      type: "transport_tick",
-      serverTimeMs: 0,
-    });
+  it("rejects bare TransportState without envelope", () => {
+    expect(() => parseTransportTickPayload(defaultTransportState())).toThrow();
   });
 
   it("rejects unrelated payloads", () => {

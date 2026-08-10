@@ -52,7 +52,7 @@ widać rolę i przycisk **Przejmij** (ręczne przejęcie → Master).
 
 `STAGESYNC_THEME_DEFAULT` (`booth` \| `daylight` \| `midnight` \| `matrix` \| `neon`)
 ustawia wygląd dla klientów **bez** zapisanego motywu lokalnego (`GET /api/health` →
-`themeDefault`). Aliasy legacy `dark` / `light` / `*-high` mapują się na booth/daylight.
+`themeDefault`).
 
 ### Mixer bus→bus
 

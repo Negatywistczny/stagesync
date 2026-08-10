@@ -6,7 +6,7 @@
 **Data triage:** 2026-07-25  
 **Ostatnia aktualizacja:** 2026-08-02 (usunięty superseded dump v1)  
 **Kąt:** wprowadzenie feature 5.2+ (nie claim HA green / G-gates)  
-**Review decyzji:** [Ocena-Safety-Net-StageSync-437.triage.md](./Ocena-Safety-Net-StageSync-437.triage.md) · reliability: [Ocena-Decyzji-Produktowych-StageSync.triage.md](./Ocena-Decyzji-Produktowych-StageSync.triage.md)
+**Review decyzji:** [Ocena-Safety-Net-StageSync-437.triage.md](./Ocena-Safety-Net-StageSync-437.triage.md)
 
 ## Werdykt przydatności
 

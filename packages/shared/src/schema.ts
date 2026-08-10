@@ -349,7 +349,7 @@ export type PatchSetlistAutoAdvanceBody = z.infer<
   typeof PatchSetlistAutoAdvanceBodySchema
 >;
 
-/** Legacy alpha.2 project document (name only). */
+/** Historical formatVersion 1 project document (name only); upgrade path → v6. */
 export const ProjectSchemaV1 = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -893,8 +893,7 @@ export const HealthResponseSchema = z
     uiHashConsole: z.string().min(1).optional(),
     /**
      * Host default theme when the client has no localStorage theme yet
-     * (`STAGESYNC_THEME_DEFAULT`). Accepts new profile IDs and legacy
-     * dark/light/*-high aliases (normalized). Omitted when unset.
+     * (`STAGESYNC_THEME_DEFAULT`). Profile IDs only. Omitted when unset.
      */
     themeDefault: z.preprocess((v) => {
       if (v == null || v === "") return undefined;
@@ -1062,12 +1061,12 @@ export const MidiHostConfigSchema = z
     clockOutEnabled: z.boolean(),
     /**
      * Program Change IN filter. `null` = Omni (all channels); `0…15` = single channel.
-     * Missing in legacy files → Omni (back-compat).
+     * Omitted → Omni.
      */
     inputChannel: MidiChannelSchema.nullable().default(null),
     /**
      * Program Change OUT channel (`0` = Channel 1 in UI).
-     * Missing in legacy files → 0.
+     * Omitted → 0.
      */
     outputChannel: MidiChannelSchema.default(0),
   })

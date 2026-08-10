@@ -8,11 +8,7 @@ Layout paneli = **nowy** ([ADR 0003](../adr/0003-ui-direction-booth.md)); paleta
 
 `[x]` poniżej = „kontrolka istnieje w shellu” — **nie** = green PO smoke. Usunięcie bez „Świadome delty” = blocker dopiero gdy zachowanie jest w scope.
 
-**β gate:** [report-parity-blocker-alpha8.md](../analysis/reports/milestones/report-parity-blocker-alpha8.md) — **P8 green 2026-07-21**.  
-**PO smoke playbook:** [report-po-smoke-p8.md](../analysis/reports/milestones/report-po-smoke-p8.md).  
-**PO C1 / P8:** **PO verified 2026-07-21** (zachowanie; inventarz `[x]` = kontrolka, nie parity).  
-**SSOT luk historycznych:** [report-v4-v5-gap-audit.md](../analysis/reports/milestones/report-v4-v5-gap-audit.md).  
-**Audyt UI-diff:** [report-v4-v5-ui-diff-inventory.md](../analysis/reports/milestones/report-v4-v5-ui-diff-inventory.md).
+**Parity / smoke:** [ADR 0011](../adr/0011-ui-parity-behavior.md). Historia cutów → [CHANGELOG.md](../../CHANGELOG.md). Ops residual G1–G10: [report-beta-gate](../analysis/reports/current/report-beta-gate.md).
 
 ### Reguła: brak funkcji = brak UI
 

@@ -8,7 +8,7 @@ Historia: [CHANGELOG.md](../CHANGELOG.md). Kolejne etapy: [ROADMAP.md](./ROADMAP
 **Kierunek audio 6.0+ (Zaakceptowany):** [ADR 0018](./adr/0018-future-audio-architecture.md) · [ROADMAP](./ROADMAP.md).  
 **Specyfikacje (hipotezy):** [inspiracje/specyfikacje/](./analysis/inspiracje/specyfikacje/README.md).
 
-**Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/milestones/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone. P8 green — [report-po-smoke-p8.md](./analysis/reports/milestones/report-po-smoke-p8.md).
+**Residuale operatorskie:** **G1–G10** — **bez claim green** ([report-beta-gate.md](./analysis/reports/current/report-beta-gate.md)). G2 skip; G3 re-verify HW; G7–G9 Docker odłożone.
 
 **Release policy:** sekwencja PO = **5.5 Pitch & FX** → **6.0 Live Suite** → **6.1 Karaoke & Jukebox** ([ADR 0018](./adr/0018-future-audio-architecture.md) §4); linia **5.4 Syllables** — Smart Tempo **5.4.2**, polish do **5.4.6**.
 

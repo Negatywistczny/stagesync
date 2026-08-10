@@ -1,7 +1,7 @@
 # Beta gate — bramka przed / po `5.0.0-beta.*`
 
 **Data:** 2026-07-21  
-**Podstawa:** [report-scope-beta1.md](./report-scope-beta1.md) · [report-scope-beta2.md](./report-scope-beta2.md) · [ADR 0004](../../../adr/0004-updates-docker.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md)
+**Podstawa:** [ADR 0004](../../../adr/0004-updates-docker.md) · [ADR 0010](../../../adr/0010-desktop-shell-tauri.md) · historia cutów β1/β2 → [CHANGELOG.md](../../../../CHANGELOG.md)
 
 ## Decyzja release
 
@@ -16,7 +16,7 @@ Tag = closeout hosta na jawną prośbę operatora:
 
 ### `v5.0.0-beta.1.1` (2026-07-21) — docs cut
 
-Uczciwy cut docs: residual β1 (**menu Faza B**, **G1–G10**) oraz **menu Faza C** = **must β2** przed tagiem `v5.0.0-beta.2` — nie soft carry. Scope: [report-scope-beta2.md](./report-scope-beta2.md).
+Uczciwy cut docs: residual β1 (**menu Faza B**, **G1–G10**) oraz **menu Faza C** = **must β2** przed tagiem `v5.0.0-beta.2` — nie soft carry. Scope β2: historia w [CHANGELOG.md](../../../../CHANGELOG.md).
 
 ### `v5.0.0-beta.2` (2026-07-21) — feature cut
 

@@ -8,7 +8,7 @@
 
 ## Werdykt przydatności
 
-**Rozszerzenie warstwy setlisty** względem [Transport SSOT](./Audyt-Synchronizacji-Transport-SSOT.triage.md). BUG-SET-01/03/05 rozstrzygnięte wcześniej; **SET-02** i **SET-04** naprawione w tej fali. Otwarte: concurrent PUT/PATCH (06).
+**Rozszerzenie warstwy setlisty** względem audytu Transport SSOT (usunięty; historia w git). BUG-SET-01/03/05 rozstrzygnięte wcześniej; **SET-02** i **SET-04** naprawione w tej fali. Otwarte: concurrent PUT/PATCH (06).
 
 ## Rozstrzygnięte
 

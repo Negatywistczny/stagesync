@@ -32,9 +32,9 @@ izolacji `assets/` i `setlist.json`.
 
 **Kanon runtime dziś:** `ProjectSchema = ProjectSchemaV5` (`formatVersion: 5`)
 w [`packages/shared/src/schema.ts`](../../packages/shared/src/schema.ts). Odczyt starszych v2/v3/v4 = upgrade path w
-storage / migratorze — nie osobny „powrót do v3” w UI.
+storage — nie osobny „powrót do v3” w UI.
 
-Audyt: [report-v4-v5-parity-audit.md](../analysis/reports/milestones/report-v4-v5-parity-audit.md) §5.
+Historia decyzji schema / parytetu: [CHANGELOG.md](../../CHANGELOG.md) · [ADR 0011](./0011-ui-parity-behavior.md).
 
 ## Konsekwencje
 

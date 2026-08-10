@@ -33,8 +33,8 @@ data/
 
 ## Konsekwencje
 
-- Migratory i CRUD celują w ścieżki po id projektu, bez monolitycznego pliku DB.
-- Import legacy 4.x należy do osobnego migratora później; nie dual-write starych kształtów do tego układu.
+- CRUD celuje w ścieżki po id projektu, bez monolitycznego pliku DB.
+- Import biblioteki: pakiet v5 `{ projects }` (`POST /api/library/import`); brak dual-write starych kształtów monolitu 4.x.
 - Usunięcie katalogu projektu usuwa też `assets/` — brak globalnego katalogu uploadów.
 
 ## Powiązane

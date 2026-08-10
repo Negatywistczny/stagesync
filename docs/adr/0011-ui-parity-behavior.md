@@ -122,7 +122,8 @@ być regresją względem v4; nie cofaj automatycznie w tej samej sesji bez proś
 ### 6. Bramka β
 
 Bez zmian względem polityki: **zakaz** `5.0.0-beta.*` do green CI **i** green
-PO smoke wg tej decyzji + [parity-blocker](../analysis/reports/milestones/report-parity-blocker-alpha8.md).
+PO smoke wg tej decyzji. Historia bramek α8/P8 → [CHANGELOG.md](../../CHANGELOG.md).
+Ops residual G1–G10: [report-beta-gate](../analysis/reports/current/report-beta-gate.md).
 
 ## Konsekwencje
 
