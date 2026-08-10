@@ -85,7 +85,7 @@ cd stagesync
 - **PowerShell — skrypt `.cmd` (zalecane)**
 
    ```powershell
-   ./dev.cmd
+   .\dev.cmd
    ```
 
 - **PowerShell — natywny skrypt `.ps1`**
@@ -94,7 +94,9 @@ cd stagesync
    # Jednorazowe przyznanie uprawnień
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-   ./dev
+   .\dev
+   # lub
+   .\dev.ps1
    ```
 
 </details>
@@ -110,7 +112,7 @@ cd stagesync
 - **Wywołanie pliku**
 
    ```bash
-   # Jednorazowe przyznanie uprawień
+   # Jednorazowe przyznanie uprawnień
    chmod +x dev
 
    ./dev
@@ -118,7 +120,7 @@ cd stagesync
 
 </details>
 <details>
-<summary><b>🌐 Uniwersalne (wymage node.js & pnpm)</b></summary>
+<summary><b>🌐 Uniwersalne (wymaga node.js & pnpm)</b></summary>
 
 - **Bezpośrednie wywołanie przez pnpm**
 
