@@ -6,16 +6,16 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1290
+* **Liczba wszystkich plików:** 1291
 * **Liczba katalogów:** 198
-* **Data aktualizacji:** 2026-08-09T23:07:48.137Z
+* **Data aktualizacji:** 2026-08-10T12:48:30.991Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
 | Kod | 804 |
-| Docs | 216 |
+| Docs | 217 |
 | Config | 120 |
 | Assety | 120 |
 | Inne | 30 |
@@ -25,7 +25,7 @@
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
 | `.ts` | 464 |
-| `.md` | 194 |
+| `.md` | 195 |
 | `.tsx` | 161 |
 | `.png` | 94 |
 | `.kt` | 71 |
@@ -88,7 +88,7 @@
   - **shared/** (100) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+- **scripts/** (24) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
   - **merge-train/** (4) — Automatyzacja merge train i walidacji PR
   - **quality/** (5) — Narzędzia jakości kodu, linków i generator mapy repozytorium
   - **release/** (9) — Skrypty wydań SemVer, budowania paczek i release notes
@@ -912,6 +912,7 @@ stagesync/
 │   │   ├── setup.ps1
 │   │   └── setup.sh
 │   ├── dev-hub.ts
+│   ├── DX.md
 │   ├── README.md
 │   └── tsconfig.json
 ├── .clineignore

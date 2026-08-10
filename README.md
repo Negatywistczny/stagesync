@@ -74,58 +74,13 @@ cd stagesync
 ```
 #### 2. Uruchom DX Hub
 
-<details>
-<summary><b>🪟 Windows</b></summary>
+```bash
+dev           # Windows (CMD)
+.\dev         # Windows (PowerShell)
+./dev         # macOS / Linux
+```
 
-- **CMD (Wiersz Poleceń) — skrypt `.cmd`**
-
-   ```cmd
-   dev
-   ```
-- **PowerShell — skrypt `.cmd` (zalecane)**
-
-   ```powershell
-   .\dev.cmd
-   ```
-
-- **PowerShell — natywny skrypt `.ps1`**
-
-   ```powershell
-   # Jednorazowe przyznanie uprawnień
-   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-   .\dev
-   # lub
-   .\dev.ps1
-   ```
-
-</details>
-<details>
-<summary><b>🍏 macOS / 🐧 Linux</b></summary>
-
-- **Bash (zalecane)**
-
-   ```bash
-   bash dev
-   ```
-
-- **Wywołanie pliku**
-
-   ```bash
-   ./dev
-   ```
-
-</details>
-<details>
-<summary><b>🌐 Uniwersalne (wymaga node.js & pnpm)</b></summary>
-
-- **Bezpośrednie wywołanie przez pnpm**
-
-   ```bash
-   pnpm dev:hub
-   ```
-
-</details>
+Więcej informacji znajdziesz w pełnej [Dokumentacji DX](./scripts/DX.md).
 <br>
 
 ---
