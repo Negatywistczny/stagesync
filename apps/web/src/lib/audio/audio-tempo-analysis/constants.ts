@@ -89,4 +89,3 @@ export const PERIOD_HINT_CLAMP_HI = 1.12;
 
 export const TIMEOUT_WARNING =
   "Analiza tempa trwa zbyt długo — użyto domyślnego tempa (120 BPM). Możesz ustawić BPM ręcznie.";
-

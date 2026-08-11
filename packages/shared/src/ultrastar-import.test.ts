@@ -359,12 +359,12 @@ E
   });
 
   it("rejects invalid #BPM and #GAP headers", () => {
-    expect(
-      importUltrastarText(`#TITLE:X\n#BPM:0\n: 0 4 0 Hi\nE\n`).ok,
-    ).toBe(false);
-    expect(
-      importUltrastarText(`#TITLE:X\n#BPM:-10\n: 0 4 0 Hi\nE\n`).ok,
-    ).toBe(false);
+    expect(importUltrastarText(`#TITLE:X\n#BPM:0\n: 0 4 0 Hi\nE\n`).ok).toBe(
+      false,
+    );
+    expect(importUltrastarText(`#TITLE:X\n#BPM:-10\n: 0 4 0 Hi\nE\n`).ok).toBe(
+      false,
+    );
     expect(
       importUltrastarText(`#TITLE:X\n#BPM:notanumber\n: 0 4 0 Hi\nE\n`).ok,
     ).toBe(false);

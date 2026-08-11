@@ -6,10 +6,7 @@ import {
 } from "../bracket-spans.js";
 import { cleanUgTabContent } from "../ug-content.js";
 import { splitUgSections } from "../ug-import.js";
-import {
-  isUgPipeBarLine,
-  parseUgPipeBars,
-} from "../ug-pipe-bars.js";
+import { isUgPipeBarLine, parseUgPipeBars } from "../ug-pipe-bars.js";
 import { CHORD_TOKEN, CHORD_TOKEN_MAX } from "./constants.js";
 import type { UgSectionChord, UgSectionParsed } from "./types.js";
 import { normalizeLyricToken, tokenizeLyrics } from "./tokenize.js";

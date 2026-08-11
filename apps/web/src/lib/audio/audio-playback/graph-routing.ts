@@ -15,7 +15,13 @@ import {
   refreshAudioHwCapability,
 } from "../audioHwCapability.js";
 import { state } from "./state.js";
-import type { DestGraph, GroupBusNode, HwOutBus, MasterBus, TrackBus } from "./types.js";
+import type {
+  DestGraph,
+  GroupBusNode,
+  HwOutBus,
+  MasterBus,
+  TrackBus,
+} from "./types.js";
 import {
   applyBalanceOrPan,
   createChannelBus,
@@ -41,7 +47,8 @@ function ensureDestGraph(
     }
     return null;
   }
-  if (state.destGraph && state.destGraph.channelCount === n) return state.destGraph;
+  if (state.destGraph && state.destGraph.channelCount === n)
+    return state.destGraph;
   if (state.destGraph) {
     disconnectSafe(state.destGraph.merger);
     state.destGraph = null;
@@ -66,7 +73,10 @@ function projectNeedsMultiOutDest(
   return routing.channelOffset !== 0;
 }
 
-export function ensureMasterBus(ctx: AudioContext, project: Project): MasterBus {
+export function ensureMasterBus(
+  ctx: AudioContext,
+  project: Project,
+): MasterBus {
   const graph = ensureDestGraph(ctx, project);
   const multi = graph != null;
   const routing = resolveMasterOutputRouting(project.masterOutput);
@@ -89,7 +99,8 @@ export function ensureMasterBus(ctx: AudioContext, project: Project): MasterBus 
     disconnectSafe(state.masterBus.splitter);
     disconnectSafe(state.masterBus.analyserL);
     disconnectSafe(state.masterBus.analyserR);
-    if (state.masterBus.toMergerSplit) disconnectSafe(state.masterBus.toMergerSplit);
+    if (state.masterBus.toMergerSplit)
+      disconnectSafe(state.masterBus.toMergerSplit);
     state.masterBus = null;
     // Force rewire of all routes after master topology change
     state.trackWiredDest.clear();
@@ -422,7 +433,8 @@ export function disposeBuses(): void {
     disconnectSafe(state.masterBus.splitter);
     disconnectSafe(state.masterBus.analyserL);
     disconnectSafe(state.masterBus.analyserR);
-    if (state.masterBus.toMergerSplit) disconnectSafe(state.masterBus.toMergerSplit);
+    if (state.masterBus.toMergerSplit)
+      disconnectSafe(state.masterBus.toMergerSplit);
     state.masterBus = null;
   }
   if (state.destGraph) {

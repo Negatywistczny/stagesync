@@ -15,8 +15,23 @@ const require = createRequire(__filename);
 /** Last `clack.intro` title; cleared by `clearTerminalScreen` (submenus). */
 let lastIntro: string | undefined;
 
+/**
+ * When true, resize may wipe the whole screen (clean menus).
+ * When false, only the active prompt frame is erased (keep logs / command output).
+ */
+let resizeMayClearScreen = true;
+
+function allowResizeScreenClear() {
+  resizeMayClearScreen = true;
+}
+
+function protectScrollback() {
+  resizeMayClearScreen = false;
+}
+
 function clearTerminalScreen() {
   lastIntro = undefined;
+  allowResizeScreenClear();
   process.stdout.write("\x1b[2J\x1b[3J\x1b[H");
 }
 
@@ -38,15 +53,19 @@ function enableTerminalGuard() {
 enableTerminalGuard();
 
 /**
- * @clack/core already re-renders on stdout "resize", but its differential paint
- * leaves ghosts/duplicates on Windows Terminal (emoji + wrap width). Clearing
- * alone blanks the UI (frame unchanged → render no-ops). Force a full redraw:
- * clear screen, reset previous frame, re-run as initial paint.
+ * @clack/core re-renders on resize, but wrap width changes break its cursor math
+ * (restoreCursor uses the *new* columns on the *old* frame) → ghosts/duplicates.
+ *
+ * - Clean menus (`resizeMayClearScreen`): full clear + re-intro + initial paint.
+ * - Views with scrollback (logi, output): erase only the previous prompt frame
+ *   using the pre-resize column width, then initial paint — do not wipe scrollback.
  */
 function enableClackFullRedrawOnResize() {
   if (!process.stdout.isTTY) return;
 
   let resizePending = false;
+  let resizePrevColumns = process.stdout.columns || 80;
+  let lastColumns = process.stdout.columns || 80;
 
   const promptsPkg = path.dirname(
     require.resolve("@clack/prompts/package.json"),
@@ -56,6 +75,24 @@ function enableClackFullRedrawOnResize() {
   const corePath = fs.existsSync(coreEntry)
     ? coreEntry
     : coreEntry.replace(/index\.mjs$/, "index.cjs");
+
+  const coreRequire = createRequire(corePath);
+  // wrap-ansi v9 is ESM-only; clack bundles usage — load via dynamic path from its tree.
+  type WrapAnsiFn = (
+    input: string,
+    columns: number,
+    options?: { hard?: boolean; trim?: boolean },
+  ) => string;
+  let wrapAnsiFn: WrapAnsiFn;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const wrapAnsiMod = coreRequire("wrap-ansi") as
+      WrapAnsiFn | { default: WrapAnsiFn };
+    wrapAnsiFn =
+      typeof wrapAnsiMod === "function" ? wrapAnsiMod : wrapAnsiMod.default;
+  } catch {
+    wrapAnsiFn = (input) => input;
+  }
 
   const { Prompt } = require(corePath) as {
     Prompt: {
@@ -67,6 +104,19 @@ function enableClackFullRedrawOnResize() {
     };
   };
 
+  function erasePrevPromptFrame(
+    prevFrame: string | undefined,
+    columns: number,
+  ) {
+    if (!prevFrame) return;
+    const lines = wrapAnsiFn(prevFrame, Math.max(2, columns), {
+      hard: true,
+      trim: false,
+    }).split("\n").length;
+    if (lines > 1) process.stdout.write(`\x1b[${lines - 1}A`);
+    process.stdout.write("\x1b[1G\x1b[J");
+  }
+
   const originalRender = Prompt.prototype.render;
   Prompt.prototype.render = function (this: {
     state: string;
@@ -74,12 +124,15 @@ function enableClackFullRedrawOnResize() {
   }) {
     if (resizePending) {
       resizePending = false;
-      // Keep intro across redraw (clearTerminalScreen would wipe lastIntro).
-      const intro = lastIntro;
-      process.stdout.write("\x1b[2J\x1b[3J\x1b[H");
-      if (intro) {
-        lastIntro = intro;
-        clack.intro(intro);
+      if (resizeMayClearScreen) {
+        const intro = lastIntro;
+        process.stdout.write("\x1b[2J\x1b[3J\x1b[H");
+        if (intro) {
+          lastIntro = intro;
+          clack.intro(intro);
+        }
+      } else {
+        erasePrevPromptFrame(this._prevFrame, resizePrevColumns);
       }
       this._prevFrame = "";
       if (this.state === "active" || this.state === "error") {
@@ -92,6 +145,8 @@ function enableClackFullRedrawOnResize() {
 
   // Register before any prompt so this runs first on resize, then clack's render.
   process.stdout.on("resize", () => {
+    resizePrevColumns = lastColumns;
+    lastColumns = process.stdout.columns || 80;
     resizePending = true;
     setImmediate(() => {
       resizePending = false;
@@ -103,10 +158,12 @@ enableClackFullRedrawOnResize();
 
 function hubIntro(title: string) {
   lastIntro = title;
+  allowResizeScreenClear();
   clack.intro(title);
 }
 
 async function waitReturn() {
+  protectScrollback();
   await clack.select({
     message: "Zadanie zakończone. Co chcesz zrobić?",
     options: [{ value: "back", label: "↩️  Powrót do menu głównego" }],
@@ -135,6 +192,7 @@ async function confirmDanger(
 }
 
 function warnSideEffects(lines: string[]) {
+  protectScrollback();
   clack.log.warn("Skutki uboczne / wpływ:");
   for (const line of lines) clack.log.message(` • ${line}`);
 }
@@ -144,6 +202,7 @@ function runCommand(
   args: string[],
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ) {
+  protectScrollback();
   console.log();
   const result = spawnSync(command, args, {
     cwd: options.cwd || rootDir,
@@ -162,6 +221,7 @@ function runCommandCaptured(
   args: string[],
   options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ): CommandResult {
+  protectScrollback();
   console.log();
   const result = spawnSync(command, args, {
     cwd: options.cwd || rootDir,

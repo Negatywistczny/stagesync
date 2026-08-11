@@ -4,11 +4,7 @@ import {
   registerMemoryContributor,
 } from "@lib/client/memoryPressure.js";
 import { getMetronomeAudioContext } from "../metronome.js";
-import {
-  MAX_BUFFER_CACHE,
-  MAX_BUFFER_CACHE_BYTES,
-  state,
-} from "./state.js";
+import { MAX_BUFFER_CACHE, MAX_BUFFER_CACHE_BYTES, state } from "./state.js";
 import type {
   AudioBufferCacheEntry,
   AudioBufferCacheStats,

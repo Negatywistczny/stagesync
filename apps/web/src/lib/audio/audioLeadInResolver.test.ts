@@ -61,7 +61,12 @@ describe("audioLeadInResolver", () => {
 
   it("returns 0 ms for MIME lossless hints (audio/x-wav, audio/flac, aif)", () => {
     const mockChannel = new Float32Array(44100);
-    for (const formatHint of ["audio/x-wav", "audio/flac", "aif", "wave"] as const) {
+    for (const formatHint of [
+      "audio/x-wav",
+      "audio/flac",
+      "aif",
+      "wave",
+    ] as const) {
       expect(
         resolveAudioLeadInDelayMs(
           { channelData: mockChannel, sampleRate: 44100 },
@@ -124,14 +129,22 @@ describe("audioLeadInResolver", () => {
   it("MP3 with Xing/Info header bytes encodes encoder delay", () => {
     const mockChannel = new Float32Array(44100);
     // delayHigh=0x00, delayLow=0x10 → ((0<<4)|(0x10>>4))+529 = 529+1 = 530
-    const xing = craftXingBytes({ tag: "Xing", delayHigh: 0x00, delayLow: 0x10 });
+    const xing = craftXingBytes({
+      tag: "Xing",
+      delayHigh: 0x00,
+      delayLow: 0x10,
+    });
     const xingDelay = resolveAudioLeadInDelayMs(
       { channelData: mockChannel, sampleRate: 44100 },
       { formatHint: "mp3", rawBytes: xing },
     );
     expect(xingDelay).toBe(Math.round((530 / 44100) * 1000 * 10) / 10);
 
-    const info = craftXingBytes({ tag: "Info", delayHigh: 0x01, delayLow: 0x00 });
+    const info = craftXingBytes({
+      tag: "Info",
+      delayHigh: 0x01,
+      delayLow: 0x00,
+    });
     // ((1<<4)|(0>>4))+529 = 16+529 = 545
     const infoDelay = resolveAudioLeadInDelayMs(
       { channelData: mockChannel, sampleRate: 44100 },
@@ -159,9 +172,7 @@ describe("audioLeadInResolver", () => {
         { formatHint: "ogg" },
       ),
     ).toBe(10);
-    expect(
-      resolveAudioLeadInDelayMs({ channelData, sampleRate }, {}),
-    ).toBe(10);
+    expect(resolveAudioLeadInDelayMs({ channelData, sampleRate }, {})).toBe(10);
   });
 
   it("uses AudioBuffer-like getChannelData when present", () => {
@@ -171,9 +182,9 @@ describe("audioLeadInResolver", () => {
       sampleRate,
       getChannelData: () => channelData,
     };
-    expect(
-      resolveAudioLeadInDelayMs(buffer, { formatHint: "unknown" }),
-    ).toBe(20);
+    expect(resolveAudioLeadInDelayMs(buffer, { formatHint: "unknown" })).toBe(
+      20,
+    );
   });
 
   it("scans PCM silence threshold correctly for MP3 fallback", () => {

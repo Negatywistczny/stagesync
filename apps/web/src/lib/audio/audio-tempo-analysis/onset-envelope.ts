@@ -1,8 +1,4 @@
-import {
-  FRAME_SIZE,
-  MAX_ONSETS,
-  ONSET_THRESHOLD,
-} from "./constants.js";
+import { FRAME_SIZE, MAX_ONSETS, ONSET_THRESHOLD } from "./constants.js";
 import { trimOnsets } from "./helpers.js";
 
 /**

@@ -3,7 +3,11 @@ import { estimateBpmFromOnsetStrength } from "./audio-tempo-analysis/bpm-acf.js"
 import { computeOnsetStrengthEnvelope } from "./audio-tempo-analysis/onset-envelope.js";
 
 /** Synthetic click train at `bpm` for pure onset/ACF checks (no AudioBuffer). */
-function makeClickMono(bpm: number, beats: number, sampleRate = 44_100): Float32Array {
+function makeClickMono(
+  bpm: number,
+  beats: number,
+  sampleRate = 44_100,
+): Float32Array {
   const beatSec = 60 / bpm;
   const length = Math.ceil(beats * beatSec * sampleRate);
   const mono = new Float32Array(length);

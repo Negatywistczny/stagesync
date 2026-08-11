@@ -196,9 +196,9 @@ describe("usdb-fetch parsers", () => {
   });
 
   it("parseUsdbSearchHtml returns empty for HTML without songs", () => {
-    expect(parseUsdbSearchHtml("<html><body>There are 0 results</body></html>")).toEqual(
-      [],
-    );
+    expect(
+      parseUsdbSearchHtml("<html><body>There are 0 results</body></html>"),
+    ).toEqual([]);
     expect(parseUsdbSearchHtml("")).toEqual([]);
   });
 

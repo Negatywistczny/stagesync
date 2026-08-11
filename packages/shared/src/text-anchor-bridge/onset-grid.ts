@@ -1,10 +1,7 @@
 import type { TempoEvent } from "../schema.js";
 import { DEFAULT_PPQ, type TimeSignature } from "../time.js";
 import { secondsToTicks } from "../tempo-map.js";
-import {
-  pristineBarsFromMsSpan,
-  sectionBeat1Ms,
-} from "../tempo-map-solver.js";
+import { pristineBarsFromMsSpan, sectionBeat1Ms } from "../tempo-map-solver.js";
 import type { HarmonicSyllable } from "../harmonic-accent.js";
 import {
   quantizeTicksToBar,

@@ -231,7 +231,6 @@ export function reconcileEstimatedBpm(
   return finalResult;
 }
 
-
 /**
  * Lightweight BPM from downsampled energy flux + autocorrelation.
  */
@@ -253,7 +252,6 @@ export function quickEstimateBpmFromEnergy(
   const onsets = pickOnsetsFromFlux(flux, sampleRate, hopSize, 64);
   return estimateBpmFromOnsets(onsets);
 }
-
 
 /**
  * Fold pairwise-histogram BPM into the musical octave of ACF/seed.
@@ -302,7 +300,9 @@ export function foldHistogramBpmToMusicalOctave(
   return Math.round(histBpm * 100) / 100;
 }
 
-export function estimateBpmFromBarHarmonics(onsetsMs: readonly number[]): number {
+export function estimateBpmFromBarHarmonics(
+  onsetsMs: readonly number[],
+): number {
   if (onsetsMs.length < 10) return 0;
   const sorted = onsetsMs.slice().sort((a, b) => a - b);
   let bestP = 0;

@@ -65,7 +65,10 @@ export function chordsBySectionEarly(
   return ugChords.filter((c) => c.sectionIndex === si);
 }
 
-export function sameWordPrev(chords: readonly UgBridgeChord[], ci: number): boolean {
+export function sameWordPrev(
+  chords: readonly UgBridgeChord[],
+  ci: number,
+): boolean {
   if (ci <= 0) return false;
   const cur = chords[ci]!;
   const prev = chords[ci - 1]!;

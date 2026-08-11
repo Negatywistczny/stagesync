@@ -1,8 +1,4 @@
-import type {
-  AkordClip,
-  FormaClip,
-  TempoEvent,
-} from "../schema.js";
+import type { AkordClip, FormaClip, TempoEvent } from "../schema.js";
 import type { TimeSignature } from "../time.js";
 import type { UltrastarImportOk } from "../ultrastar-import.js";
 import type {

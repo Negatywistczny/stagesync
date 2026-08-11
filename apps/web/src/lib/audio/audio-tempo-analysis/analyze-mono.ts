@@ -13,10 +13,7 @@ import {
   reconcileEstimatedBpm,
   refineRawBpmWithOnsetEvidence,
 } from "./bpm-estimate.js";
-import {
-  buildBeatGrid,
-  buildBeatGridAsync,
-} from "./build-beat-grid.js";
+import { buildBeatGrid, buildBeatGridAsync } from "./build-beat-grid.js";
 import {
   refineBeatGridWithWindowedOnsets,
   snapBeatGridToOnsets,

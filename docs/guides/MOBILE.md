@@ -19,13 +19,13 @@ Performer pozostaje read-only Client-only ([ADR 0016](../adr/0016-android-perfor
 
 ## Nawigacja operatora (OperatorNav)
 
-| Powierzchnia                         | Pasek L1 (Admin / Timeline / Klient)                                                                              |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| **Console** (APK + przeglądarka LAN) | **Tak** — ≤640px OperatorNav; szerzej chipy; na `/client` zawsze                                                  |
-| **Performer**                        | **Nie** — tylko widok muzyka (`/client`)                                                                          |
-| **PWA / Safari `/client`** (muzyk)   | **Nie** (bez sesji operatora)                                                                                     |
-| **Web LAN** (po Admin/Timeline)      | **Tak** na `/client` — telefon: OperatorNav; tablet/desktop: chipy                                                |
-| **Desktop Tauri**                    | Pełny L1 + menu OS/HTML — [DESKTOP.md](./DESKTOP.md)                                                              |
+| Powierzchnia                         | Pasek L1 (Admin / Timeline / Klient)                               |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| **Console** (APK + przeglądarka LAN) | **Tak** — ≤640px OperatorNav; szerzej chipy; na `/client` zawsze   |
+| **Performer**                        | **Nie** — tylko widok muzyka (`/client`)                           |
+| **PWA / Safari `/client`** (muzyk)   | **Nie** (bez sesji operatora)                                      |
+| **Web LAN** (po Admin/Timeline)      | **Tak** na `/client` — telefon: OperatorNav; tablet/desktop: chipy |
+| **Desktop Tauri**                    | Pełny L1 + menu OS/HTML — [DESKTOP.md](./DESKTOP.md)               |
 
 Skróty (gdy jest klawiatura): `Ctrl/⌘+1…3` (aplikacje), `Alt+1…4` (zakładki Admina).
 
@@ -56,11 +56,11 @@ Wymagania Console z lokalnym hostem: Android SDK, **NDK 26.1+**, **CMake 3.22.1*
 
 W Admin → Host → **Połączenie & Sieć**:
 
-| QR / link             | Cel                                                                                                                    |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Dołącz do hosta**   | URL LAN (np. `http://192.168.x.x:4000`) — skan w launcherze Performer/Console (kamera + wklejenie) / przeglądarka      |
-| **Pobierz Performer** | `{origin}/downloads/stagesync-performer.apk`                                                                           |
-| **Pobierz Console**   | `{origin}/downloads/stagesync-console.apk`                                                                             |
+| QR / link             | Cel                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Dołącz do hosta**   | URL LAN (np. `http://192.168.x.x:4000`) — skan w launcherze Performer/Console (kamera + wklejenie) / przeglądarka |
+| **Pobierz Performer** | `{origin}/downloads/stagesync-performer.apk`                                                                      |
+| **Pobierz Console**   | `{origin}/downloads/stagesync-console.apk`                                                                        |
 
 W launcherze Android (**Skanuj kod QR**): CameraX + ML Kit; przy braku kamery — wklejenie adresu.
 
@@ -101,7 +101,7 @@ Gdy silnik nie jest w APK (`SKIP_LOCAL_HOST=1` lub uszkodzony build) — uczciwy
 
 **Android 15+ / strona 16 KB:** domyślny `prepare-local-host` używa przebudowy digidem z wyrównaniem 16 KB. Nadpisanie: `NODEJS_MOBILE_ZIP_URL=…`; eksperyment 4 KB: `ALLOW_INCOMPATIBLE_LIBNODE=1`.
 
-Używaj APK z aktualnego [Release](https://github.com/Negatywistczny/stagesync/releases) albo świeżego `build-apk.sh` (wersja zgodna z root `package.json`).
+Używaj APK z aktualnego [Release](https://github.com/Negatywistczny/stagesync/releases) albo świeżego `build-apk.sh` (wersja zgodna z root [`package.json`](../../package.json)).
 
 ## PWA
 

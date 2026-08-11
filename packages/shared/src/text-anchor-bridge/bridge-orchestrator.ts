@@ -1,8 +1,4 @@
-import {
-  AkordClipSchema,
-  FormaClipSchema,
-  type FormaClip,
-} from "../schema.js";
+import { AkordClipSchema, FormaClipSchema, type FormaClip } from "../schema.js";
 import { DEFAULT_PPQ, ticksPerBar, type TimeSignature } from "../time.js";
 import {
   applySeedMetronomeFallback,
@@ -13,10 +9,7 @@ import {
   suggestGridBpmFromPipeAndFirstVocal,
   type UltrastarImportOk,
 } from "../ultrastar-import.js";
-import {
-  msPerBarAtBpm,
-  suggestBeat1MsFromPipeAndGap,
-} from "../smart-tempo.js";
+import { msPerBarAtBpm, suggestBeat1MsFromPipeAndGap } from "../smart-tempo.js";
 import { TEXT_ANCHOR_WEAK_ALIGN } from "./constants.js";
 import type {
   SectionContainer,

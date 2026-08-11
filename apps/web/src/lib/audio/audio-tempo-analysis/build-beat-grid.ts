@@ -10,10 +10,7 @@ import {
   STABLE_PERIOD_STEP_HI,
   STABLE_PERIOD_STEP_LO,
 } from "./constants.js";
-import {
-  nearestOnsetMs,
-  resolveBeatGridPhase,
-} from "./downbeat-detect.js";
+import { nearestOnsetMs, resolveBeatGridPhase } from "./downbeat-detect.js";
 import { medianOfPositive, throwIfAborted } from "./helpers.js";
 import type { ViterbiBeatTrace, WindowedBpmPoint } from "./types.js";
 

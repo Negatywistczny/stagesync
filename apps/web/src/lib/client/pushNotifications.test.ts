@@ -276,8 +276,10 @@ describe("pushNotifications (#810)", () => {
 
   it("showLocalNotification uses Web Notification API when backgrounded", () => {
     setPushEnabledPreference(true);
-    const instances: Array<{ onclick: (() => void) | null; close: () => void }> =
-      [];
+    const instances: Array<{
+      onclick: (() => void) | null;
+      close: () => void;
+    }> = [];
     const NotificationMock = vi.fn(function (
       this: { onclick: (() => void) | null; close: () => void },
       title: string,

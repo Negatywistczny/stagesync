@@ -109,4 +109,3 @@ export const DEFAULT_RESULT: AudioAnalysisResult = {
   beatMs: [],
   estimatedBpm: 120,
 };
-

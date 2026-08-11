@@ -1,6 +1,9 @@
 import { BEAT_SNAP_FRAC } from "./constants.js";
 
-export function nearestOnsetMs(onsetsMs: readonly number[], targetMs: number): number {
+export function nearestOnsetMs(
+  onsetsMs: readonly number[],
+  targetMs: number,
+): number {
   if (onsetsMs.length === 0) return targetMs;
   let lo = 0;
   let hi = onsetsMs.length - 1;

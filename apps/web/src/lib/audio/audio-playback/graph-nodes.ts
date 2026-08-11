@@ -1,8 +1,4 @@
-import {
-  balanceGains,
-  clampPan,
-  type ChannelMode,
-} from "@stagesync/shared";
+import { balanceGains, clampPan, type ChannelMode } from "@stagesync/shared";
 import { ANALYSER_FFT, GAIN_DEZIPPER_SEC, state } from "./state.js";
 import type { ActiveCueSample, ActiveSource, TrackBus } from "./types.js";
 
@@ -42,7 +38,10 @@ export function disconnectBusNodes(bus: TrackBus): void {
   }
 }
 
-export function createChannelBus(ctx: AudioContext, mode: ChannelMode): TrackBus {
+export function createChannelBus(
+  ctx: AudioContext,
+  mode: ChannelMode,
+): TrackBus {
   const gain = ctx.createGain();
   gain.gain.value = 1;
   const route = ctx.createGain();

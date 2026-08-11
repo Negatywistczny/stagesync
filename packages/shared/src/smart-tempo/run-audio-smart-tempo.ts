@@ -1,8 +1,5 @@
 import { DEFAULT_PPQ } from "../time.js";
-import {
-  SMART_TEMPO_MAX_BEATS,
-  SMART_TEMPO_MAX_GRID_MS,
-} from "./constants.js";
+import { SMART_TEMPO_MAX_BEATS, SMART_TEMPO_MAX_GRID_MS } from "./constants.js";
 import { msPerBarAtBpm } from "./beat1-align.js";
 import {
   extendBeatGridToDuration,
@@ -17,10 +14,7 @@ import {
   tempoNodesFromBeatGrid,
 } from "./tempo-nodes.js";
 import { tempoMapFromTempoNodes } from "./tempo-map.js";
-import type {
-  AudioSmartTempoInput,
-  AudioSmartTempoResult,
-} from "./types.js";
+import type { AudioSmartTempoInput, AudioSmartTempoResult } from "./types.js";
 
 /**
  * Audio-driven Smart Tempo: build TempoMap ONLY from precomputed beat grid.
