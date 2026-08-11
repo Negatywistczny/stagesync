@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1336
-* **Liczba katalogów:** 204
-* **Data aktualizacji:** 2026-08-11T03:09:25.540Z
+* **Liczba wszystkich plików:** 1342
+* **Liczba katalogów:** 205
+* **Data aktualizacji:** 2026-08-11T03:12:11.071Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 910 |
+| Kod | 916 |
 | Docs | 156 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 553 |
+| `.ts` | 559 |
 | `.tsx` | 178 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -81,11 +81,11 @@
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (184) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (190) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (143) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (149) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -802,6 +802,13 @@ stagesync/
 │   │   │   │   ├── types.ts
 │   │   │   │   ├── ug-parse.ts
 │   │   │   │   └── ultrastar-words.ts
+│   │   │   ├── ug-import/
+│   │   │   │   ├── apply.ts
+│   │   │   │   ├── chords.ts
+│   │   │   │   ├── import-text.ts
+│   │   │   │   ├── payload.ts
+│   │   │   │   ├── sections.ts
+│   │   │   │   └── types.ts
 │   │   │   ├── audio-clip.test.ts
 │   │   │   ├── audio-clip.ts
 │   │   │   ├── bracket-spans.ts
