@@ -25,7 +25,7 @@ function base(
 
 describe("isReservedToolLetter", () => {
   it("marks global letters (tools are T-chord only)", () => {
-    for (const k of ["w", "x", "i", "c", "k", "u", "z", "t", "l"]) {
+    for (const k of ["w", "x", "i", "c", "k", "u", "z", "t", "l", "s"]) {
       expect(isReservedToolLetter(k)).toBe(true);
     }
     expect(isReservedToolLetter("a")).toBe(false);
@@ -43,29 +43,28 @@ describe("isReservedToolLetter", () => {
 
 describe("resolveTimelineShortcut", () => {
   it("maps view toggles X / I / ?", () => {
-    expect(resolveTimelineShortcut(base({ key: "x" }))).toBe("toggle-mixer");
-    expect(resolveTimelineShortcut(base({ key: "i" }))).toBe(
-      "toggle-inspector",
-    );
     expect(resolveTimelineShortcut(base({ key: "?" }))).toBe("help-open");
     expect(resolveTimelineShortcut(base({ key: "/", shift: true }))).toBe(
       "help-open",
     );
+    expect(resolveTimelineShortcut(base({ key: "x" }))).toBe("toggle-mixer");
+    expect(resolveTimelineShortcut(base({ key: "i" }))).toBe(
+      "toggle-inspector",
+    );
   });
 
-  it("maps transport Space / Shift+Space / Enter / Home / C / K / U / Z", () => {
-    expect(resolveTimelineShortcut(base({ key: " ", code: "Space" }))).toBe(
-      "play-pause",
+  it("maps transport Space / Shift+Space / Enter / Home / C / K / U / Z / Tab", () => {
+    expect(resolveTimelineShortcut(base({ key: " " }))).toBe("play-pause");
+    expect(resolveTimelineShortcut(base({ key: " ", shift: true }))).toBe(
+      "play-from-selection",
     );
-    expect(
-      resolveTimelineShortcut(base({ key: " ", code: "Space", shift: true })),
-    ).toBe("play-from-selection");
     expect(resolveTimelineShortcut(base({ key: "Enter" }))).toBe("stop-home");
-    expect(resolveTimelineShortcut(base({ key: "Home", code: "Home" }))).toBe(
-      "stop-home",
+    expect(resolveTimelineShortcut(base({ key: "Home" }))).toBe("stop-home");
+    expect(resolveTimelineShortcut(base({ key: "Tab" }))).toBe("select-next");
+    expect(resolveTimelineShortcut(base({ key: "Tab", shift: true }))).toBe(
+      "select-prev",
     );
     expect(resolveTimelineShortcut(base({ key: "c" }))).toBe("cycle-toggle");
-    expect(resolveTimelineShortcut(base({ key: "l" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "k" }))).toBe(
       "metronome-toggle",
     );
@@ -76,13 +75,13 @@ describe("resolveTimelineShortcut", () => {
     expect(resolveTimelineShortcut(base({ key: "z" }))).toBe("fit-zoom");
   });
 
-  it("bare letters never switch tools; A stays free; I stays Inspector", () => {
+  it("bare letters: S switches to split-tool; A stays free; I stays Inspector", () => {
     expect(resolveTimelineShortcut(base({ key: "a" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "p" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "e" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "j" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "m" }))).toBeNull();
-    expect(resolveTimelineShortcut(base({ key: "s" }))).toBeNull();
+    expect(resolveTimelineShortcut(base({ key: "s" }))).toBe("split-tool");
     expect(resolveTimelineShortcut(base({ key: "g" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "r" }))).toBeNull();
     expect(resolveTimelineShortcut(base({ key: "y" }))).toBeNull();

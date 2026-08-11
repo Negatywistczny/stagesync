@@ -31,7 +31,10 @@ export type TimelineShortcutAction =
   | "paste"
   | "duplicate"
   | "select-all"
+  | "select-next"
+  | "select-prev"
   | "split-at-playhead"
+  | "split-tool"
   | "join-adjacent"
   | "zoom-h-out"
   | "zoom-h-in"
@@ -88,6 +91,7 @@ export const TIMELINE_RESERVED_TOOL_LETTERS = new Set([
   "i",
   "l",
   "t",
+  "s",
 ]);
 
 /** Second key after T opens the tools menu → tool id. */
@@ -160,6 +164,11 @@ export function resolveTimelineShortcut(
     return "stop-home";
   }
 
+  // Tab navigation
+  if (!e.mod && !e.alt && e.key === "Tab") {
+    return e.shift ? "select-prev" : "select-next";
+  }
+
   // Vocal tap tool arrows
   if (e.tapToolActive && !e.mod && !e.alt) {
     if (e.key === "ArrowUp") return "tap-line-prev";
@@ -193,6 +202,7 @@ export function resolveTimelineShortcut(
     if (letter === "i" && !e.shift) return "toggle-inspector";
     if (letter === "c" && !e.shift) return "cycle-toggle";
     if (letter === "k" && !e.shift) return "metronome-toggle";
+    if (letter === "s" && !e.shift) return "split-tool";
     if (letter === "u") return "cycle-from-clip";
     if (letter === "z" && !e.shift) return "fit-zoom";
     if (e.key === "[" && !e.shift) return "setlist-prev";
