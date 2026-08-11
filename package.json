@@ -9,7 +9,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\" \"!docs/REPO_MAP.md\"",
     "check-types": "turbo run check-types",
     "sync-version": "node scripts/release/sync-version.mjs",
     "cut-release": "node scripts/release/cut-release.mjs",

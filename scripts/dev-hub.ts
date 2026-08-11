@@ -864,7 +864,7 @@ function runFullAudit(): boolean {
     "Prettier zapisze pliki (format)",
     "unlinked: może auto-naprawić linki w Markdown (mutacja docs)",
     "e2e: może zabić procesy na :3000/:4000 i doinstalować Playwright / pnpm install",
-    "generate:map może zmienić docs/REPO_MAP.md; coverage zapisze katalogi coverage/",
+    "generate:map zapisuje docs/REPO_MAP.md tylko przy zmianie struktury; coverage → coverage/",
     "Długi przebieg (często wiele minut)",
   ]);
   clack.note(
