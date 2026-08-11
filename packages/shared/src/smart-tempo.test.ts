@@ -653,6 +653,50 @@ describe("layoutFormaFromAlignedWords", () => {
     expect(plans[1]!.lengthTicks % BAR).toBe(0);
     expect(plans[1]!.pristineBars).toBeGreaterThanOrEqual(3);
   });
+
+  it("wordless pipe with next vocal already behind cursor keeps 1-bar stub (not full pipeBars)", () => {
+    const plans = layoutFormaFromAlignedWords(
+      [
+        {
+          name: "Verse",
+          pipeBarCount: 0,
+          firstWordTicks: 0,
+          lastWordTicks: BAR,
+        },
+        {
+          name: "Solo",
+          pipeBarCount: 4,
+          firstWordTicks: null,
+          lastWordTicks: null,
+        },
+        {
+          name: "Chorus",
+          pipeBarCount: 0,
+          // Chorus Beat 1 already behind Solo cursor after Verse ends
+          firstWordTicks: BAR / 2,
+          lastWordTicks: 3 * BAR,
+        },
+      ],
+      0,
+      METER,
+      DEFAULT_PPQ,
+    );
+    expect(plans).toHaveLength(3);
+    expect(plans.map((p) => p.name)).toEqual(["Verse", "Solo", "Chorus"]);
+    // Coverage stub — not authored 4 bars (that would shove Chorus).
+    expect(plans[1]!.pristineBars).toBe(1);
+    expect(plans[1]!.lengthTicks).toBe(BAR);
+    for (const p of plans) {
+      expect(p.lengthTicks).toBeGreaterThan(0);
+      expect(p.lengthTicks % BAR).toBe(0);
+    }
+    expect(plans[1]!.startTicks).toBe(
+      plans[0]!.startTicks + plans[0]!.lengthTicks,
+    );
+    expect(plans[2]!.startTicks).toBe(
+      plans[1]!.startTicks + plans[1]!.lengthTicks,
+    );
+  });
 });
 
 describe("medianBpmFromBeatMs / sparsifyTempoNodesFromBeatGrid", () => {

@@ -641,6 +641,8 @@ export {
   evenlySpaceOnsetsOnBarGrid,
   fitOnsetsInContainer,
   enforceMinChordGap,
+  placeChordsWithMinGap,
+  sealChordLengths,
   quantizeChordOnsets,
   applyUsUgBridgeToProject,
   annotateTekstSourceSections,

@@ -54,6 +54,8 @@ export {
   mapOnsetsIntoContainer,
   fitOnsetsInContainer,
   enforceMinChordGap,
+  placeChordsWithMinGap,
+  sealChordLengths,
   barsPerChordForSection,
   sectionLengthBarsFromUg,
   structuralBarsFromUsWalls,

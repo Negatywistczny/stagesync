@@ -255,7 +255,7 @@ describe("Smart Tempo Train Data Accuracy Benchmark", () => {
         errorsMsList.push(errorMs);
 
         // Barrier assertion: Bar 1 Downbeat (t0) deviation must be <= 15ms
-        if (refPt.bar === 1 && refPt.beat === 1) {
+        if (refPt.bar === 1) {
           expect(
             errorMs,
             `Beat 1 (t0) timestamp drift (${errorMs} ms) exceeds 15ms barrier threshold`,

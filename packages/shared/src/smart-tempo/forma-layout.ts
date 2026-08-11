@@ -176,7 +176,9 @@ export function layoutFormaFromAlignedWords(
       if (nextVocal != null && nextVocal > startTicks) {
         lengthTicks = nextVocal - startTicks;
       } else if (nextVocal != null && nextVocal <= startTicks) {
-        lengthTicks = 0;
+        // No room before the next vocal Beat 1 — keep a 1-bar coverage stub
+        // (full pipeBarCount here would shove later Forma walls).
+        lengthTicks = barTicks;
       } else {
         lengthTicks = pipeBars * barTicks;
       }

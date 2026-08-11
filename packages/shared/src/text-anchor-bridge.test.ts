@@ -15,6 +15,7 @@ import {
   mapOnsetsIntoContainer,
   fitOnsetsInContainer,
   enforceMinChordGap,
+  placeChordsWithMinGap,
   isUgBridgeNoiseLine,
   normalizeLyricToken,
   parseChordProLyricLine,
@@ -290,6 +291,50 @@ describe("enforceMinChordGap", () => {
     expect(out.length).toBeGreaterThanOrEqual(3);
     expect(out[2]! - out[1]!).toBeGreaterThanOrEqual(BAR / 2);
     expect(new Set(out).size).toBe(out.length);
+  });
+});
+
+describe("placeChordsWithMinGap", () => {
+  it("drops surplus instead of sealing 1-tick crush lengths", () => {
+    const BAR = 3840;
+    const start = 0;
+    const end = 2 * BAR;
+    const paired = [
+      { startTicks: start, symbol: "C" },
+      { startTicks: start, symbol: "G" },
+      { startTicks: start, symbol: "Am" },
+      { startTicks: start, symbol: "F" },
+      { startTicks: start, symbol: "Dm" },
+    ];
+    const { placed, dropped } = placeChordsWithMinGap(
+      paired,
+      start,
+      end,
+      BAR / 2,
+    );
+    expect(dropped).toBeGreaterThan(0);
+    expect(placed.length + dropped).toBe(paired.length);
+    for (const p of placed) {
+      expect(p.lengthTicks).toBeGreaterThanOrEqual(BAR / 2);
+    }
+    for (let i = 1; i < placed.length; i++) {
+      expect(
+        placed[i]!.startTicks - placed[i - 1]!.startTicks,
+      ).toBeGreaterThanOrEqual(BAR / 2);
+    }
+  });
+
+  it("keeps lengthTicks >= 1 for every placed chord", () => {
+    const { placed } = placeChordsWithMinGap(
+      [
+        { startTicks: 0, symbol: "C" },
+        { startTicks: 100, symbol: "G" },
+      ],
+      0,
+      3840,
+      1,
+    );
+    expect(placed.every((c) => c.lengthTicks >= 1)).toBe(true);
   });
 });
 

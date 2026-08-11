@@ -3,6 +3,7 @@ import { secondsToTicks } from "../tempo-map.js";
 import type { TimeSignature } from "../time.js";
 import {
   evenlySpaceOnsetsOnBarGrid,
+  placeChordsWithMinGap,
   sealChordLengths,
   structuralBarOffsetsForChordLines,
 } from "./onset-grid.js";
@@ -109,17 +110,26 @@ export function placeBridgeAkords(
         if (last && last.symbol === p.symbol) continue;
         unique.push({ startTicks: p.startTicks, symbol: p.symbol });
       }
-      const sealed = sealChordLengths(
-        unique.map((p) => p.startTicks),
+      const halfBar = Math.max(1, Math.floor(barTicks / 2));
+      const { placed, dropped } = placeChordsWithMinGap(
+        unique,
+        win.startTicks,
         win.endTicks,
+        halfBar,
       );
-      for (let i = 0; i < unique.length && i < sealed.length; i++) {
+      for (const p of placed) {
         akordClips.push({
           id: `${prefix}-akord-${++seq}`,
-          startTicks: sealed[i]!.startTicks,
-          lengthTicks: sealed[i]!.lengthTicks,
-          symbol: unique[i]!.symbol,
+          startTicks: p.startTicks,
+          lengthTicks: p.lengthTicks,
+          symbol: p.symbol,
         });
+      }
+      if (dropped > 0) {
+        approximate = true;
+        warnings.push(
+          `Sekcja „${sec.name}”: ${dropped} akord(ów) pominięto — zbyt ciasne okno Formy (bez 1-tick crush).`,
+        );
       }
     } else if (list.length > 0 && solverSections[si]!.vocalMsRange == null) {
       // Instrumental without pipe: even pristineBars grid.
@@ -232,29 +242,28 @@ export function placeBridgeAkords(
         );
       }
 
-      // Chronological order; min gap 1 tick. Never half-bar crush / even reflow.
+      // Chronological; half-bar min gap — drop surplus instead of 1-tick crush.
       paired.sort((a, b) => a.startTicks - b.startTicks);
-      const lastLegal = Math.max(win.startTicks, win.endTicks - 1);
-      const unique: { startTicks: number; symbol: string }[] = [];
-      for (const p of paired) {
-        let t = Math.min(lastLegal, Math.max(win.startTicks, p.startTicks));
-        const last = unique[unique.length - 1];
-        if (last && t <= last.startTicks) {
-          t = Math.min(lastLegal, last.startTicks + 1);
-        }
-        unique.push({ startTicks: t, symbol: p.symbol });
-      }
-      const sealed = sealChordLengths(
-        unique.map((u) => u.startTicks),
+      const halfBar = Math.max(1, Math.floor(barTicks / 2));
+      const { placed, dropped } = placeChordsWithMinGap(
+        paired,
+        win.startTicks,
         win.endTicks,
+        halfBar,
       );
-      for (let i = 0; i < unique.length && i < sealed.length; i++) {
+      for (const p of placed) {
         akordClips.push({
           id: `${prefix}-akord-${++seq}`,
-          startTicks: sealed[i]!.startTicks,
-          lengthTicks: sealed[i]!.lengthTicks,
-          symbol: unique[i]!.symbol,
+          startTicks: p.startTicks,
+          lengthTicks: p.lengthTicks,
+          symbol: p.symbol,
         });
+      }
+      if (dropped > 0) {
+        approximate = true;
+        warnings.push(
+          `Sekcja „${sec.name}”: ${dropped} akord(ów) pominięto — zbyt ciasne okno Formy (bez 1-tick crush).`,
+        );
       }
     }
     sectionChordCounts[si] = akordClips.filter(

@@ -412,6 +412,41 @@ export function sealChordLengths(
   });
 }
 
+/**
+ * Place chord symbols on a container timeline with a minimum onset gap.
+ * Later chords that cannot fit are dropped (no 1-tick crush packing).
+ */
+export function placeChordsWithMinGap(
+  paired: readonly { startTicks: number; symbol: string }[],
+  containerStart: number,
+  containerEnd: number,
+  minGapTicks: number,
+): {
+  placed: { startTicks: number; lengthTicks: number; symbol: string }[];
+  dropped: number;
+} {
+  if (paired.length === 0) return { placed: [], dropped: 0 };
+  const sorted = paired
+    .slice()
+    .sort(
+      (a, b) => a.startTicks - b.startTicks || a.symbol.localeCompare(b.symbol),
+    );
+  const onsets = enforceMinChordGap(
+    sorted.map((p) => p.startTicks),
+    containerStart,
+    containerEnd,
+    minGapTicks,
+  );
+  const n = Math.min(onsets.length, sorted.length);
+  const sealed = sealChordLengths(onsets.slice(0, n), containerEnd);
+  const placed = sealed.map((s, i) => ({
+    startTicks: s.startTicks,
+    lengthTicks: s.lengthTicks,
+    symbol: sorted[i]!.symbol,
+  }));
+  return { placed, dropped: sorted.length - placed.length };
+}
+
 /** Wall-clock ms → tick via solver TempoMap (absolute syllable path). */
 export function chordTickFromSyllableMs(
   startMs: number,
