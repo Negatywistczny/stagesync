@@ -3,7 +3,7 @@
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.patterns": {
     "dev": "dev.cmd, dev.ps1",
-    ".gitignore": ".cline*, .cursor*, .dockerignore, .editorconfig, .npmrc, .nvmrc",
+    ".gitignore": ".cline*, .cursor*, .editorconfig, .npmrc, .nvmrc, .gitattributes",
     "package.json": "pnpm-*, turbo.json, knip.jsonc, commitlint.config.js, codecov.yml",
     "Dockerfile": "compose*.yml, .dockerignore",
     "README.md": "CHANGELOG.md, LICENSE"

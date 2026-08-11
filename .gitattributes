@@ -1,0 +1,5 @@
+# Git LFS configuration for large binary files
+data/downloads/*.apk filter=lfs diff=lfs merge=lfs -text
+apps/web/test/fixtures/smart-tempo-train-data/*.mp3 filter=lfs diff=lfs merge=lfs -text
+apps/desktop/src-tauri/bin/* filter=lfs diff=lfs merge=lfs -text
+apps/desktop/src-tauri/resources/* filter=lfs diff=lfs merge=lfs -text

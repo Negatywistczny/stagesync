@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1276
+* **Liczba wszystkich plików:** 1277
 * **Liczba katalogów:** 197
-* **Data aktualizacji:** 2026-08-11T02:01:06.977Z
+* **Data aktualizacji:** 2026-08-11T02:07:13.009Z
 
 ### Kategorie
 
@@ -18,7 +18,7 @@
 | Docs | 156 |
 | Config | 118 |
 | Assety | 120 |
-| Inne | 30 |
+| Inne | 31 |
 
 ### Top rozszerzenia
 
@@ -33,7 +33,7 @@
 | `.json` | 36 |
 | `.xml` | 35 |
 | `.mjs` | 29 |
-| `brak rozszerzenia` | 23 |
+| `brak rozszerzenia` | 24 |
 | _(pozostałe)_ | 129 |
 
 ---
@@ -150,6 +150,7 @@
 
 ### Pozostałe
 - [`.env.example`](../.env.example)
+- [`.gitattributes`](../.gitattributes)
 
 ---
 
@@ -940,6 +941,7 @@ stagesync/
 ├── .dockerignore
 ├── .editorconfig
 ├── .env.example
+├── .gitattributes
 ├── .gitignore
 ├── .npmrc
 ├── .nvmrc
