@@ -6,7 +6,7 @@ Pakiet `@stagesync/ui` to biblioteka graficzna oraz zbiór reużywalnych kompone
 
 ## 📁 Struktura projektu
 
-- **`src/`** — Pliki komponentów React, arkusze stylów CSS Modules oraz pliki definicji tokenów systemowych.
+- **[`src/`](./src/README.md)** — Komponenty prezentacyjne React, CSS Modules i tokeny systemowe. Szczegóły: **[src/README.md](./src/README.md)**.
 - **[`vitest.setup.ts`](./vitest.setup.ts)** — Konfiguracja środowiska testowego.
 
 ## 🎨 Standardy

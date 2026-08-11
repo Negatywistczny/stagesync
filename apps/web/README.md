@@ -6,26 +6,7 @@ Aplikacja `apps/web` to główny projekt kliencki zrealizowany w technologii **R
 
 ## 📁 Struktura projektu
 
-- **`src/`** — Kod źródłowy aplikacji klienckiej:
-  ```text
-  src/
-  ├── shells/                 # Powłoki i ekrany interfejsu UI
-  │   ├── admin/              # Zarządzanie bazą utworów, setlistą i sceną (/admin)
-  │   ├── client/             # Ekrany sceniczne muzyków (/client: Karaoke, OSMD, Akordy, Drums)
-  │   ├── desktop/            # Pasek tytułu, menubar i obsługa okiem dla Tauri Desktop
-  │   ├── import/             # Kreatory importu UltraStar, Ultimate Guitar i Audio
-  │   ├── settings/           # Popovery i modale ustawień serwera/motywu/audio
-  │   ├── timeline/           # Edytor osi czasu DAW (ścieżki, klipy, inspektory, mixer)
-  │   └── components/         # Współdzielone kontrolki shella (AppHeader, Navigation, Gates)
-  ├── lib/                    # Logika domenowa ułożona w 5 modułów (@lib/*)
-  │   ├── audio/              # Analiza tempa DSP, Smart Tempo, silnik odtwarzania audio
-  │   ├── timeline/           # Logika osi czasu, siatka kwantyzacji i pozycjonowanie klipów
-  │   ├── timeline-edit/      # Operacje edycyjne klipów, podział nożyczkami, drag & drop
-  │   ├── client/             # Płynny kursor OSMD, karuzela fraz, formatowanie akordów
-  │   └── shell-operator/     # Zarządzanie pinami, połączeniami i obecnością na scenie
-  ├── transport/              # Klient WebSocket odbierający ticki czasu SSOT z serwera
-  └── dev/                    # Narzędzia deweloperskie i podglądy pomocnicze
-  ```
+- **[`src/`](./src/README.md)** — Kod źródłowy aplikacji klienckiej (shelle UI, moduły pomocnicze `@lib/*`, transport WebSocket). Szczegóły: **[src/README.md](./src/README.md)**.
 - **`public/`** — Zasoby statyczne (logotypy brandu, ikony, czcionki).
 - **`scripts/`** — Skrypty budowania wariantów mobilnych (Performer i Console na Androida).
 - **[`e2e/`](./e2e/README.md)** — Testy end-to-end realizowane przy użyciu **Playwright**.

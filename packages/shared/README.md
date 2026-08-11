@@ -6,16 +6,7 @@ Pakiet `@stagesync/shared` to fundamentalna biblioteka monorepo grupująca czyst
 
 ## 📁 Struktura projektu
 
-- **`src/`** — Kod źródłowy biblioteki:
-  ```text
-  src/
-  ├── smart-tempo/            # Algorytmy analizy siatki tempa, detekcji onsetów i Formy
-  ├── tempo-map-solver/       # Solver przeliczania ticks ↔ ms z uwzględnieniem mapy tempa i metrum
-  ├── ultrastar-import/       # Parser formatu UltraStar (.txt) i konwersja do nut/tekstu v5
-  ├── ug-import/              # Parser i importer akordów/tekstów z Ultimate Guitar
-  ├── schemas/                # Schematy Zod dla projektów v5, transportu, setlisty i API
-  └── timebase/               # Helpery matematyczne dla czystego czasu (PPQ 960, ticks, BBT)
-  ```
+- **[`src/`](./src/README.md)** — Kod źródłowy biblioteki (Smart Tempo, solver czasu, parsy, schematy Zod). Szczegóły: **[src/README.md](./src/README.md)**.
 
 ## 🎨 Standardy
 
