@@ -1443,7 +1443,10 @@
   .heroName.heroEntering,
   .heroNext.heroEntering,
   .heroNextName.heroEntering,
-  .heroChordFly {
+  .heroChordFly,
+  .phraseCarouselTrack,
+  .phraseRowWrap,
+  .cycleCell {
     animation: none !important;
     transition: none !important;
   }
@@ -1453,6 +1456,10 @@
   .heroNextName.heroEnterPrep {
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .cycleCellActive {
+    transform: none;
   }
 }
 

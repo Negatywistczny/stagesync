@@ -158,9 +158,13 @@ function getCursorIterator(cursor: Cursor):
 /**
  * Move the measure cursor to a MusicXML / sheet measure (1-based).
  *
- * Do **not** count `nextMeasure()` calls: OSMD's iterator follows musical
- * repeats / voltas / jumps, so N steps ≠ sheet measure index N. Navigate by
+ * Cursor-only: never calls `osmd.render()`. Do **not** count
+ * `nextMeasure()` calls: OSMD's iterator follows musical repeats / voltas /
+ * jumps, so N steps ≠ sheet measure index N. Navigate by
  * `CurrentMeasureIndex` instead (0-based list index).
+ *
+ * When the cursor is already at/before the target, walk forward only —
+ * avoid `reset()` on every transport tick.
  */
 export function goToScoreBar(
   osmd: OpenSheetMusicDisplay,
@@ -170,7 +174,29 @@ export function goToScoreBar(
   if (!cursor) return;
   const target = clampScoreBar(osmd, scoreBar);
   const targetIndex = target - 1;
-  cursor.reset();
+
+  const styleCursorEl = () => {
+    cursor.update();
+    cursor.adjustToBackgroundColor?.();
+    const el = cursor.cursorElement;
+    if (el) {
+      el.style.pointerEvents = "none";
+      el.style.zIndex = "5";
+    }
+  };
+
+  const iteratorBefore = getCursorIterator(cursor);
+  const currentIndex = iteratorBefore?.CurrentMeasureIndex;
+  if (currentIndex === targetIndex) {
+    cursor.show();
+    styleCursorEl();
+    return;
+  }
+
+  // Only reset when behind the target is unknown or we need to go backward.
+  if (currentIndex == null || currentIndex > targetIndex) {
+    cursor.reset();
+  }
   cursor.show();
 
   const measureCount = getMeasureCount(osmd);
@@ -180,19 +206,13 @@ export function goToScoreBar(
   while (steps < maxSteps) {
     const iterator = getCursorIterator(cursor);
     if (!iterator || iterator.EndReached) break;
-    const currentIndex = iterator.CurrentMeasureIndex ?? 0;
-    if (currentIndex >= targetIndex) break;
+    const idx = iterator.CurrentMeasureIndex ?? 0;
+    if (idx >= targetIndex) break;
     cursor.nextMeasure();
     steps += 1;
   }
 
-  cursor.update();
-  cursor.adjustToBackgroundColor?.();
-  const el = cursor.cursorElement;
-  if (el) {
-    el.style.pointerEvents = "none";
-    el.style.zIndex = "5";
-  }
+  styleCursorEl();
 }
 
 export function applyOsmdZoom(
