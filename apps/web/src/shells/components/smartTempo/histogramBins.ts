@@ -1,0 +1,51 @@
+export const HISTOGRAM_BINS = [
+  {
+    label: "0–15ms",
+    min: 0,
+    max: 15.05,
+    dawTier: "exact",
+    stageTier: "stage-perfect",
+  },
+  {
+    label: "15–30ms",
+    min: 15.05,
+    max: 30,
+    dawTier: "exact",
+    stageTier: "stage-acceptable",
+  },
+  {
+    label: "30–60ms",
+    min: 30,
+    max: 60.05,
+    dawTier: "exact",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: "60–90ms",
+    min: 60.05,
+    max: 90,
+    dawTier: "close",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: "90–125ms",
+    min: 90,
+    max: 125.05,
+    dawTier: "close",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: "125–250ms",
+    min: 125.05,
+    max: 250,
+    dawTier: "fail",
+    stageTier: "stage-unusable",
+  },
+  {
+    label: ">250ms",
+    min: 250,
+    max: Infinity,
+    dawTier: "fail",
+    stageTier: "stage-unusable",
+  },
+] as const;

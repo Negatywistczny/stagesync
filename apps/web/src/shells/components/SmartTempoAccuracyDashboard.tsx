@@ -17,144 +17,29 @@ import {
   ConvergenceChart,
 } from "./SmartTempoCharts.js";
 
-export type StageTier = "stage-perfect" | "stage-acceptable" | "stage-unusable";
-export type DawTier = "exact" | "close" | "fail";
 
-export type BarDataPoint = {
-  trackName: string;
-  bar: number;
-  timeSec: number;
-  refBpm: number;
-  estBpm: number;
-  refBarMs: number;
-  estBarMs: number;
-  errorMs: number;
-  tier: DawTier;
-  stageTier?: StageTier;
-};
-
-export type TrackBenchmarkDataset = {
-  id: string;
-  name: string;
-  artist: string;
-  durationSec: number;
-  barsCount: number;
-  exactPct: number;
-  closePct: number;
-  failPct: number;
-  avgErrorMs: number;
-  medianErrorMs: number;
-  p95ErrorMs: number;
-  dawGrade?: { exactPct: number; closePct: number; failPct: number };
-  stageGrade?: {
-    perfectPct: number;
-    acceptablePct: number;
-    unusablePct: number;
-  };
-  bars: BarDataPoint[];
-};
-
-export type BenchmarkHistoryEntry = {
-  id: string;
-  timestamp: string;
-  gitCommit: string;
-  note: string;
-  summary: {
-    totalMeasures: number;
-    exactPct: number;
-    closePct: number;
-    failPct: number;
-    meanMs: number;
-    medianMs: number;
-    p95Ms: number;
-    dawGrade?: { exactPct: number; closePct: number; failPct: number };
-    stageGrade?: {
-      perfectPct: number;
-      acceptablePct: number;
-      unusablePct: number;
-    };
-  };
-  perSong?: Record<
-    string,
-    {
-      exactPct: number;
-      meanMs: number;
-      stageGrade?: {
-        perfectPct: number;
-        acceptablePct: number;
-        unusablePct: number;
-      };
-    }
-  >;
-};
+export type {
+  StageTier,
+  DawTier,
+  BarDataPoint,
+  TrackBenchmarkDataset,
+  BenchmarkHistoryEntry,
+  SmartTempoAccuracyDashboardProps,
+} from "./smartTempo/dashboardTypes.js";
+import type {
+  BarDataPoint,
+  BenchmarkHistoryEntry,
+  SmartTempoAccuracyDashboardProps,
+  TrackBenchmarkDataset,
+} from "./smartTempo/dashboardTypes.js";
+import { HISTOGRAM_BINS } from "./smartTempo/histogramBins.js";
+import { DashboardControls } from "./smartTempo/DashboardControls.js";
+import { DashboardKpiCards } from "./smartTempo/DashboardKpiCards.js";
 
 const DEFAULT_DATASET = benchmarkDataRaw as unknown as TrackBenchmarkDataset[];
 const DEFAULT_HISTORY =
   benchmarkHistoryRaw as unknown as BenchmarkHistoryEntry[];
 
-export type SmartTempoAccuracyDashboardProps = {
-  /** Optional custom dataset to display instead of the default benchmark tracks. */
-  dataset?: TrackBenchmarkDataset[];
-  /** Optional benchmark history runs for regression comparison. */
-  history?: BenchmarkHistoryEntry[];
-  /** Optional title override. */
-  title?: string;
-  /** Optional container class name. */
-  className?: string;
-};
-
-// Non-linear bin definitions — bin boundaries align with tier thresholds
-const HISTOGRAM_BINS = [
-  {
-    label: "0–15ms",
-    min: 0,
-    max: 15.05,
-    dawTier: "exact",
-    stageTier: "stage-perfect",
-  },
-  {
-    label: "15–30ms",
-    min: 15.05,
-    max: 30,
-    dawTier: "exact",
-    stageTier: "stage-acceptable",
-  },
-  {
-    label: "30–60ms",
-    min: 30,
-    max: 60.05,
-    dawTier: "exact",
-    stageTier: "stage-unusable",
-  },
-  {
-    label: "60–90ms",
-    min: 60.05,
-    max: 90,
-    dawTier: "close",
-    stageTier: "stage-unusable",
-  },
-  {
-    label: "90–125ms",
-    min: 90,
-    max: 125.05,
-    dawTier: "close",
-    stageTier: "stage-unusable",
-  },
-  {
-    label: "125–250ms",
-    min: 125.05,
-    max: 250,
-    dawTier: "fail",
-    stageTier: "stage-unusable",
-  },
-  {
-    label: ">250ms",
-    min: 250,
-    max: Infinity,
-    dawTier: "fail",
-    stageTier: "stage-unusable",
-  },
-] as const;
 
 export function SmartTempoAccuracyDashboard({
   dataset = DEFAULT_DATASET,
@@ -480,359 +365,24 @@ export function SmartTempoAccuracyDashboard({
   return (
     <div className={`${styles.container} ${className ?? ""}`}>
       {/* Header & Controls Section (Two Rows) */}
-      <div className={styles.header}>
-        {/* Row 1: Title, Subtitle, Grade Mode Switcher, Baseline Selector */}
-        <div className={styles.headerRow1}>
-          <div className={styles.titleGroup}>
-            <h2 className={styles.title}>
-              {title}
-              <span className={styles.badgeHeader}>Logic Pro SSOT</span>
-            </h2>
-            <p className={styles.subtitle}>
-              Porównanie odchyleń siatki Smart Tempo z Logic Pro. Ocena
-              dwupoziomowa: Studio DAW vs Estradowa Live.
-            </p>
-          </div>
+      <DashboardControls
+        title={title}
+        dataset={dataset}
+        history={history}
+        selectedTrackId={selectedTrackId}
+        setSelectedTrackId={setSelectedTrackId}
+        selectedCompareId={selectedCompareId}
+        setSelectedCompareId={setSelectedCompareId}
+        gradeMode={gradeMode}
+        setGradeMode={setGradeMode}
+      />
 
-          <div className={styles.headerControlsRight}>
-            {/* Dual-Tier Metric Grade Mode Switch */}
-            <div
-              className={styles.gradeModeToggle}
-              role="tablist"
-              aria-label="Tryb oceny metryk"
-            >
-              <button
-                type="button"
-                className={`${styles.gradeModeBtn} ${
-                  gradeMode === "daw" ? styles.gradeModeActiveDaw : ""
-                }`}
-                onClick={() => setGradeMode("daw")}
-                title="Kryteria DAW Grade: Exact ≤60ms (1/32 nuta), Close 60-125ms"
-              >
-                🎛️ DAW Grade (≤60ms)
-              </button>
-              <button
-                type="button"
-                className={`${styles.gradeModeBtn} ${
-                  gradeMode === "stage" ? styles.gradeModeActiveStage : ""
-                }`}
-                onClick={() => setGradeMode("stage")}
-                title="Kryteria Estradowe: Stage Perfect ≤15ms (Brak flamu IEM), Acceptable 15-35ms (DMX/Live)"
-              >
-                🎤 Stage-Ready Grade (≤15ms)
-              </button>
-            </div>
+      <DashboardKpiCards
+        gradeMode={gradeMode}
+        stats={stats}
+        deltas={deltas}
+      />
 
-            {/* Baseline Comparison Select */}
-            {history.length > 0 && (
-              <select
-                aria-label="Wersja odniesienia (Baseline)"
-                className={styles.compareSelect}
-                value={selectedCompareId}
-                onChange={(e) => setSelectedCompareId(e.target.value)}
-              >
-                <option value="none">Brak porównania (Single Run)</option>
-                {history.map((h, i) => (
-                  <option key={h.id} value={h.id}>
-                    {i === 0 ? "⚡ Wersja Bazowa: " : "📜 "}
-                    {h.note.length > 30 ? `${h.note.slice(0, 30)}…` : h.note} (
-                    {h.gitCommit} · Exact {h.summary.exactPct}%)
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-        </div>
-
-        {/* Row 2: Track Selector Pills Bar */}
-        <div className={styles.headerRow2}>
-          <div
-            className={styles.trackSelector}
-            role="tablist"
-            aria-label="Wybór utworu"
-          >
-            <button
-              type="button"
-              className={`${styles.trackBtn} ${selectedTrackId === "all" ? styles.trackBtnActive : ""}`}
-              onClick={() => setSelectedTrackId("all")}
-            >
-              Wszystkie (
-              {DEFAULT_DATASET.reduce((sum, t) => sum + t.barsCount, 0)} miar)
-            </button>
-            {dataset.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className={`${styles.trackBtn} ${selectedTrackId === t.id ? styles.trackBtnActive : ""}`}
-                onClick={() => setSelectedTrackId(t.id)}
-              >
-                {t.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Cards Section */}
-      <div className={styles.kpiGrid}>
-        {gradeMode === "daw" ? (
-          <>
-            {/* DAW Exact KPI */}
-            <div className={`${styles.kpiCard} ${styles.kpiCardExact}`}>
-              <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>🟢 Dokładne (≤ 60 ms)</span>
-                <span className={`${styles.kpiBadge} ${styles.badgeExact}`}>
-                  DAW Grade
-                </span>
-              </div>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats.exactPct}%</span>
-                {deltas && (
-                  <span
-                    className={`${styles.deltaBadge} ${
-                      deltas.exactDelta > 0
-                        ? styles.deltaGood
-                        : deltas.exactDelta < 0
-                          ? styles.deltaBad
-                          : styles.deltaNeutral
-                    }`}
-                    title={`Δ vs baseline ${deltas.baseExactPct}%`}
-                  >
-                    {deltas.exactDelta > 0
-                      ? `+${deltas.exactDelta}% 🟢`
-                      : deltas.exactDelta < 0
-                        ? `${deltas.exactDelta}% 🔴`
-                        : `0%`}
-                  </span>
-                )}
-              </div>
-              <div className={styles.kpiMeta}>
-                {stats.exactCount} z {stats.total} miar (≤ 1/32 nuty przy 120
-                BPM)
-              </div>
-            </div>
-
-            {/* DAW Close KPI */}
-            <div className={`${styles.kpiCard} ${styles.kpiCardClose}`}>
-              <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>
-                  🟡 Tolerancja (60–125 ms)
-                </span>
-                <span className={`${styles.kpiBadge} ${styles.badgeClose}`}>
-                  Rubato
-                </span>
-              </div>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats.closePct}%</span>
-                {deltas && (
-                  <span
-                    className={`${styles.deltaBadge} ${
-                      deltas.closeDelta < 0
-                        ? styles.deltaGood
-                        : deltas.closeDelta > 0
-                          ? styles.deltaBad
-                          : styles.deltaNeutral
-                    }`}
-                  >
-                    {deltas.closeDelta > 0
-                      ? `+${deltas.closeDelta}%`
-                      : deltas.closeDelta < 0
-                        ? `${deltas.closeDelta}%`
-                        : `0%`}
-                  </span>
-                )}
-              </div>
-              <div className={styles.kpiMeta}>
-                {stats.closeCount} miar w paśmie rubato (≤ 1/16 nuty)
-              </div>
-            </div>
-
-            {/* DAW Fail KPI */}
-            <div className={`${styles.kpiCard} ${styles.kpiCardFail}`}>
-              <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>🔴 Błąd (&gt; 125 ms)</span>
-                <span className={`${styles.kpiBadge} ${styles.badgeFail}`}>
-                  {stats.failPct <= 10 ? "✅ Pass ≤10%" : "⚠️ Over"}
-                </span>
-              </div>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats.failPct}%</span>
-                {deltas && (
-                  <span
-                    className={`${styles.deltaBadge} ${
-                      deltas.failDelta < 0
-                        ? styles.deltaGood
-                        : deltas.failDelta > 0
-                          ? styles.deltaBad
-                          : styles.deltaNeutral
-                    }`}
-                  >
-                    {deltas.failDelta > 0
-                      ? `+${deltas.failDelta}% 🔴`
-                      : deltas.failDelta < 0
-                        ? `${deltas.failDelta}% 🟢`
-                        : `0%`}
-                  </span>
-                )}
-              </div>
-              <div className={styles.kpiMeta}>
-                {stats.failCount} miar z przekroczoną tolerancją DAW
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Stage Perfect KPI */}
-            <div className={`${styles.kpiCard} ${styles.kpiCardExact}`}>
-              <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>
-                  🟢 Stage Perfect (≤ 15 ms)
-                </span>
-                <span className={`${styles.kpiBadge} ${styles.badgeExact}`}>
-                  IEM Safe
-                </span>
-              </div>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>
-                  {stats.stagePerfectPct}%
-                </span>
-                {deltas && (
-                  <span
-                    className={`${styles.deltaBadge} ${
-                      deltas.perfectDelta > 0
-                        ? styles.deltaGood
-                        : deltas.perfectDelta < 0
-                          ? styles.deltaBad
-                          : styles.deltaNeutral
-                    }`}
-                    title={`Δ vs baseline ${deltas.basePerfectPct}%`}
-                  >
-                    {deltas.perfectDelta > 0
-                      ? `+${deltas.perfectDelta}% 🟢`
-                      : deltas.perfectDelta < 0
-                        ? `${deltas.perfectDelta}% 🔴`
-                        : `0%`}
-                  </span>
-                )}
-              </div>
-              <div className={styles.kpiMeta}>
-                {stats.stagePerfectCount} z {stats.total} miar (Zero IEM flam /
-                Konzert-ready)
-              </div>
-            </div>
-
-            {/* Stage Acceptable KPI */}
-            <div className={`${styles.kpiCard} ${styles.kpiCardClose}`}>
-              <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>
-                  🟡 Stage Acceptable (15–35 ms)
-                </span>
-                <span className={`${styles.kpiBadge} ${styles.badgeClose}`}>
-                  DMX Safe
-                </span>
-              </div>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>
-                  {stats.stageAcceptablePct}%
-                </span>
-                {deltas && (
-                  <span
-                    className={`${styles.deltaBadge} ${
-                      deltas.acceptableDelta < 0
-                        ? styles.deltaGood
-                        : deltas.acceptableDelta > 0
-                          ? styles.deltaBad
-                          : styles.deltaNeutral
-                    }`}
-                  >
-                    {deltas.acceptableDelta > 0
-                      ? `+${deltas.acceptableDelta}%`
-                      : deltas.acceptableDelta < 0
-                        ? `${deltas.acceptableDelta}%`
-                        : `0%`}
-                  </span>
-                )}
-              </div>
-              <div className={styles.kpiMeta}>
-                {stats.stageAcceptableCount} miar z mikro-rubato bezpiecznym dla
-                sekcji i świateł
-              </div>
-            </div>
-
-            {/* Stage Unusable KPI */}
-            <div className={`${styles.kpiCard} ${styles.kpiCardFail}`}>
-              <div className={styles.kpiHeader}>
-                <span className={styles.kpiLabel}>
-                  🔴 Stage Unusable (&gt; 35 ms)
-                </span>
-                <span className={`${styles.kpiBadge} ${styles.badgeFail}`}>
-                  Live Risk
-                </span>
-              </div>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>
-                  {stats.stageUnusablePct}%
-                </span>
-                {deltas && (
-                  <span
-                    className={`${styles.deltaBadge} ${
-                      deltas.unusableDelta < 0
-                        ? styles.deltaGood
-                        : deltas.unusableDelta > 0
-                          ? styles.deltaBad
-                          : styles.deltaNeutral
-                    }`}
-                  >
-                    {deltas.unusableDelta > 0
-                      ? `+${deltas.unusableDelta}% 🔴`
-                      : deltas.unusableDelta < 0
-                        ? `${deltas.unusableDelta}% 🟢`
-                        : `0%`}
-                  </span>
-                )}
-              </div>
-              <div className={styles.kpiMeta}>
-                {stats.stageUnusableCount} miar grożących rozjazdem uderzeń na
-                żywo
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Mean / Stats KPI */}
-        <div className={`${styles.kpiCard} ${styles.kpiCardStats}`}>
-          <div className={styles.kpiHeader}>
-            <span className={styles.kpiLabel}>📈 Statystyki Błędu</span>
-            <span className={`${styles.kpiBadge} ${styles.badgeStats}`}>
-              Mean / p50 / p95
-            </span>
-          </div>
-          <div className={styles.kpiValueRow}>
-            <span className={styles.kpiValue}>{stats.avgErrorMs} ms</span>
-            {deltas && (
-              <span
-                className={`${styles.deltaBadge} ${
-                  deltas.meanDelta < 0
-                    ? styles.deltaGood
-                    : deltas.meanDelta > 0
-                      ? styles.deltaBad
-                      : styles.deltaNeutral
-                }`}
-                title={`Δ vs baseline ${deltas.baseMeanMs} ms`}
-              >
-                {deltas.meanDelta < 0
-                  ? `${deltas.meanDelta} ms 🟢`
-                  : deltas.meanDelta > 0
-                    ? `+${deltas.meanDelta} ms 🔴`
-                    : `0 ms`}
-              </span>
-            )}
-          </div>
-          <div className={styles.kpiMeta}>
-            Mediana: {stats.medianErrorMs} ms | p95: {stats.p95ErrorMs} ms
-          </div>
-        </div>
-      </div>
 
       {/* Main Charts Layout */}
       <div className={styles.chartGrid}>
@@ -938,3 +488,4 @@ export function SmartTempoAccuracyDashboard({
     </div>
   );
 }
+
