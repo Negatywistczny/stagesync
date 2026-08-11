@@ -13,6 +13,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Przewodniki:** INSTALL / DESKTOP / MOBILE ujednolicone (odbiorca, mapa aktualizacji, kontrakty operatora w INSTALL; odchudzone menu desktop i wall-of-text Android).
 
+#### ⏱️ Timeline & DAW
+
+- **Import US+UG:** przy ciasnym oknie Formy mostek pomija nadmiarowe akordy zamiast upychać je w odcinki 1-tick (ostrzeżenie w wyniku importu); sekcja bez miejsca przed następnym Beat 1 wokalu dostaje 1-taktowy stub Formy zamiast zerowej długości.
+
+#### 🖥️ App Shell & UI
+
+- **Client Grid / Partytura:** `prefers-reduced-motion` wyłącza też CSS karuzeli fraz (nie tylko hero); kursor OSMD na ticku idzie tylko do przodu bez pełnego `reset` przy każdym takcie.
+
 ### Naprawiono
 
 #### 📚 Dokumentacja
