@@ -158,6 +158,8 @@ import { TimelineMapDialogs } from "./dialogs/TimelineMapDialogs.js";
 import { useTimelineMixerState } from "./hooks/useTimelineMixerState.js";
 import { useTimelineAudioUpload } from "./hooks/useTimelineAudioUpload.js";
 import { useTimelineContextMenus } from "./hooks/useTimelineContextMenus.js";
+import { useTimelineMapEdits } from "./hooks/useTimelineMapEdits.js";
+import { useTimelineWandTool } from "./hooks/useTimelineWandTool.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -622,17 +624,7 @@ export function TimelineShell() {
   const isMobilePreview = touchTier === "mobile";
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
   const gesturePolicy = timelineGesturesAllowed(touchTier);
-  const [tempoEditOpen, setTempoEditOpen] = useState(false);
-  const [tempoDraft, setTempoDraft] = useState("");
-  const [meterEditOpen, setMeterEditOpen] = useState(false);
-  const [meterNumDraft, setMeterNumDraft] = useState("4");
-  const [meterDenDraft, setMeterDenDraft] = useState("4");
-  const tempoEditTitleId = useId();
-  const meterEditTitleId = useId();
-  const keyEditTitleId = useId();
-  const [keyEditOpen, setKeyEditOpen] = useState(false);
-  /** Ticks used by map edit modals (playhead or clicked segment). */
-  const [mapEditTicks, setMapEditTicks] = useState(0);
+
   const [songMetaOpen, setSongMetaOpen] = useState(false);
   /** Show/hide Właściwości panel (I). Independent of Metadane (ⓘ). */
   const [inspectorVisible, setInspectorVisible] = useState(
@@ -755,6 +747,27 @@ export function TimelineShell() {
     });
 
   const {
+    tempoEditTitleId,
+    meterEditTitleId,
+    keyEditTitleId,
+    tempoEditOpen,
+    setTempoEditOpen,
+    tempoDraft,
+    setTempoDraft,
+    meterEditOpen,
+    setMeterEditOpen,
+    meterNumDraft,
+    setMeterNumDraft,
+    meterDenDraft,
+    setMeterDenDraft,
+    keyEditOpen,
+    setKeyEditOpen,
+    mapEditTicks,
+    setMapEditTicks,
+    openMapEdit,
+  } = useTimelineMapEdits({ draftProject, commitDraft });
+
+  const {
     clipSelection,
     setClipSelection,
     clearClipSelection,
@@ -799,6 +812,16 @@ export function TimelineShell() {
     setSoloAudioTrackIds,
     setTrackVisibility,
   });
+
+  const { applyWand } = useTimelineWandTool({
+    draftRef,
+    clipSelection,
+    commitDraft,
+    flashCanvasNotice,
+    setWandMenu,
+    setTool,
+  });
+
   const [timelineSurface, setTimelineSurface] =
     useState<TimelineSurface>("timeline");
   const [trackRename, setTrackRename] = useState<{
@@ -3960,24 +3983,6 @@ export function TimelineShell() {
     );
   }
 
-  function openMapEdit(
-    lane: MapLaneId,
-    ticks: number,
-    seed?: { bpm?: number; num?: number; den?: number },
-  ) {
-    setMapEditTicks(ticks);
-    if (lane === "tempo") {
-      setTempoDraft(String(seed?.bpm ?? resolveTempoAt(draftProject!, ticks)));
-      setTempoEditOpen(true);
-    } else if (lane === "metrum") {
-      const m = resolveMeterAt(draftProject!, ticks);
-      setMeterNumDraft(String(seed?.num ?? m.numerator));
-      setMeterDenDraft(String(seed?.den ?? m.denominator));
-      setMeterEditOpen(true);
-    } else {
-      setKeyEditOpen(true);
-    }
-  }
 
   function onMapLanePointerDown(
     e: React.PointerEvent<HTMLDivElement>,
@@ -4239,63 +4244,7 @@ export function TimelineShell() {
     }, 3200);
   }
 
-  function applyWand(mode: WandMode) {
-    const draft = draftRef.current;
-    if (!draft) return;
-    // v4 wandScopeSectionIds: Forma sections and/or enclosing sections of
-    // selected Tekst/Akordy. Empty selection → whole song. Cue-only → abort.
-    const selected = clipSelection.items;
-    let scope: { sectionIds?: string[] } = {};
-    if (selected.length > 0) {
-      const sectionIds = new Set<string>();
-      const music = draft.forma.clips.filter((c) => c.kind === "section");
-      for (const item of selected) {
-        if (item.lane === "forma") {
-          const clip = draft.forma.clips.find((c) => c.id === item.id);
-          if (clip?.kind === "section") sectionIds.add(clip.id);
-          continue;
-        }
-        if (item.lane !== "tekst" && item.lane !== "akordy") continue;
-        const content =
-          item.lane === "tekst"
-            ? draft.tekst.clips.find((c) => c.id === item.id)
-            : draft.akordy.clips.find((c) => c.id === item.id);
-        if (!content) continue;
-        const host = music.find(
-          (s) =>
-            content.startTicks >= s.startTicks &&
-            content.startTicks < s.startTicks + s.lengthTicks,
-        );
-        if (host) sectionIds.add(host.id);
-      }
-      if (sectionIds.size === 0) {
-        flashCanvasNotice(
-          "Zaznacz sekcję Formy albo klipy Tekstu/Akordów — Różdżka nie działa na Cue",
-        );
-        setWandMenu(null);
-        setTool("pointer");
-        return;
-      }
-      scope = { sectionIds: [...sectionIds] };
-    }
-    const result = placeContentFromForma(draft, mode, scope);
-    if (!result.ok) {
-      flashCanvasNotice(
-        result.message || "Nie udało się rozmieścić treści Różdżką",
-      );
-      setWandMenu(null);
-      setTool("pointer");
-      return;
-    }
-    if (result.project !== draft) commitDraft(result.project);
-    let msg = result.message || `Różdżka: ${result.placed} klipów`;
-    if (result.approximate) {
-      msg += " — przybliżone (doprecyzuj Tapem)";
-    }
-    flashCanvasNotice(msg);
-    setWandMenu(null);
-    setTool("pointer");
-  }
+
 
   function openToolMenuAt(clientX: number, clientY: number) {
     const pad = 8;
