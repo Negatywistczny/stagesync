@@ -7,8 +7,8 @@
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
 * **Liczba wszystkich plików:** 1418
-* **Liczba katalogów:** 214
-* **Data aktualizacji:** 2026-08-11T03:41:05.047Z
+* **Liczba katalogów:** 222
+* **Data aktualizacji:** 2026-08-11T11:40:21.650Z
 
 ### Kategorie
 
@@ -754,8 +754,20 @@ stagesync/
 │   │   └── README.md
 │   ├── shared/
 │   │   ├── src/
+│   │   │   ├── audio-clip/
+│   │   │   │   ├── audio-clip.test.ts
+│   │   │   │   ├── audio-clip.ts
+│   │   │   │   ├── clip-collision.test.ts
+│   │   │   │   └── clip-collision.ts
 │   │   │   ├── fixtures/
 │   │   │   │   └── us-ug/  … (8 plików, 4 podkatalogi)
+│   │   │   ├── import/
+│   │   │   │   ├── ug/  … (13 plików)
+│   │   │   │   ├── ultrastar/  … (9 plików)
+│   │   │   │   ├── library-import.test.ts
+│   │   │   │   ├── library-import.ts
+│   │   │   │   ├── setlist.test.ts
+│   │   │   │   └── setlist.ts
 │   │   │   ├── index/
 │   │   │   │   ├── content-api.ts
 │   │   │   │   ├── import-api.ts
@@ -766,6 +778,34 @@ stagesync/
 │   │   │   │   ├── tempo-api.ts
 │   │   │   │   ├── time-api.ts
 │   │   │   │   └── transport-api.ts
+│   │   │   ├── mixer/
+│   │   │   │   ├── mixer-math.test.ts
+│   │   │   │   ├── mixer-math.ts
+│   │   │   │   ├── mixer-routing.test.ts
+│   │   │   │   └── mixer-routing.ts
+│   │   │   ├── music/
+│   │   │   │   ├── chord-display.test.ts
+│   │   │   │   ├── chord-display.ts
+│   │   │   │   ├── harmonic-accent.test.ts
+│   │   │   │   ├── harmonic-accent.ts
+│   │   │   │   ├── score-bar-map.test.ts
+│   │   │   │   ├── score-bar-map.ts
+│   │   │   │   ├── transpose.test.ts
+│   │   │   │   └── transpose.ts
+│   │   │   ├── project/
+│   │   │   │   ├── host-discovery.test.ts
+│   │   │   │   ├── host-discovery.ts
+│   │   │   │   ├── merge-preserve.test.ts
+│   │   │   │   ├── merge-preserve.ts
+│   │   │   │   ├── project-bounds.test.ts
+│   │   │   │   ├── project-bounds.ts
+│   │   │   │   ├── project-resolve.test.ts
+│   │   │   │   ├── project-resolve.ts
+│   │   │   │   ├── project-seed.test.ts
+│   │   │   │   ├── project-seed.ts
+│   │   │   │   ├── protocol-version-android.test.ts
+│   │   │   │   ├── schema.test.ts
+│   │   │   │   └── schema.ts
 │   │   │   ├── smart-tempo/
 │   │   │   │   ├── backing-clip.ts
 │   │   │   │   ├── beat-grid.ts
@@ -775,6 +815,9 @@ stagesync/
 │   │   │   │   ├── epoch-shims.ts
 │   │   │   │   ├── forma-layout.ts
 │   │   │   │   ├── run-audio-smart-tempo.ts
+│   │   │   │   ├── smart-tempo-beat-grid.test.ts
+│   │   │   │   ├── smart-tempo.test.ts
+│   │   │   │   ├── smart-tempo.ts
 │   │   │   │   ├── tempo-map.ts
 │   │   │   │   ├── tempo-nodes.ts
 │   │   │   │   └── types.ts
@@ -784,6 +827,8 @@ stagesync/
 │   │   │   │   ├── constants.ts
 │   │   │   │   ├── multipass.ts
 │   │   │   │   ├── seed.ts
+│   │   │   │   ├── tempo-map-solver.test.ts
+│   │   │   │   ├── tempo-map-solver.ts
 │   │   │   │   └── types.ts
 │   │   │   ├── text-anchor-bridge/
 │   │   │   │   ├── align.ts
@@ -799,110 +844,51 @@ stagesync/
 │   │   │   │   ├── onset-grid.ts
 │   │   │   │   ├── pristine-grid.test.ts
 │   │   │   │   ├── pristine-grid.ts
+│   │   │   │   ├── text-anchor-bridge-pure.test.ts
+│   │   │   │   ├── text-anchor-bridge.test.ts
+│   │   │   │   ├── text-anchor-bridge.ts
 │   │   │   │   ├── tokenize.ts
 │   │   │   │   ├── types.ts
 │   │   │   │   ├── ug-parse.ts
 │   │   │   │   └── ultrastar-words.ts
-│   │   │   ├── ug-import/
-│   │   │   │   ├── apply.ts
-│   │   │   │   ├── chords.ts
-│   │   │   │   ├── import-text.ts
-│   │   │   │   ├── payload.ts
-│   │   │   │   ├── sections.ts
-│   │   │   │   └── types.ts
-│   │   │   ├── ultrastar-import/
-│   │   │   │   ├── apply.ts
-│   │   │   │   ├── import-text.ts
-│   │   │   │   ├── lyrics.ts
-│   │   │   │   ├── parse-note.ts
-│   │   │   │   ├── timing.ts
-│   │   │   │   └── types.ts
-│   │   │   ├── audio-clip.test.ts
-│   │   │   ├── audio-clip.ts
-│   │   │   ├── bracket-spans.ts
-│   │   │   ├── chord-display.test.ts
-│   │   │   ├── chord-display.ts
-│   │   │   ├── clip-collision.test.ts
-│   │   │   ├── clip-collision.ts
-│   │   │   ├── countdown-content.test.ts
-│   │   │   ├── countdown-content.ts
-│   │   │   ├── forma-subsections.test.ts
-│   │   │   ├── forma-subsections.ts
-│   │   │   ├── harmonic-accent.test.ts
-│   │   │   ├── harmonic-accent.ts
-│   │   │   ├── host-discovery.test.ts
-│   │   │   ├── host-discovery.ts
-│   │   │   ├── index.ts
-│   │   │   ├── library-import.test.ts
-│   │   │   ├── library-import.ts
-│   │   │   ├── merge-preserve.test.ts
-│   │   │   ├── merge-preserve.ts
-│   │   │   ├── meter-map-bbt.test.ts
-│   │   │   ├── meter-map-bbt.ts
-│   │   │   ├── midi-clock.test.ts
-│   │   │   ├── midi-clock.ts
-│   │   │   ├── mixer-math.test.ts
-│   │   │   ├── mixer-math.ts
-│   │   │   ├── mixer-routing.test.ts
-│   │   │   ├── mixer-routing.ts
-│   │   │   ├── project-bounds.test.ts
-│   │   │   ├── project-bounds.ts
-│   │   │   ├── project-resolve.test.ts
-│   │   │   ├── project-resolve.ts
-│   │   │   ├── project-seed.test.ts
-│   │   │   ├── project-seed.ts
-│   │   │   ├── protocol-version-android.test.ts
-│   │   │   ├── schema.test.ts
-│   │   │   ├── schema.ts
-│   │   │   ├── score-bar-map.test.ts
-│   │   │   ├── score-bar-map.ts
-│   │   │   ├── section-names.test.ts
-│   │   │   ├── section-names.ts
-│   │   │   ├── setlist.test.ts
-│   │   │   ├── setlist.ts
-│   │   │   ├── smart-tempo-beat-grid.test.ts
-│   │   │   ├── smart-tempo.test.ts
-│   │   │   ├── smart-tempo.ts
-│   │   │   ├── snap-grid.test.ts
-│   │   │   ├── snap-grid.ts
-│   │   │   ├── soft-clock.test.ts
-│   │   │   ├── soft-clock.ts
-│   │   │   ├── stage-cue-banner.test.ts
-│   │   │   ├── stage-cue-banner.ts
-│   │   │   ├── tekst-block-text.test.ts
-│   │   │   ├── tekst-block-text.ts
-│   │   │   ├── tempo-map-ms.ts
-│   │   │   ├── tempo-map-solver.test.ts
-│   │   │   ├── tempo-map-solver.ts
-│   │   │   ├── tempo-map.test.ts
-│   │   │   ├── tempo-map.ts
-│   │   │   ├── text-anchor-bridge-pure.test.ts
-│   │   │   ├── text-anchor-bridge.test.ts
-│   │   │   ├── text-anchor-bridge.ts
-│   │   │   ├── theme-default.test.ts
-│   │   │   ├── theme-default.ts
-│   │   │   ├── time.test.ts
-│   │   │   ├── time.ts
-│   │   │   ├── track-appearance.test.ts
-│   │   │   ├── track-appearance.ts
-│   │   │   ├── transport-loop.test.ts
-│   │   │   ├── transport-loop.ts
-│   │   │   ├── transport.test.ts
-│   │   │   ├── transport.ts
-│   │   │   ├── transpose.test.ts
-│   │   │   ├── transpose.ts
-│   │   │   ├── ug-api.ts
-│   │   │   ├── ug-content.test.ts
-│   │   │   ├── ug-content.ts
-│   │   │   ├── ug-import.test.ts
-│   │   │   ├── ug-import.ts
-│   │   │   ├── ug-pipe-bars.test.ts
-│   │   │   ├── ug-pipe-bars.ts
-│   │   │   ├── ultrastar-api.ts
-│   │   │   ├── ultrastar-import.test.ts
-│   │   │   ├── ultrastar-import.ts
-│   │   │   ├── wand.test.ts
-│   │   │   └── wand.ts
+│   │   │   ├── time-tempo/
+│   │   │   │   ├── meter-map-bbt.test.ts
+│   │   │   │   ├── meter-map-bbt.ts
+│   │   │   │   ├── midi-clock.test.ts
+│   │   │   │   ├── midi-clock.ts
+│   │   │   │   ├── snap-grid.test.ts
+│   │   │   │   ├── snap-grid.ts
+│   │   │   │   ├── soft-clock.test.ts
+│   │   │   │   ├── soft-clock.ts
+│   │   │   │   ├── tempo-map-ms.ts
+│   │   │   │   ├── tempo-map.test.ts
+│   │   │   │   ├── tempo-map.ts
+│   │   │   │   ├── time.test.ts
+│   │   │   │   └── time.ts
+│   │   │   ├── transport/
+│   │   │   │   ├── transport-loop.test.ts
+│   │   │   │   ├── transport-loop.ts
+│   │   │   │   ├── transport.test.ts
+│   │   │   │   └── transport.ts
+│   │   │   ├── ui-helpers/
+│   │   │   │   ├── bracket-spans.ts
+│   │   │   │   ├── countdown-content.test.ts
+│   │   │   │   ├── countdown-content.ts
+│   │   │   │   ├── forma-subsections.test.ts
+│   │   │   │   ├── forma-subsections.ts
+│   │   │   │   ├── section-names.test.ts
+│   │   │   │   ├── section-names.ts
+│   │   │   │   ├── stage-cue-banner.test.ts
+│   │   │   │   ├── stage-cue-banner.ts
+│   │   │   │   ├── tekst-block-text.test.ts
+│   │   │   │   ├── tekst-block-text.ts
+│   │   │   │   ├── theme-default.test.ts
+│   │   │   │   ├── theme-default.ts
+│   │   │   │   ├── track-appearance.test.ts
+│   │   │   │   ├── track-appearance.ts
+│   │   │   │   ├── wand.test.ts
+│   │   │   │   └── wand.ts
+│   │   │   └── index.ts
 │   │   ├── eslint.config.js
 │   │   ├── package.json
 │   │   ├── README.md

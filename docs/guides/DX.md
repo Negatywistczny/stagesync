@@ -60,7 +60,7 @@ pnpm dev:hub
 
 ## 🎛️ Centrum Dowodzenia — Dev Hub ([`scripts/dev-hub.ts`](../../scripts/dev-hub.ts))
 
-Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu.
+Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu. Logika huba jest podzielona na czytelne submoduły w katalogu [`scripts/hub/`](../../scripts/hub/) (`doctor.ts`, `network.ts`, `gate.ts`, `utils.ts`).
 
 ### 📂 Kategorie Zadań w Interaktywnym Menu Dev Hub
 

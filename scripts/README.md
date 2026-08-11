@@ -11,13 +11,27 @@ Katalog `scripts/` zawiera skrypty automatyzacji, narzędzia wydań SemVer, skry
 
 ```text
 scripts/
+├── hub/            # 🧩 Submoduły Dev Hub TUI (doctor, network, gate, utils)
 ├── release/        # 🏷️ Wydania SemVer, changelog & wersjonowanie monorepo
 ├── setup/          # ⚙️ Pre-flight & instalatory zależności (Windows / Unix)
 ├── quality/        # 📊 Mapa kodu, lintery CSS/Knip i walidacja dokumentacji
 ├── merge-train/    # 🚆 Pociągi integracyjne PR-ów (trunk/batch)
-├── dev-hub.ts      # 🎛️ Główny skrypt DX Suite (Dev Hub TUI / CLI)
+├── dev-hub.ts      # 🎛️ Główny plik wejściowy DX Suite (Dev Hub TUI / CLI)
+├── tsconfig.json   # ⚙️ Konfiguracja TypeScript dla środowiska skryptów korzenia
 └── README.md       # 📚 Niniejsza dokumentacja (Indeks skryptów)
 ```
+
+---
+
+## 🎛️ 2. Dev Hub & Submoduły (`scripts/hub/` & `dev-hub.ts`)
+
+| Plik / Katalog | Opis |
+| :--- | :--- |
+| [`dev-hub.ts`](./dev-hub.ts) | Główny plik wejściowy TUI/CLI uruchamiany przez `./dev` lub `pnpm dev:hub`. Orkiestruje menu i steruje przepływem. |
+| [`hub/doctor.ts`](./hub/doctor.ts) | Diagnostyka środowiska (`runDoctorScan`), Port Guard i oczyszczanie zaległych procesów. |
+| [`hub/network.ts`](./hub/network.ts) | Detekcja kart sieciowych LAN IPv4, generowanie linków podglądu oraz kodów QR dla tabletów/smartfonów. |
+| [`hub/gate.ts`](./hub/gate.ts) | Logika bram integracyjnych CI/Daily/Audit, parsery wyników testów Vitest/Coverage/Playwright oraz logowanie weryfikacji. |
+| [`hub/utils.ts`](./hub/utils.ts) | Współdzielone narzędzia terminalowe (scrollback, ANSI, git diff hashes, dotenv, dialogi `clack`). |
 
 ---
 

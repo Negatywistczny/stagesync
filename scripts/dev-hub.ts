@@ -1,6 +1,7 @@
 process.env.NODE_NO_WARNINGS = "1";
 
 import * as clack from "@clack/prompts";
+import pc from "picocolors";
 import { spawnSync, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
@@ -159,7 +160,7 @@ enableClackFullRedrawOnResize();
 function hubIntro(title: string) {
   lastIntro = title;
   allowResizeScreenClear();
-  clack.intro(title);
+  clack.intro(pc.bold(pc.cyan(title)));
 }
 
 async function waitReturn() {
@@ -188,13 +189,13 @@ async function confirmDanger(
   message: string,
   initialValue = false,
 ): Promise<boolean> {
-  return confirmPl(message, initialValue);
+  return confirmPl(pc.yellow(message), initialValue);
 }
 
 function warnSideEffects(lines: string[]) {
   protectScrollback();
-  clack.log.warn("Skutki uboczne / wpływ:");
-  for (const line of lines) clack.log.message(` • ${line}`);
+  clack.log.warn(pc.yellow(pc.bold("Skutki uboczne / wpływ:")));
+  for (const line of lines) clack.log.message(` • ${pc.dim(line)}`);
 }
 
 function runCommand(
@@ -781,29 +782,40 @@ async function offerSaveVerifyLog(
 
 function summarizeGate(title: string, steps: GateStep[]): boolean {
   console.log();
-  clack.log.info(`Podsumowanie — ${title}:`);
+  clack.log.info(pc.bold(`Podsumowanie — ${title}:`));
   for (const step of steps) {
-    const suffix = step.detail ? ` — ${step.detail}` : "";
-    if (step.ok) clack.log.success(` ✓  ${step.label}${suffix}`);
-    else clack.log.error(` ✗  ${step.label}${suffix}`);
+    const suffix = step.detail ? pc.dim(` — ${step.detail}`) : "";
+    if (step.ok)
+      clack.log.success(` ${pc.green("✓")}  ${pc.green(step.label)}${suffix}`);
+    else clack.log.error(` ${pc.red("✗")}  ${pc.red(step.label)}${suffix}`);
   }
   const mutated = steps.filter((s) => s.mutated);
   if (mutated.length > 0) {
     clack.log.warn(
-      `Zmienione pliki: ${mutated.map((s) => s.id).join(", ")}. Sprawdź git diff.`,
+      pc.yellow(
+        `Zmienione pliki: ${mutated.map((s) => s.id).join(", ")}. Sprawdź git diff.`,
+      ),
     );
   }
   const failed = steps.filter((s) => !s.ok);
   if (failed.length === 0) {
     clack.log.success(
-      `✅ ${title} — wszystkie kroki OK (${steps.length}/${steps.length}).`,
+      pc.bold(
+        pc.green(
+          `✅ ${title} — wszystkie kroki OK (${steps.length}/${steps.length}).`,
+        ),
+      ),
     );
     return true;
   }
   clack.log.error(
-    `❌ ${title} — nieudane (${failed.length}/${steps.length}): ${failed
-      .map((s) => (s.detail ? `${s.label} (${s.detail})` : s.label))
-      .join(", ")}`,
+    pc.bold(
+      pc.red(
+        `❌ ${title} — nieudane (${failed.length}/${steps.length}): ${failed
+          .map((s) => (s.detail ? `${s.label} (${s.detail})` : s.label))
+          .join(", ")}`,
+      ),
+    ),
   );
   return false;
 }
@@ -861,7 +873,8 @@ function runCiLikeVerifySteps(): GateStep[] {
 
 async function runCiLikeVerify(): Promise<boolean> {
   clack.note(
-    "Lustrzane CI: check-types → lint:ss-css → lint → test (bez formatu)…",
+    `Lustrzane CI: check-types → lint:ss-css → lint → test ${pc.dim("(bez formatu)")}…`,
+    "CI-like",
   );
   const steps = runCiLikeVerifySteps();
   const ok = summarizeGate("Lustrzane CI", steps);
@@ -877,6 +890,7 @@ async function runDailyGate(): Promise<boolean> {
   ]);
   clack.note(
     "Codzienny gate: format → check-types → lint:ss-css → lint → test → links → knip…",
+    "Gate",
   );
   const steps: GateStep[] = [
     gateStepMutatingPnpm("format", "format (Prettier)", ["format"]),
@@ -922,7 +936,7 @@ const UNLINKED_STEP_LABEL = "unlinked";
 function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
   const autoFix = options.autoFix === true;
   const label = UNLINKED_STEP_LABEL;
-  clack.note("Skan niepodlinkowanych odniesień (check-unlinked.mjs)…");
+  clack.note(`Skan niepodlinkowanych odniesień ${pc.dim("(check-unlinked.mjs)")}…`, "Skan");
   const first = scanUnlinkedCount();
   if (first.output) {
     process.stdout.write(
@@ -983,7 +997,7 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
     };
   }
 
-  clack.note("Ponowny skan po auto-fix…");
+  clack.note("Ponowny skan po auto-fix…", "Skan");
   const second = scanUnlinkedCount();
   if (second.output) {
     process.stdout.write(
@@ -1090,7 +1104,8 @@ function spawnWebE2e(): { status: number | null; output: string } {
 function runWebE2eWithBrowserBootstrap(): GateStep {
   const label = "web e2e";
   clack.note(
-    "E2E bootstrap: shared build → wolne porty → Playwright (@stagesync/web)…",
+    `E2E bootstrap: shared build → wolne porty → Playwright ${pc.dim("(@stagesync/web)")}…`,
+    "E2E",
   );
   if (!runCommand("pnpm", ["--filter", "@stagesync/shared", "build"])) {
     clack.log.error("E2E: nie udało się zbudować @stagesync/shared.");
@@ -1112,6 +1127,7 @@ function runWebE2eWithBrowserBootstrap(): GateStep {
       attempt === 1
         ? "Uruchamianie Playwright E2E…"
         : "Ponawianie Playwright E2E po auto-fix…",
+      "E2E",
     );
     const { status, output } = spawnWebE2e();
     lastOutput = output;
@@ -1232,6 +1248,7 @@ async function runFullAudit(): Promise<boolean> {
   ]);
   clack.note(
     "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build → launcher → version → owner → pnpm audit…",
+    "Audyt",
   );
   const steps: GateStep[] = [
     gateStepMutatingPnpm("format", "format (Prettier)", ["format"]),
@@ -1304,11 +1321,11 @@ async function runFullAudit(): Promise<boolean> {
 
 function previewReleaseNotes(pkgVer: string) {
   clack.log.info(
-    `👁  Podgląd informacji o wydaniu dla wersji v${pkgVer} (Preview Mode):`,
+    `👁  Podgląd informacji o wydaniu dla wersji ${pc.bold(pc.cyan(`v${pkgVer}`))} ${pc.dim("(Preview Mode)")}:`,
   );
-  console.log("\n--- TYTUŁ WYDANIA ---");
+  console.log(`\n${pc.dim("───")} ${pc.bold("TYTUŁ WYDANIA")} ${pc.dim("───")}`);
   runCommand("node", ["scripts/release/release-title.mjs", pkgVer]);
-  console.log("\n\n--- OPIS WYDANIA (RELEASE NOTES) ---");
+  console.log(`\n\n${pc.dim("───")} ${pc.bold("OPIS WYDANIA (RELEASE NOTES)")} ${pc.dim("───")}`);
   runCommand("node", ["scripts/release/build-release-notes.mjs", pkgVer]);
 }
 
@@ -1357,20 +1374,20 @@ async function showLANInfo() {
     }
   }
 
-  clack.log.info("🌐 Dedykowane URLe w sieci lokalnej (LAN):");
-  console.log(`   Localhost Admin UI:    http://localhost:3000/admin`);
-  console.log(`   Localhost Client UI:   http://localhost:3000/client`);
-  console.log(`   Localhost Server API:  http://localhost:4000/api/health`);
+  clack.log.info(pc.bold(pc.cyan("🌐 Dedykowane URLe w sieci lokalnej (LAN):")));
+  console.log(`   ${pc.bold("Localhost Admin UI")}:    ${pc.underline(pc.cyan("http://localhost:3000/admin"))}`);
+  console.log(`   ${pc.bold("Localhost Client UI")}:   ${pc.underline(pc.cyan("http://localhost:3000/client"))}`);
+  console.log(`   ${pc.bold("Localhost Server API")}:  ${pc.underline(pc.cyan("http://localhost:4000/api/health"))}`);
   console.log();
-  console.log(`   LAN Client (Performer): http://${selectedIP}:3000/client`);
-  console.log(`   LAN Admin UI:           http://${selectedIP}:3000/admin`);
+  console.log(`   ${pc.bold("LAN Client (Performer)")}: ${pc.underline(pc.cyan(`http://${selectedIP}:3000/client`))}`);
+  console.log(`   ${pc.bold("LAN Admin UI")}:           ${pc.underline(pc.cyan(`http://${selectedIP}:3000/admin`))}`);
   console.log(
-    `   LAN Server API:         http://${selectedIP}:4000/api/health`,
+    `   ${pc.bold("LAN Server API")}:         ${pc.underline(pc.cyan(`http://${selectedIP}:4000/api/health`))}`,
   );
 
   const clientURL = `http://${selectedIP}:3000/client`;
-  console.log("\n📱 Kod QR dla tabletów / telefonów (Performer Client):");
-  console.log(`   ${clientURL}\n`);
+  console.log(`\n${pc.green(pc.bold("📱 Kod QR dla tabletów / telefonów (Performer Client):"))}`);
+  console.log(`   ${pc.underline(pc.cyan(clientURL))}\n`);
   qrcode.generate(clientURL, { small: true });
 }
 
@@ -1440,7 +1457,7 @@ function findListeningProcessesOnPort(port: number): ProcessInfo[] {
 function killProcessTree(p: ProcessInfo) {
   const isWin = os.platform() === "win32";
   try {
-    clack.log.message(`Zamykanie PID ${p.pid} (${p.name}) na :${p.port}…`);
+    clack.log.message(`Zamykanie ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)} na ${pc.cyan(`:${p.port}`)}…`);
     if (isWin) {
       execSync(
         `powershell -NoProfile -Command "Stop-Process -Id ${p.pid} -ErrorAction SilentlyContinue"`,
@@ -1474,40 +1491,40 @@ function freeDevPortsForE2e(ports: number[] = [3000, 4000]): void {
   }
   if (all.length === 0) return;
   clack.log.warn(
-    `E2E: zwalniam zajęte porty ${ports.map((p) => `:${p}`).join(", ")} (może zabić lokalny pnpm dev / Vite / API)…`,
+    pc.yellow(`E2E: zwalniam zajęte porty ${ports.map((p) => pc.cyan(`:${p}`)).join(", ")} ${pc.dim("(może zabić lokalny pnpm dev / Vite / API)")}`),
   );
   all.forEach((p) => {
-    clack.log.message(` • Port :${p.port} — PID ${p.pid} (${p.name})`);
+    clack.log.message(` • Port ${pc.cyan(`:${p.port}`)} — ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)}`);
   });
   for (const p of all) killProcessTree(p);
 }
 
 async function managePortsAndZombies() {
-  clack.log.info("🔌 Bezpieczny Port Guard & Kill-Zombies...");
+  clack.log.info(pc.bold(pc.cyan("🔌 Bezpieczny Port Guard & Kill-Zombies...")));
 
   const procs3000 = findListeningProcessesOnPort(3000);
   const procs4000 = findListeningProcessesOnPort(4000);
   const allProcs = [...procs3000, ...procs4000];
 
   if (allProcs.length === 0) {
-    clack.log.success("Porty :3000 oraz :4000 są wolne.");
+    clack.log.success(pc.green("Porty :3000 oraz :4000 są wolne."));
   } else {
-    clack.log.warn("Wykryto procesy zajmujące porty:");
+    clack.log.warn(pc.yellow(pc.bold("Wykryto procesy zajmujące porty:")));
     allProcs.forEach((p) => {
-      clack.log.message(` • Port :${p.port} — PID ${p.pid} (${p.name})`);
+      clack.log.message(` • Port ${pc.cyan(`:${p.port}`)} — ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)}`);
     });
 
     const confirmKill = await confirmPl("Czy chcesz zamknąć te procesy?", true);
 
     if (confirmKill) {
       for (const p of allProcs) killProcessTree(p);
-      clack.log.success("Zakończono procedurę czyszczenia portów.");
+      clack.log.success(pc.green("Zakończono procedurę czyszczenia portów."));
     } else {
       clack.log.info("Pominięto zamykanie procesów.");
     }
   }
 
-  clack.log.info("🧹 Czyszczenie zalegających procesów sidecarów Tauri...");
+  clack.log.info(pc.dim("🧹 Czyszczenie zalegających procesów sidecarów Tauri..."));
   const zombieScript = path.join(
     rootDir,
     "apps",
@@ -1521,36 +1538,36 @@ async function managePortsAndZombies() {
 }
 
 async function runDoctorScan() {
-  clack.log.info("🏥 Doctor / Preflight — Lekka Diagnostyka Środowiska:");
+  clack.log.info(pc.bold(pc.cyan("🏥 Doctor / Preflight — Lekka Diagnostyka Środowiska:")));
 
   // 1. Node.js
   try {
     const nodeVer = execSync("node -v", { encoding: "utf8" }).trim();
     const isNodeOk = nodeVer.match(/^v(2[2-9]|[3-9]\d)/);
     if (isNodeOk) {
-      clack.log.success(`Node.js: ${nodeVer} (Zgodny ≥22)`);
+      clack.log.success(`${pc.bold("Node.js")}: ${pc.cyan(nodeVer)} ${pc.dim("(Zgodny ≥22)")}`);
     } else {
-      clack.log.warn(`Node.js: ${nodeVer} (Zalecany Node 22 LTS)`);
+      clack.log.warn(`${pc.bold("Node.js")}: ${pc.yellow(nodeVer)} ${pc.dim("(Zalecany Node 22 LTS)")}`);
     }
   } catch {
-    clack.log.error("Node.js: Nie znaleziono w systemie!");
+    clack.log.error(`${pc.bold("Node.js")}: ${pc.red("Nie znaleziono w systemie!")}`);
   }
 
   // 2. pnpm
   try {
     const pnpmVer = execSync("pnpm -v", { encoding: "utf8" }).trim();
-    clack.log.success(`pnpm: v${pnpmVer}`);
+    clack.log.success(`${pc.bold("pnpm")}: ${pc.cyan(`v${pnpmVer}`)}`);
   } catch {
-    clack.log.error("pnpm: Nie znaleziono w systemie!");
+    clack.log.error(`${pc.bold("pnpm")}: ${pc.red("Nie znaleziono w systemie!")}`);
   }
 
   // 3. Rust / Cargo
   try {
     const rustVer = execSync("cargo -V", { encoding: "utf8" }).trim();
-    clack.log.success(`Rust / Cargo: ${rustVer}`);
+    clack.log.success(`${pc.bold("Rust / Cargo")}: ${pc.cyan(rustVer)}`);
   } catch {
     clack.log.warn(
-      "Rust / Cargo: Nie znaleziono (wymagany tylko dla Desktop/Tauri)",
+      `${pc.bold("Rust / Cargo")}: Nie znaleziono ${pc.dim("(wymagany tylko dla Desktop/Tauri)")}`,
     );
   }
 
@@ -1560,9 +1577,9 @@ async function runDoctorScan() {
       encoding: "utf8",
       stdio: ["pipe", "pipe", "ignore"],
     }).trim();
-    clack.log.success(`Docker: ${dockerVer}`);
+    clack.log.success(`${pc.bold("Docker")}: ${pc.cyan(dockerVer)}`);
   } catch {
-    clack.log.warn("Docker: Brak klienta Docker (opcjonalny dla kontenerów)");
+    clack.log.warn(`${pc.bold("Docker")}: Brak klienta Docker ${pc.dim("(opcjonalny dla kontenerów)")}`);
   }
 
   // 5. GitHub CLI (Release Hub)
@@ -1579,15 +1596,15 @@ async function runDoctorScan() {
       shell: true,
     });
     if (auth.status === 0) {
-      clack.log.success(`GitHub CLI (gh): ${ghVer} — zalogowany`);
+      clack.log.success(`${pc.bold("GitHub CLI (gh)")}: ${pc.cyan(ghVer)} — ${pc.green("zalogowany")}`);
     } else {
       clack.log.warn(
-        `GitHub CLI (gh): ${ghVer} — brak auth (wymagane dla Release Hub)`,
+        `${pc.bold("GitHub CLI (gh)")}: ${pc.cyan(ghVer)} — ${pc.yellow("brak auth")} ${pc.dim("(wymagane dla Release Hub)")}`,
       );
     }
   } catch {
     clack.log.warn(
-      "GitHub CLI (gh): Nie znaleziono (opcjonalne; potrzebne dla Release Hub)",
+      `${pc.bold("GitHub CLI (gh)")}: Nie znaleziono ${pc.dim("(opcjonalne; potrzebne dla Release Hub)")}`,
     );
   }
 
@@ -1606,50 +1623,50 @@ async function runDoctorScan() {
           encoding: "utf8",
         }).trim() === "True";
       if (hasWv2) {
-        clack.log.success("WebView2 Runtime: Obecny");
+        clack.log.success(`${pc.bold("WebView2 Runtime")}: ${pc.green("Obecny")}`);
       } else {
         clack.log.warn(
-          "WebView2 Runtime: Brak (wymagany do uruchomienia Tauri na Windows)",
+          `${pc.bold("WebView2 Runtime")}: Brak ${pc.dim("(wymagany do uruchomienia Tauri na Windows)")}`,
         );
       }
     } catch {
-      clack.log.warn("WebView2 Runtime: Nie można zweryfikować stanu rejestru");
+      clack.log.warn(`${pc.bold("WebView2 Runtime")}: ${pc.dim("Nie można zweryfikować stanu rejestru")}`);
     }
   }
 
   // 7. Dostępność Portów
   const p3000 = findListeningProcessesOnPort(3000);
   const p4000 = findListeningProcessesOnPort(4000);
-  if (p3000.length === 0) clack.log.success("Port :3000: Wolny");
+  if (p3000.length === 0) clack.log.success(`${pc.bold("Port")} ${pc.cyan(":3000")}: ${pc.green("Wolny")}`);
   else
     clack.log.warn(
-      `Port :3000: Zajęty przez PID ${p3000[0].pid} (${p3000[0].name})`,
+      `${pc.bold("Port")} ${pc.cyan(":3000")}: Zajęty przez ${pc.yellow(`PID ${p3000[0].pid} (${p3000[0].name})`)}`,
     );
 
-  if (p4000.length === 0) clack.log.success("Port :4000: Wolny");
+  if (p4000.length === 0) clack.log.success(`${pc.bold("Port")} ${pc.cyan(":4000")}: ${pc.green("Wolny")}`);
   else
     clack.log.warn(
-      `Port :4000: Zajęty przez PID ${p4000[0].pid} (${p4000[0].name})`,
+      `${pc.bold("Port")} ${pc.cyan(":4000")}: Zajęty przez ${pc.yellow(`PID ${p4000[0].pid} (${p4000[0].name})`)}`,
     );
 
   // 8. Pliki .env
   const envExists = fs.existsSync(path.join(rootDir, ".env"));
   const envExampleExists = fs.existsSync(path.join(rootDir, ".env.example"));
-  if (envExists) clack.log.success("Plik .env: Obecny w korzeniu");
+  if (envExists) clack.log.success(`${pc.bold("Plik .env")}: Obecny w korzeniu`);
   else if (envExampleExists)
-    clack.log.warn("Plik .env: Brak (dostępny .env.example)");
-  else clack.log.warn("Plik .env: Brak pliku konfiguracji");
+    clack.log.warn(`${pc.bold("Plik .env")}: Brak ${pc.dim("(dostępny .env.example)")}`);
+  else clack.log.warn(`${pc.bold("Plik .env")}: Brak pliku konfiguracji`);
 
   // 9. Efektywny data dir (ADR 0012)
   const { dir: dataDir, rule } = resolveHubDataDir();
-  clack.log.success(`Efektywny data dir: ${dataDir} (reguła: ${rule})`);
+  clack.log.success(`${pc.bold("Efektywny data dir")}: ${pc.dim(dataDir)} ${pc.dim(`(reguła: ${rule})`)}`);
   if (process.env.STAGESYNC_REPO_DEV) {
-    clack.log.info(`STAGESYNC_REPO_DEV: ${process.env.STAGESYNC_REPO_DEV}`);
+    clack.log.info(`${pc.bold("STAGESYNC_REPO_DEV")}: ${pc.dim(process.env.STAGESYNC_REPO_DEV)}`);
   } else {
-    clack.log.info("STAGESYNC_REPO_DEV: nieustawiona");
+    clack.log.info(`${pc.bold("STAGESYNC_REPO_DEV")}: ${pc.dim("nieustawiona")}`);
   }
   if (process.env.STAGESYNC_DATA_DIR) {
-    clack.log.info(`STAGESYNC_DATA_DIR: ${process.env.STAGESYNC_DATA_DIR}`);
+    clack.log.info(`${pc.bold("STAGESYNC_DATA_DIR")}: ${pc.dim(process.env.STAGESYNC_DATA_DIR)}`);
   }
 }
 
@@ -1724,19 +1741,19 @@ async function cleanCache(): Promise<boolean> {
   }
 
   s.stop(
-    `Zakończono czyszczenie: usunięto ${cleanedCount} katalogów kompilacji/pamięci podręcznej.`,
+    `Zakończono czyszczenie: usunięto ${pc.bold(pc.green(String(cleanedCount)))} katalogów kompilacji/pamięci podręcznej.`,
   );
 
   if (cleanedPaths.length > 0) {
-    clack.log.success("Wyczyszczone katalogi:");
-    cleanedPaths.forEach((cp) => clack.log.message(` • ${cp}`));
+    clack.log.success(pc.green("Wyczyszczone katalogi:"));
+    cleanedPaths.forEach((cp) => clack.log.message(` ${pc.green("•")} ${pc.dim(cp)}`));
   }
 
   if (lockedPaths.length > 0) {
     clack.log.warn(
-      "Zablokowane katalogi (zamknij działające procesy Vite/Tauri/Node):",
+      pc.yellow("Zablokowane katalogi (zamknij działające procesy Vite/Tauri/Node):"),
     );
-    lockedPaths.forEach((lp) => clack.log.message(` ⚠️ ${lp}`));
+    lockedPaths.forEach((lp) => clack.log.message(` ${pc.yellow("⚠️")} ${pc.yellow(lp)}`));
   }
   return true;
 }
@@ -1766,7 +1783,10 @@ async function menuClean() {
     await cleanCache();
     await waitReturn();
   } else if (choice === "android") {
-    clack.note("Czyszczenie cache budowania Androida (pnpm clean:android)...");
+    clack.note(
+      `Czyszczenie cache budowania Androida ${pc.dim("(pnpm clean:android)")}...`,
+      "Czyszczenie",
+    );
     runCommand("pnpm", ["clean:android"]);
     await waitReturn();
   }
@@ -1780,19 +1800,23 @@ function showGitStatus() {
     const status = execSync("git status -s", { encoding: "utf8" }).trim();
     const log = execSync("git log -5 --oneline", { encoding: "utf8" }).trim();
 
-    clack.log.info(`📍 Bieżąca gałąź Git: ${branch}`);
-    console.log("\n📜 Ostatnie 5 commitów:");
-    console.log(log);
+    clack.log.info(`📍 Bieżąca gałąź Git: ${pc.bold(pc.cyan(branch))}`);
+    console.log(`\n📜 ${pc.bold("Ostatnie 5 commitów:")}`);
+    console.log(pc.dim(log));
 
     console.log();
     if (status) {
-      clack.log.warn("Niezatwierdzone / Zmodyfikowane pliki:");
-      console.log(status);
+      clack.log.warn(
+        pc.yellow(pc.bold("Niezatwierdzone / Zmodyfikowane pliki:")),
+      );
+      console.log(pc.yellow(status));
     } else {
-      clack.log.success("Katalog roboczy jest czysty (no pending changes).");
+      clack.log.success(
+        pc.green("Katalog roboczy jest czysty (no pending changes)."),
+      );
     }
   } catch {
-    clack.log.error("Błąd podczas pobierania statusu Git.");
+    clack.log.error(pc.red("Błąd podczas pobierania statusu Git."));
   }
 }
 
@@ -1828,18 +1852,20 @@ async function menuRunAndDev() {
 
   if (choice === "web") {
     clack.note(
-      "Uruchamianie Web + API (Vite :3000 + Server :4000; bez Tauri)... Press Ctrl+C to stop.",
+      `Uruchamianie Web + API ${pc.dim("(Vite :3000 + Server :4000; bez Tauri)")}... Press Ctrl+C to stop.`,
+      "Dev",
     );
     runCommand("pnpm", ["dev"]);
   } else if (choice === "web-only") {
-    clack.note("Uruchamianie Web UI Only... Press Ctrl+C to stop.");
+    clack.note("Uruchamianie Web UI Only... Press Ctrl+C to stop.", "Dev");
     runCommand("pnpm", ["--filter", "@stagesync/web", "dev"]);
   } else if (choice === "api-only") {
-    clack.note("Uruchamianie Server API Only... Press Ctrl+C to stop.");
+    clack.note("Uruchamianie Server API Only... Press Ctrl+C to stop.", "Dev");
     runCommand("pnpm", ["--filter", "@stagesync/server", "dev"]);
   } else if (choice === "desktop") {
     clack.note(
-      "Uruchamianie Tauri Desktop Shell (sync web/sidecar + tauri:dev)... Press Ctrl+C to stop.",
+      `Uruchamianie Tauri Desktop Shell ${pc.dim("(sync web/sidecar + tauri:dev)")}... Press Ctrl+C to stop.`,
+      "Dev",
     );
     runCommand("pnpm", ["--filter", "@stagesync/desktop", "dev"]);
   } else if (choice === "desktop-build") {
@@ -1852,12 +1878,13 @@ async function menuRunAndDev() {
       clack.log.info("Anulowano tauri:build.");
       return;
     }
-    clack.note("Budowanie instalatora Tauri (pnpm tauri:build)...");
+    clack.note(`Budowanie instalatora Tauri ${pc.dim("(pnpm tauri:build)")}...`, "Build");
     runCommand("pnpm", ["--filter", "@stagesync/desktop", "tauri:build"]);
     await waitReturn();
   } else if (choice === "desktop-nsis-smoke") {
     clack.note(
-      "Szybki pusty NSIS (bez sidecara / resources) — tylko test wyglądu instalatora…",
+      `Szybki pusty NSIS ${pc.dim("(bez sidecara / resources)")} — tylko test wyglądu instalatora…`,
+      "Build",
     );
     runCommand("pnpm", [
       "--filter",
@@ -1876,7 +1903,10 @@ async function menuRunAndDev() {
       clack.log.info("Anulowano Docker Compose.");
       return;
     }
-    clack.note("Uruchamianie Docker Compose... Press Ctrl+C to stop.");
+    clack.note(
+      "Uruchamianie Docker Compose... Press Ctrl+C to stop.",
+      "Docker",
+    );
     runCommand("docker", ["compose", "up", "--build"]);
   }
 }
@@ -1961,7 +1991,10 @@ async function menuTestingVerify() {
 
 /** Docs quality: scan bare backtick file refs, then optionally auto-link them. */
 async function runUnlinkedScanAndMaybeFix() {
-  clack.note("Skanowanie niepodlinkowanych odniesień (check-unlinked.mjs)…");
+  clack.note(
+    `Skanowanie niepodlinkowanych odniesień ${pc.dim("(check-unlinked.mjs)")}…`,
+    "Skan",
+  );
   const result = spawnSync("node", ["scripts/quality/check-unlinked.mjs"], {
     cwd: rootDir,
     encoding: "utf8",
@@ -1998,7 +2031,10 @@ async function runUnlinkedScanAndMaybeFix() {
     return;
   }
 
-  clack.note("Naprawianie niepodlinkowanych linków (fix-unlinked-links.mjs)…");
+  clack.note(
+    `Naprawianie niepodlinkowanych linków ${pc.dim("(fix-unlinked-links.mjs)")}…`,
+    "Auto-fix",
+  );
   runCommand("node", ["scripts/quality/fix-unlinked-links.mjs"]);
   await waitReturn();
 }
@@ -2023,19 +2059,25 @@ async function menuTestingDocs() {
   if (clack.isCancel(choice) || choice === "back") return;
 
   if (choice === "map") {
-    clack.note("Generowanie mapy repozytorium (pnpm generate:map)...");
+    clack.note(`Generowanie mapy repozytorium ${pc.dim("(pnpm generate:map)")}...`, "Map");
     runCommand("pnpm", ["generate:map"]);
     await waitReturn();
   } else if (choice === "ss-css") {
-    clack.note("Sprawdzanie tokenów CSS (pnpm lint:ss-css)...");
+    clack.note(`Sprawdzanie tokenów CSS ${pc.dim("(pnpm lint:ss-css)")}...`, "CSS");
     runCommand("pnpm", ["lint:ss-css"]);
     await waitReturn();
   } else if (choice === "knip") {
-    clack.note("Skanowanie nieużywanego kodu i zależności (pnpm lint:knip)...");
+    clack.note(
+      `Skanowanie nieużywanego kodu i zależności ${pc.dim("(pnpm lint:knip)")}...`,
+      "Knip",
+    );
     runCommand("pnpm", ["lint:knip"]);
     await waitReturn();
   } else if (choice === "links") {
-    clack.note("Weryfikacja linków w dokumentacji (check-docs-links.mjs)...");
+    clack.note(
+      `Weryfikacja linków w dokumentacji ${pc.dim("(check-docs-links.mjs)")}...`,
+      "Linki",
+    );
     runCommand("node", ["scripts/quality/check-docs-links.mjs"]);
     await waitReturn();
   } else if (choice === "unlinked") {
@@ -2080,11 +2122,14 @@ async function menuTestingUnit() {
     runWebE2eWithBrowserBootstrap();
     await waitReturn();
   } else if (choice === "test-cov") {
-    clack.note("Uruchamianie testów z pokryciem (turbo run test:coverage)...");
+    clack.note(
+      `Uruchamianie testów z pokryciem ${pc.dim("(turbo run test:coverage)")}...`,
+      "Coverage",
+    );
     runCommand("pnpm", ["test:coverage"]);
     await waitReturn();
   } else if (choice === "benchmark") {
-    clack.note("Uruchamianie Smart Tempo DSP Benchmark...");
+    clack.note("Uruchamianie Smart Tempo DSP Benchmark...", "Benchmark");
     runCommand("pnpm", ["benchmark:record"], {
       env: { RUN_SMART_TEMPO_BENCHMARK: "1" },
     });
@@ -2106,11 +2151,11 @@ async function menuTestingBuild() {
   if (clack.isCancel(choice) || choice === "back") return;
 
   if (choice === "build") {
-    clack.note("Uruchamianie pełnego buildu (turbo run build)...");
+    clack.note(`Uruchamianie pełnego buildu ${pc.dim("(turbo run build)")}...`, "Build");
     runCommand("pnpm", ["build"]);
     await waitReturn();
   } else if (choice === "sync-ui") {
-    clack.note("Synchronizacja UI launchera...");
+    clack.note("Synchronizacja UI launchera...", "Sync");
     runCommand("pnpm", ["sync:launcher-ui"]);
     await waitReturn();
   }
@@ -2172,7 +2217,8 @@ async function menuRelease() {
       return;
     }
     clack.note(
-      "Synchronizowanie wersji w monorepo (node scripts/release/sync-version.mjs)...",
+      `Synchronizowanie wersji w monorepo ${pc.dim("(node scripts/release/sync-version.mjs)")}...`,
+      "Wersja",
     );
     runCommand("node", ["scripts/release/sync-version.mjs"]);
     await waitReturn();
@@ -2187,7 +2233,8 @@ async function menuRelease() {
       return;
     }
     clack.note(
-      "Wykonywanie właściwego release (node scripts/release/exec-release.mjs)...",
+      `Wykonywanie właściwego release ${pc.dim("(node scripts/release/exec-release.mjs)")}...`,
+      "Release",
     );
     runCommand("node", ["scripts/release/exec-release.mjs"]);
     await waitReturn();
@@ -2200,14 +2247,20 @@ async function menuRelease() {
       validate: (v) => (v?.trim() ? undefined : "Podaj wersję SemVer"),
     });
     if (clack.isCancel(version)) return;
-    clack.note(`Wyodrębnianie sekcji Changeloga dla ${version}...`);
+    clack.note(
+      `Wyodrębnianie sekcji Changeloga dla ${version}...`,
+      "Changelog",
+    );
     runCommand("node", [
       "scripts/release/extract-changelog-section.mjs",
       version.trim(),
     ]);
     await waitReturn();
   } else if (choice === "checklist") {
-    clack.note("Uruchamianie Pre-Release Checklist 2.0 (CI-like + preview)…");
+    clack.note(
+      `Uruchamianie Pre-Release Checklist 2.0 ${pc.dim("(CI-like + preview)")}…`,
+      "Checklist",
+    );
     const ok = await runCiLikeVerify();
     if (ok) {
       const pkgVer = readRootPackageVersion();
@@ -2265,7 +2318,10 @@ async function menuRelease() {
       return;
     }
 
-    clack.note(`Wykonywanie procedury cut-release dla typu: ${bumpType}...`);
+    clack.note(
+      `Wykonywanie procedury cut-release dla typu: ${bumpType}...`,
+      "Cut",
+    );
     runCommand("node", ["scripts/release/cut-release.mjs", bumpType as string]);
     await waitReturn();
   } else if (choice === "git") {
@@ -2371,7 +2427,8 @@ async function menuDependencies() {
 
   if (choice === "outdated") {
     clack.note(
-      "Sprawdzanie nieaktualnych pakietów w monorepo (pnpm outdated -r)...",
+      `Sprawdzanie nieaktualnych pakietów w monorepo ${pc.dim("(pnpm outdated -r)")}...`,
+      "Outdated",
     );
     runCommand("pnpm", ["outdated", "-r"]);
     await waitReturn();
@@ -2391,7 +2448,8 @@ async function menuDependencies() {
       return;
     }
     clack.note(
-      "Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r --latest)...",
+      `Uruchamianie interaktywnej aktualizacji pakietów ${pc.dim("(pnpm up -i -r --latest)")}...`,
+      "Update",
     );
     runCommand("pnpm", ["up", "-i", "-r", "--latest"]);
     await waitReturn();
@@ -2407,12 +2465,16 @@ async function menuDependencies() {
       return;
     }
     clack.note(
-      "Wymuszanie ponownej instalacji zależności (pnpm install --force)...",
+      `Wymuszanie ponownej instalacji zależności ${pc.dim("(pnpm install --force)")}...`,
+      "Install",
     );
     runCommand("pnpm", ["install", "--force"]);
     await waitReturn();
   } else if (choice === "audit") {
-    clack.note("Uruchamianie audytu bezpieczeństwa zależności (pnpm audit)...");
+    clack.note(
+      `Uruchamianie audytu bezpieczeństwa zależności ${pc.dim("(pnpm audit)")}...`,
+      "Audit",
+    );
     runCommand("pnpm", ["audit"]);
     await waitReturn();
   } else if (choice === "prune") {
@@ -2424,7 +2486,10 @@ async function menuDependencies() {
       await waitReturn();
       return;
     }
-    clack.note("Czyszczenie lokalnego pnpm store (pnpm store prune)...");
+    clack.note(
+      `Czyszczenie lokalnego pnpm store ${pc.dim("(pnpm store prune)")}...`,
+      "Prune",
+    );
     runCommand("pnpm", ["store", "prune"]);
     await waitReturn();
   }
@@ -2502,21 +2567,24 @@ async function main() {
     }
     if (flag === "outdated") {
       clack.note(
-        "Sprawdzanie nieaktualnych pakietów w monorepo (pnpm outdated -r)...",
+        `Sprawdzanie nieaktualnych pakietów w monorepo ${pc.dim("(pnpm outdated -r)")}...`,
+        "Outdated",
       );
       runCommand("pnpm", ["outdated", "-r"]);
       return;
     }
     if (flag === "up" || flag === "update") {
       clack.note(
-        "Uruchamianie interaktywnej aktualizacji pakietów (pnpm up -i -r --latest)...",
+        `Uruchamianie interaktywnej aktualizacji pakietów ${pc.dim("(pnpm up -i -r --latest)")}...`,
+        "Update",
       );
       runCommand("pnpm", ["up", "-i", "-r", "--latest"]);
       return;
     }
     if (flag === "security" || flag === "pnpm-audit") {
       clack.note(
-        "Uruchamianie audytu bezpieczeństwa zależności (pnpm audit)...",
+        `Uruchamianie audytu bezpieczeństwa zależności ${pc.dim("(pnpm audit)")}...`,
+        "Audit",
       );
       runCommand("pnpm", ["audit"]);
       return;
@@ -2556,7 +2624,7 @@ async function main() {
     });
 
     if (clack.isCancel(category) || category === "exit") {
-      clack.outro("Do zobaczenia na scenie! 👋");
+      clack.outro(pc.bold(pc.green("Do zobaczenia na scenie! 👋")));
       process.exit(0);
     }
 
@@ -2589,7 +2657,7 @@ async function main() {
         continue;
       }
       const isWin = os.platform() === "win32";
-      clack.note("Uruchamianie pełnej procedury setupu...");
+      clack.note("Uruchamianie pełnej procedury setupu...", "Setup");
       if (isWin) {
         runCommand("powershell", [
           "-ExecutionPolicy",
