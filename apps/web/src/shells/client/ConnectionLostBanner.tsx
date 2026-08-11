@@ -10,7 +10,7 @@ import {
 } from "@lib/client/nativeShell.js";
 import { maybeNotifyHostDisconnect } from "@lib/client/pushNotifications.js";
 import { clearOperatorSession } from "@lib/shell-operator/operatorSession.js";
-import type { WsStatus } from "../transport/transportContext.js";
+import type { WsStatus } from "../../transport/transportContext.js";
 import styles from "./ConnectionLostBanner.module.css";
 
 export type ConnectionLostBannerProps = {

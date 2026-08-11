@@ -1,7 +1,7 @@
 import React from "react";
 import type { Project, ScoreBarAnchor } from "@stagesync/shared";
 import { updateScoreAnchor } from "@lib/timeline-edit/scoreBarEdit.js";
-import styles from "../../TimelineShell.module.css";
+import styles from "../TimelineShell.module.css";
 
 export function ScoreAnchorInspector({
   draftProject,

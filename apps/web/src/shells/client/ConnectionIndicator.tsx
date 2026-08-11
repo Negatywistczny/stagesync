@@ -1,4 +1,4 @@
-import type { WsStatus } from "../transport/transportContext.js";
+import type { WsStatus } from "../../transport/transportContext.js";
 import styles from "./ConnectionIndicator.module.css";
 
 const STATUS_LABEL: Record<WsStatus, string> = {

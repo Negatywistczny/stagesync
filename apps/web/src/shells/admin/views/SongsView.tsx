@@ -14,12 +14,12 @@ import { ShellToolbar, MetaBadgeRow, MetaBadge } from "../../shared/index.js";
 import {
   SettingsPopoverAnchor,
   SettingsPopover,
-} from "../../SettingsPopover.js";
-import { ShellIconButton } from "../../ShellIconButton.js";
-import { IconTrash } from "../../icons.js";
+} from "../../settings/SettingsPopover.js";
+import { ShellIconButton } from "../../components/ShellIconButton.js";
+import { IconTrash } from "../../components/icons.js";
 import { ProjectFilesPanel } from "../ProjectFilesPanel.js";
 import { LibraryFilesCard } from "./LibraryFilesCard.js";
-import styles from "../../AdminShell.module.css";
+import styles from "../AdminShell.module.css";
 
 interface SongsViewProps {
   library: Library | null;

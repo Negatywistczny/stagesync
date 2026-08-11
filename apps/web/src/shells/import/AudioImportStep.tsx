@@ -3,7 +3,7 @@ import { Music, Check } from "lucide-react";
 import { AudioDropzone } from "./AudioDropzone.js";
 import { ImportProgress } from "./ImportProgress.js";
 import { formatBytesMb } from "@lib/client/memoryPressure.js";
-import styles from "../CombinedUsUgImportForm.module.css";
+import styles from "./CombinedUsUgImportForm.module.css";
 
 interface AudioImportStepProps {
   meta: { title: string; subtitle: string };

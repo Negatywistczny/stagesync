@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from "react";
-import { ShellIconButton } from "../ShellIconButton.js";
-import styles from "../DesktopMenuBridge.module.css";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import styles from "./DesktopMenuBridge.module.css";
 
 export function BridgeModal({
   title,

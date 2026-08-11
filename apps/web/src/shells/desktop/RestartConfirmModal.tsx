@@ -1,6 +1,6 @@
 import { Button } from "@stagesync/ui";
 import { BridgeModal } from "./BridgeModal.js";
-import styles from "../DesktopMenuBridge.module.css";
+import styles from "./DesktopMenuBridge.module.css";
 
 export function RestartConfirmModal({
   onClose,

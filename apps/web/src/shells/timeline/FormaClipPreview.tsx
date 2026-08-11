@@ -1,4 +1,4 @@
-import styles from "../TimelineShell.module.css";
+import styles from "./TimelineShell.module.css";
 
 /**
  * Ephemeral pencil-draw / Option-copy ghost clip.

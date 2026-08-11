@@ -5,7 +5,7 @@ import type {
   UltrastarSearchHit,
 } from "@stagesync/shared";
 import { UsdbAccountPanel } from "./UsdbAccountPanel.js";
-import styles from "../CombinedUsUgImportForm.module.css";
+import styles from "./CombinedUsUgImportForm.module.css";
 
 export type UsImportStepProps = {
   meta: { title: string; subtitle: string };

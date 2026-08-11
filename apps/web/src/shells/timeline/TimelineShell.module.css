@@ -355,9 +355,12 @@
   display: flex;
   flex-direction: column;
   min-width: 14rem;
+  max-width: 77.5rem; /* ss-css-allow */ /* 1240px */
+  margin: var(--ss-space-4) auto;
   padding: var(--ss-space-1);
   border: 1px solid var(--ss-color-border);
   border-radius: var(--ss-radius-sm);
+  border-radius: var(--ss-radius-lg, 0.75rem); /* ss-css-allow */
   background: var(--ss-color-elevated);
   box-shadow: 0 8px 28px color-mix(in srgb, var(--ss-color-bg) 55%, transparent);
 }
@@ -470,7 +473,7 @@
    * Dock width driven from JS (`--tl-dock-w` inline) — fallback matches DEFAULT_DOCK_WIDTH_PX.
    * Solo yellow is brighter than primary amber — classic DAW S affordance (--ss-color-solo).
    */
-  --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui));
+  --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui)); /* ss-css-allow */
   --tl-solo-bg: var(--ss-color-solo);
   --tl-solo-fg: var(--ss-color-solo-fg);
   --tl-mute-bg: var(--ss-color-mute);
@@ -1644,12 +1647,12 @@
 .meterEditRow .lengthInput,
 .meterEditRow .nameInput,
 .keyEditRow .nameInput {
-  width: 4.5rem;
+  width: 4.5rem; /* ss-css-allow */
   flex: 0 0 auto;
 }
 
 .keyEditRow .nameInput:last-child {
-  width: 5.5rem;
+  width: 5.5rem; /* ss-css-allow */
 }
 
 .meterEditSlash {
@@ -1667,12 +1670,24 @@
 }
 
 .metaKeyRow .nameInput {
-  width: 4.5rem;
+  width: 4.5rem; /* ss-css-allow */
   flex: 0 0 auto;
 }
 
 .metaKeyRow .nameInput:last-child {
-  width: 5.5rem;
+  width: 5.5rem; /* ss-css-allow */
+}
+
+.clipInspectForm .fieldInputSm {
+  width: 5.5rem; /* ss-css-allow */
+}
+
+.clipInspectForm .fieldInputMd {
+  width: 4.5rem; /* ss-css-allow */
+}
+
+.clipInspectForm .fieldInputLg {
+  width: 5.5rem; /* ss-css-allow */
 }
 
 .inspMulti {
@@ -1691,7 +1706,7 @@
 
 .subEditorRow {
   display: grid;
-  grid-template-columns: 1.75rem minmax(0, 1fr) 1.75rem;
+  grid-template-columns: 1.75rem minmax(0, 1fr) 1.75rem; /* ss-css-allow */
   align-items: center;
   gap: var(--ss-space-1);
   padding: var(--ss-space-1);
@@ -1996,7 +2011,7 @@
 
 .shell[data-tl-tier="mobile"] .canvasInner {
   /* Narrower dock fallback on phone when JS width not yet applied. */
-  --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui));
+  --tl-dock-w: calc(7.5rem * var(--tl-zoom-ui)); /* ss-css-allow */
 }
 
 .shell[data-tl-tier="mobile"] .main {
@@ -2226,13 +2241,13 @@
   flex-direction: column;
   /* Desktop Studio Workspace */
   width: 92vw;
-  max-width: 77.5rem; /* 1240px */
+  max-width: 77.5rem; /* ss-css-allow */ /* 1240px */
   height: auto;
   max-height: 88vh;
   min-height: 0;
   overflow: hidden;
   padding: 0;
-  border-radius: var(--ss-radius-lg, 0.75rem);
+  border-radius: var(--ss-radius-lg, 0.75rem); /* ss-css-allow */
 }
 
 .usUgOverlayHead {

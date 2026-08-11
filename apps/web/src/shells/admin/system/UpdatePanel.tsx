@@ -24,8 +24,8 @@ import {
   isSemverNewer,
 } from "@lib/client/androidLatest.js";
 import { isAndroidUpdateSurface } from "@lib/client/nativeShell.js";
-import { ShellConfirmDialog } from "../../ShellBlockingDialog.js";
-import shell from "../../AdminShell.module.css";
+import { ShellConfirmDialog } from "../../components/ShellBlockingDialog.js";
+import shell from "../AdminShell.module.css";
 import styles from "../SystemView.module.css";
 
 /** Update panel — Sprawdź / Aktualizuj host + desktop (ADR 0004 amendement β1). */

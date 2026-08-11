@@ -4,5 +4,5 @@
 export {
   ServerSettingsModal,
   PreferencesModal,
-} from "./settings/ServerSettingsModalMain.js";
+} from "./ServerSettingsModalMain.js";
 export type { PreferencesTab } from "@lib/client/preferencesEvents.js";

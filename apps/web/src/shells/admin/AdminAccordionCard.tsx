@@ -1,5 +1,5 @@
 import type { ElementType, ReactNode } from "react";
-import shell from "../AdminShell.module.css";
+import shell from "./AdminShell.module.css";
 
 function cx(...parts: Array<string | false | undefined | null>): string {
   return parts.filter(Boolean).join(" ");

@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DeviceNameGate } from "./DeviceNameGate.js";
 
-vi.mock("../transport/useTransport.js", () => ({
+vi.mock("../../transport/useTransport.js", () => ({
   useTransport: () => ({
     wsStatus: "connected",
     latencyMs: 8,

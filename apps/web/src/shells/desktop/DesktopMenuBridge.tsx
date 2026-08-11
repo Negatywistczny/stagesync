@@ -31,20 +31,20 @@ import {
   OPEN_PREFERENCES_EVENT,
   parseOpenPreferencesDetail,
 } from "@lib/client/preferencesEvents.js";
-import { useTransport } from "../transport/useTransport.js";
-import { ShellPromptDialog } from "./ShellBlockingDialog.js";
+import { useTransport } from "../../transport/useTransport.js";
+import { ShellPromptDialog } from "../components/ShellBlockingDialog.js";
 import { useOperatorNavShortcuts } from "@lib/shell-operator/operatorNavShortcuts.js";
 import {
   ServerSettingsModal,
   type PreferencesTab,
-} from "./ServerSettingsModal.js";
-import { HostQrModal } from "./desktop/HostQrModal.js";
-import { RestartConfirmModal } from "./desktop/RestartConfirmModal.js";
-import { useDesktopMenuActions } from "./desktop/useDesktopMenuActions.js";
-import type { NamePromptState } from "./desktop/namePrompt.js";
+} from "../settings/ServerSettingsModal.js";
+import { HostQrModal } from "./HostQrModal.js";
+import { RestartConfirmModal } from "./RestartConfirmModal.js";
+import { useDesktopMenuActions } from "./useDesktopMenuActions.js";
+import type { NamePromptState } from "./namePrompt.js";
 import styles from "./DesktopMenuBridge.module.css";
 
-export type { NamePromptKind, NamePromptState } from "./desktop/namePrompt.js";
+export type { NamePromptKind, NamePromptState } from "./namePrompt.js";
 
 export function DesktopMenuBridge() {
   const navigate = useNavigate();

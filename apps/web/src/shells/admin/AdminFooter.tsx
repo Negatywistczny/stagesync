@@ -1,7 +1,7 @@
 import { type FormaClip } from "@stagesync/shared";
 import type { WsStatus } from "../../transport/transportContext.js";
-import { connectionStatusLabel } from "../ConnectionIndicator.js";
-import styles from "../AdminShell.module.css";
+import { connectionStatusLabel } from "../client/ConnectionIndicator.js";
+import styles from "./AdminShell.module.css";
 
 interface AdminFooterProps {
   nowName: string;

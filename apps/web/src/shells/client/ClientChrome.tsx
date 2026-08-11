@@ -3,14 +3,17 @@ import { Link } from "react-router";
 import type { WsStatus } from "../../transport/transportContext.js";
 import { getOperatorAppJumpLinks } from "@lib/shell-operator/operatorNavRoutes.js";
 import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
-import { ConnectionIndicator } from "../ConnectionIndicator.js";
-import { IconFullscreen, IconSettings } from "../icons.js";
-import { SettingsPopover, SettingsPopoverAnchor } from "../SettingsPopover.js";
-import { ShellIconButton } from "../ShellIconButton.js";
-import { ShellWordmark } from "../ShellWordmark.js";
+import { ConnectionIndicator } from "./ConnectionIndicator.js";
+import { IconFullscreen, IconSettings } from "../components/icons.js";
+import {
+  SettingsPopover,
+  SettingsPopoverAnchor,
+} from "../settings/SettingsPopover.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import { ShellWordmark } from "../components/ShellWordmark.js";
 import type { ClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
 import { GlobalSettingsFields } from "./ClientSettingsFields.js";
-import styles from "../ClientShell.module.css";
+import styles from "./ClientShell.module.css";
 
 export type ClientHeaderProps = {
   wsStatus: WsStatus;

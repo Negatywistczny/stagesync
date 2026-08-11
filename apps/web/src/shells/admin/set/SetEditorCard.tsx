@@ -6,7 +6,7 @@ import {
 } from "@stagesync/shared";
 import { catalogSongBadges } from "../songCatalogBadges.js";
 import { projectDurationMs, type DraftItem } from "../setlistDraft.js";
-import shell from "../../AdminShell.module.css";
+import shell from "../AdminShell.module.css";
 import styles from "../SetView.module.css";
 
 type SetEditorCardProps = {

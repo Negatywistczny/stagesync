@@ -11,7 +11,7 @@ import {
 } from "@lib/client/clientKaraoke.js";
 import type { ClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
 import { isEditableKeyboardTarget } from "@lib/client/isEditableKeyboardTarget.js";
-import styles from "../ClientShell.module.css";
+import styles from "./ClientShell.module.css";
 import { Button } from "@stagesync/ui";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 

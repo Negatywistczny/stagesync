@@ -4,8 +4,8 @@
 
 import { useId, useMemo, useState } from "react";
 import { Button } from "@stagesync/ui";
-import { IconClose } from "../icons.js";
-import { ShellIconButton } from "../ShellIconButton.js";
+import { IconClose } from "../components/icons.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
 import styles from "./TimelineHelp.module.css";
 
 type HelpTab = "shortcuts" | "tools";

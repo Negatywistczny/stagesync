@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import styles from "../ClientShell.module.css";
+import styles from "./ClientShell.module.css";
 import type { ChordNameParts } from "@stagesync/shared";
 import {
   serializeChordNameHtml,

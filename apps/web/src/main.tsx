@@ -6,7 +6,7 @@ import {
   initAppearance,
 } from "@lib/client/appearance.js";
 import { captureWebException, initWebSentry } from "@lib/client/sentry.js";
-import { AppErrorBoundary } from "./shells/AppErrorBoundary.js";
+import { AppErrorBoundary } from "./shells/components/AppErrorBoundary.js";
 import "./index.css";
 
 initWebSentry();

@@ -1,5 +1,5 @@
 import { Button } from "@stagesync/ui";
-import { BrandName } from "../../BrandName.js";
+import { BrandName } from "../../components/BrandName.js";
 import styles from "../SystemView.module.css";
 
 export function ApkTile({

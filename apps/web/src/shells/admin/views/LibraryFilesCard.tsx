@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Button } from "@stagesync/ui";
-import styles from "../../AdminShell.module.css";
+import styles from "../AdminShell.module.css";
 
 interface LibraryFilesCardProps {
   onOpenImport: () => void;

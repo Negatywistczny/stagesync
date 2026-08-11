@@ -1,7 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import { formatSectionNameForDisplay, type Project } from "@stagesync/shared";
 import { buildFormaLiveContext } from "@lib/client/clientForma.js";
-import styles from "../ClientShell.module.css";
+import styles from "./ClientShell.module.css";
 
 type DrumsPaneProps = {
   project: Project;

@@ -13,8 +13,8 @@ import {
   deleteProjectAsset,
   uploadProjectAudio,
 } from "@lib/shell-operator/projectAssetsApi.js";
-import styles from "../AdminShell.module.css";
-import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
+import styles from "./AdminShell.module.css";
+import { ShellConfirmDialog } from "../components/ShellBlockingDialog.js";
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;

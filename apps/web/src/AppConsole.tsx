@@ -1,13 +1,13 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { TransportProvider } from "./transport/TransportProvider.js";
-import { AdminShell } from "./shells/AdminShell.js";
-import { ClientShell } from "./shells/ClientShell.js";
-import { DesktopMenuBridge } from "./shells/DesktopMenuBridge.js";
-import { DesktopRootRedirect } from "./shells/DesktopRootRedirect.js";
-import { DeviceNameGate } from "./shells/DeviceNameGate.js";
-import { RouteErrorPage } from "./shells/RouteErrorPage.js";
-import { TimelineShell } from "./shells/TimelineShell.js";
+import { AdminShell } from "./shells/admin/AdminShell.js";
+import { ClientShell } from "./shells/client/ClientShell.js";
+import { DesktopMenuBridge } from "./shells/desktop/DesktopMenuBridge.js";
+import { DesktopRootRedirect } from "./shells/desktop/DesktopRootRedirect.js";
+import { DeviceNameGate } from "./shells/components/DeviceNameGate.js";
+import { RouteErrorPage } from "./shells/components/RouteErrorPage.js";
+import { TimelineShell } from "./shells/timeline/TimelineShell.js";
 import { SmartTempoPage } from "./shells/pages/SmartTempoPage.js";
 
 /**

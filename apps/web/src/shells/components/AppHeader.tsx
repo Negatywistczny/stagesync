@@ -20,9 +20,9 @@ import {
   IconSettings,
   IconSun,
   IconUndo,
-} from "../icons.js";
-import { ShellIconButton } from "../ShellIconButton.js";
-import { ShellWordmark } from "../ShellWordmark.js";
+} from "./icons.js";
+import { ShellIconButton } from "./ShellIconButton.js";
+import { ShellWordmark } from "./ShellWordmark.js";
 import styles from "./AppHeader.module.css";
 
 export type AppHeaderJumpLink = {

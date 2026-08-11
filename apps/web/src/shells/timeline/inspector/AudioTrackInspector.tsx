@@ -6,7 +6,7 @@ import {
   setAudioTrackName,
 } from "@lib/audio/audioLaneEdit.js";
 import { TaperGainSlider } from "../channelStrip/TaperGainSlider.js";
-import styles from "../../TimelineShell.module.css";
+import styles from "../TimelineShell.module.css";
 
 export function AudioTrackInspector({
   draftProject,

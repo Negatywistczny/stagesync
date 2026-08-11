@@ -12,7 +12,7 @@ import {
   type SessionStageMessage,
 } from "@lib/shell-operator/setlistApi.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
-import shell from "../AdminShell.module.css";
+import shell from "./AdminShell.module.css";
 import styles from "./StageView.module.css";
 import { LiveDeskCard } from "./stage/LiveDeskCard.js";
 import { StageClientsCard } from "./stage/StageClientsCard.js";

@@ -6,15 +6,15 @@
 export type {
   UsUgApplyPayload,
   CombinedUsUgImportFormProps,
-} from "./import/combinedImportHelpers.js";
+} from "./combinedImportHelpers.js";
 
-import { UsImportStep } from "./import/UsImportStep.js";
-import { UgImportStep } from "./import/UgImportStep.js";
-import { AudioImportStep } from "./import/AudioImportStep.js";
-import { BeatmapImportStep } from "./import/BeatmapImportStep.js";
-import { CombinedImportFooter } from "./import/CombinedImportFooter.js";
-import { useCombinedUsUgImport } from "./import/useCombinedUsUgImport.js";
-import type { CombinedUsUgImportFormProps } from "./import/combinedImportHelpers.js";
+import { UsImportStep } from "./UsImportStep.js";
+import { UgImportStep } from "./UgImportStep.js";
+import { AudioImportStep } from "./AudioImportStep.js";
+import { BeatmapImportStep } from "./BeatmapImportStep.js";
+import { CombinedImportFooter } from "./CombinedImportFooter.js";
+import { useCombinedUsUgImport } from "./useCombinedUsUgImport.js";
+import type { CombinedUsUgImportFormProps } from "./combinedImportHelpers.js";
 import styles from "./CombinedUsUgImportForm.module.css";
 
 export function CombinedUsUgImportForm(props: CombinedUsUgImportFormProps) {

@@ -8,7 +8,7 @@
 
 * **Liczba wszystkich plików:** 1439
 * **Liczba katalogów:** 239
-* **Data aktualizacji:** 2026-08-11T12:21:37.363Z
+* **Data aktualizacji:** 2026-08-11T12:22:06.536Z
 
 ### Kategorie
 
@@ -529,97 +529,15 @@ stagesync/
 │   │   │   │   ├── timeline/  … (50 plików, 1 podkatalog; 46 plików bezpośrednio)
 │   │   │   │   └── timeline-edit/  … (30 plików, 2 podkatalogi; 26 plików bezpośrednio)
 │   │   │   ├── shells/
-│   │   │   │   ├── admin/  … (42 pliki, 5 podkatalogów; 27 plików bezpośrednio)
-│   │   │   │   ├── client/  … (21 plików)
-│   │   │   │   ├── components/  … (19 plików, 1 podkatalog; 10 plików bezpośrednio)
-│   │   │   │   ├── desktop/  … (9 plików)
-│   │   │   │   ├── import/  … (26 plików, 1 podkatalog; 23 pliki bezpośrednio)
+│   │   │   │   ├── admin/  … (45 plików, 5 podkatalogów; 30 plików bezpośrednio)
+│   │   │   │   ├── client/  … (30 plików)
+│   │   │   │   ├── components/  … (59 plików, 1 podkatalog; 50 plików bezpośrednio)
+│   │   │   │   ├── desktop/  … (19 plików)
+│   │   │   │   ├── import/  … (33 pliki, 1 podkatalog; 30 plików bezpośrednio)
 │   │   │   │   ├── pages/  … (3 pliki)
-│   │   │   │   ├── settings/  … (9 plików, 1 podkatalog; 4 pliki bezpośrednio)
+│   │   │   │   ├── settings/  … (19 plików, 1 podkatalog; 14 plików bezpośrednio)
 │   │   │   │   ├── shared/  … (2 pliki)
-│   │   │   │   ├── timeline/  … (57 plików, 2 podkatalogi; 9 plików bezpośrednio)
-│   │   │   │   ├── AdminShell.module.css
-│   │   │   │   ├── AdminShell.test.tsx
-│   │   │   │   ├── AdminShell.tsx
-│   │   │   │   ├── AppCrashFallback.module.css
-│   │   │   │   ├── AppCrashFallback.test.tsx
-│   │   │   │   ├── AppCrashFallback.tsx
-│   │   │   │   ├── AppErrorBoundary.test.tsx
-│   │   │   │   ├── AppErrorBoundary.tsx
-│   │   │   │   ├── BrandName.module.css
-│   │   │   │   ├── BrandName.tsx
-│   │   │   │   ├── ChangeServerControl.module.css
-│   │   │   │   ├── ChangeServerControl.test.tsx
-│   │   │   │   ├── ChangeServerControl.tsx
-│   │   │   │   ├── ClientShell.module.css
-│   │   │   │   ├── ClientShell.test.tsx
-│   │   │   │   ├── ClientShell.tsx
-│   │   │   │   ├── CombinedUsUgImportForm.module.css
-│   │   │   │   ├── CombinedUsUgImportForm.test.tsx
-│   │   │   │   ├── CombinedUsUgImportForm.tsx
-│   │   │   │   ├── ConnectionIndicator.module.css
-│   │   │   │   ├── ConnectionIndicator.test.tsx
-│   │   │   │   ├── ConnectionIndicator.tsx
-│   │   │   │   ├── ConnectionLostBanner.module.css
-│   │   │   │   ├── ConnectionLostBanner.test.tsx
-│   │   │   │   ├── ConnectionLostBanner.tsx
-│   │   │   │   ├── DesktopMenuBar.module.css
-│   │   │   │   ├── DesktopMenuBar.test.tsx
-│   │   │   │   ├── DesktopMenuBar.tsx
-│   │   │   │   ├── DesktopMenuBridge.module.css
-│   │   │   │   ├── DesktopMenuBridge.tsx
-│   │   │   │   ├── DesktopRootRedirect.test.tsx
-│   │   │   │   ├── DesktopRootRedirect.tsx
-│   │   │   │   ├── DesktopTitleBar.module.css
-│   │   │   │   ├── DesktopTitleBar.test.tsx
-│   │   │   │   ├── DesktopTitleBar.tsx
-│   │   │   │   ├── DeviceNameFields.module.css
-│   │   │   │   ├── DeviceNameFields.test.tsx
-│   │   │   │   ├── DeviceNameFields.tsx
-│   │   │   │   ├── DeviceNameGate.module.css
-│   │   │   │   ├── DeviceNameGate.test.tsx
-│   │   │   │   ├── DeviceNameGate.tsx
-│   │   │   │   ├── icons.tsx
-│   │   │   │   ├── MemoryPressureBanner.module.css
-│   │   │   │   ├── MemoryPressureBanner.test.tsx
-│   │   │   │   ├── MemoryPressureBanner.tsx
-│   │   │   │   ├── OperatorPinFields.test.tsx
-│   │   │   │   ├── OperatorPinFields.tsx
-│   │   │   │   ├── OperatorPinGate.test.tsx
-│   │   │   │   ├── OperatorPinGate.tsx
-│   │   │   │   ├── PreferencesEventBridge.test.tsx
-│   │   │   │   ├── PreferencesEventBridge.tsx
-│   │   │   │   ├── RouteErrorPage.test.tsx
-│   │   │   │   ├── RouteErrorPage.tsx
-│   │   │   │   ├── ServerSettingsModal.module.css
-│   │   │   │   ├── ServerSettingsModal.styles.test.ts
-│   │   │   │   ├── ServerSettingsModal.tsx
-│   │   │   │   ├── SettingsPopover.module.css
-│   │   │   │   ├── SettingsPopover.test.tsx
-│   │   │   │   ├── SettingsPopover.tsx
-│   │   │   │   ├── ShellAppearanceFields.module.css
-│   │   │   │   ├── ShellAppearanceFields.test.tsx
-│   │   │   │   ├── ShellAppearanceFields.tsx
-│   │   │   │   ├── ShellBlockingDialog.module.css
-│   │   │   │   ├── ShellBlockingDialog.test.tsx
-│   │   │   │   ├── ShellBlockingDialog.tsx
-│   │   │   │   ├── ShellIconButton.module.css
-│   │   │   │   ├── ShellIconButton.test.tsx
-│   │   │   │   ├── ShellIconButton.tsx
-│   │   │   │   ├── ShellNotificationFields.tsx
-│   │   │   │   ├── ShellSwitchRow.module.css
-│   │   │   │   ├── ShellSwitchRow.test.tsx
-│   │   │   │   ├── ShellSwitchRow.tsx
-│   │   │   │   ├── ShellWordmark.module.css
-│   │   │   │   ├── ShellWordmark.test.tsx
-│   │   │   │   ├── ShellWordmark.tsx
-│   │   │   │   ├── TimelineShell.module.css
-│   │   │   │   ├── TimelineShell.styles.test.ts
-│   │   │   │   ├── TimelineShell.tsx
-│   │   │   │   ├── UgImportForm.module.css
-│   │   │   │   ├── UgImportForm.tsx
-│   │   │   │   ├── UltrastarImportForm.test.tsx
-│   │   │   │   └── UltrastarImportForm.tsx
+│   │   │   │   └── timeline/  … (60 plików, 2 podkatalogi; 12 plików bezpośrednio)
 │   │   │   ├── transport/
 │   │   │   │   ├── api.test.ts
 │   │   │   │   ├── api.ts

@@ -5,13 +5,13 @@ import {
   postSystemRestore,
 } from "@lib/shell-operator/setlistApi.js";
 import { clampLatencyCompensationMs } from "@lib/audio/audioLatencyPrefs.js";
-import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
+import { ShellConfirmDialog } from "../components/ShellBlockingDialog.js";
 import { GeneralSettingsTab } from "./tabs/GeneralSettingsTab.js";
 import { AudioSettingsTab } from "./tabs/AudioSettingsTab.js";
 import { MidiSettingsTab } from "./tabs/MidiSettingsTab.js";
 import { MetronomeSettingsTab } from "./tabs/MetronomeSettingsTab.js";
 import { ServerSettingsTab } from "./tabs/ServerSettingsTab.js";
-import styles from "../ServerSettingsModal.module.css";
+import styles from "./ServerSettingsModal.module.css";
 import { TABS } from "./prefsSnapshot.js";
 import { SettingsModalShell as ModalShell } from "./SettingsModalShell.js";
 import { useServerSettingsModalState } from "./useServerSettingsModalState.js";

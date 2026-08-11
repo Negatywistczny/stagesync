@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from "react";
-import { ShellIconButton } from "../../ShellIconButton.js";
-import styles from "../../AdminShell.module.css";
+import { ShellIconButton } from "../../components/ShellIconButton.js";
+import styles from "../AdminShell.module.css";
 
 interface ModalProps {
   title: string;

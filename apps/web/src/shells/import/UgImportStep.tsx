@@ -2,7 +2,7 @@ import React from "react";
 import { Button, Input, Textarea } from "@stagesync/ui";
 import type { UgSearchHit, TextAnchorBridgeResult } from "@stagesync/shared";
 import { TEXT_ANCHOR_WEAK_ALIGN } from "@stagesync/shared";
-import styles from "../CombinedUsUgImportForm.module.css";
+import styles from "./CombinedUsUgImportForm.module.css";
 
 export type UgImportStepProps = {
   meta: { title: string; subtitle: string };

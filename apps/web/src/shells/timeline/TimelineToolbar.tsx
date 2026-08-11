@@ -22,9 +22,9 @@ import {
   IconPlay,
   IconSettings,
   IconStop,
-} from "../icons.js";
-import { ShellIconButton } from "../ShellIconButton.js";
-import styles from "../TimelineShell.module.css";
+} from "../components/icons.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import styles from "./TimelineShell.module.css";
 
 interface TimelineToolbarProps {
   operatorNavCompact: boolean;

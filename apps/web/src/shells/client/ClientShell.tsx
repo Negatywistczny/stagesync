@@ -14,7 +14,7 @@ import {
   shouldShowOperatorNav,
 } from "@lib/shell-operator/operatorSurface.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
-import { OperatorNav } from "./components/OperatorNav.js";
+import { OperatorNav } from "../components/OperatorNav.js";
 import {
   DEVICE_DISPLAY_NAME_CHANGED_EVENT,
   getStoredDeviceDisplayName,
@@ -33,8 +33,8 @@ import {
   ticksFromSyncLeadMs,
 } from "@lib/timeline/syncLead.js";
 import { useActiveProject } from "@lib/shell-operator/useActiveProject.js";
-import { useTransport } from "../transport/useTransport.js";
-import { noteH01ConsumerRender } from "../transport/h01PerfProbe.js";
+import { useTransport } from "../../transport/useTransport.js";
+import { noteH01ConsumerRender } from "../../transport/h01PerfProbe.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import {
@@ -44,13 +44,13 @@ import {
   type ScorePartInfo,
 } from "@lib/timeline-edit/scoreOsmd.js";
 import { SCORE_ZOOM_DEFAULT } from "@lib/timeline-edit/scorePlayhead.js";
-import { CueToast } from "./client/CueToast.js";
-import { ClientChrome } from "./client/ClientChrome.js";
+import { CueToast } from "./CueToast.js";
+import { ClientChrome } from "./ClientChrome.js";
 import styles from "./ClientShell.module.css";
-import { ClientNameModal } from "./client/ClientNameModal.js";
-import { ClientStagePanes } from "./client/ClientStagePanes.js";
-import { ClientWelcome } from "./client/ClientWelcome.js";
-import { CLIENT_ROLES, type ClientRoleId } from "./client/clientRoles.js";
+import { ClientNameModal } from "./ClientNameModal.js";
+import { ClientStagePanes } from "./ClientStagePanes.js";
+import { ClientWelcome } from "./ClientWelcome.js";
+import { CLIENT_ROLES, type ClientRoleId } from "./clientRoles.js";
 
 type RoleId = ClientRoleId;
 

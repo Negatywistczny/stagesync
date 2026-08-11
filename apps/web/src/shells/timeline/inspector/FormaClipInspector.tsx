@@ -7,7 +7,7 @@ import {
   deleteFormaSubsection,
   setFormaSubsectionStartBar,
 } from "@lib/timeline-edit/formaInspector.js";
-import styles from "../../TimelineShell.module.css";
+import styles from "../TimelineShell.module.css";
 
 export function FormaClipInspector({
   draftProject,

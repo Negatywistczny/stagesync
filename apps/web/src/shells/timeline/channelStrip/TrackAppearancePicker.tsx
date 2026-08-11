@@ -19,7 +19,7 @@ import {
   type TrackColor,
   type TrackIcon,
 } from "@stagesync/shared";
-import { IconTrack } from "../../icons.js";
+import { IconTrack } from "../../components/icons.js";
 import styles from "./ChannelStripControls.module.css";
 
 export type TrackAppearancePickerProps = {

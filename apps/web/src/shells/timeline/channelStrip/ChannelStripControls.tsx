@@ -17,7 +17,7 @@ import {
   type TrackColor,
   type TrackIcon,
 } from "@stagesync/shared";
-import { IconTrack } from "../../icons.js";
+import { IconTrack } from "../../components/icons.js";
 import type {
   ChannelStripCallbacks,
   ChannelStripState,

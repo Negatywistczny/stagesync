@@ -1,5 +1,5 @@
 import { BeatMapperPane } from "./BeatMapperPane.js";
-import styles from "../CombinedUsUgImportForm.module.css";
+import styles from "./CombinedUsUgImportForm.module.css";
 
 interface BeatmapImportStepProps {
   meta: { title: string; subtitle: string };

@@ -65,7 +65,7 @@ vi.mock("@lib/client/useMqTablet.js", () => ({
   useMqTablet: vi.fn(() => false),
 }));
 
-vi.mock("../transport/useTransport.js", () => ({
+vi.mock("../../transport/useTransport.js", () => ({
   useTransport: () => ({
     state: {
       bpm: 120,
@@ -265,7 +265,7 @@ describe("AdminShell chrome", () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
-    const adminDir = join(dirname(fileURLToPath(import.meta.url)), "admin");
+    const adminDir = dirname(fileURLToPath(import.meta.url));
     /**
      * Admin section views — entry under admin/ vs file that must hold useMqMobileCompact.
      * Thin barrels (#834): set `barrelExport` to the expected re-export path.

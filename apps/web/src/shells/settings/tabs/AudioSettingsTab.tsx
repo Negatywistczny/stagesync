@@ -4,7 +4,7 @@ import {
   AUDIO_LATENCY_MIN_MS,
   clampLatencyCompensationMs,
 } from "@lib/audio/audioLatencyPrefs.js";
-import styles from "../../ServerSettingsModal.module.css";
+import styles from "../ServerSettingsModal.module.css";
 
 interface AudioSettingsTabProps {
   audioError: string | null;

@@ -1,6 +1,6 @@
 import React from "react";
 import type { MapLaneId } from "@lib/timeline/mapLaneEdit.js";
-import styles from "../../TimelineShell.module.css";
+import styles from "../TimelineShell.module.css";
 
 export function MapLaneInspector({
   selectedMapLane,

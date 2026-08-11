@@ -9,7 +9,7 @@ import {
 } from "@lib/shell-operator/setlistApi.js";
 import { QrWrap } from "../shared/index.js";
 import { BridgeModal } from "./BridgeModal.js";
-import styles from "../DesktopMenuBridge.module.css";
+import styles from "./DesktopMenuBridge.module.css";
 
 export function HostQrModal({ onClose }: { onClose: () => void }) {
   type QrMode = "join" | "performer" | "console";

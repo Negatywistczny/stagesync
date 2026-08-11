@@ -1,4 +1,4 @@
-import styles from "../ClientShell.module.css";
+import styles from "./ClientShell.module.css";
 import {
   applyInstrumentPitchToChord,
   resolveChordNameParts,

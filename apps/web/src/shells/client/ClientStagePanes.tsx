@@ -9,10 +9,13 @@ import {
   type ScoreOctave,
   type ScorePartInfo,
 } from "@lib/timeline-edit/scoreOsmd.js";
-import { SettingsPopover, SettingsPopoverAnchor } from "../SettingsPopover.js";
-import { ShellIconButton } from "../ShellIconButton.js";
-import { IconMixer } from "../icons.js";
-import styles from "../ClientShell.module.css";
+import {
+  SettingsPopover,
+  SettingsPopoverAnchor,
+} from "../settings/SettingsPopover.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import { IconMixer } from "../components/icons.js";
+import styles from "./ClientShell.module.css";
 import { RoleSettingsFields } from "./ClientSettingsFields.js";
 import { CLIENT_ROLES, type ClientRoleId } from "./clientRoles.js";
 import { DrumsPane } from "./DrumsPane.js";

@@ -10,7 +10,7 @@ import {
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
-import { ShellIconButton } from "./ShellIconButton.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
 import { ShellAppearanceFields } from "./ShellAppearanceFields.js";
 import styles from "./SettingsPopover.module.css";
 

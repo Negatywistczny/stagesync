@@ -29,30 +29,30 @@ import {
   isAdminSectionId,
   type AdminSectionId,
 } from "@lib/shell-operator/operatorNavRoutes.js";
-import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
+import { ConnectionLostBanner } from "../client/ConnectionLostBanner.js";
 import {
   ShellConfirmDialog,
   ShellPromptDialog,
-} from "./ShellBlockingDialog.js";
-import { SetView } from "./admin/SetView.js";
-import { StageView } from "./admin/StageView.js";
-import { SystemView } from "./admin/SystemView.js";
-import { DevView } from "./admin/DevView.js";
-import { SongImportWizard } from "./import/SongImportWizard.js";
-import { Modal } from "./admin/modals/Modal.js";
-import { MusicXmlModal } from "./admin/modals/MusicXmlModal.js";
-import { BatchPcModal } from "./admin/modals/BatchPcModal.js";
-import { SongsView } from "./admin/views/SongsView.js";
-import { useDoubleConfirm } from "./admin/useDoubleConfirm.js";
-import { AdminFooter } from "./admin/AdminFooter.js";
-import { useAdminImportHandlers } from "./admin/useAdminImportHandlers.js";
-import { AdminShellChrome } from "./admin/AdminShellChrome.js";
+} from "../components/ShellBlockingDialog.js";
+import { SetView } from "./SetView.js";
+import { StageView } from "./StageView.js";
+import { SystemView } from "./SystemView.js";
+import { DevView } from "./DevView.js";
+import { SongImportWizard } from "../import/SongImportWizard.js";
+import { Modal } from "./modals/Modal.js";
+import { MusicXmlModal } from "./modals/MusicXmlModal.js";
+import { BatchPcModal } from "./modals/BatchPcModal.js";
+import { SongsView } from "./views/SongsView.js";
+import { useDoubleConfirm } from "./useDoubleConfirm.js";
+import { AdminFooter } from "./AdminFooter.js";
+import { useAdminImportHandlers } from "./useAdminImportHandlers.js";
+import { AdminShellChrome } from "./AdminShellChrome.js";
 import {
   ADMIN_LAST_SECTION_KEY,
   readStoredAdminSection,
-} from "./admin/adminSectionStorage.js";
-import { useAdminLibraryActions } from "./admin/useAdminLibraryActions.js";
-import { useTransport } from "../transport/useTransport.js";
+} from "./adminSectionStorage.js";
+import { useAdminLibraryActions } from "./useAdminLibraryActions.js";
+import { useTransport } from "../../transport/useTransport.js";
 import styles from "./AdminShell.module.css";
 
 export function AdminShell() {

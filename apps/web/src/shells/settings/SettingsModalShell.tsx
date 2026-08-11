@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from "react";
-import { ShellIconButton } from "../ShellIconButton.js";
-import styles from "../ServerSettingsModal.module.css";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import styles from "./ServerSettingsModal.module.css";
 
 export function SettingsModalShell({
   title,

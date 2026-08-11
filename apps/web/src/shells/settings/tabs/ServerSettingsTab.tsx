@@ -5,7 +5,7 @@ import {
   type ServerSettingsValues,
   type ServerSettingsResponse,
 } from "@lib/shell-operator/setlistApi.js";
-import styles from "../../ServerSettingsModal.module.css";
+import styles from "../ServerSettingsModal.module.css";
 
 interface ServerSettingsTabProps {
   restartNote: string | null;

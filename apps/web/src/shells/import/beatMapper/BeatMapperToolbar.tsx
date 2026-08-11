@@ -1,5 +1,5 @@
 import { Button, Input } from "@stagesync/ui";
-import { IconPause, IconPlay } from "../../icons.js";
+import { IconPause, IconPlay } from "../../components/icons.js";
 import styles from "../BeatMapperPane.module.css";
 
 export type BeatMapperToolbarProps = {

@@ -10,7 +10,7 @@ import {
   parseStartBarBeat,
   ticksFromDisplayBarBeat,
 } from "@lib/timeline/clipStartEdit.js";
-import styles from "../../TimelineShell.module.css";
+import styles from "../TimelineShell.module.css";
 
 export function TekstClipInspector({
   draftProject,

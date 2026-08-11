@@ -21,7 +21,7 @@ import {
   UsdbAccountPanel,
   shouldOpenUsdbAccount,
   type UsdbAccountStatusInfo,
-} from "./import/UsdbAccountPanel.js";
+} from "./UsdbAccountPanel.js";
 import styles from "./UgImportForm.module.css";
 
 export type UltrastarImportFormProps = {

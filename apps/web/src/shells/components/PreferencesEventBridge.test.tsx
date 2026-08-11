@@ -16,7 +16,7 @@ import {
 } from "@lib/client/preferencesEvents.js";
 import { PreferencesEventBridge } from "./PreferencesEventBridge.js";
 
-vi.mock("./ServerSettingsModal.js", () => ({
+vi.mock("../settings/ServerSettingsModal.js", () => ({
   ServerSettingsModal: ({
     initialTab,
     onClose,

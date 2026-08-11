@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Select } from "@stagesync/ui";
-import { ShellSwitchRow } from "../shells/ShellSwitchRow.js";
+import { ShellSwitchRow } from "../shells/components/ShellSwitchRow.js";
 import {
   DEV_PREVIEW_PROJECT_ID,
   DEV_VIEWPORTS,

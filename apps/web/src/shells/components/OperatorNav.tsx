@@ -15,8 +15,8 @@ import { shouldShowOperatorNav } from "@lib/shell-operator/operatorSurface.js";
 import { useOperatorNavShortcuts } from "@lib/shell-operator/operatorNavShortcuts.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { useMqTablet } from "@lib/client/useMqTablet.js";
-import { IconSettings } from "../icons.js";
-import { ShellIconButton } from "../ShellIconButton.js";
+import { IconSettings } from "./icons.js";
+import { ShellIconButton } from "./ShellIconButton.js";
 import styles from "./OperatorNav.module.css";
 
 export type OperatorNavProps = {

@@ -2,7 +2,7 @@ import type {
   PresenceClient,
   SessionStageMessage,
 } from "@lib/shell-operator/setlistApi.js";
-import shell from "../AdminShell.module.css";
+import shell from "./AdminShell.module.css";
 
 export type ClientPhase = "awaiting-data" | "awaiting-role" | "stale" | "ready";
 export type HeaderPresence = "online" | "empty" | "error";

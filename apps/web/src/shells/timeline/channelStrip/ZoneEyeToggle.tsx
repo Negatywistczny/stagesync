@@ -1,5 +1,5 @@
 import { Button } from "@stagesync/ui";
-import { IconEye, IconEyeOff } from "../../icons.js";
+import { IconEye, IconEyeOff } from "../../components/icons.js";
 import styles from "./MixerSurface.module.css";
 
 export function ZoneEyeToggle({

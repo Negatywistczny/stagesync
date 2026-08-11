@@ -8,7 +8,7 @@ import {
   setAudioClipMuted,
   setAudioClipTrimMs,
 } from "@lib/audio/audioLaneEdit.js";
-import styles from "../../TimelineShell.module.css";
+import styles from "../TimelineShell.module.css";
 
 export function AudioClipInspector({
   draftProject,

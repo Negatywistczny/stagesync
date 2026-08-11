@@ -3,7 +3,7 @@ import type {
   DesktopMenuActionItem,
   DesktopMenuLeaf,
 } from "@lib/client/desktopHtmlMenuModel.js";
-import styles from "../DesktopMenuBar.module.css";
+import styles from "./DesktopMenuBar.module.css";
 import { FixedFlyout } from "./FixedFlyout.js";
 import { actionableOf } from "./menuBarUtils.js";
 

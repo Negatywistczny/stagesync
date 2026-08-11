@@ -4,7 +4,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { FormaClipPreview } from "./FormaClipPreview.js";
-import styles from "../TimelineShell.module.css";
+import styles from "./TimelineShell.module.css";
 
 afterEach(() => {
   cleanup();

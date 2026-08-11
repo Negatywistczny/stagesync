@@ -1,6 +1,6 @@
 import type { LiveDeskSettingsDto } from "@lib/shell-operator/setlistApi.js";
-import { ShellSwitchRow } from "../../ShellSwitchRow.js";
-import shell from "../../AdminShell.module.css";
+import { ShellSwitchRow } from "../../components/ShellSwitchRow.js";
+import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "../AdminAccordionCard.js";
 import styles from "../StageView.module.css";
 import type { StageCardId } from "../stagePresence.js";

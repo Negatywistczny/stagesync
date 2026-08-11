@@ -5,7 +5,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OperatorPinGate } from "./OperatorPinGate.js";
 
-vi.mock("../transport/useTransport.js", () => ({
+vi.mock("../../transport/useTransport.js", () => ({
   useTransport: () => ({
     state: { playing: false },
     wsStatus: "connected",

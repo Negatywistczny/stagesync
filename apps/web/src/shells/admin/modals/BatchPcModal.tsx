@@ -3,7 +3,7 @@ import { Button, Input } from "@stagesync/ui";
 import { type Library } from "@stagesync/shared";
 import { batchMidiProgramIds } from "@lib/shell-operator/libraryApi.js";
 import { Modal } from "./Modal.js";
-import styles from "../../AdminShell.module.css";
+import styles from "../AdminShell.module.css";
 
 interface BatchPcModalProps {
   library: Library | null;

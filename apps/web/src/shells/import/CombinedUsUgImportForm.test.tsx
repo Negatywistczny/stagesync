@@ -59,7 +59,7 @@ vi.mock("@lib/shell-operator/libraryApi.js", () => ({
 
 const FIX = join(
   dirname(fileURLToPath(import.meta.url)),
-  "../../../../packages/shared/src/fixtures/us-ug/demo-simple",
+  "../../../../../packages/shared/src/fixtures/us-ug/demo-simple",
 );
 
 afterEach(() => {

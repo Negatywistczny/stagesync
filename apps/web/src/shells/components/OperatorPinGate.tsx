@@ -17,9 +17,9 @@ import {
   shouldClearOperatorPinOnHide,
 } from "@lib/shell-operator/operatorPinSession.js";
 import { useKeepTileAboveIme } from "@lib/client/useKeepTileAboveIme.js";
-import { ConnectionIndicator } from "./ConnectionIndicator.js";
-import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
-import { useTransport } from "../transport/useTransport.js";
+import { ConnectionIndicator } from "../client/ConnectionIndicator.js";
+import { ConnectionLostBanner } from "../client/ConnectionLostBanner.js";
+import { useTransport } from "../../transport/useTransport.js";
 import styles from "./DeviceNameGate.module.css";
 
 type Mode = "loading" | "open" | "unlocked";

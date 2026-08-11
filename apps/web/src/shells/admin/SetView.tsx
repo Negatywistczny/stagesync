@@ -19,9 +19,9 @@ import {
 } from "@lib/shell-operator/setlistApi.js";
 import { setlistBudgetPercent } from "@lib/timeline-edit/setlistBudget.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
-import { ShellSwitchRow } from "../ShellSwitchRow.js";
+import { ShellSwitchRow } from "../components/ShellSwitchRow.js";
 import { AdminAccordionCard } from "./AdminAccordionCard.js";
-import shell from "../AdminShell.module.css";
+import shell from "./AdminShell.module.css";
 import { SetEditorCard } from "./set/SetEditorCard.js";
 import { SetLibraryCard } from "./set/SetLibraryCard.js";
 import {

@@ -5,7 +5,7 @@ import {
   type MidiHostStatus,
   type SafetyNetStatus,
 } from "@lib/shell-operator/setlistApi.js";
-import shell from "../../AdminShell.module.css";
+import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "../AdminAccordionCard.js";
 import styles from "../SystemView.module.css";
 import type { HostCardId } from "./hostTypes.js";

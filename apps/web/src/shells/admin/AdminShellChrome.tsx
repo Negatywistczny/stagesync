@@ -22,11 +22,11 @@ import {
   IconPower,
   IconRestart,
   IconSettings,
-} from "../icons.js";
-import { ShellIconButton } from "../ShellIconButton.js";
-import { ShellWordmark } from "../ShellWordmark.js";
+} from "../components/icons.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import { ShellWordmark } from "../components/ShellWordmark.js";
 import type { useDoubleConfirm } from "./useDoubleConfirm.js";
-import styles from "../AdminShell.module.css";
+import styles from "./AdminShell.module.css";
 
 type DoubleConfirm = ReturnType<typeof useDoubleConfirm>;
 

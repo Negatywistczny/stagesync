@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { Button } from "@stagesync/ui";
 import type { WsStatus } from "../../transport/transportContext.js";
-import { ConnectionLostBanner } from "../ConnectionLostBanner.js";
-import { ShellIconButton } from "../ShellIconButton.js";
-import { ShellWordmark } from "../ShellWordmark.js";
-import { IconPencil } from "../icons.js";
-import styles from "../ClientShell.module.css";
+import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import { ShellWordmark } from "../components/ShellWordmark.js";
+import { IconPencil } from "../components/icons.js";
+import styles from "./ClientShell.module.css";
 import { CLIENT_ROLES, type ClientRoleId } from "./clientRoles.js";
 
 export function ClientWelcome({

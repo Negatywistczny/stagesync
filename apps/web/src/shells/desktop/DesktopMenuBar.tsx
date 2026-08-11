@@ -18,14 +18,14 @@ import {
 } from "@lib/client/desktopBridge.js";
 import { getRecentTimelineProjects } from "@lib/client/lastTimelineProject.js";
 import styles from "./DesktopMenuBar.module.css";
-import { CompactMenuRoot } from "./desktop/CompactMenuRoot.js";
-import { MenuList } from "./desktop/MenuList.js";
+import { CompactMenuRoot } from "./CompactMenuRoot.js";
+import { MenuList } from "./MenuList.js";
 import {
   dispatchAction,
   emitMenuKey,
   MENU_ROOT_ATTR,
   useTitleBarCompact,
-} from "./desktop/menuBarUtils.js";
+} from "./menuBarUtils.js";
 
 export function DesktopMenuBar() {
   const menubarId = useId();

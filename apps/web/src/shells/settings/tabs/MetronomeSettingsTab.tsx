@@ -6,7 +6,7 @@ import {
   type MetronomePrefs,
   type MetronomeTimbre,
 } from "@lib/audio/metronomePrefs.js";
-import styles from "../../ServerSettingsModal.module.css";
+import styles from "../ServerSettingsModal.module.css";
 
 interface MetronomeSettingsTabProps {
   metro: MetronomePrefs;

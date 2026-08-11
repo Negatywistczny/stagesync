@@ -14,9 +14,9 @@ import type {
 import {
   CombinedUsUgImportForm,
   type UsUgApplyPayload,
-} from "../CombinedUsUgImportForm.js";
-import { UgImportForm, type UgImportApplyPayload } from "../UgImportForm.js";
-import { UltrastarImportForm } from "../UltrastarImportForm.js";
+} from "./CombinedUsUgImportForm.js";
+import { UgImportForm, type UgImportApplyPayload } from "./UgImportForm.js";
+import { UltrastarImportForm } from "./UltrastarImportForm.js";
 import styles from "./SongImportWizard.module.css";
 
 export type SongImportSources = {

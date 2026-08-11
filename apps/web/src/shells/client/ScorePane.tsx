@@ -27,7 +27,7 @@ import {
   scoreBarFromDisplayTicks,
   seekTicksFromScoreBar,
 } from "@lib/timeline-edit/scorePlayhead.js";
-import styles from "../ClientShell.module.css";
+import styles from "./ClientShell.module.css";
 
 type Props = {
   project: Project | null;

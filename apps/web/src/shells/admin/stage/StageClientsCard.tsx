@@ -1,7 +1,7 @@
 import { MonitorSmartphone } from "lucide-react";
 import { Button } from "@stagesync/ui";
 import type { PresenceClient } from "@lib/shell-operator/setlistApi.js";
-import shell from "../../AdminShell.module.css";
+import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "../AdminAccordionCard.js";
 import styles from "../StageView.module.css";
 import {

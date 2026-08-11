@@ -41,9 +41,9 @@ import {
 } from "@lib/client/androidLatest.js";
 import { isAndroidUpdateSurface } from "@lib/client/nativeShell.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
-import { ShellConfirmDialog } from "../../ShellBlockingDialog.js";
-import { BrandName } from "../../BrandName.js";
-import shell from "../../AdminShell.module.css";
+import { ShellConfirmDialog } from "../../components/ShellBlockingDialog.js";
+import { BrandName } from "../../components/BrandName.js";
+import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "../AdminAccordionCard.js";
 import styles from "../SystemView.module.css";
 import { ApkTile } from "./ApkTile.js";

@@ -2,7 +2,7 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { MessageSquare } from "lucide-react";
 import { Button, Select, Textarea } from "@stagesync/ui";
 import type { SessionStageMessage } from "@lib/shell-operator/setlistApi.js";
-import shell from "../../AdminShell.module.css";
+import shell from "../AdminShell.module.css";
 import { AdminAccordionCard } from "../AdminAccordionCard.js";
 import styles from "../StageView.module.css";
 import {

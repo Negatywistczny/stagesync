@@ -51,19 +51,19 @@ vi.mock("@lib/client/screenWakeLock.js", () => ({
   releaseScreenWakeLock: vi.fn(async () => undefined),
 }));
 
-vi.mock("./client/ScorePane.js", () => ({
+vi.mock("./ScorePane.js", () => ({
   ScorePane: () => <div data-testid="score-pane">score</div>,
 }));
 
-vi.mock("./client/KaraokePane.js", () => ({
+vi.mock("./KaraokePane.js", () => ({
   KaraokePane: () => <div data-testid="karaoke-pane">karaoke</div>,
 }));
 
-vi.mock("./client/GridPane.js", () => ({
+vi.mock("./GridPane.js", () => ({
   GridPane: () => <div data-testid="grid-pane">grid</div>,
 }));
 
-vi.mock("./client/DrumsPane.js", () => ({
+vi.mock("./DrumsPane.js", () => ({
   DrumsPane: () => <div data-testid="drums-pane">drums</div>,
 }));
 
@@ -94,7 +94,7 @@ vi.mock("@lib/shell-operator/useActiveProject.js", () => ({
   }),
 }));
 
-vi.mock("../transport/useTransport.js", () => ({
+vi.mock("../../transport/useTransport.js", () => ({
   useTransport: () => ({
     state: {
       playing: false,
@@ -402,11 +402,7 @@ describe("ClientShell chrome", () => {
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const tsx = readFileSync(
-      join(
-        dirname(fileURLToPath(import.meta.url)),
-        "client",
-        "ClientChrome.tsx",
-      ),
+      join(dirname(fileURLToPath(import.meta.url)), "ClientChrome.tsx"),
       "utf8",
     );
     const headerStart = tsx.indexOf("function ClientChrome");

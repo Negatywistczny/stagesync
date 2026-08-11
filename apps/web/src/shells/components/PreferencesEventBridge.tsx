@@ -5,7 +5,7 @@ import {
   parseOpenPreferencesDetail,
   type PreferencesTab,
 } from "@lib/client/preferencesEvents.js";
-import { ServerSettingsModal } from "../shells/ServerSettingsModal.js";
+import { ServerSettingsModal } from "../settings/ServerSettingsModal.js";
 
 /**
  * Listens for `openPreferences` / Cmd+, events without the full DesktopMenuBridge

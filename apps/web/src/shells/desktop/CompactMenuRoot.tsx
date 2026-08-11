@@ -3,7 +3,7 @@ import type {
   DesktopMenuActionItem,
   DesktopMenuTopLevel,
 } from "@lib/client/desktopHtmlMenuModel.js";
-import styles from "../DesktopMenuBar.module.css";
+import styles from "./DesktopMenuBar.module.css";
 import { MenuList } from "./MenuList.js";
 import { emitMenuKey } from "./menuBarUtils.js";
 

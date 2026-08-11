@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { Button } from "@stagesync/ui";
 import type { ImportWizardStep } from "./combinedImportHelpers.js";
-import styles from "../CombinedUsUgImportForm.module.css";
+import styles from "./CombinedUsUgImportForm.module.css";
 
 type UsPreview = {
   ok: boolean;

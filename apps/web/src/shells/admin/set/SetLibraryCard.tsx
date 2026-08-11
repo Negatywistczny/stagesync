@@ -1,7 +1,7 @@
 import { Button } from "@stagesync/ui";
 import type { LibraryProjectEntry } from "@stagesync/shared";
 import type { DragEvent } from "react";
-import shell from "../../AdminShell.module.css";
+import shell from "../AdminShell.module.css";
 import styles from "../SetView.module.css";
 
 type SetLibraryCardProps = {

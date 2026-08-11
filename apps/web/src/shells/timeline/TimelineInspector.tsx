@@ -11,9 +11,9 @@ import type {
 } from "@stagesync/shared";
 import type { MapLaneId } from "@lib/timeline/mapLaneEdit.js";
 import type { ClipSelectionLane } from "@lib/timeline/timelineSelection.js";
-import { IconClose } from "../icons.js";
-import { ShellIconButton } from "../ShellIconButton.js";
-import styles from "../TimelineShell.module.css";
+import { IconClose } from "../components/icons.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import styles from "./TimelineShell.module.css";
 import { SongMetaInspector } from "./inspector/SongMetaInspector.js";
 import { MapLaneInspector } from "./inspector/MapLaneInspector.js";
 import { TekstClipInspector } from "./inspector/TekstClipInspector.js";

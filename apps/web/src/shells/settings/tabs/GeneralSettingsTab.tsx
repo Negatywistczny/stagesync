@@ -1,10 +1,10 @@
 import { type AppearanceState } from "@lib/client/appearance.js";
 import { type ClockDisplayFormat } from "@lib/client/clockDisplayPrefs.js";
-import { ShellAppearanceFields } from "../../ShellAppearanceFields.js";
-import { ShellNotificationFields } from "../../ShellNotificationFields.js";
-import { DeviceNameFields } from "../../DeviceNameFields.js";
-import { ChangeServerControl } from "../../ChangeServerControl.js";
-import styles from "../../ServerSettingsModal.module.css";
+import { ShellAppearanceFields } from "../ShellAppearanceFields.js";
+import { ShellNotificationFields } from "../ShellNotificationFields.js";
+import { DeviceNameFields } from "../../components/DeviceNameFields.js";
+import { ChangeServerControl } from "../../components/ChangeServerControl.js";
+import styles from "../ServerSettingsModal.module.css";
 
 interface GeneralSettingsTabProps {
   appearance: AppearanceState;

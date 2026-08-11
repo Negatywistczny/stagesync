@@ -7,9 +7,9 @@ import {
 } from "@lib/client/deviceNamePrefs.js";
 import { useKeepTileAboveIme } from "@lib/client/useKeepTileAboveIme.js";
 import { BrandName } from "./BrandName.js";
-import { ConnectionIndicator } from "./ConnectionIndicator.js";
-import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
-import { useTransport } from "../transport/useTransport.js";
+import { ConnectionIndicator } from "../client/ConnectionIndicator.js";
+import { ConnectionLostBanner } from "../client/ConnectionLostBanner.js";
+import { useTransport } from "../../transport/useTransport.js";
 import styles from "./DeviceNameGate.module.css";
 
 /**

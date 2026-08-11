@@ -1,10 +1,10 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { TransportProvider } from "./transport/TransportProvider.js";
-import { ClientShell } from "./shells/ClientShell.js";
-import { DeviceNameGate } from "./shells/DeviceNameGate.js";
-import { MemoryPressureBanner } from "./shells/MemoryPressureBanner.js";
-import { RouteErrorPage } from "./shells/RouteErrorPage.js";
+import { ClientShell } from "./shells/client/ClientShell.js";
+import { DeviceNameGate } from "./shells/components/DeviceNameGate.js";
+import { MemoryPressureBanner } from "./shells/components/MemoryPressureBanner.js";
+import { RouteErrorPage } from "./shells/components/RouteErrorPage.js";
 
 /** Performer / Client-only SPA — no Admin or Timeline modules. */
 const router = createBrowserRouter([

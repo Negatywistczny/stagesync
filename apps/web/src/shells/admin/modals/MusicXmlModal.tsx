@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Button } from "@stagesync/ui";
 import { uploadProjectMusicXml } from "@lib/shell-operator/projectAssetsApi.js";
 import { Modal } from "./Modal.js";
-import styles from "../../AdminShell.module.css";
+import styles from "../AdminShell.module.css";
 
 interface MusicXmlModalProps {
   projectId: string | null;

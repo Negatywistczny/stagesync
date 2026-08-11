@@ -27,12 +27,12 @@ import {
   type ScoreOctave,
   type ScorePartInfo,
 } from "@lib/timeline-edit/scoreOsmd.js";
-import { ChangeServerControl } from "../ChangeServerControl.js";
-import { OperatorPinFields } from "../OperatorPinFields.js";
-import { ShellAppearanceFields } from "../SettingsPopover.js";
-import { ShellNotificationFields } from "../ShellNotificationFields.js";
-import { ShellSwitchRow } from "../ShellSwitchRow.js";
-import styles from "../ClientShell.module.css";
+import { ChangeServerControl } from "../components/ChangeServerControl.js";
+import { OperatorPinFields } from "../components/OperatorPinFields.js";
+import { ShellAppearanceFields } from "../settings/SettingsPopover.js";
+import { ShellNotificationFields } from "../settings/ShellNotificationFields.js";
+import { ShellSwitchRow } from "../components/ShellSwitchRow.js";
+import styles from "./ClientShell.module.css";
 
 const PITCH_OPTIONS: {
   id: InstrumentPitchMode;

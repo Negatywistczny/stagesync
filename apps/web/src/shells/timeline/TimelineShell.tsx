@@ -140,8 +140,8 @@ import {
   segmentStylePx,
   tempoMapSegments,
 } from "@lib/timeline/mapSegments.js";
-import { FormaClipPreview } from "./timeline/FormaClipPreview.js";
-import { TimelineHelp } from "./timeline/TimelineHelp.js";
+import { FormaClipPreview } from "./FormaClipPreview.js";
+import { TimelineHelp } from "./TimelineHelp.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -281,14 +281,11 @@ import {
   updateAudioHardwareOutput,
 } from "@lib/audio/audioHwEdit.js";
 import { getAudioHwCapability } from "@lib/audio/audioHwCapability.js";
-import {
-  ChannelStripControls,
-  TaperGainSlider,
-} from "./timeline/channelStrip/index.js";
+import { ChannelStripControls, TaperGainSlider } from "./channelStrip/index.js";
 import type {
   ChannelStripCallbacks,
   MasterStripCallbacks,
-} from "./timeline/channelStrip/channelStripTypes.js";
+} from "./channelStrip/channelStripTypes.js";
 import {
   allowAudioPlayback,
   clearAudioBufferCache,
@@ -433,9 +430,9 @@ import {
   shouldShowOperatorNav,
 } from "@lib/shell-operator/operatorSurface.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
-import { ShellAlertDialog } from "./ShellBlockingDialog.js";
-import { loadTransport } from "../transport/api.js";
-import { useTransport } from "../transport/useTransport.js";
+import { ShellAlertDialog } from "../components/ShellBlockingDialog.js";
+import { loadTransport } from "../../transport/api.js";
+import { useTransport } from "../../transport/useTransport.js";
 import {
   IconChecked,
   IconClose,
@@ -455,20 +452,20 @@ import {
   IconUnchecked,
   IconWand,
   IconZoomIn,
-} from "./icons.js";
-import { ConnectionIndicator } from "./ConnectionIndicator.js";
-import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
-import { ShellIconButton } from "./ShellIconButton.js";
-import { AppHeader, AppHeaderActions } from "./components/AppHeader.js";
-import { OperatorNav } from "./components/OperatorNav.js";
-import { SongImportWizard } from "./import/SongImportWizard.js";
-import type { UsUgApplyPayload } from "./CombinedUsUgImportForm.js";
+} from "../components/icons.js";
+import { ConnectionIndicator } from "../client/ConnectionIndicator.js";
+import { ConnectionLostBanner } from "../client/ConnectionLostBanner.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import { AppHeader, AppHeaderActions } from "../components/AppHeader.js";
+import { OperatorNav } from "../components/OperatorNav.js";
+import { SongImportWizard } from "../import/SongImportWizard.js";
+import type { UsUgApplyPayload } from "../import/CombinedUsUgImportForm.js";
 import {
   SONG_IMPORT_EVENT,
   parseSongImportDetail,
 } from "@lib/client/songImportEvents.js";
-import { TimelineToolbar } from "./timeline/TimelineToolbar.js";
-import { MixerDock } from "./timeline/MixerDock.js";
+import { TimelineToolbar } from "./TimelineToolbar.js";
+import { MixerDock } from "./MixerDock.js";
 import styles from "./TimelineShell.module.css";
 
 type ToolId = FormaToolId;

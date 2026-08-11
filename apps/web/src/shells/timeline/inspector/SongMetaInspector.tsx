@@ -7,7 +7,7 @@ import {
   parseMeterString,
 } from "@stagesync/shared";
 import { upsertKeyAt, upsertMeterAt } from "@lib/timeline/mapLaneEdit.js";
-import styles from "../../TimelineShell.module.css";
+import styles from "../TimelineShell.module.css";
 
 export function SongMetaInspector({
   draftProject,

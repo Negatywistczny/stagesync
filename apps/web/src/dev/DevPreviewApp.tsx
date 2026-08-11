@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef } from "react";
 import { createMemoryRouter, Outlet } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { ContextMenuProvider } from "@stagesync/ui";
-import { AdminShell } from "../shells/AdminShell.js";
-import { ClientShell } from "../shells/ClientShell.js";
-import { PreferencesEventBridge } from "../shells/PreferencesEventBridge.js";
-import { TimelineShell } from "../shells/TimelineShell.js";
+import { AdminShell } from "../shells/admin/AdminShell.js";
+import { ClientShell } from "../shells/client/ClientShell.js";
+import { PreferencesEventBridge } from "../shells/components/PreferencesEventBridge.js";
+import { TimelineShell } from "../shells/timeline/TimelineShell.js";
 import { TransportProvider } from "../transport/TransportProvider.js";
 import { applyDevSurfaceMocks } from "./applyDevSurfaceMocks.js";
 import {

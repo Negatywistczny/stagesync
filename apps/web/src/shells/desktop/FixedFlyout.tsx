@@ -5,7 +5,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import styles from "../DesktopMenuBar.module.css";
+import styles from "./DesktopMenuBar.module.css";
 import { MENU_ROOT_ATTR } from "./menuBarUtils.js";
 
 export function FixedFlyout({

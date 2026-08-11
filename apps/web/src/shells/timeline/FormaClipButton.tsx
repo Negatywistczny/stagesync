@@ -9,7 +9,7 @@ import { subsectionRanges } from "@lib/timeline-edit/formaSubsections.js";
 import type { FormaClip } from "@stagesync/shared";
 import type { ClipSelectionLane } from "@lib/timeline/timelineSelection.js";
 import type { NudgeAction } from "@lib/timeline/timelineTouchNudge.js";
-import styles from "../TimelineShell.module.css";
+import styles from "./TimelineShell.module.css";
 
 export function FormaClipButton({
   clip,
