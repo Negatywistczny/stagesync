@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1330
-* **Liczba katalogów:** 203
-* **Data aktualizacji:** 2026-08-11T03:08:44.585Z
+* **Liczba wszystkich plików:** 1336
+* **Liczba katalogów:** 204
+* **Data aktualizacji:** 2026-08-11T03:09:25.540Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 904 |
+| Kod | 910 |
 | Docs | 156 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 547 |
+| `.ts` | 553 |
 | `.tsx` | 178 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -81,11 +81,11 @@
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (178) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (184) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (137) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (143) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -776,6 +776,13 @@ stagesync/
 │   │   │   │   ├── run-audio-smart-tempo.ts
 │   │   │   │   ├── tempo-map.ts
 │   │   │   │   ├── tempo-nodes.ts
+│   │   │   │   └── types.ts
+│   │   │   ├── tempo-map-solver/
+│   │   │   │   ├── anacrusis.ts
+│   │   │   │   ├── anchors.ts
+│   │   │   │   ├── constants.ts
+│   │   │   │   ├── multipass.ts
+│   │   │   │   ├── seed.ts
 │   │   │   │   └── types.ts
 │   │   │   ├── text-anchor-bridge/
 │   │   │   │   ├── align.ts
