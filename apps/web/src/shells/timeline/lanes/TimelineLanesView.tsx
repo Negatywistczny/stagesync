@@ -13,28 +13,18 @@ import {
   toolIsPencilDraw,
   toolUsesMarqueeGesture,
   cursorForTimelineTool,
-  contentSnapModeFromModifiers,
   isTouchPointerType,
 } from "@lib/timeline/timelineGesture.js";
-import {
-  contentClipCoveringTicks,
-  splitContentClipAt,
-} from "@lib/timeline-edit/contentLaneEdit.js";
-import {
-  insertScoreAnchor,
-  canEditKotwice,
-} from "@lib/timeline-edit/scoreBarEdit.js";
-import { snapEditTicks } from "@lib/timeline-edit/formaCanvas.js";
 import { tickToPx } from "@lib/timeline-edit/formaCanvas.js";
 import type { ToolId } from "../timelineToolsData.js";
 import type { TrackSelection } from "@lib/timeline/timelineSelection.js";
-import type { EmptyLaneMenuKind } from "@lib/timeline/timelineContextMenus.js";
 import { TimelineRulerView } from "./TimelineRulerView.js";
 import { TimelineTrackRowDock } from "../dock/TimelineTrackRowDock.js";
 import {
   renderLaneContent,
   type TimelineLanesRendererProps,
 } from "./renderers/TimelineLanesRenderer.js";
+import { createLanePointerDownHandler } from "./useTimelineLanePointerHandlers.js";
 import styles from "../TimelineShell.module.css";
 
 export type TimelineLanesViewProps = {
@@ -103,19 +93,10 @@ export type TimelineLanesViewProps = {
   heldZoom: boolean;
   audioLaneDropId: string | null;
   setAudioLaneDropId: (
-    fn: ((id: string | null) => string | null) | string | null,
+    id: string | null | ((prev: string | null) => string | null),
   ) => void;
-  onUploadAudioToTrack: (
-    trackId: string,
-    file: File,
-    opts?: { startTicks?: number },
-  ) => Promise<void>;
-  openEmptyLaneContextMenu: (args: {
-    clientX: number;
-    clientY: number;
-    laneKind: EmptyLaneMenuKind;
-    audioTrackId?: string;
-  }) => void;
+  onUploadAudioToTrack: (audioTrackId: string, file: File) => Promise<void>;
+  openEmptyLaneContextMenu: (args: any) => void;
   beginMarquee: (e: React.PointerEvent<any>) => void;
   beginTouchCanvasNav: (e: React.PointerEvent<any>) => void;
   heldZoomRef: RefObject<boolean>;
@@ -129,91 +110,82 @@ export type TimelineLanesViewProps = {
     lane: ContentLaneId,
   ) => void;
   rawTicksAtClientX: (clientX: number) => number | null;
-  commitDraft: (next: Project) => void;
+  commitDraft: (p: Project) => void;
   clearMapSelection: () => void;
   selectLaneClip: (lane: any, id: string) => void;
-  laneImportTrackIdRef: RefObject<string | null>;
-  laneImportStartTicksRef: RefObject<number | null>;
-  laneAudioFileRef: RefObject<HTMLInputElement | null>;
+  laneImportTrackIdRef?: RefObject<string | null>;
+  laneImportStartTicksRef?: RefObject<number | null>;
+  laneAudioFileRef?: RefObject<HTMLInputElement | null>;
   draftRef: RefObject<Project | null>;
   lanesRendererProps: Omit<TimelineLanesRendererProps, "trackId">;
 };
 
-export function TimelineLanesView({
-  canvasScrollRef,
-  canvasInnerWidth,
-  dockWidthBase,
-  markerOverlayRef,
-  showMidiPlayhead,
-  playheadPx,
-  locatorPx,
-  viewSpan,
-  barTicks,
-  effectiveLocatorTicks,
-  locatorLabel,
-  onLocatorPointerDown,
-  onLocatorPointerMove,
-  onLocatorPointerUp,
-  eyeBtnRef,
-  eyeOpen,
-  eyeMenuId,
-  setEyeOpen,
-  touchTier,
-  beginDockWidthResize,
-  onDockWidthResizePointerMove,
-  endDockWidthResize,
-  effectiveZoomH,
-  loopRange,
-  loopOn,
-  barMarks,
-  rulerBeatMarks,
-  bindTrackRowsRef,
-  lanesCoordRef,
-  marqueeBox,
-  draftProject,
-  trackVisibility,
-  rowHeightStyle,
-  trackSelection,
-  soloAudioTrackIds,
-  trackRename,
-  buildChannelStripCallbacks,
-  laneHeights,
-  zoomV,
-  uiScale,
-  tool,
-  onTool,
-  isMobilePreview,
-  laneResizeTrackId,
-  beginLaneResize,
-  onLaneResizePointerMove,
-  endLaneResize,
-  onLaneResizeDblClick,
-  onAudioTrackHeaderClick,
-  openAudioTrackContextMenu,
-  heldZoom,
-  audioLaneDropId,
-  setAudioLaneDropId,
-  onUploadAudioToTrack,
-  openEmptyLaneContextMenu,
-  beginMarquee,
-  beginTouchCanvasNav,
-  heldZoomRef,
-  onAddAudioTrack,
-  onFormaLanePointerDown,
-  onMapLanePointerDown,
-  onFormaLanePointerMove,
-  onFormaLanePointerUp,
-  beginContentPencilDraw,
-  rawTicksAtClientX,
-  commitDraft,
-  clearMapSelection,
-  selectLaneClip,
-  laneImportTrackIdRef,
-  laneImportStartTicksRef,
-  laneAudioFileRef,
-  draftRef,
-  lanesRendererProps,
-}: TimelineLanesViewProps) {
+export function TimelineLanesView(props: TimelineLanesViewProps) {
+  const {
+    canvasScrollRef,
+    canvasInnerWidth,
+    dockWidthBase,
+    markerOverlayRef,
+    showMidiPlayhead,
+    playheadPx,
+    locatorPx,
+    viewSpan,
+    barTicks,
+    effectiveLocatorTicks,
+    locatorLabel,
+    onLocatorPointerDown,
+    onLocatorPointerMove,
+    onLocatorPointerUp,
+    eyeBtnRef,
+    eyeOpen,
+    eyeMenuId,
+    setEyeOpen,
+    touchTier,
+    beginDockWidthResize,
+    onDockWidthResizePointerMove,
+    endDockWidthResize,
+    effectiveZoomH,
+    loopRange,
+    loopOn,
+    barMarks,
+    rulerBeatMarks,
+    bindTrackRowsRef,
+    lanesCoordRef,
+    marqueeBox,
+    draftProject,
+    trackVisibility,
+    rowHeightStyle,
+    trackSelection,
+    soloAudioTrackIds,
+    trackRename,
+    buildChannelStripCallbacks,
+    laneHeights,
+    zoomV,
+    uiScale,
+    tool,
+    onTool,
+    isMobilePreview,
+    laneResizeTrackId,
+    beginLaneResize,
+    onLaneResizePointerMove,
+    endLaneResize,
+    onLaneResizeDblClick,
+    onAudioTrackHeaderClick,
+    openAudioTrackContextMenu,
+    heldZoom,
+    audioLaneDropId,
+    setAudioLaneDropId,
+    onUploadAudioToTrack,
+    openEmptyLaneContextMenu,
+    beginMarquee,
+    beginTouchCanvasNav,
+    heldZoomRef,
+    onAddAudioTrack,
+    onFormaLanePointerMove,
+    onFormaLanePointerUp,
+    lanesRendererProps,
+  } = props;
+
   return (
     <div
       ref={canvasScrollRef}
@@ -328,302 +300,185 @@ export function TimelineLanesView({
 
             {buildTrackList(draftProject?.audioTracks ?? [])
               .filter((t) => isTrackVisible(trackVisibility, t))
-              .map((track) => (
-                <div
-                  key={track.id}
-                  className={styles.trackRow}
-                  style={rowHeightStyle(track.id)}
-                  data-track={track.id}
-                >
-                  <TimelineTrackRowDock
-                    track={track}
-                    draftProject={draftProject}
-                    trackSelection={trackSelection}
-                    soloAudioTrackIds={soloAudioTrackIds}
-                    trackRename={trackRename}
-                    buildChannelStripCallbacks={buildChannelStripCallbacks}
-                    laneHeights={laneHeights}
-                    zoomV={zoomV}
-                    uiScale={uiScale}
-                    tool={tool}
-                    onTool={onTool}
-                    isMobilePreview={isMobilePreview}
-                    touchTier={touchTier}
-                    laneResizeTrackId={laneResizeTrackId}
-                    beginLaneResize={beginLaneResize}
-                    onLaneResizePointerMove={onLaneResizePointerMove}
-                    endLaneResize={endLaneResize}
-                    onLaneResizeDblClick={onLaneResizeDblClick}
-                    onAudioTrackHeaderClick={onAudioTrackHeaderClick}
-                    openAudioTrackContextMenu={openAudioTrackContextMenu}
-                  />
-
+              .map((track) => {
+                const onPointerDown = createLanePointerDownHandler(
+                  track,
+                  props,
+                );
+                return (
                   <div
-                    data-audio-lane={
-                      isAudioLaneId(track.id) ? track.id : undefined
-                    }
-                    onPointerDown={
-                      track.id === "forma"
-                        ? onFormaLanePointerDown
-                        : track.id === "kotwice"
-                          ? (e) => {
-                              if (e.button !== 0 || !draftProject) return;
-                              if (!toolIsPencilDraw(tool)) return;
-                              if (!canEditKotwice(draftProject)) return;
-                              const raw = rawTicksAtClientX(e.clientX);
-                              if (raw == null) return;
-                              const next = insertScoreAnchor(
-                                draftProject,
-                                raw,
-                                1,
-                              );
-                              if (next !== draftProject) commitDraft(next);
-                            }
-                          : isMapLaneId(track.id)
-                            ? (e) =>
-                                onMapLanePointerDown(e, track.id as MapLaneId)
-                            : track.id === "tekst" ||
-                                track.id === "akordy" ||
-                                track.id === "cue"
-                              ? (e) => {
-                                  if (e.button !== 0 || !draftProject) return;
-                                  if (tool === "scissors") {
-                                    e.preventDefault();
-                                    const raw = rawTicksAtClientX(e.clientX);
-                                    if (raw == null) return;
-                                    const lane = track.id as ContentLaneId;
-                                    const hit = contentClipCoveringTicks(
-                                      draftProject,
-                                      lane,
-                                      raw,
-                                    );
-                                    if (!hit) return;
-                                    clearMapSelection();
-                                    selectLaneClip(lane, hit.id);
-                                    const next = splitContentClipAt(
-                                      draftProject,
-                                      lane,
-                                      hit.id,
-                                      raw,
-                                    );
-                                    if (next !== draftProject)
-                                      commitDraft(next);
-                                    return;
-                                  }
-                                  if (!toolIsPencilDraw(tool)) {
-                                    if (
-                                      toolUsesMarqueeGesture(
-                                        tool,
-                                        e.pointerType,
-                                      )
-                                    ) {
-                                      beginMarquee(e);
-                                    } else if (
-                                      isTouchPointerType(e.pointerType) &&
-                                      tool === "pointer" &&
-                                      !heldZoomRef.current
-                                    ) {
-                                      beginTouchCanvasNav(e);
-                                    }
-                                    return;
-                                  }
-                                  beginContentPencilDraw(
-                                    e,
-                                    track.id as ContentLaneId,
-                                  );
-                                }
-                              : isAudioLaneId(track.id)
-                                ? (e) => {
-                                    if (e.button !== 0) return;
-                                    if (toolIsPencilDraw(tool)) {
-                                      const raw = rawTicksAtClientX(e.clientX);
-                                      if (raw == null || !track.audioTrackId) {
-                                        return;
-                                      }
-                                      const draft = draftRef.current;
-                                      if (!draft) return;
-                                      const mode = contentSnapModeFromModifiers(
-                                        e.metaKey,
-                                        e.ctrlKey,
-                                      );
-                                      const snapped = snapEditTicks(
-                                        draft,
-                                        raw,
-                                        mode,
-                                      );
-                                      if (
-                                        laneImportTrackIdRef &&
-                                        laneImportTrackIdRef.current !==
-                                          undefined
-                                      ) {
-                                        (laneImportTrackIdRef as any).current =
-                                          track.audioTrackId;
-                                      }
-                                      if (
-                                        laneImportStartTicksRef &&
-                                        laneImportStartTicksRef.current !==
-                                          undefined
-                                      ) {
-                                        (
-                                          laneImportStartTicksRef as any
-                                        ).current = snapped;
-                                      }
-                                      laneAudioFileRef?.current?.click();
-                                      return;
-                                    }
-                                    if (
-                                      toolUsesMarqueeGesture(
-                                        tool,
-                                        e.pointerType,
-                                      )
-                                    ) {
-                                      beginMarquee(e);
-                                    } else if (
-                                      isTouchPointerType(e.pointerType) &&
-                                      tool === "pointer" &&
-                                      !heldZoomRef.current
-                                    ) {
-                                      beginTouchCanvasNav(e);
-                                    }
-                                  }
-                                : undefined
-                    }
-                    onPointerMove={
-                      track.id === "forma" ||
-                      track.id === "tekst" ||
-                      track.id === "akordy" ||
-                      track.id === "cue"
-                        ? onFormaLanePointerMove
-                        : undefined
-                    }
-                    onPointerUp={
-                      track.id === "forma" ||
-                      track.id === "tekst" ||
-                      track.id === "akordy" ||
-                      track.id === "cue"
-                        ? onFormaLanePointerUp
-                        : undefined
-                    }
-                    role={
-                      track.id === "forma" ||
-                      track.id === "tekst" ||
-                      track.id === "akordy" ||
-                      track.id === "cue"
-                        ? "presentation"
-                        : undefined
-                    }
-                    className={[
-                      styles.laneCell,
-                      track.group === "special" ? styles.laneCellMuted : "",
-                      track.id === "forma" ? styles.formaLaneCell : "",
-                      track.id === "forma" && toolIsPencilDraw(tool)
-                        ? styles.formaLanePencil
-                        : "",
-                      (track.id === "tekst" ||
-                        track.id === "akordy" ||
-                        track.id === "cue") &&
-                      toolIsPencilDraw(tool)
-                        ? styles.formaLanePencil
-                        : "",
-                      isMapLaneId(track.id) &&
-                      (toolIsPencilDraw(tool) || tool === "scissors")
-                        ? styles.formaLanePencil
-                        : "",
-                      isMapLaneId(track.id) || track.id === "kotwice"
-                        ? styles.mapLaneCell
-                        : "",
-                      isAudioLaneId(track.id) && toolIsPencilDraw(tool)
-                        ? styles.formaLanePencil
-                        : "",
-                      isAudioLaneId(track.id) &&
-                      audioLaneDropId === track.audioTrackId
-                        ? styles.laneCellDropActive
-                        : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    style={{
-                      cursor: cursorForTimelineTool(heldZoom ? "zoom" : tool),
-                    }}
+                    key={track.id}
+                    className={styles.trackRow}
+                    style={rowHeightStyle(track.id)}
                     data-track={track.id}
-                    onContextMenu={(e) => {
-                      if (
-                        (e.target as HTMLElement).closest(
-                          "button[data-clip-id]",
-                        )
-                      ) {
-                        return;
+                  >
+                    <TimelineTrackRowDock
+                      track={track}
+                      draftProject={draftProject}
+                      trackSelection={trackSelection}
+                      soloAudioTrackIds={soloAudioTrackIds}
+                      trackRename={trackRename}
+                      buildChannelStripCallbacks={buildChannelStripCallbacks}
+                      laneHeights={laneHeights}
+                      zoomV={zoomV}
+                      uiScale={uiScale}
+                      tool={tool}
+                      onTool={onTool}
+                      isMobilePreview={isMobilePreview}
+                      touchTier={touchTier}
+                      laneResizeTrackId={laneResizeTrackId}
+                      beginLaneResize={beginLaneResize}
+                      onLaneResizePointerMove={onLaneResizePointerMove}
+                      endLaneResize={endLaneResize}
+                      onLaneResizeDblClick={onLaneResizeDblClick}
+                      onAudioTrackHeaderClick={onAudioTrackHeaderClick}
+                      openAudioTrackContextMenu={openAudioTrackContextMenu}
+                    />
+
+                    <div
+                      data-audio-lane={
+                        isAudioLaneId(track.id) ? track.id : undefined
                       }
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (track.group === "audio" && track.audioTrackId) {
-                        openEmptyLaneContextMenu({
-                          clientX: e.clientX,
-                          clientY: e.clientY,
-                          laneKind: "audio",
-                          audioTrackId: track.audioTrackId,
-                        });
-                        return;
-                      }
-                      if (
+                      onPointerDown={onPointerDown}
+                      onPointerMove={
                         track.id === "forma" ||
                         track.id === "tekst" ||
                         track.id === "akordy" ||
                         track.id === "cue"
-                      ) {
-                        openEmptyLaneContextMenu({
-                          clientX: e.clientX,
-                          clientY: e.clientY,
-                          laneKind: track.id,
-                        });
+                          ? onFormaLanePointerMove
+                          : undefined
                       }
-                    }}
-                    onDragOver={
-                      track.group === "audio" && track.audioTrackId
-                        ? (e) => {
-                            e.preventDefault();
-                            e.dataTransfer.dropEffect = "copy";
-                            setAudioLaneDropId(track.audioTrackId!);
-                          }
-                        : undefined
-                    }
-                    onDragLeave={
-                      track.group === "audio" && track.audioTrackId
-                        ? (e) => {
-                            if (
-                              e.currentTarget.contains(e.relatedTarget as Node)
-                            ) {
-                              return;
+                      onPointerUp={
+                        track.id === "forma" ||
+                        track.id === "tekst" ||
+                        track.id === "akordy" ||
+                        track.id === "cue"
+                          ? onFormaLanePointerUp
+                          : undefined
+                      }
+                      role={
+                        track.id === "forma" ||
+                        track.id === "tekst" ||
+                        track.id === "akordy" ||
+                        track.id === "cue"
+                          ? "presentation"
+                          : undefined
+                      }
+                      className={[
+                        styles.laneCell,
+                        track.group === "special" ? styles.laneCellMuted : "",
+                        track.id === "forma" ? styles.formaLaneCell : "",
+                        track.id === "forma" && toolIsPencilDraw(tool)
+                          ? styles.formaLanePencil
+                          : "",
+                        (track.id === "tekst" ||
+                          track.id === "akordy" ||
+                          track.id === "cue") &&
+                        toolIsPencilDraw(tool)
+                          ? styles.formaLanePencil
+                          : "",
+                        isMapLaneId(track.id) &&
+                        (toolIsPencilDraw(tool) || tool === "scissors")
+                          ? styles.formaLanePencil
+                          : "",
+                        isMapLaneId(track.id) || track.id === "kotwice"
+                          ? styles.mapLaneCell
+                          : "",
+                        isAudioLaneId(track.id) && toolIsPencilDraw(tool)
+                          ? styles.formaLanePencil
+                          : "",
+                        isAudioLaneId(track.id) &&
+                        audioLaneDropId === track.audioTrackId
+                          ? styles.laneCellDropActive
+                          : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      style={{
+                        cursor: cursorForTimelineTool(heldZoom ? "zoom" : tool),
+                      }}
+                      data-track={track.id}
+                      onContextMenu={(e) => {
+                        if (
+                          (e.target as HTMLElement).closest(
+                            "button[data-clip-id]",
+                          )
+                        ) {
+                          return;
+                        }
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (track.group === "audio" && track.audioTrackId) {
+                          openEmptyLaneContextMenu({
+                            clientX: e.clientX,
+                            clientY: e.clientY,
+                            laneKind: "audio",
+                            audioTrackId: track.audioTrackId,
+                          });
+                          return;
+                        }
+                        if (
+                          track.id === "forma" ||
+                          track.id === "tekst" ||
+                          track.id === "akordy" ||
+                          track.id === "cue"
+                        ) {
+                          openEmptyLaneContextMenu({
+                            clientX: e.clientX,
+                            clientY: e.clientY,
+                            laneKind: track.id,
+                          });
+                        }
+                      }}
+                      onDragOver={
+                        track.group === "audio" && track.audioTrackId
+                          ? (e) => {
+                              e.preventDefault();
+                              e.dataTransfer.dropEffect = "copy";
+                              setAudioLaneDropId(track.audioTrackId!);
                             }
-                            setAudioLaneDropId((id) =>
-                              id === track.audioTrackId ? null : id,
-                            );
-                          }
-                        : undefined
-                    }
-                    onDrop={
-                      track.group === "audio" && track.audioTrackId
-                        ? (e) => {
-                            e.preventDefault();
-                            setAudioLaneDropId(null);
-                            const file = e.dataTransfer.files?.[0];
-                            if (file && track.audioTrackId) {
-                              void onUploadAudioToTrack(
-                                track.audioTrackId,
-                                file,
+                          : undefined
+                      }
+                      onDragLeave={
+                        track.group === "audio" && track.audioTrackId
+                          ? (e) => {
+                              if (
+                                e.currentTarget.contains(
+                                  e.relatedTarget as Node,
+                                )
+                              ) {
+                                return;
+                              }
+                              setAudioLaneDropId((id) =>
+                                id === track.audioTrackId ? null : id,
                               );
                             }
-                          }
-                        : undefined
-                    }
-                  >
-                    {renderLaneContent({
-                      ...lanesRendererProps,
-                      trackId: track.id,
-                    })}
+                          : undefined
+                      }
+                      onDrop={
+                        track.group === "audio" && track.audioTrackId
+                          ? (e) => {
+                              e.preventDefault();
+                              setAudioLaneDropId(null);
+                              const file = e.dataTransfer.files?.[0];
+                              if (file && track.audioTrackId) {
+                                void onUploadAudioToTrack(
+                                  track.audioTrackId,
+                                  file,
+                                );
+                              }
+                            }
+                          : undefined
+                      }
+                    >
+                      {renderLaneContent({
+                        ...lanesRendererProps,
+                        trackId: track.id,
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             <div className={styles.rowsFill}>
               {isMobilePreview ? (
                 <div className={styles.dockColumnFill} aria-hidden />

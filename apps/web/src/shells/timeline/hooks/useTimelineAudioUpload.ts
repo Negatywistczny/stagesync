@@ -5,29 +5,29 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { Project } from "@stagesync/shared";
+import type { Project, ProjectAsset, AudioClip } from "@stagesync/shared";
+import { channelModeFromChannelCount } from "@stagesync/shared";
 import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
 import { loadAudioBuffer } from "@lib/audio/audioPlayback.js";
 import {
   setAudioTrackChannelMode,
   placeImportedAudioClipAt,
 } from "@lib/audio/audioLaneEdit.js";
-import { channelModeFromChannelCount } from "@stagesync/shared";
+import {
+  ensureAudioTrackVisibility,
+  type TrackVisibilityMap,
+} from "@lib/timeline/timelineTracks.js";
 import {
   syncPresentAfterSave,
   createDraftHistory,
   type DraftHistory,
 } from "@lib/client/draftHistory.js";
-import {
-  ensureAudioTrackVisibility,
-  type TrackVisibilityMap,
-} from "@lib/timeline/timelineTracks.js";
 
 export type UseTimelineAudioUploadOptions = {
   projectId?: string;
   draftProject: Project | null;
-  setSavedProject: (p: Project | null) => void;
-  setDraftProject: (p: Project | null) => void;
+  setSavedProject: Dispatch<SetStateAction<Project | null>>;
+  setDraftProject: Dispatch<SetStateAction<Project | null>>;
   setDraftHistory: Dispatch<SetStateAction<DraftHistory | null>>;
   setTrackVisibility: Dispatch<SetStateAction<TrackVisibilityMap>>;
   setLoadError: (err: string | null) => void;
@@ -56,28 +56,30 @@ export function useTimelineAudioUpload({
           trackId,
           startTicks: opts?.startTicks,
         });
+        // Merge any client-side audio tracks that might not be on server yet
         const mergedTracks = [...next.audioTracks];
         for (const dt of draftProject.audioTracks) {
           if (!mergedTracks.some((t) => t.id === dt.id)) {
             mergedTracks.push(dt);
           }
         }
-        let project = { ...next, audioTracks: mergedTracks };
+        let project: Project = { ...next, audioTracks: mergedTracks };
         let targetTrackId = trackId;
         let lastClipId: string | null = null;
         if (next.assets.length && next.audioClips.length) {
           const uploadedAsset = next.assets
-            .filter((a) => a.kind === "audio")
+            .filter((a: ProjectAsset) => a.kind === "audio")
             .at(-1);
           const uploadedClip = uploadedAsset
-            ? (next.audioClips.find((c) => c.assetId === uploadedAsset.id) ??
-              next.audioClips[next.audioClips.length - 1]!)
+            ? (next.audioClips.find(
+                (c: AudioClip) => c.assetId === uploadedAsset.id,
+              ) ?? next.audioClips[next.audioClips.length - 1]!)
             : next.audioClips[next.audioClips.length - 1]!;
           lastClipId = uploadedClip.id;
           if (trackId && uploadedClip.trackId !== trackId) {
             project = {
               ...project,
-              audioClips: project.audioClips.map((c) =>
+              audioClips: project.audioClips.map((c: AudioClip) =>
                 c.id === uploadedClip.id ? { ...c, trackId } : c,
               ),
             };
@@ -113,10 +115,10 @@ export function useTimelineAudioUpload({
         }
         setSavedProject(project);
         setDraftProject(project);
-        setDraftHistory((h) =>
+        setDraftHistory((h: DraftHistory | null) =>
           h ? syncPresentAfterSave(h, project) : createDraftHistory(project),
         );
-        setTrackVisibility((prev) =>
+        setTrackVisibility((prev: TrackVisibilityMap) =>
           ensureAudioTrackVisibility(prev, project.audioTracks),
         );
       } catch (err) {
