@@ -1,54 +1,32 @@
 import {
   useCallback,
   useEffect,
-  useId,
-  useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { Button, ContextMenuProvider } from "@stagesync/ui";
-import { renderSVG } from "uqr";
+import { ContextMenuProvider } from "@stagesync/ui";
 import {
   getLastTimelineProjectId,
   getRecentTimelineProjects,
 } from "@lib/client/lastTimelineProject.js";
-import {
-  DESKTOP_MENU_EVENT,
-  parseDesktopMenuDetail,
-} from "@lib/client/desktopMenuEvents.js";
-import { openSongImport } from "@lib/client/songImportEvents.js";
+import { DESKTOP_MENU_EVENT } from "@lib/client/desktopMenuEvents.js";
 import {
   createSongAndOpen,
-  currentTimelineProjectId,
-  downloadLibraryExport,
   importLibraryFile,
-  listTemplateIds,
   saveProjectAs,
 } from "@lib/client/desktopFileMenu.js";
 import {
   isDesktopShell,
   prepareHostRestart,
-  quitDesktopApp,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
-  toggleAppFullscreen,
   usesHtmlDesktopTitleBar,
 } from "@lib/client/desktopBridge.js";
 import { handleDesktopMenuShortcut } from "@lib/client/desktopMenuShortcuts.js";
 import { shouldAllowNativeTextClipboard } from "@lib/client/isEditableKeyboardTarget.js";
-import { getTimelineNavUrl } from "@lib/shell-operator/operatorNavRoutes.js";
 import { DesktopTitleBar } from "./DesktopTitleBar.js";
-import {
-  downloadDiagnosticsExport,
-  fetchNetworkInfo,
-  fetchSetlist,
-  pickPrimaryJoinUrl,
-  apkDownloadUrlsFromJoin,
-  probeApkAvailable,
-  postSystemRestart,
-} from "@lib/shell-operator/setlistApi.js";
+import { fetchSetlist, postSystemRestart } from "@lib/shell-operator/setlistApi.js";
 import { suppressAudioPlayback } from "@lib/audio/audioPlayback.js";
 import { restoreAudioOutputSink } from "@lib/audio/audioOutputPrefs.js";
 import {
@@ -56,273 +34,20 @@ import {
   parseOpenPreferencesDetail,
 } from "@lib/client/preferencesEvents.js";
 import { useTransport } from "../transport/useTransport.js";
-import { ShellIconButton } from "./ShellIconButton.js";
 import { ShellPromptDialog } from "./ShellBlockingDialog.js";
 import { useOperatorNavShortcuts } from "@lib/shell-operator/operatorNavShortcuts.js";
 import {
   ServerSettingsModal,
   type PreferencesTab,
 } from "./ServerSettingsModal.js";
-import { QrWrap } from "./shared/index.js";
+import { HostQrModal } from "./desktop/HostQrModal.js";
+import { RestartConfirmModal } from "./desktop/RestartConfirmModal.js";
+import { useDesktopMenuActions } from "./desktop/useDesktopMenuActions.js";
+import type { NamePromptState } from "./desktop/namePrompt.js";
 import styles from "./DesktopMenuBridge.module.css";
 
-type NamePromptKind =
-  "new-song" | "new-template" | "new-from-template" | "save-as";
+export type { NamePromptKind, NamePromptState } from "./desktop/namePrompt.js";
 
-type NamePromptState = {
-  kind: NamePromptKind;
-  title: string;
-  defaultValue: string;
-  templateId?: string;
-  sourceId?: string;
-};
-
-function Modal({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
-}) {
-  const titleId = useId();
-  return (
-    <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal
-      aria-labelledby={titleId}
-    >
-      <button
-        type="button"
-        className={styles.backdrop}
-        aria-label="Zamknij"
-        onClick={onClose}
-      />
-      <div className={styles.panel}>
-        <div className={styles.head}>
-          <h2 id={titleId}>{title}</h2>
-          <ShellIconButton label="Zamknij" onClick={onClose}>
-            ×
-          </ShellIconButton>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function HostQrModal({ onClose }: { onClose: () => void }) {
-  type QrMode = "join" | "performer" | "console";
-  const [mode, setMode] = useState<QrMode>("join");
-  const [urls, setUrls] = useState<string[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [performerUrl, setPerformerUrl] = useState<string | null>(null);
-  const [consoleUrl, setConsoleUrl] = useState<string | null>(null);
-  const [performerReady, setPerformerReady] = useState(false);
-  const [consoleReady, setConsoleReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const info = await fetchNetworkInfo();
-        if (cancelled) return;
-        const list = info.urls.length > 0 ? info.urls : [];
-        setUrls(list);
-        const join = pickPrimaryJoinUrl(info) ?? list[0] ?? null;
-        setSelected(join);
-        const apk = join ? apkDownloadUrlsFromJoin(join) : null;
-        if (apk) {
-          setPerformerUrl(apk.performer);
-          setConsoleUrl(apk.console);
-          const [pOk, cOk] = await Promise.all([
-            probeApkAvailable(apk.performer),
-            probeApkAvailable(apk.console),
-          ]);
-          if (cancelled) return;
-          setPerformerReady(pOk);
-          setConsoleReady(cOk);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Nie udało się pobrać URL sieci",
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const activeUrl =
-    mode === "join"
-      ? selected
-      : mode === "performer"
-        ? performerReady
-          ? performerUrl
-          : null
-        : consoleReady
-          ? consoleUrl
-          : null;
-
-  const qrSvg = useMemo(() => {
-    if (!activeUrl) return null;
-    try {
-      return renderSVG(activeUrl, {
-        ecc: "M",
-        border: 2,
-        pixelSize: 6,
-      });
-    } catch {
-      return null;
-    }
-  }, [activeUrl]);
-
-  const title =
-    mode === "join"
-      ? "Kod QR — dołącz do hosta"
-      : mode === "performer"
-        ? "Kod QR — pobierz Performer"
-        : "Kod QR — pobierz Console";
-
-  return (
-    <Modal title={title} onClose={onClose}>
-      <div className={styles.body}>
-        <div className={styles.modeRow} role="tablist" aria-label="Tryb QR">
-          {(
-            [
-              ["join", "Dołącz"],
-              ["performer", "Performer APK"],
-              ["console", "Console APK"],
-            ] as const
-          ).map(([id, label]) => (
-            <Button
-              key={id}
-              variant="ghost"
-              role="tab"
-              aria-selected={mode === id}
-              selected={mode === id}
-              onClick={() => setMode(id)}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
-        {loading ? (
-          <p className={styles.muted} role="status" aria-live="polite">
-            Ładowanie adresów LAN…
-          </p>
-        ) : null}
-        {error ? (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-        ) : null}
-        {!loading && !error && mode === "join" && urls.length === 0 ? (
-          <p className={styles.muted} role="status" aria-live="polite">
-            Brak adresów LAN z hosta.
-          </p>
-        ) : null}
-        {!loading && !error && mode === "performer" && !performerReady ? (
-          <p className={styles.muted} role="status">
-            Host nie serwuje teraz Performer APK (
-            {performerUrl ?? "/downloads/stagesync-performer.apk"}). Pobierz z
-            Releases albo zbuduj APK lokalnie — patrz dokumentacja Mobile.
-          </p>
-        ) : null}
-        {!loading && !error && mode === "console" && !consoleReady ? (
-          <p className={styles.muted} role="status">
-            Host nie serwuje teraz Console APK (
-            {consoleUrl ?? "/downloads/stagesync-console.apk"}). Pobierz z
-            Releases albo zbuduj APK lokalnie — patrz dokumentacja Mobile.
-          </p>
-        ) : null}
-        {activeUrl && qrSvg ? (
-          <QrWrap svg={qrSvg} aria-label={`Kod QR dla ${activeUrl}`} />
-        ) : null}
-        {mode === "join" && urls.length > 0 ? (
-          <ul className={styles.urlList} aria-label="Adresy sieciowe">
-            {urls.map((url) => (
-              <li key={url}>
-                <Button
-                  variant="ghost"
-                  selected={url === selected}
-                  className={styles.urlPick}
-                  onClick={() => setSelected(url)}
-                >
-                  {url}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        {mode === "join" ? (
-          <p className={styles.muted}>
-            Zeskanuj kod telefonem / tabletem w tej samej sieci LAN
-            (dołączenie).
-          </p>
-        ) : (
-          <p className={styles.muted}>
-            QR prowadzi do pliku APK na tym hoście.
-          </p>
-        )}
-      </div>
-    </Modal>
-  );
-}
-
-function RestartConfirmModal({
-  onClose,
-  onConfirm,
-  pending,
-  error,
-}: {
-  onClose: () => void;
-  onConfirm: () => void;
-  pending: boolean;
-  error: string | null;
-}) {
-  return (
-    <Modal title="Restart hosta" onClose={onClose}>
-      <div className={styles.body}>
-        <p className={styles.muted}>
-          Serwer lokalny zostanie zrestartowany. Klienci na scenie mogą się
-          rozłączyć na chwilę.
-        </p>
-        {error ? (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-        ) : null}
-        <div className={styles.actions}>
-          <Button variant="ghost" onClick={onClose} disabled={pending}>
-            Anuluj
-          </Button>
-          <Button onClick={onConfirm} loading={pending} disabled={pending}>
-            Restart
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
-/**
- * Layout bridge for desktop OS menu Faza B+C.
- * Listens for CustomEvents from Tauri (`eval`) and routes to transport / dialogs.
- */
 export function DesktopMenuBridge() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -497,188 +222,25 @@ export function DesktopMenuBridge() {
     [alertError, fileBusy, navigate],
   );
 
-  useEffect(() => {
-    function onMenu(ev: Event) {
-      const detail = parseDesktopMenuDetail(ev);
-      if (!detail) return;
-      switch (detail.action) {
-        case "transport-play":
-          void onTransportPlay();
-          break;
-        case "transport-stop":
-          void onTransportStop();
-          break;
-        case "transport-prev":
-          void goSetlistNeighbor("prev");
-          break;
-        case "transport-next":
-          void goSetlistNeighbor("next");
-          break;
-        case "host-qr":
-          setQrOpen(true);
-          break;
-        case "host-restart":
-          setRestartError(null);
-          setRestartOpen(true);
-          break;
-        case "diagnostics-export":
-          void downloadDiagnosticsExport().catch(() => {
-            /* menu is best-effort */
-          });
-          break;
-        case "preferences":
-          setPrefsTab("general");
-          setPrefsOpen(true);
-          break;
-        case "appearance":
-          // Client handles in-shell; Timeline → openPreferences in TimelineShell.
-          if (!onTimeline && !onClient) {
-            setPrefsTab("general");
-            setPrefsOpen(true);
-          }
-          break;
-        case "file-new":
-          setNamePrompt({
-            kind: "new-song",
-            title: "Nowy utwór",
-            defaultValue: "Nowy utwór",
-          });
-          break;
-        case "file-new-template":
-          setNamePrompt({
-            kind: "new-template",
-            title: "Nowy wzór",
-            defaultValue: `Wzór ${new Date().toLocaleTimeString("pl")}`,
-          });
-          break;
-        case "file-new-from-template":
-          void (async () => {
-            try {
-              const templates = await listTemplateIds();
-              if (templates.length === 0) {
-                window.alert(
-                  "Brak wzorów w bibliotece. Utwórz wzór (Plik → Nowy → Wzór).",
-                );
-                return;
-              }
-              if (templates.length === 1) {
-                const only = templates[0]!;
-                setNamePrompt({
-                  kind: "new-from-template",
-                  title: `Nowy utwór z wzoru „${only.name}”`,
-                  defaultValue: `Utwór ${new Date().toLocaleTimeString("pl")}`,
-                  templateId: only.id,
-                });
-                return;
-              }
-              navigate("/admin?section=songs&action=from-template");
-            } catch (err) {
-              alertError(err, "Nie udało się wczytać wzorów");
-            }
-          })();
-          break;
-        case "file-open":
-          navigate("/admin?section=songs");
-          break;
-        case "file-save-as": {
-          const sourceId =
-            currentTimelineProjectId(location.pathname) ??
-            getLastTimelineProjectId();
-          if (!sourceId) {
-            window.alert("Brak projektu do zapisania jako…");
-            break;
-          }
-          setNamePrompt({
-            kind: "save-as",
-            title: "Zapisz jako…",
-            defaultValue: "Kopia projektu",
-            sourceId,
-          });
-          break;
-        }
-        case "file-import":
-          importInputRef.current?.click();
-          break;
-        case "file-import-song":
-          if (onTimeline) {
-            openSongImport({});
-          } else {
-            navigate("/admin?section=songs&action=import");
-          }
-          break;
-        case "file-export":
-          if (fileBusy) break;
-          setFileBusy(true);
-          void downloadLibraryExport()
-            .catch((err) => alertError(err, "Eksport nie powiódł się"))
-            .finally(() => setFileBusy(false));
-          break;
-        case "edit-cut":
-        case "edit-copy":
-        case "edit-paste":
-          // TimelineShell handles clip clipboard; elsewhere yield to OS text.
-          if (
-            !onTimeline &&
-            shouldAllowNativeTextClipboard(document.activeElement)
-          ) {
-            const cmd =
-              detail.action === "edit-cut"
-                ? "cut"
-                : detail.action === "edit-copy"
-                  ? "copy"
-                  : "paste";
-            try {
-              document.execCommand(cmd);
-            } catch {
-              /* best-effort */
-            }
-          }
-          break;
-        case "edit-select-all":
-          try {
-            document.execCommand("selectAll");
-          } catch {
-            /* best-effort */
-          }
-          break;
-        case "view-fullscreen":
-          void toggleAppFullscreen().catch(() => {
-            /* menu is best-effort */
-          });
-          break;
-        case "check-updates":
-          navigate("/admin?section=host&action=check-update");
-          break;
-        case "app-quit":
-          void quitDesktopApp().catch(() => {
-            /* best-effort */
-          });
-          break;
-        default:
-          if (detail.action.startsWith("navigate:")) {
-            const dest = detail.action.slice("navigate:".length);
-            if (dest === "/timeline") {
-              navigate(getTimelineNavUrl());
-            } else {
-              navigate(dest);
-            }
-          }
-          break;
-      }
-    }
-    window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
-    return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [
+  useDesktopMenuActions({
     alertError,
     fileBusy,
+    setFileBusy,
     goSetlistNeighbor,
-    location.pathname,
+    locationPathname: location.pathname,
     navigate,
     onClient,
     onTimeline,
     onTransportPlay,
     onTransportStop,
-  ]);
+    setQrOpen,
+    setRestartError,
+    setRestartOpen,
+    setPrefsTab,
+    setPrefsOpen,
+    setNamePrompt,
+    importInputRef,
+  });
 
   useEffect(() => {
     function onOpenPrefs(ev: Event) {
