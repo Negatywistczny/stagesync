@@ -37,18 +37,18 @@ Szczegóły granic i zakazów: [konstytucja](../.cursor/rules/constitution.mdc).
 
 ### 🔍 Quick Finder — Gdzie co znaleźć w kodzie
 
-| Cel / Zadanie deweloperskie | Katalog docelowy | Główne moduły / pliki |
-| :--- | :--- | :--- |
-| **Analiza tempa audio / Smart Tempo** | `apps/web/src/lib/audio/` & `packages/shared/src/smart-tempo/` | `audioTempoAnalysis.ts`, `smart-tempo.ts` |
-| **Widoki sceniczne muzyków (Partytury/Karaoke/Akordy)** | `apps/web/src/shells/client/` & `apps/web/src/lib/client/` | `ScorePane.tsx`, `KaraokePane.tsx`, `GridPane.tsx` |
-| **Edytor Timeline / Ścieżki / Klipy / Inspektory** | `apps/web/src/shells/timeline/` & `apps/web/src/lib/timeline/` | `TimelineShell.tsx`, `TimelineInspector.tsx` |
-| **Backend REST API & Trasy** | `apps/server/src/routes/` | `projects.ts`, `library.ts`, `system.ts`, `stage.ts` |
-| **Persystencja danych & Migracje v5** | `apps/server/src/storage/` | `project-store.ts`, `library-store.ts` |
-| **Serwer Czasu SSOT & WebSockets** | `apps/server/src/transport/` | `transport-engine.ts`, `transport-socket.ts` |
-| **Kreatory Importu (UltraStar / UG / Audio)** | `apps/web/src/shells/import/` & `packages/shared/src/` | `SongImportWizard.tsx`, `ultrastar-import/`, `ug-import/` |
-| **Launcher i Shell Desktop (Tauri)** | `apps/desktop/src-tauri/` & `apps/desktop/launcher/` | `lib.rs`, `app.js`, `index.html` |
-| **Współdzielone komponenty UI / Design System** | `packages/ui/src/` | `Button.tsx`, `Field.tsx`, `tokens.css` |
-| **Skrypty release / setup / Dev Hub** | `scripts/` | `hub/dev-hub.ts`, `release/cut-release.mjs`, `setup/` |
+| Cel / Zadanie deweloperskie                             | Katalog docelowy                                               | Główne moduły / pliki                                     |
+| :------------------------------------------------------ | :------------------------------------------------------------- | :-------------------------------------------------------- |
+| **Analiza tempa audio / Smart Tempo**                   | `apps/web/src/lib/audio/` & `packages/shared/src/smart-tempo/` | `audioTempoAnalysis.ts`, `smart-tempo.ts`                 |
+| **Widoki sceniczne muzyków (Partytury/Karaoke/Akordy)** | `apps/web/src/shells/client/` & `apps/web/src/lib/client/`     | `ScorePane.tsx`, `KaraokePane.tsx`, `GridPane.tsx`        |
+| **Edytor Timeline / Ścieżki / Klipy / Inspektory**      | `apps/web/src/shells/timeline/` & `apps/web/src/lib/timeline/` | `TimelineShell.tsx`, `TimelineInspector.tsx`              |
+| **Backend REST API & Trasy**                            | `apps/server/src/routes/`                                      | `projects.ts`, `library.ts`, `system.ts`, `stage.ts`      |
+| **Persystencja danych & Migracje v5**                   | `apps/server/src/storage/`                                     | `project-store.ts`, `library-store.ts`                    |
+| **Serwer Czasu SSOT & WebSockets**                      | `apps/server/src/transport/`                                   | `transport-engine.ts`, `transport-socket.ts`              |
+| **Kreatory Importu (UltraStar / UG / Audio)**           | `apps/web/src/shells/import/` & `packages/shared/src/`         | `SongImportWizard.tsx`, `ultrastar-import/`, `ug-import/` |
+| **Launcher i Shell Desktop (Tauri)**                    | `apps/desktop/src-tauri/` & `apps/desktop/launcher/`           | `lib.rs`, `app.js`, `index.html`                          |
+| **Współdzielone komponenty UI / Design System**         | `packages/ui/src/`                                             | `Button.tsx`, `Field.tsx`, `tokens.css`                   |
+| **Skrypty release / setup / Dev Hub**                   | `scripts/`                                                     | `hub/dev-hub.ts`, `release/cut-release.mjs`, `setup/`     |
 
 ## Granica 0 (Domain Axioms)
 

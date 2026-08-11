@@ -6,11 +6,11 @@ Pakiet `@stagesync/typescript-config` dostarcza współdzielone pliki konfigurac
 
 ## 📁 Struktura projektu
 
-| Plik | Przeznaczenie | Rozszerza |
-|:---|:---|:---|
-| [`base.json`](./base.json) | Bazowy preset: `strict`, `ES2022`, `NodeNext`, `isolatedModules` | — |
-| [`node-library.json`](./node-library.json) | Biblioteki Node.js (`@stagesync/shared`, serwer) — emit do `dist/` z deklaracjami `.d.ts` | `base.json` |
-| [`react-library.json`](./react-library.json) | Biblioteki React (`@stagesync/ui`) — dodaje `jsx: react-jsx` | `base.json` |
+| Plik                                         | Przeznaczenie                                                                             | Rozszerza   |
+| :------------------------------------------- | :---------------------------------------------------------------------------------------- | :---------- |
+| [`base.json`](./base.json)                   | Bazowy preset: `strict`, `ES2022`, `NodeNext`, `isolatedModules`                          | —           |
+| [`node-library.json`](./node-library.json)   | Biblioteki Node.js (`@stagesync/shared`, serwer) — emit do `dist/` z deklaracjami `.d.ts` | `base.json` |
+| [`react-library.json`](./react-library.json) | Biblioteki React (`@stagesync/ui`) — dodaje `jsx: react-jsx`                              | `base.json` |
 
 ## ⚙️ Budowanie i testowanie
 

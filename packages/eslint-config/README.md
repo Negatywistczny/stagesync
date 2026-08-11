@@ -6,11 +6,11 @@ Pakiet `@stagesync/eslint-config` dostarcza scentralizowaną konfigurację ESLin
 
 ## 📁 Struktura projektu
 
-| Plik | Przeznaczenie |
-|:---|:---|
-| [`base.js`](./base.js) | Bazowy preset ESLint — reguły wspólne dla całego projektu |
-| [`react-internal.js`](./react-internal.js) | Rozszerzenie dla pakietów React (`@stagesync/ui`, `apps/web`) |
-| [`acl.js`](./acl.js) | Reguły ACL (_Access Control Layer_) — wymuszanie granic importów między modułami |
+| Plik                                       | Przeznaczenie                                                                    |
+| :----------------------------------------- | :------------------------------------------------------------------------------- |
+| [`base.js`](./base.js)                     | Bazowy preset ESLint — reguły wspólne dla całego projektu                        |
+| [`react-internal.js`](./react-internal.js) | Rozszerzenie dla pakietów React (`@stagesync/ui`, `apps/web`)                    |
+| [`acl.js`](./acl.js)                       | Reguły ACL (_Access Control Layer_) — wymuszanie granic importów między modułami |
 
 ## ⚙️ Budowanie i testowanie
 

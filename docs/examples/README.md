@@ -6,8 +6,8 @@ Katalog `examples/` zawiera referencyjne pliki danych StageSync, służące jako
 
 ## 📁 Zawartość
 
-| Katalog | Opis |
-|:---|:---|
+| Katalog        | Opis                                                |
+| :------------- | :-------------------------------------------------- |
 | [`v5/`](./v5/) | Przykładowe pliki w formacie v5 (`ProjectSchemaV5`) |
 
 ### v5/

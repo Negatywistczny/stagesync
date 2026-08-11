@@ -11,5 +11,6 @@ Projekt w fazie inicjalizacji. Wtyczka obecnie posiada jedynie szkielet kodu (bo
 ## 📁 Struktura i rozwój
 
 Wtyczka ma docelowo umożliwić:
+
 - Eksport struktury partytury do formatu StageSync (v5 project / musicXML).
 - Synchroniczną integrację z silnikiem transportu StageSync za pomocą WebSockets.

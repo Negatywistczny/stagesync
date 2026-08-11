@@ -6,16 +6,16 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1439
-* **Liczba katalogów:** 239
-* **Data aktualizacji:** 2026-08-11T12:22:06.536Z
+* **Liczba wszystkich plików:** 1491
+* **Liczba katalogów:** 250
+* **Data aktualizacji:** 2026-08-11T14:37:04.975Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1013 |
-| Docs | 156 |
+| Kod | 1059 |
+| Docs | 162 |
 | Config | 119 |
 | Assety | 120 |
 | Inne | 31 |
@@ -24,9 +24,9 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 618 |
-| `.tsx` | 216 |
-| `.md` | 134 |
+| `.ts` | 654 |
+| `.tsx` | 226 |
+| `.md` | 140 |
 | `.png` | 94 |
 | `.kt` | 71 |
 | `.css` | 52 |
@@ -40,27 +40,27 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1041) — Aplikacje wykonawcze i powłoki klienckie w monorepo
-  - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
-  - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (166) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (575) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+- **apps/** (1085) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+  - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
+  - **desktop/** (101) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
+  - **server/** (174) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **web/** (612) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
       - **brand/** (5) — Materiały brandingowe i logotypy StageSync
     - **scripts/** (10) — Skrypty pomocnicze builda i benchmarków webowych
       - **benchmark/** (8) — Skrypty benchmarków wydajnościowych UI/Audio
-    - **src/** (533) — Kod źródłowy UI i logiki klienta
+    - **src/** (570) — Kod źródłowy UI i logiki klienta
       - **dev/** (18) — Narzędzia i panele deweloperskie wewnątrz aplikacji
-      - **lib/** (224) — Biblioteki klienta (5 kategorii — bez plików w lib root)
+      - **lib/** (232) — Biblioteki klienta (5 kategorii — bez plików w lib root)
         - **audio/** (55) — DSP, AudioContext, tempo, waveform
-        - **client/** (60) — Preferencje, mostek desktop, i18n shell, utilities UI
+        - **client/** (66) — Preferencje, mostek desktop, i18n shell, utilities UI
         - **shell-operator/** (29) — Operatory CRUD API / aktywny projekt
         - **timeline/** (50) — Silnik renderowania timeline (bez mutacji treści)
-        - **timeline-edit/** (30) — Mutacje treści klipów (akordy, cue, forma, tekst)
-      - **shells/** (270) — Powłoki Admin / Client / Timeline
-      - **transport/** (13) — Transport WS, playhead, probe wydajności
+        - **timeline-edit/** (32) — Mutacje treści klipów (akordy, cue, forma, tekst)
+      - **shells/** (296) — Powłoki Admin / Client / Timeline
+      - **transport/** (15) — Transport WS, playhead, probe wydajności
     - **test/** (9) — Testy jednostkowe i mocki aplikacji webowej
       - **benchmark/** (1) — Testy wydajnościowe struktur danych
       - **fixtures/** (8) — Przykładowe dane testowe projektów i timeline
@@ -71,23 +71,23 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (103) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+- **docs/** (105) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
   - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
   - **analysis/** (62) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
     - **inspiracje/** (55) — Dumpy zewnętrzne + triage (nie SSOT produktu)
     - **reports/** (4) — Raporty kanoniczne (current / milestones / hygiene)
     - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
   - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
-  - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
-  - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
+  - **examples/** (2) — Przykładowe pliki baz danych i pakiety projektowe v5
+  - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (196) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (202) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (155) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
-  - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
-  - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
+  - **shared/** (159) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **typescript-config/** (5) — Bazowe pliki tsconfig.json dla paczek i aplikacji
+  - **ui/** (26) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (27) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
   - **hub/** (5)
   - **merge-train/** (4) — Automatyzacja merge train i walidacji PR
@@ -223,8 +223,6 @@ stagesync/
 │   │   │   ├── gradle.properties
 │   │   │   ├── gradlew
 │   │   │   └── settings.gradle.kts
-│   │   ├── launcher/
-│   │   │   └── README.md
 │   │   ├── scripts/
 │   │   │   ├── build-apk.sh
 │   │   │   ├── prepare-local-host.mjs
@@ -241,6 +239,7 @@ stagesync/
 │   │   │   ├── index.html
 │   │   │   ├── localErrorActions.js
 │   │   │   ├── localErrorActions.test.js
+│   │   │   ├── README.md
 │   │   │   ├── splash.html
 │   │   │   ├── styles.css
 │   │   │   ├── updateDialog.js
@@ -295,8 +294,6 @@ stagesync/
 │   │   │   ├── gradle.properties
 │   │   │   ├── gradlew
 │   │   │   └── settings.gradle.kts
-│   │   ├── launcher/
-│   │   │   └── README.md
 │   │   ├── scripts/
 │   │   │   ├── build-apk.sh
 │   │   │   └── unit-test.sh
@@ -391,16 +388,22 @@ stagesync/
 │   │   │   │   ├── song-end-race.test.ts
 │   │   │   │   └── stage-api.test.ts
 │   │   │   ├── storage/
+│   │   │   │   ├── asset-store.ts
 │   │   │   │   ├── atomic-write.test.ts
 │   │   │   │   ├── atomic-write.ts
+│   │   │   │   ├── errors.ts
 │   │   │   │   ├── index.test.ts
 │   │   │   │   ├── index.ts
+│   │   │   │   ├── library-store.ts
 │   │   │   │   ├── migrate-volume.test.ts
 │   │   │   │   ├── migrate-volume.ts
 │   │   │   │   ├── paths.test.ts
 │   │   │   │   ├── paths.ts
+│   │   │   │   ├── project-migrations.ts
+│   │   │   │   ├── project-store.ts
 │   │   │   │   ├── restore-backup.test.ts
 │   │   │   │   ├── restore-backup.ts
+│   │   │   │   ├── setlist-store.ts
 │   │   │   │   ├── shadow-backup.test.ts
 │   │   │   │   └── shadow-backup.ts
 │   │   │   ├── system/
@@ -440,8 +443,10 @@ stagesync/
 │   │   │   │   ├── ui-meta.test.ts
 │   │   │   │   └── ui-meta.ts
 │   │   │   ├── usdb/
+│   │   │   │   ├── usdb-auth.ts
 │   │   │   │   ├── usdb-fetch.test.ts
-│   │   │   │   └── usdb-fetch.ts
+│   │   │   │   ├── usdb-fetch.ts
+│   │   │   │   └── usdb-parser.ts
 │   │   │   ├── web-static/
 │   │   │   │   ├── json-body-limit.test.ts
 │   │   │   │   ├── resolve-static-dir.test.ts
@@ -452,7 +457,6 @@ stagesync/
 │   │   │   ├── client-presence.ts
 │   │   │   ├── diagnostics-zip.ts
 │   │   │   ├── downloads.ts
-│   │   │   ├── env-settings.ts
 │   │   │   ├── file-logger.ts
 │   │   │   ├── index.ts
 │   │   │   ├── lifecycle.ts
@@ -464,6 +468,7 @@ stagesync/
 │   │   │   ├── network-info.ts
 │   │   │   ├── operator-pin.ts
 │   │   │   ├── path-browser.ts
+│   │   │   ├── README.md
 │   │   │   ├── safety-net.ts
 │   │   │   ├── sentry.ts
 │   │   │   ├── smoke-e2e.test.ts
@@ -524,20 +529,20 @@ stagesync/
 │   │   │   │   └── devSurfaceTypes.ts
 │   │   │   ├── lib/
 │   │   │   │   ├── audio/  … (55 plików, 2 podkatalogi; 36 plików bezpośrednio)
-│   │   │   │   ├── client/  … (60 plików)
+│   │   │   │   ├── client/  … (66 plików, 2 podkatalogi; 60 plików bezpośrednio)
 │   │   │   │   ├── shell-operator/  … (29 plików, 1 podkatalog; 23 pliki bezpośrednio)
 │   │   │   │   ├── timeline/  … (50 plików, 1 podkatalog; 46 plików bezpośrednio)
-│   │   │   │   └── timeline-edit/  … (30 plików, 2 podkatalogi; 26 plików bezpośrednio)
+│   │   │   │   └── timeline-edit/  … (32 pliki, 3 podkatalogi; 26 plików bezpośrednio)
 │   │   │   ├── shells/
 │   │   │   │   ├── admin/  … (45 plików, 5 podkatalogów; 30 plików bezpośrednio)
-│   │   │   │   ├── client/  … (30 plików)
+│   │   │   │   ├── client/  … (31 plików, 1 podkatalog; 30 plików bezpośrednio)
 │   │   │   │   ├── components/  … (59 plików, 1 podkatalog; 50 plików bezpośrednio)
 │   │   │   │   ├── desktop/  … (19 plików)
-│   │   │   │   ├── import/  … (33 pliki, 1 podkatalog; 30 plików bezpośrednio)
+│   │   │   │   ├── import/  … (35 plików, 1 podkatalog; 30 plików bezpośrednio)
 │   │   │   │   ├── pages/  … (3 pliki)
 │   │   │   │   ├── settings/  … (19 plików, 1 podkatalog; 14 plików bezpośrednio)
 │   │   │   │   ├── shared/  … (2 pliki)
-│   │   │   │   └── timeline/  … (60 plików, 2 podkatalogi; 12 plików bezpośrednio)
+│   │   │   │   └── timeline/  … (83 pliki, 9 podkatalogów; 13 plików bezpośrednio)
 │   │   │   ├── transport/
 │   │   │   │   ├── api.test.ts
 │   │   │   │   ├── api.ts
@@ -550,6 +555,8 @@ stagesync/
 │   │   │   │   ├── transportReducer.test.ts
 │   │   │   │   ├── transportReducer.ts
 │   │   │   │   ├── useTransport.ts
+│   │   │   │   ├── useTransportInterpolation.ts
+│   │   │   │   ├── useTransportSocket.ts
 │   │   │   │   ├── wsReconnect.test.ts
 │   │   │   │   └── wsReconnect.ts
 │   │   │   ├── App.tsx
@@ -559,6 +566,7 @@ stagesync/
 │   │   │   ├── main-client.tsx
 │   │   │   ├── main-console.tsx
 │   │   │   ├── main.tsx
+│   │   │   ├── README.md
 │   │   │   └── vite-env.d.ts
 │   │   ├── test/
 │   │   │   ├── benchmark/
@@ -659,13 +667,15 @@ stagesync/
 │   ├── api/
 │   │   └── README.md
 │   ├── examples/
-│   │   └── v5/
-│   │       └── library.pack.sample.stagesync.json
+│   │   ├── v5/
+│   │   │   └── library.pack.sample.stagesync.json
+│   │   └── README.md
 │   ├── guides/
 │   │   ├── DESKTOP.md
 │   │   ├── DX.md
 │   │   ├── INSTALL.md
-│   │   └── MOBILE.md
+│   │   ├── MOBILE.md
+│   │   └── README.md
 │   ├── ui/
 │   │   ├── badge.md
 │   │   ├── button.md
@@ -816,6 +826,7 @@ stagesync/
 │   │   │   │   ├── transport.test.ts
 │   │   │   │   └── transport.ts
 │   │   │   ├── ui-helpers/
+│   │   │   │   ├── wand/  … (3 pliki)
 │   │   │   │   ├── bracket-spans.ts
 │   │   │   │   ├── countdown-content.test.ts
 │   │   │   │   ├── countdown-content.ts
@@ -833,7 +844,8 @@ stagesync/
 │   │   │   │   ├── track-appearance.ts
 │   │   │   │   ├── wand.test.ts
 │   │   │   │   └── wand.ts
-│   │   │   └── index.ts
+│   │   │   ├── index.ts
+│   │   │   └── README.md
 │   │   ├── eslint.config.js
 │   │   ├── package.json
 │   │   ├── README.md
@@ -844,7 +856,8 @@ stagesync/
 │   │   ├── base.json
 │   │   ├── node-library.json
 │   │   ├── package.json
-│   │   └── react-library.json
+│   │   ├── react-library.json
+│   │   └── README.md
 │   ├── ui/
 │   │   ├── src/
 │   │   │   ├── components/
@@ -855,6 +868,7 @@ stagesync/
 │   │   │   │   ├── segmented/  … (2 pliki)
 │   │   │   │   └── slider/  … (3 pliki)
 │   │   │   ├── index.ts
+│   │   │   ├── README.md
 │   │   │   ├── tokens.css
 │   │   │   └── vite-env.d.ts
 │   │   ├── eslint.config.mjs

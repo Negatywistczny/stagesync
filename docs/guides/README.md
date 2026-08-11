@@ -6,12 +6,12 @@ Katalog `guides/` zawiera szczegółowe podręczniki wdrożeniowe i deweloperski
 
 ## 📁 Indeks podręczników
 
-| Podręcznik | Opis |
-|:---|:---|
+| Podręcznik                 | Opis                                                                                                         |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------- |
 | [INSTALL.md](./INSTALL.md) | Produkcyjne wdrożenie serwerowe (Docker Compose, GHCR, porty, zmienne środowiskowe, PIN, Safety Net, motywy) |
 | [DESKTOP.md](./DESKTOP.md) | Konfiguracja, budowanie i aktualizacja aplikacji desktopowych Tauri (`.dmg`, `.exe` NSIS, Launcher, updater) |
-| [MOBILE.md](./MOBILE.md) | Uruchamianie i dystrybucja aplikacji Android — Performer i Console (sideload APK, QR, Offline-First) |
-| [DX.md](./DX.md) | Przewodnik deweloperski — konfiguracja środowiska, Dev Hub TUI, komendy monorepo i troubleshooting |
+| [MOBILE.md](./MOBILE.md)   | Uruchamianie i dystrybucja aplikacji Android — Performer i Console (sideload APK, QR, Offline-First)         |
+| [DX.md](./DX.md)           | Przewodnik deweloperski — konfiguracja środowiska, Dev Hub TUI, komendy monorepo i troubleshooting           |
 
 ## 🔗 Powiązane
 

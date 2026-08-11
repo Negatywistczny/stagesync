@@ -12,10 +12,10 @@ Katalog `packages/android-keystore` zawiera stały klucz podpisujący [`sideload
 
 Jest to klucz dla dystrybucji sideload (nie dla sklepu Google Play). Hasło i alias są jawne, analogicznie do kluczy debug w Android SDK:
 
-| Parametr | Wartość |
-| :--- | :--- |
-| **Hasło keystore / klucza** | `android` |
-| **Alias** | `stagesync-sideload` |
+| Parametr                    | Wartość              |
+| :-------------------------- | :------------------- |
+| **Hasło keystore / klucza** | `android`            |
+| **Alias**                   | `stagesync-sideload` |
 
 ## ⚙️ Budowanie i wykorzystanie
 

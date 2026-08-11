@@ -94,13 +94,13 @@ Więcej informacji znajdziesz w pełnej [Dokumentacji DX](./docs/guides/DX.md).
 
 ## 📦 Monorepo
 
-| Ścieżka | Opis |
-| :--- | :--- |
-| 📱 **[`apps/`](apps/README.md)** | Aplikacje końcowe: Serwer SSOT, Web UI, Desktop (Tauri), Android (Performer / Console), WWW |
-| 📦 **[`packages/`](packages/README.md)** | Pakiety współdzielone: logika domenowa (`shared`), Design System (`ui`), wtyczki i tooling |
-| 📂 **[`data/`](data/README.md)** | Magazyn runtime: pliki projektów v5, biblioteka utworów oraz logi _(w `.gitignore`)_ |
-| 🛠️ **[`scripts/`](scripts/README.md)** | Narzędzia deweloperskie: Dev Hub, skrypty release, setup oraz automatyzacja CI |
-| 📚 **[`docs/`](docs/README.md)** | Baza wiedzy: podręczniki operatorskie, specyfikacje API, architektura i decyzje ADR |
+| Ścieżka                                  | Opis                                                                                        |
+| :--------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 📱 **[`apps/`](apps/README.md)**         | Aplikacje końcowe: Serwer SSOT, Web UI, Desktop (Tauri), Android (Performer / Console), WWW |
+| 📦 **[`packages/`](packages/README.md)** | Pakiety współdzielone: logika domenowa (`shared`), Design System (`ui`), wtyczki i tooling  |
+| 📂 **[`data/`](data/README.md)**         | Magazyn runtime: pliki projektów v5, biblioteka utworów oraz logi _(w `.gitignore`)_        |
+| 🛠️ **[`scripts/`](scripts/README.md)**   | Narzędzia deweloperskie: Dev Hub, skrypty release, setup oraz automatyzacja CI              |
+| 📚 **[`docs/`](docs/README.md)**         | Baza wiedzy: podręczniki operatorskie, specyfikacje API, architektura i decyzje ADR         |
 
 ## 📚 Dokumentacja
 

@@ -15,6 +15,7 @@
 ## 🚀 Natywny Launcher i Lokalny Host (Android)
 
 Natywny interfejs startowy zaimplementowany w Kotlin (`android/`):
+
 - **Wykrywanie hostów (Discovery):** „Uruchom lokalny host” (nodejs-mobile) + live QR + mDNS (`_stagesync._tcp`) + ręczny URL + lista ostatnich połączeń (recent).
 - **Punkt wejścia:** Po weryfikacji `/api/health` przekierowuje do `{origin}/admin` (z pełnym SPA: Admin + Timeline + Client).
 - **Lokalny host:** Przycisk widoczny i aktywny (`LocalHostService` + JNI + `libnode` + `assets/host` → `127.0.0.1:4000/api/health`). Patrz [ADR 0014](../../docs/adr/0014-desktop-launcher.md), [ADR 0016](../../docs/adr/0016-android-performer-console.md) oraz [MOBILE.md](../../docs/guides/MOBILE.md).

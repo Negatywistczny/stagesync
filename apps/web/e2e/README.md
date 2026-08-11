@@ -29,6 +29,7 @@ Testy wykorzystują odizolowany katalog `STAGESYNC_DATA_DIR` w katalogu tymczaso
 ## 🔧 Integracja CI/CD
 
 Zadanie `playwright-smoke` w workflow `.github/workflows/ci.yml`:
+
 - Uruchamiane przy push do `main`, `workflow_dispatch` oraz na PR dotykających kodu web (`apps/web/src/**`, `apps/web/e2e/**`).
 - Cache'uje przeglądarkę Playwright Chromium w `~/.cache/ms-playwright`.
 - Polecenie wykonawcze: `pnpm --filter @stagesync/web test:e2e`.
