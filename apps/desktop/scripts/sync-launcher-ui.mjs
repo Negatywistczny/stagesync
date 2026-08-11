@@ -13,5 +13,5 @@ const vendor = join(root, "apps/desktop/launcher/vendor");
 
 mkdirSync(vendor, { recursive: true });
 copyFileSync(join(uiSrc, "tokens.css"), join(vendor, "tokens.css"));
-copyFileSync(join(uiSrc, "button.css"), join(vendor, "button.css"));
+copyFileSync(join(uiSrc, "components/button/button.css"), join(vendor, "button.css"));
 console.log("sync-launcher-ui: wrote apps/desktop/launcher/vendor/{tokens,button}.css");

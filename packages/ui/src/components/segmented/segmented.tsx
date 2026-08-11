@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Button, type ButtonVariant } from "./button.js";
+import { Button, type ButtonVariant } from "../button/button.js";
 import "./segmented.css";
 
 export type SegmentedOption<T extends string = string> = {

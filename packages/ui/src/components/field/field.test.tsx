@@ -1,8 +1,9 @@
+import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { Badge } from "./badge.js";
+import { Badge } from "../badge/badge.js";
 import { Field, Input, Select, Textarea } from "./field.js";
-import { SegmentedControl } from "./segmented.js";
+import { SegmentedControl } from "../segmented/segmented.js";
 
 describe("Field / Input", () => {
   it("renders input with ss-input and field chrome", () => {
