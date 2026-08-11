@@ -402,7 +402,11 @@ describe("ClientShell chrome", () => {
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const tsx = readFileSync(
-      join(dirname(fileURLToPath(import.meta.url)), "ClientShell.tsx"),
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        "client",
+        "ClientChrome.tsx",
+      ),
       "utf8",
     );
     const headerStart = tsx.indexOf("function ClientChrome");
