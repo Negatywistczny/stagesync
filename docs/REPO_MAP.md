@@ -6,9 +6,9 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1277
+* **Liczba wszystkich plików:** 1278
 * **Liczba katalogów:** 197
-* **Data aktualizacji:** 2026-08-11T02:07:13.009Z
+* **Data aktualizacji:** 2026-08-11T02:08:03.523Z
 
 ### Kategorie
 
@@ -16,7 +16,7 @@
 | :--- | ---: |
 | Kod | 852 |
 | Docs | 156 |
-| Config | 118 |
+| Config | 119 |
 | Assety | 120 |
 | Inne | 31 |
 
@@ -30,7 +30,7 @@
 | `.png` | 94 |
 | `.kt` | 71 |
 | `.css` | 52 |
-| `.json` | 36 |
+| `.json` | 37 |
 | `.xml` | 35 |
 | `.mjs` | 29 |
 | `brak rozszerzenia` | 24 |
@@ -40,12 +40,12 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (911) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (912) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (135) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (476) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+  - **web/** (477) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
       - **brand/** (5) — Materiały brandingowe i logotypy StageSync
@@ -624,6 +624,7 @@ stagesync/
 │   │   ├── package.json
 │   │   ├── playwright.config.ts
 │   │   ├── README.md
+│   │   ├── tsconfig.build.json
 │   │   ├── tsconfig.json
 │   │   ├── vite.config.ts
 │   │   └── vitest.config.ts
