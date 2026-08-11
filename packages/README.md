@@ -6,8 +6,8 @@ Katalog `packages/` grupuje pakiety i moduły deweloperskie, które są współd
 
 ## 📁 Pakiety
 
-1. **[`@stagesync/shared`](shared/README.md)** — Czysta logika domenowa, solver czasu muzycznego (ticks/PPQ) i schematy walidacyjne Zod (wymóg `no DOM/FS`).
-2. **[`@stagesync/ui`](ui/README.md)** — Scentralizowany Design System i komponenty prezentacyjne stylizowane przy użyciu CSS Modules i tokenów `--ss-*`.
+1. **[`@stagesync/shared`](./shared/README.md)** — Czysta logika domenowa, solver czasu muzycznego (ticks/PPQ) i schematy walidacyjne Zod (wymóg `no DOM/FS`).
+2. **[`@stagesync/ui`](./ui/README.md)** — Scentralizowany Design System i komponenty prezentacyjne stylizowane przy użyciu CSS Modules i tokenów `--ss-*`.
 3. **[`eslint-config`](./eslint-config/README.md)** — Współdzielona konfiguracja linterów (ESLint/Prettier) wymuszająca spójność stylu kodowania.
 4. **[`typescript-config`](./typescript-config/README.md)** — Bazowe pliki konfiguracyjne TypeScript (`base.json`, `node-library.json`, `react-library.json`).
 5. **[`android-keystore`](./android-keystore/README.md)** — Stały certyfikat podpisujący sideload APK Console / Performer dla wydań GitHub Releases.

@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1494
-* **Liczba katalogów:** 251
-* **Data aktualizacji:** 2026-08-11T21:41:19.595Z
+* **Liczba wszystkich plików:** 1503
+* **Liczba katalogów:** 252
+* **Data aktualizacji:** 2026-08-11T22:02:11.709Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1077 |
+| Kod | 1086 |
 | Docs | 147 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 669 |
+| `.ts` | 674 |
 | `.tsx` | 226 |
 | `.md` | 125 |
 | `.png` | 94 |
@@ -34,15 +34,15 @@
 | `.xml` | 35 |
 | `.mjs` | 32 |
 | `brak rozszerzenia` | 24 |
-| _(pozostałe)_ | 129 |
+| _(pozostałe)_ | 133 |
 
 ---
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1095) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1099) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (104) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (108) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (174) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (619) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -81,11 +81,11 @@
   - **examples/** (2) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (204) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (209) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (161) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (166) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (5) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (26) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (33) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -237,13 +237,17 @@ stagesync/
 │   │   │   ├── app.js
 │   │   │   ├── host-discovery.js
 │   │   │   ├── index.html
+│   │   │   ├── local-host.js
 │   │   │   ├── localErrorActions.js
 │   │   │   ├── localErrorActions.test.js
+│   │   │   ├── manual-connect.js
 │   │   │   ├── README.md
+│   │   │   ├── recent.js
 │   │   │   ├── splash.html
 │   │   │   ├── styles.css
 │   │   │   ├── updateDialog.js
-│   │   │   └── updateDialog.test.js
+│   │   │   ├── updateDialog.test.js
+│   │   │   └── window.js
 │   │   ├── scripts/
 │   │   │   ├── sidecar/
 │   │   │   │   ├── node-runtime.mjs
@@ -751,6 +755,7 @@ stagesync/
 │   │   │   │   ├── transpose.test.ts
 │   │   │   │   └── transpose.ts
 │   │   │   ├── project/
+│   │   │   │   ├── schema/  … (4 pliki)
 │   │   │   │   ├── host-discovery.test.ts
 │   │   │   │   ├── host-discovery.ts
 │   │   │   │   ├── merge-preserve.test.ts
@@ -794,6 +799,7 @@ stagesync/
 │   │   │   │   ├── bridge-chord-ms-plan.ts
 │   │   │   │   ├── bridge-layout-forma.ts
 │   │   │   │   ├── bridge-orchestrator.ts
+│   │   │   │   ├── bridge-phrase-anchors.ts
 │   │   │   │   ├── bridge-place-akords.ts
 │   │   │   │   ├── bridge-resolve-tempo.ts
 │   │   │   │   ├── clip-remap.ts

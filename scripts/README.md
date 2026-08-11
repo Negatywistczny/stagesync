@@ -1,78 +1,33 @@
 > [📦 StageSync](../README.md)
 
-# 🛠️ StageSync Root Scripts (`scripts/`)
+# 🛠️ scripts/ — Skrypty Automatyzacji i Narzędzia DX
 
-Katalog `scripts/` zawiera skrypty automatyzacji, narzędzia wydań SemVer, skrypty pre-flight, generatory dokumentacji oraz pociągi integracyjne CI/CD.
+Katalog `scripts/` grupuje narzędzia deweloperskie, procedury wydań SemVer, skrypty pre-flight, moduły walidacji jakości i pociągi integracyjne monorepo StageSync.
 
 > 📘 **Szukasz instrukcji uruchomienia projektu i pracy deweloperskiej?**  
 > Przejdź do dedykowanego przewodnika: **[StageSync DX Guide](../docs/guides/DX.md)**.
 
----
+## 📁 Moduły i skrypty
 
-## 📁 1. Architektura Katalogu `scripts/`
+1. **[`hub/`](./hub/dev-hub.ts)** — Główny plik wejściowy DX Suite (`dev-hub.ts`) oraz submoduły terminalowe TUI (diagnostyka `doctor`, detekcja sieci LAN `network`, bramki CI `gate`, narzędzia terminalowe `utils`).
+2. **[`release/`](./release/cut-release.mjs)** — Procedura wydań SemVer (`cut-release.mjs`), synchronizacja wersji monorepo (`sync-version.mjs`) oraz generatory notatek wydań GitHub.
+3. **[`setup/`](./setup/setup.sh)** — Skrypty pre-flight i automatyczne instalatory środowiska dla systemów Windows (`setup.ps1`) oraz Linux/macOS (`setup.sh`).
+4. **[`quality/`](./quality/generate-repo-map.mjs)** — Narzędzia walidacji jakości kodu i dokumentacji: generator mapy repozytorium (`generate-repo-map.mjs`), weryfikator linków (`check-docs-links.mjs`) i linter tokenów CSS (`lint-ss-css.mjs`).
+5. **[`merge-train/`](./merge-train/run-merge-train.sh)** — Automatyzacja pociągów integracyjnych PR-ów (`merge-train.sh`, `integrate-pr.sh`, `run-merge-train.sh`, `run-train-batch.sh`).
 
-```text
-scripts/
-├── hub/            # 🧩 Submoduły Dev Hub TUI (doctor, network, gate, utils)
-├── release/        # 🏷️ Wydania SemVer, changelog & wersjonowanie monorepo
-├── setup/          # ⚙️ Pre-flight & instalatory zależności (Windows / Unix)
-├── quality/        # 📊 Mapa kodu, lintery CSS/Knip i walidacja dokumentacji
-├── merge-train/    # 🚆 Pociągi integracyjne PR-ów (trunk/batch)
-│   └── dev-hub.ts  # 🎛️ Główny plik wejściowy DX Suite (Dev Hub TUI / CLI)
-├── tsconfig.json   # ⚙️ Konfiguracja TypeScript dla środowiska skryptów korzenia
-└── README.md       # 📚 Niniejsza dokumentacja (Indeks skryptów)
-```
+## ⚙️ Główne komendy i wykorzystanie
 
----
+Skrypty są zintegrowane z głównym [`package.json`](../package.json) oraz launcherami deweloperskimi korzenia:
 
-## 🎛️ 2. Dev Hub & Submoduły (`scripts/hub/`)
+- `./dev` (lub `pnpm dev:hub`) — uruchamia interaktywny Dev Hub TUI sterujący wszystkimi procesami projektu.
+- `pnpm cut-release <patch|minor|major>` — wykonuje pełną procedurę wydania wersji SemVer wraz z aktualizacją changeloga.
+- `pnpm sync-version` — synchronizuje wersję z głównego [`package.json`](../package.json) do wszystkich aplikacji i konfiguracji.
+- `pnpm generate:map` — odświeża automatyczną mapę repozytorium w [`docs/REPO_MAP.md`](../docs/REPO_MAP.md).
+- `pnpm lint:ss-css` — weryfikuje poprawne użycie tokenów Design Systemu (`--ss-*`).
+- `node scripts/quality/check-docs-links.mjs` — sprawdza poprawność wszystkich relatywnych odnośników w dokumentacji Markdown.
 
-| Plik / Katalog                       | Opis                                                                                                                     |
-| :----------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| [`hub/dev-hub.ts`](./hub/dev-hub.ts) | Główny plik wejściowy TUI/CLI uruchamiany przez `./dev` lub `pnpm dev:hub`. Orkiestruje menu i steruje przepływem.       |
-| [`hub/doctor.ts`](./hub/doctor.ts)   | Diagnostyka środowiska (`runDoctorScan`), Port Guard i oczyszczanie zaległych procesów.                                  |
-| [`hub/network.ts`](./hub/network.ts) | Detekcja kart sieciowych LAN IPv4, generowanie linków podglądu oraz kodów QR dla tabletów/smartfonów.                    |
-| [`hub/gate.ts`](./hub/gate.ts)       | Logika bram integracyjnych CI/Daily/Audit, parsery wyników testów Vitest/Coverage/Playwright oraz logowanie weryfikacji. |
-| [`hub/utils.ts`](./hub/utils.ts)     | Współdzielone narzędzia terminalowe (scrollback, ANSI, git diff hashes, dotenv, dialogi `clack`).                        |
+## 🔗 Powiązane dokumenty
 
----
-
-## 🏷️ 2. Release & Wersjonowanie (`scripts/release/`)
-
-| Plik                                                                       | Opis                                                                                                                                             | Przykładowe użycie                                         |
-| :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------- |
-| [`cut-release.mjs`](./release/cut-release.mjs)                             | Pełna procedura cut SemVer: zmiana CHANGELOG, bump wersji, propagacja i commit/tag.                                                              | `pnpm cut-release patch --yes`                             |
-| [`sync-version.mjs`](./release/sync-version.mjs)                           | Propaguje wersję z głównego [`package.json`](../package.json) do web, server, Tauri, Android i Docker. `--check` = dry-run + exit 1 przy dryfie. | `pnpm sync-version` / `node … --check`                     |
-| [`build-release-notes.mjs`](./release/build-release-notes.mjs)             | Generuje opis GitHub Release z sekcji CHANGELOG.                                                                                                 | `node scripts/release/build-release-notes.mjs 5.4.8`       |
-| [`release-title.mjs`](./release/release-title.mjs)                         | Formatuje nazwę wydania na podstawie tzw. _hero name_ z CHANGELOG.                                                                               | `node scripts/release/release-title.mjs 5.4.8`             |
-| [`extract-changelog-section.mjs`](./release/extract-changelog-section.mjs) | Wyodrębnia pojedynczą sekcję z pliku CHANGELOG.                                                                                                  | `node scripts/release/extract-changelog-section.mjs 5.4.8` |
-
----
-
-## ⚙️ 3. Przygotowanie Środowiska (`scripts/setup/`)
-
-| Plik                             | Opis                                                                                           | Przykładowe użycie                                                   |
-| :------------------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
-| [`setup.ps1`](./setup/setup.ps1) | Natywny skrypt dla Windows. Pobiera Node.js 22, pnpm, Rust, MSVC C++ i WebView2 via `winget`.  | `powershell -ExecutionPolicy Bypass -File .\scripts\setup\setup.ps1` |
-| [`setup.sh`](./setup/setup.sh)   | Natywny skrypt dla Linux/macOS. Konfiguruje `fnm`, `pnpm` oraz zależności systemowe GTK/Xcode. | `bash ./scripts/setup/setup.sh`                                      |
-
----
-
-## 📊 4. Dokumentacja & Jakość (`scripts/quality/`)
-
-| Plik                                                       | Opis                                                                                 | Przykładowe użycie                          |
-| :--------------------------------------------------------- | :----------------------------------------------------------------------------------- | :------------------------------------------ |
-| [`generate-repo-map.mjs`](./quality/generate-repo-map.mjs) | Generuje automatyczną mapę repozytorium w [`docs/REPO_MAP.md`](../docs/REPO_MAP.md). | `pnpm generate:map`                         |
-| [`check-docs-links.mjs`](./quality/check-docs-links.mjs)   | Weryfikuje względne odnośniki w plikach `.md` w całym projekcie.                     | `node scripts/quality/check-docs-links.mjs` |
-| [`lint-ss-css.mjs`](./quality/lint-ss-css.mjs)             | Weryfikuje stosowanie tokenów CSS (`--ss-*`) i zakaz ad-hoc HEX.                     | `pnpm lint:ss-css`                          |
-
----
-
-## 🚆 5. Merge Train (`scripts/merge-train/`)
-
-| Plik                                                     | Opis                                                            |
-| :------------------------------------------------------- | :-------------------------------------------------------------- |
-| [`integrate-pr.sh`](./merge-train/integrate-pr.sh)       | Nakłada patch z PR (`gh pr diff`) na bieżącą gałąź.             |
-| [`merge-train.sh`](./merge-train/merge-train.sh)         | Łączy sekwencję PR-ów w jedną gałąź integracyjną.               |
-| [`run-merge-train.sh`](./merge-train/run-merge-train.sh) | Pełna automatyzacja budowania i squash-merge'owania PR-ów w CI. |
-| [`run-train-batch.sh`](./merge-train/run-train-batch.sh) | Wersja batch dla zbiorczych otwartych PR-ów.                    |
+- Przewodnik deweloperski: **[docs/guides/DX.md](../docs/guides/DX.md)**
+- Architektura monorepo: **[docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)**
+- Mapa kodu źródłowego: **[docs/REPO_MAP.md](../docs/REPO_MAP.md)**

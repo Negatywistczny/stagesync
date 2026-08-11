@@ -20,17 +20,6 @@ Otwarte zadania. Plan etapów: [ROADMAP.md](./ROADMAP.md). Historia: [CHANGELOG.
 
 ### Dekompozycja dużych plików
 
-#### Skrypty DX i Narzędzia (`scripts/`)
-
-- [x] `scripts/hub/dev-hub.ts` (2 766 &rarr; 188 LOC) &rarr; podział na `scripts/hub/menus/`, `gate.ts`, `doctor.ts`, `network.ts`, `utils.ts`
-- [x] `apps/desktop/scripts/build-desktop-sidecar.mjs` (914 &rarr; 190 LOC) &rarr; wydzielenie `sidecar/node-runtime.mjs`, `sidecar/prune.mjs`, `sidecar/smoke.mjs`
-
-#### Ostatnie Pliki Produkcyjne TS/JS (`packages/` & `apps/`)
-
-- [ ] `packages/shared/src/project/schema.ts` (1 169 LOC) &rarr; podział na `schema/project.ts`, `schema/clip.ts`, `schema/mixer.ts`
-- [ ] `apps/desktop/launcher/app.js` (938 LOC) &rarr; podział na `window.js`, `updater.js`, `menu.js`
-- [ ] `packages/shared/src/text-anchor-bridge/bridge-orchestrator.ts` (526 LOC)
-
 #### Szlif UI Timeline (`apps/web`)
 
 - [ ] `TimelineShell.tsx` (5 197 LOC) &rarr; dalsze wyciąganie pod-dialogów

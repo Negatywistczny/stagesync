@@ -3,17 +3,32 @@
 /** @typedef {{ hasSidecar: boolean, stagesyncUrl: string | null, expectedVersion: string, lastError?: string | null, ignoredVersion?: string | null, localHostUrl?: string | null }} LauncherBootstrap */
 /** @typedef {{ available: boolean, version?: string | null, current: string, notes?: string | null }} DesktopUpdateInfo */
 
-import { localErrorActionsVisibility } from "./localErrorActions.js";
 import { shouldShowUpdateDialog } from "./updateDialog.js";
 import { formatDiscoveryMeta, formatDiscoveryTitle } from "./host-discovery.js";
+import { installHtmlTitleBar } from "./window.js";
+import { refreshRecent } from "./recent.js";
+import {
+  friendlyConnectError,
+  parseVersionMismatch,
+  setManualMode,
+  showManualBusy,
+  showManualError,
+  showManualVersionWarn,
+} from "./manual-connect.js";
+import {
+  LABEL_LOCAL_IDLE,
+  LABEL_LOCAL_RETRY,
+  friendlyLocalError,
+  resolveLocalLog,
+  downloadTextFile,
+  buildLocalLogExport,
+  syncLocalErrorActions,
+} from "./local-host.js";
 
 const SCAN_MIN_MS = 900;
-const LABEL_LOCAL_IDLE = "Uruchom lokalny host";
-const LABEL_LOCAL_RETRY = "Ponów uruchomienie";
-const VERSION_MISMATCH_PREFIX = "VERSION_MISMATCH:";
 const NO_PROJECT = "Brak projektu";
 
-const invoke = async (cmd, args = {}) => {
+export const invoke = async (cmd, args = {}) => {
   const core = window.__TAURI__?.core;
   if (!core?.invoke) {
     throw new Error("Brak mostka Tauri — uruchom Launcher w aplikacji StageSync.");
@@ -21,7 +36,7 @@ const invoke = async (cmd, args = {}) => {
   return core.invoke(cmd, args);
 };
 
-const listen = async (event, handler) => {
+export const listen = async (event, handler) => {
   const eventApi = window.__TAURI__?.event;
   if (!eventApi?.listen) return () => {};
   return eventApi.listen(event, (e) => handler(e.payload));
@@ -127,7 +142,6 @@ async function checkForDesktopUpdate(opts = {}) {
       (await invoke("launcher_get_ignored_version").catch(() => null));
     if (!shouldShowUpdateDialog(info, ignored, opts)) {
       if (opts.force && info && !info.available) {
-        // Manual check while already current — brief footer flash is enough.
         el.footerVersion.textContent = `v${info.current} (aktualna)`;
       }
       return;
@@ -139,7 +153,6 @@ async function checkForDesktopUpdate(opts = {}) {
       el.footerVersion.textContent = `v${cur} — nie udało się sprawdzić aktualizacji`;
       console.warn("check_desktop_update", err);
     }
-    // Silent on auto-check (offline / unsigned builds).
   }
 }
 
@@ -153,7 +166,6 @@ async function installPendingUpdate() {
   setUpdateError(null);
   try {
     await invoke("install_desktop_update");
-    // process exits / restart — Windows: splash setup; inne: Tauri restart
   } catch (err) {
     updateInstalling = false;
     el.btnUpdateNow.disabled = false;
@@ -186,7 +198,7 @@ function setBusy(next) {
   el.btnRefresh.disabled = next || scanning;
   el.btnLocalClear.disabled = next;
   el.btnLocalDiagnosticLog.disabled = next;
-  syncLocalErrorActions();
+  syncLocalErrorActions(el, localHasError, lastLocalLog, busy);
   syncLocalButtonAria();
 }
 
@@ -210,138 +222,10 @@ function setScanning(next) {
   el.hostList.classList.toggle("is-scanning", next);
 }
 
-/** @returns {{ found: string, expected: string } | null} */
-function parseVersionMismatch(raw) {
-  const text = String(raw?.message ?? raw ?? "");
-  const idx = text.indexOf(VERSION_MISMATCH_PREFIX);
-  if (idx < 0) return null;
-  const rest = text.slice(idx + VERSION_MISMATCH_PREFIX.length);
-  const [found, expected] = rest.split(":");
-  if (!found || !expected) return null;
-  return { found, expected };
-}
-
-/** Friendly copy for connection failures (no raw OS errno dumps). */
-function friendlyConnectError(raw, url) {
-  const text = String(raw?.message ?? raw ?? "");
-  const lower = text.toLowerCase();
-  const target = url?.trim() || "hostem";
-  if (
-    lower.includes("timeout") ||
-    lower.includes("timed out") ||
-    lower.includes("connect failed") ||
-    lower.includes("connection refused") ||
-    lower.includes("could not connect") ||
-    lower.includes("nie można połączyć") ||
-    lower.includes("network") ||
-    lower.includes("unreachable") ||
-    lower.includes("http ≠ 200") ||
-    lower.includes("http != 200") ||
-    lower.includes("odpowiada na /api/health")
-  ) {
-    return `Nie można nawiązać połączenia z ${target}. Sprawdź czy urządzenie jest włączone i w tej samej sieci (firewall ~3 s).`;
-  }
-  if (lower.includes("nieprawidłowy url") || lower.includes("brak hosta")) {
-    return "Nieprawidłowy adres. Użyj formatu http://adres:port (np. http://192.168.1.10:4000).";
-  }
-  const firstLine = text.split("\n")[0]?.trim() || text;
-  if (firstLine.length < 160 && !lower.includes("os error") && !lower.includes("errno")) {
-    return firstLine;
-  }
-  return `Nie można nawiązać połączenia z ${target}. Sprawdź czy urządzenie jest włączone i w tej samej sieci.`;
-}
-
-function friendlyLocalError(raw) {
-  const text = String(raw?.message ?? raw ?? "");
-  const lower = text.toLowerCase();
-  if (
-    lower.includes("eaddrinuse") ||
-    lower.includes("address already in use") ||
-    lower.includes("port 4000 jest zajęty")
-  ) {
-    return (
-      "Port 4000 jest zajęty (np. przez `pnpm dev`). " +
-      "Zatrzymaj drugi serwer albo użyj Połącz ręcznie: http://127.0.0.1:4000 — " +
-      "przekieruje do UI deweloperskiego na :3000."
-    );
-  }
-  if (
-    lower.includes("eacces") ||
-    lower.includes("permission denied") ||
-    lower.includes("access is denied") ||
-    lower.includes("brak uprawnień")
-  ) {
-    return "Brak uprawnień do portu lub katalogu danych. Sprawdź uprawnienia folderu aplikacji i spróbuj ponownie.";
-  }
-  if (lower.includes("module_not_found") || lower.includes("nie wczytał zależności")) {
-    return "Lokalny host nie wczytał zależności. Przeinstaluj StageSync z najnowszego release.";
-  }
-  if (lower.includes("timeout") || lower.includes("nie odpowiedział")) {
-    return "Lokalny host nie odpowiedział w czasie. Spróbuj ponownie.";
-  }
-  if (lower.includes("zatrzymał się niespodziewanie")) {
-    return text.split("\n")[0]?.trim() || text;
-  }
-  const first = text.split("\n\n— log")[0]?.trim() || text;
-  return first.length > 280 ? `${first.slice(0, 277)}…` : first;
-}
-
-/** Extract embedded sidecar log from a Rust failure string (`— log hosta —`). */
-function extractEmbeddedLog(raw) {
-  const text = String(raw?.message ?? raw ?? "");
-  const marker = "\n\n— log";
-  const idx = text.indexOf(marker);
-  if (idx < 0) return "";
-  const after = text.slice(idx + marker.length);
-  const nl = after.indexOf("\n");
-  return (nl >= 0 ? after.slice(nl + 1) : after).trim();
-}
-
-/** Prefer live sidecar tail; fall back to embedded log in the error payload. */
-async function resolveLocalLog(rawErr) {
-  try {
-    const tail = await invoke("get_sidecar_log_tail");
-    if (String(tail || "").trim()) return String(tail);
-  } catch {
-    /* ignore */
-  }
-  return extractEmbeddedLog(rawErr);
-}
-
-function downloadTextFile(filename, content) {
-  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.rel = "noopener";
-  document.body.append(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-function buildLocalLogExport() {
+async function downloadLocalLog() {
   const message = lastLocalErrorMessage || el.localError.textContent || "";
   const log = lastLocalLog || el.localLog.textContent || "";
-  if (!log.trim()) return null;
-  const parts = [
-    "# StageSync — log startu lokalnego hosta",
-    `# ${new Date().toISOString()}`,
-  ];
-  if (message.trim()) {
-    parts.push("", "## Komunikat", message.trim());
-  }
-  parts.push("", "## Log hosta", log.trim());
-  const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  return {
-    filename: `stagesync-host-${stamp}.log`,
-    content: `${parts.join("\n")}\n`,
-  };
-}
-
-async function downloadLocalLog() {
-  const payload = buildLocalLogExport();
+  const payload = buildLocalLogExport(message, log);
   if (!payload) {
     el.localProgress.hidden = false;
     el.localProgress.textContent =
@@ -353,7 +237,6 @@ async function downloadLocalLog() {
     el.localProgress.hidden = false;
     el.localProgress.textContent = `Zapisano log: ${savedPath}`;
   } catch (err) {
-    // WKWebView on macOS cancels blob URL downloads (NSURLError -999).
     try {
       downloadTextFile(payload.filename, payload.content);
     } catch {
@@ -363,33 +246,6 @@ async function downloadLocalLog() {
       );
     }
   }
-}
-
-function syncLocalErrorActions() {
-  const vis = localErrorActionsVisibility({
-    hasError: localHasError,
-    hasLog: Boolean(lastLocalLog.trim()),
-  });
-  el.btnLocalClear.hidden = !vis.showClear;
-  el.btnLocalDiagnosticLog.hidden = !vis.showDiagnosticDownload;
-  el.localErrorActions.hidden = !vis.showRow;
-  el.btnHeaderDownloadLog.disabled = busy || !vis.headerDownloadEnabled;
-}
-
-function friendlyDiscoverError(raw) {
-  const text = String(raw?.message ?? raw ?? "");
-  const lower = text.toLowerCase();
-  if (
-    lower.includes("timeout") ||
-    lower.includes("przekroczył") ||
-    lower.includes("mdns") ||
-    lower.includes("network") ||
-    lower.includes("unreachable")
-  ) {
-    return "Nie udało się przeskanować sieci (brak Wi‑Fi, tryb samolotowy lub firewall). Wpisz adres ręcznie.";
-  }
-  if (text.length < 160) return text;
-  return "Nie udało się przeskanować sieci. Wpisz adres ręcznie.";
 }
 
 function clearLocalError() {
@@ -402,7 +258,7 @@ function clearLocalError() {
   el.localProgress.textContent = "";
   el.localLog.hidden = true;
   el.localLog.textContent = "";
-  syncLocalErrorActions();
+  syncLocalErrorActions(el, localHasError, lastLocalLog, busy);
   el.btnLocal.textContent = LABEL_LOCAL_IDLE;
   syncLocalButtonAria();
 }
@@ -415,7 +271,7 @@ function showLocalProgress(message) {
   el.localError.textContent = "";
   el.localLog.hidden = true;
   el.localLog.textContent = "";
-  syncLocalErrorActions();
+  syncLocalErrorActions(el, localHasError, lastLocalLog, busy);
   el.localProgress.hidden = false;
   el.localProgress.textContent = message;
   el.btnLocal.textContent = LABEL_LOCAL_IDLE;
@@ -439,33 +295,7 @@ function showLocalError(message, log) {
     el.localLog.hidden = true;
     el.localLog.textContent = "";
   }
-  syncLocalErrorActions();
-}
-
-function setManualMode(mode) {
-  el.manualIdle.hidden = mode !== "idle";
-  el.manualBusy.hidden = mode !== "busy";
-  el.manualError.hidden = mode !== "error";
-  el.manualWarn.hidden = mode !== "warn";
-}
-
-function showManualBusy(message) {
-  setManualMode("busy");
-  el.manualBusyText.textContent = message;
-}
-
-function showManualError(message, retryUrl) {
-  lastRemoteUrl = retryUrl;
-  setManualMode("error");
-  el.manualErrorText.textContent = message;
-  if (retryUrl) el.manualUrl.value = retryUrl;
-}
-
-function showManualVersionWarn(found, expected, retryUrl) {
-  lastRemoteUrl = retryUrl;
-  setManualMode("warn");
-  el.manualWarnText.textContent = `Wersja hosta (v${found}) różni się od aplikacji (v${expected}). Połączenie może działać niestabilnie.`;
-  if (retryUrl) el.manualUrl.value = retryUrl;
+  syncLocalErrorActions(el, localHasError, lastLocalLog, busy);
 }
 
 /** @param {string | null | undefined} status */
@@ -485,7 +315,6 @@ function transportStatusLabel(status) {
 }
 
 /**
- * Discovered host tile: hostname title, project badge + transport diode, IP · version.
  * @param {DiscoveredHost} host
  * @param {() => void} onClick
  */
@@ -537,54 +366,20 @@ function discoveredHostButton(host, onClick) {
   return li;
 }
 
-/**
- * Recent host tile with live online/offline probe diode.
- * @param {RecentHost} item
- * @param {() => void} onClick
- */
-function recentHostButton(item, onClick) {
-  const li = document.createElement("li");
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "host hostTile hostRecent";
-  const label = item.label || item.url;
-  btn.setAttribute("aria-label", `Połącz z ${label} (${item.url})`);
-
-  const row = document.createElement("span");
-  row.className = "recentRow";
-
-  const diode = document.createElement("span");
-  diode.className = "healthDiode is-unknown";
-  diode.title = "Sprawdzam…";
-  diode.setAttribute("aria-hidden", "true");
-  diode.dataset.url = item.url;
-
-  const name = document.createElement("span");
-  name.className = "name";
-  name.textContent = label;
-
-  row.append(diode, name);
-
-  const meta = document.createElement("span");
-  meta.className = "meta";
-  meta.textContent = formatDiscoveryMeta({ origin: item.url });
-
-  btn.append(row, meta);
-  btn.addEventListener("click", onClick);
-  li.append(btn);
-  return { li, diode };
-}
-
-/** @param {HTMLElement} diode @param {boolean} online */
-function setHealthDiode(diode, online) {
-  diode.classList.remove("is-unknown", "is-online", "is-offline");
-  if (online) {
-    diode.classList.add("is-online");
-    diode.title = "Online";
-  } else {
-    diode.classList.add("is-offline");
-    diode.title = "Offline";
+function friendlyDiscoverError(raw) {
+  const text = String(raw?.message ?? raw ?? "");
+  const lower = text.toLowerCase();
+  if (
+    lower.includes("timeout") ||
+    lower.includes("przekroczył") ||
+    lower.includes("mdns") ||
+    lower.includes("network") ||
+    lower.includes("unreachable")
+  ) {
+    return "Nie udało się przeskanować sieci (brak Wi‑Fi, tryb samolotowy lub firewall). Wpisz adres ręcznie.";
   }
+  if (text.length < 160) return text;
+  return "Nie udało się przeskanować sieci. Wpisz adres ręcznie.";
 }
 
 async function refreshDiscovery() {
@@ -628,38 +423,6 @@ async function refreshDiscovery() {
   }
 }
 
-async function refreshRecent() {
-  try {
-    /** @type {RecentHost[]} */
-    const recent = await invoke("launcher_list_recent");
-    el.recentList.replaceChildren();
-    if (!recent.length) {
-      el.recentBlock.hidden = true;
-      return;
-    }
-    el.recentBlock.hidden = false;
-    /** @type {{ url: string, diode: HTMLElement }[]} */
-    const probes = [];
-    for (const item of recent) {
-      const { li, diode } = recentHostButton(item, () => connectRemote(item.url));
-      el.recentList.append(li);
-      probes.push({ url: item.url, diode });
-    }
-    await Promise.all(
-      probes.map(async ({ url, diode }) => {
-        try {
-          const online = await invoke("probe_host_health", { url });
-          setHealthDiode(diode, Boolean(online));
-        } catch {
-          setHealthDiode(diode, false);
-        }
-      }),
-    );
-  } catch {
-    el.recentBlock.hidden = true;
-  }
-}
-
 async function startLocal() {
   if (busy) return;
   setBusy(true);
@@ -667,7 +430,7 @@ async function startLocal() {
   try {
     await invoke("start_local_host");
   } catch (err) {
-    const log = await resolveLocalLog(err);
+    const log = await resolveLocalLog(err, invoke);
     showLocalError(friendlyLocalError(err), log || undefined);
     setBusy(false);
   }
@@ -683,7 +446,7 @@ async function connectRemote(rawUrl, opts = {}) {
   if (!url) return;
   lastRemoteUrl = url;
   setBusy(true);
-  showManualBusy(`Sprawdzam ${url}…`);
+  showManualBusy(el, `Sprawdzam ${url}…`);
   try {
     await invoke("connect_remote_host", {
       url,
@@ -692,136 +455,24 @@ async function connectRemote(rawUrl, opts = {}) {
   } catch (err) {
     const mismatch = parseVersionMismatch(err);
     if (mismatch && !opts.force) {
-      showManualVersionWarn(mismatch.found, mismatch.expected, url);
+      showManualVersionWarn(el, mismatch.found, mismatch.expected, url);
       setBusy(false);
       return;
     }
-    showManualError(friendlyConnectError(err, url), url);
+    showManualError(el, friendlyConnectError(err, url), url);
     setBusy(false);
   }
 }
 
-const DOCS_INSTALL_URL =
-  "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md";
-const DOCS_ISSUES_URL = "https://github.com/Negatywistczny/stagesync/issues";
-
-const isMacUa = () => /Mac|iPhone|iPad/i.test(navigator.userAgent ?? "");
-
-async function windowPlugin(cmd, args = {}) {
-  const win = window.__TAURI__?.window?.getCurrentWindow?.();
-  if (cmd === "minimize" && win?.minimize) return win.minimize();
-  if (cmd === "toggleMaximize" && win?.toggleMaximize) return win.toggleMaximize();
-  if (cmd === "close" && win?.close) return win.close();
-  if (cmd === "startDragging" && win?.startDragging) return win.startDragging();
-  const label =
-    window.__TAURI_INTERNALS__?.metadata?.currentWindow?.label ?? "main";
-  const map = {
-    minimize: "plugin:window|minimize",
-    toggleMaximize: "plugin:window|toggle_maximize",
-    close: "plugin:window|close",
-    startDragging: "plugin:window|start_dragging",
-  };
-  return invoke(map[cmd], { label, ...args });
-}
-
-async function openExternal(url) {
-  try {
-    await invoke("open_external_url", { url });
-  } catch {
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-}
-
-function setLauncherMenuOpen(open) {
-  const btn = document.getElementById("btnLauncherMenu");
-  const drop = document.getElementById("launcherMenuDropdown");
-  if (!btn || !drop) return;
-  btn.setAttribute("aria-expanded", open ? "true" : "false");
-  drop.hidden = !open;
-}
-
-function installLauncherMenu() {
-  const root = document.getElementById("launcherMenuRoot");
-  const btn = document.getElementById("btnLauncherMenu");
-  const drop = document.getElementById("launcherMenuDropdown");
-  if (!root || !btn || !drop) return;
-
-  btn.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    setLauncherMenuOpen(drop.hidden);
-  });
-
-  drop.querySelectorAll("[data-action]").forEach((node) => {
-    node.addEventListener("click", () => {
-      const action = node.getAttribute("data-action");
-      setLauncherMenuOpen(false);
-      if (action === "refresh") {
-        void refreshDiscovery();
-        return;
-      }
-      if (action === "check-update") {
-        void checkForDesktopUpdate({ force: true });
-        return;
-      }
-      if (action === "docs") {
-        void openExternal(DOCS_INSTALL_URL);
-        return;
-      }
-      if (action === "issues") {
-        void openExternal(DOCS_ISSUES_URL);
-        return;
-      }
-      if (action === "quit") {
-        void invoke("quit_desktop_app", {}).catch(() => windowPlugin("close"));
-      }
-    });
-  });
-
-  window.addEventListener("mousedown", (ev) => {
-    if (!(ev.target instanceof Node)) return;
-    if (root.contains(ev.target)) return;
-    setLauncherMenuOpen(false);
-  });
-  window.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape") setLauncherMenuOpen(false);
-  });
-}
-
-function installHtmlTitleBar() {
-  const bar = document.getElementById("titleBar");
-  if (!bar || isMacUa()) return;
-  bar.hidden = false;
-  installLauncherMenu();
-  bar.addEventListener("mousedown", (ev) => {
-    if (ev.button !== 0) return;
-    const t = ev.target;
-    if (!(t instanceof Element)) return;
-    if (t.closest("button, [role='menu'], [role='menuitem']")) return;
-    void windowPlugin("startDragging").catch(() => {});
-  });
-  bar.addEventListener("dblclick", (ev) => {
-    const t = ev.target;
-    if (!(t instanceof Element)) return;
-    if (t.closest("button, [role='menu'], [role='menuitem']")) return;
-    void windowPlugin("toggleMaximize").catch(() => {});
-  });
-  document.getElementById("btnWinMin")?.addEventListener("click", () => {
-    void windowPlugin("minimize").catch(() => {});
-  });
-  document.getElementById("btnWinMax")?.addEventListener("click", () => {
-    void windowPlugin("toggleMaximize").catch(() => {});
-  });
-  document.getElementById("btnWinClose")?.addEventListener("click", () => {
-    void windowPlugin("close").catch(() => {});
-  });
-}
-
 async function init() {
-  installHtmlTitleBar();
+  installHtmlTitleBar({
+    onRefresh: refreshDiscovery,
+    onCheckUpdate: checkForDesktopUpdate,
+    invoke,
+  });
 
   await listen("launcher-status", (payload) => {
     if (!payload?.message || !busy || localHasError) return;
-    // Progress updates while starting local host (main form stays visible).
     if (!el.localProgress.hidden) {
       el.localProgress.textContent = String(payload.message);
     }
@@ -863,7 +514,7 @@ async function init() {
   syncLocalButtonAria();
 
   if (bootstrap.lastError) {
-    const log = await resolveLocalLog(bootstrap.lastError);
+    const log = await resolveLocalLog(bootstrap.lastError, invoke);
     showLocalError(friendlyLocalError(bootstrap.lastError), log || undefined);
   }
 
@@ -883,7 +534,7 @@ async function init() {
   });
   el.btnManualBack.addEventListener("click", () => {
     setBusy(false);
-    setManualMode("idle");
+    setManualMode(el, "idle");
   });
   el.btnManualForce.addEventListener("click", () => {
     const url = lastRemoteUrl || el.manualUrl.value.trim();
@@ -891,7 +542,7 @@ async function init() {
   });
   el.btnManualWarnBack.addEventListener("click", () => {
     setBusy(false);
-    setManualMode("idle");
+    setManualMode(el, "idle");
   });
 
   el.btnUpdateNow.addEventListener("click", () => void installPendingUpdate());
@@ -911,21 +562,17 @@ async function init() {
   });
 
   void refreshDiscovery();
-  void refreshRecent();
+  void refreshRecent(el, invoke, connectRemote);
   void checkForDesktopUpdate();
-  
-  // Ukryj splashscreen i pokaż główne okno jak najszybciej po załadowaniu UI
+
   setTimeout(async () => {
     try {
       if (window.__TAURI__?.core?.invoke) {
-        // Bezpieczniejsza metoda niskopoziomowa (IPC) niezależna od struktury wtyczek JS
         try {
           await window.__TAURI__.core.invoke("plugin:window|close", {
             label: "splashscreen",
           });
-        } catch {
-          // --installer-handoff: splash już zamknięty po stronie Rusta
-        }
+        } catch {}
         await window.__TAURI__.core.invoke("plugin:window|show", { label: "main" });
         await window.__TAURI__.core.invoke("plugin:window|set_focus", { label: "main" });
       }
