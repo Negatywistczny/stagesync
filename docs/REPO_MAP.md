@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1294
+* **Liczba wszystkich plików:** 1295
 * **Liczba katalogów:** 197
-* **Data aktualizacji:** 2026-08-11T02:10:06.859Z
+* **Data aktualizacji:** 2026-08-11T02:26:54.256Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 868 |
+| Kod | 869 |
 | Docs | 156 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 517 |
+| `.ts` | 518 |
 | `.tsx` | 172 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -81,11 +81,11 @@
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (168) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (169) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (127) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (128) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -777,6 +777,7 @@ stagesync/
 │   │   │   │   ├── constants.ts
 │   │   │   │   ├── forma-freeze.ts
 │   │   │   │   ├── onset-grid.ts
+│   │   │   │   ├── pristine-grid.test.ts
 │   │   │   │   ├── pristine-grid.ts
 │   │   │   │   ├── tokenize.ts
 │   │   │   │   ├── types.ts
