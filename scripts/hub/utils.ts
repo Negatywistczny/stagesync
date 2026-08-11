@@ -9,6 +9,7 @@ import * as clack from "@clack/prompts";
 import pc from "picocolors";
 import { spawnSync, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -16,7 +17,9 @@ import * as path from "node:path";
 export { clack, pc, spawnSync, execSync, fs, path };
 
 // ── Root dir ────────────────────────────────────────────────────────────────
-export const rootDir = path.resolve(__dirname, "..");
+export const rootDir = path.resolve(__dirname, "../..");
+
+const require = createRequire(__filename);
 
 // ── Scrollback protection state ─────────────────────────────────────────────
 
@@ -43,6 +46,120 @@ export function clearTerminalScreen() {
   allowResizeScreenClear();
   process.stdout.write("\x1b[2J\x1b[3J\x1b[H");
 }
+
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+
+export function enableTerminalGuard() {
+  process.stderr.write = (chunk: any) => {
+    if (
+      typeof chunk === "string" &&
+      (chunk.includes("DeprecationWarning") ||
+        chunk.includes("ExperimentalWarning"))
+    ) {
+      return true;
+    }
+    return originalStderrWrite(chunk);
+  };
+}
+
+enableTerminalGuard();
+
+/**
+ * @clack/core re-renders on resize, but wrap width changes break its cursor math
+ * (restoreCursor uses the *new* columns on the *old* frame) → ghosts/duplicates.
+ */
+export function enableClackFullRedrawOnResize() {
+  if (!process.stdout.isTTY) return;
+
+  let resizePending = false;
+  let resizePrevColumns = process.stdout.columns || 80;
+  let lastColumns = process.stdout.columns || 80;
+
+  const promptsPkg = path.dirname(
+    require.resolve("@clack/prompts/package.json"),
+  );
+  const coreEntry = require.resolve("@clack/core", { paths: [promptsPkg] });
+  const corePath = fs.existsSync(coreEntry)
+    ? coreEntry
+    : coreEntry.replace(/index\.mjs$/, "index.cjs");
+
+  const coreRequire = createRequire(corePath);
+  type WrapAnsiFn = (
+    input: string,
+    columns: number,
+    options?: { hard?: boolean; trim?: boolean },
+  ) => string;
+  let wrapAnsiFn: WrapAnsiFn;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const wrapAnsiMod = coreRequire("wrap-ansi") as
+      WrapAnsiFn | { default: WrapAnsiFn };
+    wrapAnsiFn =
+      typeof wrapAnsiMod === "function" ? wrapAnsiMod : wrapAnsiMod.default;
+  } catch {
+    wrapAnsiFn = (input) => input;
+  }
+
+  const { Prompt } = require(corePath) as {
+    Prompt: {
+      prototype: {
+        state: string;
+        render: () => void;
+        _prevFrame?: string;
+      };
+    };
+  };
+
+  function erasePrevPromptFrame(
+    prevFrame: string | undefined,
+    columns: number,
+  ) {
+    if (!prevFrame) return;
+    const lines = wrapAnsiFn(prevFrame, Math.max(2, columns), {
+      hard: true,
+      trim: false,
+    }).split("\n").length;
+    if (lines > 1) process.stdout.write(`\x1b[${lines - 1}A`);
+    process.stdout.write("\x1b[1G\x1b[J");
+  }
+
+  const originalRender = Prompt.prototype.render;
+  Prompt.prototype.render = function (this: {
+    state: string;
+    _prevFrame?: string;
+  }) {
+    if (resizePending) {
+      resizePending = false;
+      if (_resizeMayClearScreen) {
+        const intro = _lastIntro;
+        process.stdout.write("\x1b[2J\x1b[3J\x1b[H");
+        if (intro) {
+          _lastIntro = intro;
+          clack.intro(intro);
+        }
+      } else {
+        erasePrevPromptFrame(this._prevFrame, resizePrevColumns);
+      }
+      this._prevFrame = "";
+      if (this.state === "active" || this.state === "error") {
+        this.state = "initial";
+      }
+      return originalRender.call(this);
+    }
+    return originalRender.call(this);
+  };
+
+  process.stdout.on("resize", () => {
+    resizePrevColumns = lastColumns;
+    lastColumns = process.stdout.columns || 80;
+    resizePending = true;
+    setImmediate(() => {
+      resizePending = false;
+    });
+  });
+}
+
+enableClackFullRedrawOnResize();
 
 // ── Intro tracking ──────────────────────────────────────────────────────────
 

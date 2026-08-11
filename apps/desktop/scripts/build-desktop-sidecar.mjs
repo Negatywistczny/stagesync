@@ -1,25 +1,35 @@
 #!/usr/bin/env node
-import { spawnSync, spawn } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import {
   cp,
-  lstat,
   mkdir,
-  readdir,
-  realpath,
   rm,
-  chmod,
-  symlink,
-  writeFile,
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
-// (no node:fs stream usage; download uses arrayBuffer -> writeFile)
-import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  normalizeTargetTriple,
+  externalBinDestPath,
+  prepareNodeRuntimeIntoTauriBundle,
+} from "./sidecar/node-runtime.mjs";
+import {
+  copyDirContents,
+  assertNoRepoDocsInSidecar,
+  prepareProductionNodeModules,
+  pruneRuntimeBundle,
+  materializePnpmLayoutForTauriBundle,
+  assertDeployHasRuntimeDeps,
+} from "./sidecar/prune.mjs";
+import {
+  selfTestNodeSpawnPathGuards,
+  smokeTestSidecarServer,
+  patchInstalledApp,
+} from "./sidecar/smoke.mjs";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// apps/desktop/scripts → repo root (same depth as sync-sidecar-server.mjs)
 const repoRoot = join(__dirname, "../../..");
 if (!existsSync(join(repoRoot, "pnpm-workspace.yaml"))) {
   throw new Error(
@@ -37,7 +47,6 @@ function run(cmd, args, { cwd = repoRoot, env } = {}) {
   const res = spawnSync(cmd, args, {
     cwd,
     stdio: "inherit",
-    // Windows runners resolve pnpm/tar via cmd when shell is enabled.
     shell: process.platform === "win32",
     env: env ? { ...process.env, ...env } : undefined,
   });
@@ -47,720 +56,16 @@ function run(cmd, args, { cwd = repoRoot, env } = {}) {
 }
 
 /**
- * `pnpm deploy --prod` writes workspace state with production=true / dev=false
- * (pnpm 10+/11). The next `pnpm <script>` then auto-runs `install --production`
- * and strips @tauri-apps/cli, typescript, and other build tooling. Reset.
+ * `pnpm deploy --prod` writes workspace state with production=true / dev=false.
+ * Reset to prevent dropping build tooling on subsequent script runs.
  */
 async function restoreWorkspaceInstall() {
-  // deploy --prod leaves production=true/dev=false in this file; a plain
-  // `pnpm install` may no-op while state still forces the next script run to
-  // `install --production` (drops @tauri-apps/cli). Clear state, then reinstall.
   const statePath = join(repoRoot, "node_modules/.pnpm-workspace-state-v1.json");
   console.log("[sidecar] restoring full workspace install after deploy --prod");
   await rm(statePath, { force: true });
   run("pnpm", ["install", "--frozen-lockfile"], {
-    // Non-TTY (and some local shells) otherwise abort modules purge.
     env: { CI: process.env.CI || "true" },
   });
-}
-
-async function downloadFile(url, destPath) {
-  // codeql[js/http-to-file-access] Fixed Node.js dist URL for desktop sidecar bootstrap
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to download ${url}: ${res.status} ${res.statusText}`);
-  }
-  // Node's fetch uses web streams; keep it simple for the PoC.
-  const buf = Buffer.from(await res.arrayBuffer());
-  // codeql[js/http-to-file-access] Fixed Node.js dist URL for desktop sidecar bootstrap
-  await writeFile(destPath, buf);
-}
-
-
-
-function resolveExtractedNodeBin(extractedRoot) {
-  const winRoot = join(extractedRoot, "node.exe");
-  if (existsSync(winRoot)) return winRoot;
-  const unixBin = join(extractedRoot, "bin", "node");
-  if (existsSync(unixBin)) return unixBin;
-  throw new Error(`Could not locate node binary under ${extractedRoot}`);
-}
-
-
-async function ensureTauriResourceGlobDir(srcTauriDir, sub) {
-  const dir = join(srcTauriDir, sub);
-  const hasRealContent = existsSync(dir) && (await readdir(dir)).length > 0;
-  if (hasRealContent) return;
-
-  // Tauri 2 fails when `lib/**/*` matches zero files (Windows Node zip has no lib/share).
-  // Stub must sit under a subdirectory so `**/*` globs match.
-  const stubFile = join(dir, ".stagesync-stub", "keep");
-  await mkdir(dirname(stubFile), { recursive: true });
-  await writeFile(stubFile, "");
-}
-
-function externalBinDestPath(binDir, target) {
-  const base = `stagesync-host-${target}`;
-  if (target.endsWith("-pc-windows-msvc")) {
-    return join(binDir, `${base}.exe`);
-  }
-  return join(binDir, base);
-}
-
-function normalizeTargetTriple(target) {
-  // Keep the CLI contract explicit; Tauri uses its own "target" strings.
-  // We only implement the ones we currently test/build in CI.
-  const supported = new Set([
-    "aarch64-apple-darwin",
-    "x86_64-apple-darwin",
-    "x86_64-pc-windows-msvc",
-  ]);
-  if (!supported.has(target)) {
-    throw new Error(`Unsupported --target ${target}. Supported: ${[...supported].join(", ")}`);
-  }
-  return target;
-}
-
-async function resolveNodeVersionFromNvmrc() {
-  const nvmrcPath = join(repoRoot, ".nvmrc");
-  const major = (await (await import("node:fs/promises")).readFile(nvmrcPath, "utf8")).trim();
-  if (!/^\d+$/.test(major)) {
-    throw new Error(`Unexpected .nvmrc content: ${major}`);
-  }
-
-  const indexUrl = "https://nodejs.org/dist/index.json";
-  const res = await fetch(indexUrl);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch Node dist index: ${res.status} ${res.statusText}`);
-  }
-  const index = await res.json(); // Array of objects: { version, date, files, ... }
-  const matched = index.find((v) => typeof v?.version === "string" && v.version.startsWith(`v${major}.`))?.version;
-  if (!matched) {
-    throw new Error(`No Node versions found for major ${major}`);
-  }
-  return matched; // e.g. "v20.18.0"
-}
-
-function nodeDistFromTarget(target) {
-  // Node distributions naming.
-  if (target === "aarch64-apple-darwin") {
-    return { platform: "darwin", arch: "arm64", kind: "tar.gz" };
-  }
-  if (target === "x86_64-apple-darwin") {
-    return { platform: "darwin", arch: "x64", kind: "tar.gz" };
-  }
-  if (target === "x86_64-pc-windows-msvc") {
-    return { platform: "win", arch: "x64", kind: "zip" };
-  }
-  throw new Error(`Unhandled target: ${target}`);
-}
-
-function extractCommandForArchive(archivePath, destDir, kind) {
-  if (kind === "tar.gz") {
-    // tar is available on CI runners (macOS, linux).
-    return { cmd: "tar", args: ["-xzf", archivePath, "-C", destDir] };
-  }
-  if (kind === "zip") {
-    if (process.platform === "win32") {
-      return {
-        cmd: "powershell",
-        args: [
-          "-NoProfile",
-          "-Command",
-          `Expand-Archive -Path "${archivePath}" -DestinationPath "${destDir}" -Force`,
-        ],
-      };
-    }
-    return { cmd: "unzip", args: ["-q", archivePath, "-d", destDir] };
-  }
-  throw new Error(`Unknown archive kind: ${kind}`);
-}
-
-async function prepareNodeRuntimeIntoTauriBundle(target) {
-  const srcTauriDir = join(repoRoot, "apps/desktop/src-tauri");
-  const binDir = join(srcTauriDir, "bin");
-
-  // Clean runtime dirs to avoid mixing targets.
-  await rm(binDir, { recursive: true, force: true });
-  await rm(join(srcTauriDir, "lib"), { recursive: true, force: true });
-  await rm(join(srcTauriDir, "share"), { recursive: true, force: true });
-  await mkdir(binDir, { recursive: true });
-
-  const nodeVersion = await resolveNodeVersionFromNvmrc(); // includes leading "v"
-  const { platform, arch, kind } = nodeDistFromTarget(target);
-
-  const archiveName =
-    kind === "tar.gz"
-      ? `node-${nodeVersion}-${platform}-${arch}.tar.gz`
-      : `node-${nodeVersion}-${platform}-${arch}.zip`;
-
-  const url = `https://nodejs.org/dist/${nodeVersion}/${archiveName}`;
-
-  const tempDir = await (await import("node:fs/promises")).mkdtemp(
-    join(tmpdir(), "stagesync-sidecar-"),
-  );
-
-  const archivePath = join(tempDir, archiveName);
-  console.log(`[sidecar] downloading Node runtime: ${url}`);
-  await downloadFile(url, archivePath);
-
-  const extractDest = join(tempDir, "extract");
-  await mkdir(extractDest, { recursive: true });
-
-  const { cmd, args } = extractCommandForArchive(archivePath, extractDest, kind);
-  console.log(`[sidecar] extracting: ${cmd} ${args.join(" ")}`);
-  run(cmd, args, { cwd: repoRoot });
-
-  const entries = await readdir(extractDest, { withFileTypes: true });
-  const extractedDir = entries.find((e) => e.isDirectory() && e.name.startsWith("node-"));
-  if (!extractedDir) {
-    throw new Error(`Could not locate extracted node directory in ${extractDest}`);
-  }
-  const extractedRoot = join(extractDest, extractedDir.name);
-
-  const extractedNodeBin = resolveExtractedNodeBin(extractedRoot);
-
-  // Tauri externalBin expects per-target triple name under bundle /bin.
-  const destStagesyncHost = externalBinDestPath(binDir, target);
-  await cp(extractedNodeBin, destStagesyncHost);
-  if (!destStagesyncHost.endsWith(".exe")) {
-    await chmod(destStagesyncHost, 0o755);
-  }
-
-  // Unix Node builds ship lib/ + share/ beside bin/; Windows zip is node.exe-centric.
-  for (const sub of ["lib", "share"]) {
-    const src = join(extractedRoot, sub);
-    if (existsSync(src)) {
-      await cp(src, join(srcTauriDir, sub), { recursive: true, force: true });
-    }
-    await ensureTauriResourceGlobDir(srcTauriDir, sub);
-  }
-}
-
-async function copyDirContents(srcDir, destDir) {
-  await mkdir(destDir, { recursive: true });
-  const entries = await readdir(srcDir, { withFileTypes: true });
-  for (const ent of entries) {
-    await cp(join(srcDir, ent.name), join(destDir, ent.name), { recursive: true, force: true });
-  }
-}
-
-/**
- * Tauri bundle layout: `Contents/Resources/resources/sidecar/…`
- * Legacy patch paths used `Contents/Resources/sidecar/…` — keep a symlink for tools / manual patches.
- */
-async function ensureBundleSidecarSymlink(resourcesDir) {
-  const canonical = join(resourcesDir, "resources", "sidecar");
-  const linkPath = join(resourcesDir, "sidecar");
-  const indexHtml = join(canonical, "web", "index.html");
-  if (!existsSync(indexHtml)) {
-    throw new Error(`[sidecar] missing bundled web root: ${indexHtml}`);
-  }
-
-  try {
-    const st = await lstat(linkPath);
-    if (st.isSymbolicLink()) {
-      await rm(linkPath);
-    } else if (st.isDirectory()) {
-      await rm(linkPath, { recursive: true, force: true });
-    } else {
-      await rm(linkPath, { force: true });
-    }
-  } catch (err) {
-    if (/** @type {NodeJS.ErrnoException} */ (err).code !== "ENOENT") throw err;
-  }
-
-  await symlink("resources/sidecar", linkPath);
-  console.log(`[sidecar] compat symlink: ${linkPath} → resources/sidecar`);
-}
-
-/** Copy freshly built sidecar into an installed .app and refresh the compat symlink. */
-async function patchInstalledApp(appPath) {
-  const resourcesDir = join(appPath, "Contents", "Resources");
-  const destSidecar = join(resourcesDir, "resources", "sidecar");
-  const srcSidecar = join(repoRoot, "apps/desktop/src-tauri/resources/sidecar");
-
-  if (!existsSync(join(appPath, "Contents", "MacOS"))) {
-    throw new Error(`[sidecar] not a macOS .app bundle: ${appPath}`);
-  }
-  if (!existsSync(join(srcSidecar, "web", "index.html"))) {
-    throw new Error(
-      `[sidecar] run build first — missing ${join(srcSidecar, "web", "index.html")}`,
-    );
-  }
-
-  console.log(`[sidecar] patching installed app: ${appPath}`);
-  for (const sub of ["web", "server"]) {
-    await rm(join(destSidecar, sub), { recursive: true, force: true });
-    await cp(join(srcSidecar, sub), join(destSidecar, sub), { recursive: true, force: true });
-  }
-  await ensureBundleSidecarSymlink(resourcesDir);
-  await smokeTestSidecarServer(join(destSidecar, "server"), join(destSidecar, "seed"));
-  console.log("[sidecar] patch complete");
-}
-
-/** Fail build if repo docs or stray .md leak into runtime bundles (ADR 0013). */
-async function assertNoRepoDocsInSidecar(sidecarDir) {
-  const forbiddenDirs = [
-    join(sidecarDir, "docs"),
-    join(sidecarDir, "web", "docs"),
-    join(sidecarDir, "server", "docs"),
-  ];
-  for (const dir of forbiddenDirs) {
-    if (existsSync(dir)) {
-      throw new Error(`[sidecar] forbidden docs path in bundle: ${dir}`);
-    }
-  }
-
-  async function walkNoMd(root) {
-    if (!existsSync(root)) return;
-    const entries = await readdir(root, { withFileTypes: true });
-    for (const ent of entries) {
-      const full = join(root, ent.name);
-      if (ent.isDirectory()) {
-        await walkNoMd(full);
-        continue;
-      }
-      if (ent.name.toLowerCase().endsWith(".md")) {
-        throw new Error(`[sidecar] forbidden .md in runtime bundle: ${full}`);
-      }
-    }
-  }
-
-  await walkNoMd(join(sidecarDir, "web"));
-  await walkNoMd(join(sidecarDir, "server", "dist"));
-  await walkNoMd(join(sidecarDir, "seed"));
-  if (existsSync(join(sidecarDir, "downloads"))) {
-    await walkNoMd(join(sidecarDir, "downloads"));
-  }
-  console.log(
-    "[sidecar] docs hygiene check passed (web/dist, server/dist, seed, downloads)",
-  );
-}
-
-const NODE_MODULES_PRUNE_DIRS = new Set([
-  "test",
-  "tests",
-  "__tests__",
-  "docs",
-  "doc",
-  "example",
-  "examples",
-  "coverage",
-  ".github",
-  ".turbo",
-]);
-
-const NODE_MODULES_PRUNE_FILE_RE =
-  /\.(md|cts|mts|map|markdown|yml|yaml)$/i;
-
-/** Drop TypeScript sources where compiled JS exists alongside (e.g. zod/src). */
-async function pruneTypescriptSourceTrees(nodeModulesDir) {
-  if (!existsSync(nodeModulesDir)) return;
-  const stack = [nodeModulesDir];
-  while (stack.length) {
-    const dir = stack.pop();
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const ent of entries) {
-      if (!ent.isDirectory()) continue;
-      const full = join(dir, ent.name);
-      if (ent.name !== "src") {
-        stack.push(full);
-        continue;
-      }
-      const srcEntries = await readdir(full, { withFileTypes: true });
-      const hasRuntimeJs = srcEntries.some(
-        (e) => e.isFile() && /\.(js|cjs|mjs)$/i.test(e.name),
-      );
-      if (!hasRuntimeJs) {
-        await rm(full, { recursive: true, force: true });
-      }
-    }
-  }
-}
-
-/** Shrink sidecar node_modules for MSI/WiX (Windows path limits). */
-async function pruneDeployedNodeModules(nodeModulesDir) {
-  if (!existsSync(nodeModulesDir)) return;
-  const stack = [nodeModulesDir];
-  while (stack.length) {
-    const dir = stack.pop();
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const ent of entries) {
-      const full = join(dir, ent.name);
-      if (ent.isDirectory()) {
-        if (NODE_MODULES_PRUNE_DIRS.has(ent.name)) {
-          await rm(full, { recursive: true, force: true });
-          continue;
-        }
-        stack.push(full);
-        continue;
-      }
-      if (
-        NODE_MODULES_PRUNE_FILE_RE.test(ent.name) ||
-        ent.name === "LICENSE" ||
-        ent.name.startsWith("LICENSE.") ||
-        ent.name === "CHANGELOG" ||
-        ent.name.startsWith("CHANGELOG.")
-      ) {
-        await rm(full, { force: true });
-      }
-    }
-  }
-}
-
-async function pruneServerDistTypes(distDir) {
-  if (!existsSync(distDir)) return;
-  const stack = [distDir];
-  while (stack.length) {
-    const dir = stack.pop();
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const ent of entries) {
-      const full = join(dir, ent.name);
-      if (ent.isDirectory()) {
-        stack.push(full);
-        continue;
-      }
-      if (ent.name.endsWith(".d.ts") || ent.name.endsWith(".d.ts.map")) {
-        await rm(full, { force: true });
-      }
-    }
-  }
-}
-
-async function pruneRuntimeBundle(sidecarDir) {
-  await pruneServerDistTypes(join(sidecarDir, "server", "dist"));
-  await pruneDeployedNodeModules(join(sidecarDir, "server", "node_modules"));
-  await pruneTypescriptSourceTrees(join(sidecarDir, "server", "node_modules"));
-  console.log("[sidecar] runtime bundle pruned (dist types + node_modules dev paths)");
-}
-
-const SHARED_RUNTIME_STRIP = [
-  "src",
-  ".turbo",
-  "eslint.config.js",
-  "vitest.config.ts",
-  "tsconfig.json",
-  "README.md",
-];
-
-/** Remove dev-only files from workspace packages inside deployed node_modules. */
-async function pruneWorkspacePackageSources(nodeModulesDir, scopedName) {
-  const [scope, name] = scopedName.split("/");
-  const targets = new Set();
-
-  const direct = join(nodeModulesDir, scope, name);
-  if (existsSync(direct)) targets.add(direct);
-
-  const pnpmDir = join(nodeModulesDir, ".pnpm");
-  if (existsSync(pnpmDir)) {
-    const needle = `${scope.replace("@", "")}+${name}@`;
-    const entries = await readdir(pnpmDir, { withFileTypes: true });
-    for (const ent of entries) {
-      if (!ent.isDirectory() || !ent.name.includes(needle)) continue;
-      const nested = join(pnpmDir, ent.name, "node_modules", scope, name);
-      if (existsSync(nested)) targets.add(nested);
-    }
-  }
-
-  for (const pkgDir of targets) {
-    for (const rel of SHARED_RUNTIME_STRIP) {
-      await rm(join(pkgDir, rel), { recursive: true, force: true });
-    }
-  }
-}
-
-/** Production-only node_modules via pnpm deploy (ADR 0013; PR2 bundle size). */
-async function prepareProductionNodeModules(sidecarServerDir, serverDistDir) {
-  const serverDevArtifacts = [
-    "src",
-    ".turbo",
-    "eslint.config.js",
-    "vitest.config.ts",
-    "tsconfig.json",
-    "package.json",
-  ];
-
-  console.log("[sidecar] pnpm deploy --prod @stagesync/server");
-  await rm(sidecarServerDir, { recursive: true, force: true });
-  await mkdir(sidecarServerDir, { recursive: true });
-
-  // Default isolated linker — hoisted deploy leaves an empty node_modules (no express).
-  // pnpm 10+: --legacy (or workspace forceLegacyDeploy) for non-injected workspaces.
-  run("pnpm", [
-    "--filter",
-    "@stagesync/server",
-    "deploy",
-    "--prod",
-    "--legacy",
-    sidecarServerDir,
-  ]);
-
-  // Use the compiled dist from the monorepo build (not deploy's copied sources).
-  await rm(join(sidecarServerDir, "dist"), { recursive: true, force: true });
-  await cp(serverDistDir, join(sidecarServerDir, "dist"), { recursive: true, force: true });
-
-  for (const rel of serverDevArtifacts) {
-    await rm(join(sidecarServerDir, rel), { recursive: true, force: true });
-  }
-
-  await pruneWorkspacePackageSources(
-    join(sidecarServerDir, "node_modules"),
-    "@stagesync/shared",
-  );
-
-  // Tauri resource bundling dereferences symlinks (tauri#13219). pnpm's
-  // isolated layout keeps transitive deps only as .pnpm store siblings — after
-  // dereference the host dies with ERR_MODULE_NOT_FOUND (zod etc.) and the UI
-  // falsely blames port 4000. Flatten to real top-level packages (no .pnpm,
-  // short paths for WiX MSI).
-  await materializePnpmLayoutForTauriBundle(join(sidecarServerDir, "node_modules"));
-
-  await assertDeployHasRuntimeDeps(sidecarServerDir);
-
-  // Deploy poisons the monorepo install state; Tauri CLI must remain available.
-  await restoreWorkspaceInstall();
-}
-
-/**
- * Collect package dirs from a node_modules-like folder into `out` (name → path).
- * @param {string} dir
- * @param {Map<string, string>} out
- */
-async function collectPackageDirs(dir, out) {
-  if (!existsSync(dir)) return;
-  for (const ent of await readdir(dir, { withFileTypes: true })) {
-    if (ent.name.startsWith(".")) continue;
-    if (ent.name.startsWith("@")) {
-      const scopeDir = join(dir, ent.name);
-      for (const scoped of await readdir(scopeDir, { withFileTypes: true })) {
-        if (!scoped.isDirectory() && !scoped.isSymbolicLink()) continue;
-        const name = `${ent.name}/${scoped.name}`;
-        const p = join(scopeDir, scoped.name);
-        if (existsSync(join(p, "package.json")) || (await lstat(p)).isSymbolicLink()) {
-          out.set(name, p);
-        }
-      }
-      continue;
-    }
-    const p = join(dir, ent.name);
-    if (existsSync(join(p, "package.json")) || (await lstat(p)).isSymbolicLink()) {
-      out.set(ent.name, p);
-    }
-  }
-}
-
-/**
- * Convert pnpm symlink→.pnpm layout into a flat real node_modules (npm-hoist
- * style). Survives Tauri dereference and keeps WiX paths under MAX_PATH.
- */
-async function materializePnpmLayoutForTauriBundle(nodeModulesDir) {
-  if (!existsSync(nodeModulesDir)) return;
-
-  const pnpmDir = join(nodeModulesDir, ".pnpm");
-  /** @type {Map<string, string>} */
-  const packages = new Map();
-
-  if (existsSync(pnpmDir)) {
-    for (const ent of await readdir(pnpmDir, { withFileTypes: true })) {
-      if (!ent.isDirectory() || ent.name === "node_modules") continue;
-      await collectPackageDirs(join(pnpmDir, ent.name, "node_modules"), packages);
-    }
-  } else {
-    // Already flattened or Tauri-dereferenced without a usable store — keep as-is.
-    await collectPackageDirs(nodeModulesDir, packages);
-    let anySymlink = false;
-    for (const p of packages.values()) {
-      if ((await lstat(p)).isSymbolicLink()) {
-        anySymlink = true;
-        break;
-      }
-    }
-    if (!anySymlink) {
-      console.log("[sidecar] node_modules already materialized (no .pnpm / no symlinks)");
-      return;
-    }
-  }
-
-  if (packages.size === 0) {
-    throw new Error(`[sidecar] materialize found no packages under ${nodeModulesDir}`);
-  }
-
-  // Staging must live outside node_modules — we wipe that directory next.
-  const staging = join(dirname(nodeModulesDir), ".ss-materialize-staging");
-  await rm(staging, { recursive: true, force: true });
-  await mkdir(staging, { recursive: true });
-
-  for (const [name, src] of packages) {
-    const st = await lstat(src);
-    const realSrc = st.isSymbolicLink() ? await realpath(src) : src;
-    const dest = join(staging, ...name.split("/"));
-    await mkdir(dirname(dest), { recursive: true });
-    await cp(realSrc, dest, { recursive: true, dereference: true });
-  }
-
-  await rm(nodeModulesDir, { recursive: true, force: true });
-  await mkdir(nodeModulesDir, { recursive: true });
-  await copyDirContents(staging, nodeModulesDir);
-  await rm(staging, { recursive: true, force: true });
-
-  console.log(
-    `[sidecar] materialized ${packages.size} flat packages for Tauri (no pnpm symlinks)`,
-  );
-}
-
-async function assertDeployHasRuntimeDeps(sidecarServerDir) {
-  const nodeModules = join(sidecarServerDir, "node_modules");
-  // Flat layout: zod is hoisted next to @stagesync/shared (not nested under it).
-  const required = ["express", "@stagesync/shared", "zod"];
-  for (const pkg of required) {
-    const pkgJson = join(nodeModules, ...pkg.split("/"), "package.json");
-    if (!existsSync(pkgJson)) {
-      throw new Error(
-        `[sidecar] deploy missing runtime dep ${pkg} (expected ${pkgJson}); pnpm deploy output is incomplete`,
-      );
-    }
-  }
-
-  if (existsSync(join(nodeModules, ".pnpm"))) {
-    throw new Error("[sidecar] .pnpm store still present after materialize (Tauri/WiX-unsafe)");
-  }
-
-  // Fail closed if any top-level package is still a symlink (Tauri would break it).
-  for (const ent of await readdir(nodeModules, { withFileTypes: true })) {
-    if (ent.name.startsWith(".")) continue;
-    if (ent.name.startsWith("@")) {
-      const scopeDir = join(nodeModules, ent.name);
-      for (const scoped of await readdir(scopeDir, { withFileTypes: true })) {
-        const p = join(scopeDir, scoped.name);
-        if ((await lstat(p)).isSymbolicLink()) {
-          throw new Error(
-            `[sidecar] top-level package still a symlink (Tauri-unsafe): ${ent.name}/${scoped.name}`,
-          );
-        }
-      }
-      continue;
-    }
-    const p = join(nodeModules, ent.name);
-    if ((await lstat(p)).isSymbolicLink()) {
-      throw new Error(`[sidecar] top-level package still a symlink (Tauri-unsafe): ${ent.name}`);
-    }
-  }
-}
-
-/**
- * Paths passed to Node as argv/cwd/env must not be Win32 verbatim (`\\?\…`) or a bare drive.
- * Mirrors `path_for_node` / `assert_node_path_usable` in apps/desktop/src-tauri/src/lib.rs.
- * @param {string} p
- * @param {string} label
- */
-function assertNodeSpawnPathSafe(p, label) {
-  if (typeof p !== "string" || p.length === 0) {
-    throw new Error(`[sidecar] ${label}: empty path`);
-  }
-  if (p.startsWith("\\\\?\\")) {
-    throw new Error(
-      `[sidecar] ${label}: Win32 verbatim path is unsafe as Node main/cwd/env (EISDIR on 'C:'): ${p}`,
-    );
-  }
-  const trimmed = p.replace(/[/\\]+$/, "");
-  if (/^[A-Za-z]:$/.test(trimmed)) {
-    throw new Error(`[sidecar] ${label}: bare drive path is unsafe for Node: ${p}`);
-  }
-}
-
-/** Regression checks for Windows Node spawn path rules (runs on every sidecar build). */
-function selfTestNodeSpawnPathGuards() {
-  const bad = [
-    ["\\\\?\\C:\\Program Files\\StageSync\\server", "verbatim"],
-    ["C:", "bare drive"],
-    ["C:\\", "bare drive root"],
-  ];
-  for (const [p, kind] of bad) {
-    let threw = false;
-    try {
-      assertNodeSpawnPathSafe(p, "self-test");
-    } catch {
-      threw = true;
-    }
-    if (!threw) {
-      throw new Error(`[sidecar] self-test expected reject (${kind}): ${p}`);
-    }
-  }
-  assertNodeSpawnPathSafe("C:\\Program Files\\StageSync\\resources\\sidecar\\server", "self-test ok");
-  assertNodeSpawnPathSafe("/Applications/StageSync.app/Contents/Resources/resources/sidecar/server", "self-test ok");
-  console.log("[sidecar] node spawn path guards self-test passed");
-}
-
-async function smokeTestSidecarServer(sidecarServerDir, seedDir) {
-  const dataDir = join(tmpdir(), `stagesync-sidecar-smoke-${Date.now()}`);
-  await mkdir(dataDir, { recursive: true });
-
-  const port = 14000 + Math.floor(Math.random() * 1000);
-  // Relative entry + cwd — mirrors desktop shell (avoids Win32 `\\?\` main-module paths).
-  const entryRel = "dist/index.js";
-  const entry = join(sidecarServerDir, entryRel);
-  if (!existsSync(entry)) {
-    throw new Error(`[sidecar] smoke: missing server entry ${entry}`);
-  }
-  assertNodeSpawnPathSafe(sidecarServerDir, "smoke cwd");
-  assertNodeSpawnPathSafe(entry, "smoke entry");
-
-  console.log(`[sidecar] smoke: starting server on :${port} (cwd=${sidecarServerDir} entry=${entryRel})`);
-  const child = spawn(process.execPath, [entryRel], {
-    cwd: sidecarServerDir,
-    env: {
-      ...process.env,
-      PORT: String(port),
-      STAGESYNC_DATA_DIR: dataDir,
-      STAGESYNC_SEED_DIR: seedDir,
-      NODE_ENV: "production",
-    },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-
-  const deadline = Date.now() + 15_000;
-  let lastErr = "timeout";
-  try {
-    while (Date.now() < deadline) {
-      if (child.exitCode != null) {
-        const stderr = await readStream(child.stderr);
-        const stdout = await readStream(child.stdout);
-        throw new Error(
-          `[sidecar] smoke: server exited early: ${stderr || stdout || `(exit ${child.exitCode})`}`,
-        );
-      }
-      try {
-        const res = await fetch(`http://127.0.0.1:${port}/api/health`);
-        if (res.ok) {
-          const body = await res.json();
-          if (body?.ok === true) {
-            console.log("[sidecar] smoke: health OK");
-            return;
-          }
-          lastErr = `unexpected body: ${JSON.stringify(body)}`;
-        } else {
-          lastErr = `HTTP ${res.status}`;
-        }
-      } catch (err) {
-        lastErr = err instanceof Error ? err.message : String(err);
-      }
-      await new Promise((r) => setTimeout(r, 250));
-    }
-    throw new Error(`[sidecar] smoke failed: ${lastErr}`);
-  } finally {
-    child.kill("SIGTERM");
-    await new Promise((r) => setTimeout(r, 200));
-    if (child.exitCode == null) child.kill("SIGKILL");
-    await rm(dataDir, { recursive: true, force: true });
-  }
-}
-
-async function readStream(stream) {
-  if (!stream) return "";
-  const chunks = [];
-  for await (const chunk of stream) chunks.push(chunk);
-  return Buffer.concat(chunks).toString("utf8").trim();
 }
 
 async function buildAndPrepareSidecarResources() {
@@ -797,7 +102,7 @@ async function buildAndPrepareSidecarResources() {
   await cp(seedTemplate, join(sidecarSeedDir, "library.template.json"));
   await cp(seedProjects, join(sidecarSeedDir, "seed-projects"), { recursive: true });
 
-  // Sideload APKs (optional — skip quietly when not built yet; host then 404s honestly)
+  // Sideload APKs (optional — skip quietly when not built yet)
   const apkNames = ["stagesync-performer.apk", "stagesync-console.apk"];
   let apkCopied = 0;
   for (const name of apkNames) {
@@ -820,11 +125,11 @@ async function buildAndPrepareSidecarResources() {
   await copyDirContents(webDistDir, sidecarWebDir);
 
   console.log("[sidecar] preparing production node_modules (pnpm deploy --prod)");
-  await prepareProductionNodeModules(sidecarServerDir, serverDistDir);
+  await prepareProductionNodeModules(sidecarServerDir, serverDistDir, repoRoot, run, restoreWorkspaceInstall);
 
-  // Finally, prepare Node runtime executable + support files.
+  // Prepare Node runtime executable + support files.
   console.log("[sidecar] preparing Node runtime in tauri bundle (externalBin support)");
-  await prepareNodeRuntimeIntoTauriBundle(target);
+  await prepareNodeRuntimeIntoTauriBundle(target, repoRoot, run);
 
   await assertNoRepoDocsInSidecar(sidecarDir);
 
@@ -895,7 +200,7 @@ async function main() {
       process.exit(2);
     }
     await buildAndPrepareSidecarResources();
-    await patchInstalledApp(patchApp);
+    await patchInstalledApp(patchApp, repoRoot);
     return;
   }
 
@@ -911,4 +216,3 @@ async function main() {
 }
 
 await main();
-

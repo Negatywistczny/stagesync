@@ -20,8 +20,10 @@ import {
   gitContentChangedPaths,
   formatChangedFilesDetail,
   confirmPl,
+  warnSideEffects,
   protectScrollback,
 } from "./utils.js";
+import { freeDevPortsForE2e } from "./doctor.js";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -449,4 +451,457 @@ export function runOwnerTypoGate(): GateStep {
     ok: true,
     detail: `brak „${OWNER_TYPO}"`,
   };
+}
+
+// ── High-level gate runners ──────────────────────────────────────────────────
+
+export function runCiLikeVerifySteps(): GateStep[] {
+  ensureSharedBuiltForGate();
+  return [
+    gateStepFromCaptured("types", "check-types", "pnpm", ["check-types"]),
+    gateStepFromCaptured("ss-css", "lint:ss-css", "pnpm", ["lint:ss-css"]),
+    gateStepFromCaptured("lint", "lint", "pnpm", ["lint"]),
+    gateStepFromCaptured("test", "test", "pnpm", ["test"], {
+      ok: parseVitestTestsDetail,
+    }),
+  ];
+}
+
+export async function runCiLikeVerify(): Promise<boolean> {
+  clack.note(
+    `Lustrzane CI: check-types → lint:ss-css → lint → test ${pc.dim("(bez formatu)")}…`,
+    "CI-like",
+  );
+  const steps = runCiLikeVerifySteps();
+  const ok = summarizeGate("Lustrzane CI", steps);
+  await offerSaveVerifyLog("Lustrzane CI", steps);
+  return ok;
+}
+
+/** Codzienny gate: format → CI-like → docs links → knip. */
+export async function runDailyGate(): Promise<boolean> {
+  warnSideEffects([
+    "Prettier zapisze zmiany w plikach (format) — sprawdź git diff po zakończeniu",
+    "Reszta kroków tylko sprawdza (types / ss-css / lint / test / links / knip)",
+  ]);
+  clack.note(
+    "Codzienny gate: format → check-types → lint:ss-css → lint → test → links → knip…",
+    "Gate",
+  );
+  const steps: GateStep[] = [
+    gateStepMutatingPnpm("format", "format (Prettier)", ["format"]),
+    ...runCiLikeVerifySteps(),
+    gateStepFromCaptured(
+      "links",
+      "docs links",
+      "node",
+      ["scripts/quality/check-docs-links.mjs"],
+      {
+        ok: (output) => parseDocsLinksDetail(output, true),
+        fail: (output) => parseDocsLinksDetail(output, false),
+      },
+    ),
+    gateStepFromCaptured("knip", "knip", "pnpm", ["lint:knip"]),
+  ];
+  const ok = summarizeGate("Codzienny gate", steps);
+  await offerSaveVerifyLog("Codzienny gate", steps);
+  return ok;
+}
+
+/** Parse check-unlinked.mjs stdout; returns null on tool failure. */
+export function scanUnlinkedCount(): {
+  ok: boolean;
+  total: number;
+  output: string;
+} {
+  const result = spawnSync("node", ["scripts/quality/check-unlinked.mjs"], {
+    cwd: rootDir,
+    encoding: "utf8",
+    env: { ...process.env, NODE_NO_WARNINGS: "1" },
+  });
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  if (result.status !== 0 && result.status !== null) {
+    return { ok: false, total: -1, output };
+  }
+  const match = output.match(/TOTAL UNLINKED REFERENCES FOUND:\s*(\d+)/);
+  const total = match ? Number(match[1]) : 0;
+  return { ok: true, total, output };
+}
+
+const UNLINKED_STEP_LABEL = "unlinked";
+
+/**
+ * Unlinked docs gate. With `autoFix`, runs fix-unlinked-links once and rechecks.
+ */
+export function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
+  const autoFix = options.autoFix === true;
+  const label = UNLINKED_STEP_LABEL;
+  clack.note(
+    `Skan niepodlinkowanych odniesień ${pc.dim("(check-unlinked.mjs)")}…`,
+    "Skan",
+  );
+  const first = scanUnlinkedCount();
+  if (first.output) {
+    process.stdout.write(
+      first.output.endsWith("\n") ? first.output : `${first.output}\n`,
+    );
+  }
+  if (!first.ok) {
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: firstFailureHint(first.output) ?? "błąd skanu",
+      logBody: gateLogBody(first.output, false),
+    };
+  }
+  if (first.total === 0) {
+    return {
+      id: "unlinked",
+      label,
+      ok: true,
+      detail: "0 niepodlinkowanych",
+    };
+  }
+
+  if (!autoFix) {
+    clack.log.error(
+      `Gate unlinked: znaleziono ${first.total} odniesień (napraw w Docs i quality).`,
+    );
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: `znaleziono ${first.total}`,
+      logBody: gateLogBody(first.output, false),
+    };
+  }
+
+  clack.log.warn(
+    `Gate unlinked: ${first.total} odniesień — auto-fix (fix-unlinked-links.mjs)…`,
+  );
+  const before = gitDirtyContentMap();
+  const fixed = runCommandCaptured("node", [
+    "scripts/quality/fix-unlinked-links.mjs",
+  ]);
+  const changed = gitContentChangedPaths(before, gitDirtyContentMap());
+  if (!fixed.ok) {
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: firstFailureHint(fixed.output) ?? "auto-fix failed",
+      mutated: changed.length > 0,
+      logBody: gateLogBody(
+        `${first.output}\n${fixed.output}`,
+        false,
+        changed.length > 0,
+      ),
+    };
+  }
+
+  clack.note("Ponowny skan po auto-fix…", "Skan");
+  const second = scanUnlinkedCount();
+  if (second.output) {
+    process.stdout.write(
+      second.output.endsWith("\n") ? second.output : `${second.output}\n`,
+    );
+  }
+  if (!second.ok) {
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: firstFailureHint(second.output) ?? "błąd skanu po fix",
+      mutated: changed.length > 0,
+      logBody: gateLogBody(
+        `${first.output}\n${fixed.output}\n${second.output}`,
+        false,
+        changed.length > 0,
+      ),
+    };
+  }
+  if (second.total > 0) {
+    clack.log.error(
+      `Gate unlinked: po auto-fix nadal ${second.total} odniesień.`,
+    );
+    return {
+      id: "unlinked",
+      label,
+      ok: false,
+      detail: `po auto-fix nadal ${second.total}`,
+      mutated: changed.length > 0,
+      logBody: gateLogBody(
+        `${first.output}\n${fixed.output}\n${second.output}`,
+        false,
+        changed.length > 0,
+      ),
+    };
+  }
+  clack.log.success("Gate unlinked: auto-fix usunął wszystkie odniesienia.");
+  return {
+    id: "unlinked",
+    label,
+    ok: true,
+    detail: `auto-fix ${first.total} → 0 (${changed.length} plików)`,
+    mutated: changed.length > 0,
+    logBody: gateLogBody(
+      `${first.output}\n${fixed.output}\n${second.output}`,
+      true,
+      changed.length > 0,
+    ),
+  };
+}
+
+function looksLikeMissingPlaywrightBrowser(output: string): boolean {
+  return (
+    output.includes("Executable doesn't exist") ||
+    output.includes("Looks like Playwright was just installed") ||
+    /Please run the following command to download new browsers/i.test(output)
+  );
+}
+
+function looksLikeE2ePortConflict(output: string): boolean {
+  return (
+    /EADDRINUSE/i.test(output) ||
+    /address already in use/i.test(output) ||
+    /Port \d+ is already in use/i.test(output) ||
+    /strictPort/i.test(output)
+  );
+}
+
+function looksLikeMissingNodeModule(output: string): boolean {
+  return (
+    /ERR_MODULE_NOT_FOUND/i.test(output) ||
+    /Cannot find module/i.test(output) ||
+    /Cannot find package/i.test(output) ||
+    /Cannot find dependency/i.test(output)
+  );
+}
+
+export function spawnWebE2e(): { status: number | null; output: string } {
+  const result = spawnSync("pnpm", ["--filter", "@stagesync/web", "test:e2e"], {
+    cwd: rootDir,
+    encoding: "utf8",
+    shell: true,
+    env: {
+      ...process.env,
+      NODE_NO_WARNINGS: "1",
+      STAGESYNC_E2E_FRESH: "1",
+    },
+  });
+  return {
+    status: result.status,
+    output: `${result.stdout ?? ""}${result.stderr ?? ""}`,
+  };
+}
+
+export function runWebE2eWithBrowserBootstrap(): GateStep {
+  const label = "web e2e";
+  clack.note(
+    `E2E bootstrap: shared build → wolne porty → Playwright ${pc.dim("(@stagesync/web)")}…`,
+    "E2E",
+  );
+  if (!runCommand("pnpm", ["--filter", "@stagesync/shared", "build"])) {
+    clack.log.error("E2E: nie udało się zbudować @stagesync/shared.");
+    return {
+      id: "e2e",
+      label,
+      ok: false,
+      detail: "shared build failed",
+    };
+  }
+  freeDevPortsForE2e();
+
+  const fixes: string[] = [];
+  let lastOutput = "";
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    clack.note(
+      attempt === 1
+        ? "Uruchamianie Playwright E2E…"
+        : "Ponawianie Playwright E2E po auto-fix…",
+      "E2E",
+    );
+    const { status, output } = spawnWebE2e();
+    lastOutput = output;
+    if (output) {
+      process.stdout.write(output.endsWith("\n") ? output : `${output}\n`);
+    }
+    if (status === 0) {
+      const counts = parsePlaywrightDetail(output);
+      const parts = [
+        counts,
+        fixes.length > 0 ? fixes.join(", ") : undefined,
+      ].filter(Boolean);
+      return {
+        id: "e2e",
+        label,
+        ok: true,
+        detail: parts.length > 0 ? parts.join("; ") : undefined,
+      };
+    }
+    if (attempt === 2) {
+      const counts = parsePlaywrightDetail(output);
+      const fixNote = fixes.length > 0 ? `po: ${fixes.join(", ")}` : undefined;
+      return {
+        id: "e2e",
+        label,
+        ok: false,
+        detail:
+          [counts ?? firstFailureHint(output) ?? "fail", fixNote]
+            .filter(Boolean)
+            .join("; ") || "fail",
+        logBody: gateLogBody(output, false),
+      };
+    }
+
+    if (looksLikeMissingPlaywrightBrowser(output)) {
+      clack.log.warn(
+        "Brak binarki Playwright — `playwright install`, potem retry…",
+      );
+      if (
+        !runCommand("pnpm", [
+          "--filter",
+          "@stagesync/web",
+          "exec",
+          "playwright",
+          "install",
+        ])
+      ) {
+        return {
+          id: "e2e",
+          label,
+          ok: false,
+          detail: "playwright install failed",
+        };
+      }
+      fixes.push("zainstalowano Playwright");
+      continue;
+    }
+
+    if (looksLikeE2ePortConflict(output)) {
+      clack.log.warn("Konflikt portów e2e — zwalniam :3000/:4000 i retry…");
+      freeDevPortsForE2e();
+      fixes.push("zwolniono porty");
+      continue;
+    }
+
+    if (looksLikeMissingNodeModule(output)) {
+      clack.log.warn("Brak modułu Node — `pnpm install`, potem retry e2e…");
+      if (!runCommand("pnpm", ["install"])) {
+        return {
+          id: "e2e",
+          label,
+          ok: false,
+          detail: "pnpm install failed",
+        };
+      }
+      freeDevPortsForE2e();
+      fixes.push("pnpm install");
+      continue;
+    }
+
+    return {
+      id: "e2e",
+      label,
+      ok: false,
+      detail:
+        parsePlaywrightDetail(output) ?? firstFailureHint(output) ?? "fail",
+      logBody: gateLogBody(output, false),
+    };
+  }
+
+  return {
+    id: "e2e",
+    label,
+    ok: false,
+    detail:
+      parsePlaywrightDetail(lastOutput) ??
+      firstFailureHint(lastOutput) ??
+      "fail",
+    logBody: gateLogBody(lastOutput, false),
+  };
+}
+
+export async function runFullAudit(): Promise<boolean> {
+  warnSideEffects([
+    "Prettier zapisze pliki (format)",
+    "unlinked: może auto-naprawić linki w Markdown (mutacja docs)",
+    "e2e: może zabić procesy na :3000/:4000 i doinstalować Playwright / pnpm install",
+    "generate:map zapisuje docs/REPO_MAP.md tylko przy zmianie struktury; coverage → coverage/",
+    "sync:launcher-ui może nadpisać apps/desktop/launcher/vendor/*.css",
+    "Długi przebieg (często wiele minut)",
+  ]);
+  clack.note(
+    "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build → launcher → version → owner → pnpm audit…",
+    "Audyt",
+  );
+  const steps: GateStep[] = [
+    gateStepMutatingPnpm("format", "format (Prettier)", ["format"]),
+    ...runCiLikeVerifySteps(),
+    gateStepFromCaptured(
+      "links",
+      "docs links",
+      "node",
+      ["scripts/quality/check-docs-links.mjs"],
+      {
+        ok: (output) => parseDocsLinksDetail(output, true),
+        fail: (output) => parseDocsLinksDetail(output, false),
+      },
+    ),
+    runUnlinkedGate({ autoFix: true }),
+    gateStepFromCaptured("knip", "knip", "pnpm", ["lint:knip"]),
+    gateStepMutatingPnpm("map", "generate:map", ["generate:map"]),
+    (() => {
+      const { ok, output } = runCommandCaptured("pnpm", ["test:coverage"]);
+      if (!ok) {
+        return {
+          id: "coverage",
+          label: "test:coverage",
+          ok: false,
+          detail: firstFailureHint(output) ?? "błąd",
+          logBody: gateLogBody(output, false),
+        } satisfies GateStep;
+      }
+      const detail =
+        [parseVitestTestsDetail(output), parseCoverageStmtsDetail(output)]
+          .filter(Boolean)
+          .join("; ") || undefined;
+      return {
+        id: "coverage",
+        label: "test:coverage",
+        ok: true,
+        detail,
+      } satisfies GateStep;
+    })(),
+    runWebE2eWithBrowserBootstrap(),
+    gateStepFromCaptured("build", "build", "pnpm", ["build"]),
+    gateStepMutatingPnpm("launcher-sync", "sync:launcher-ui", [
+      "sync:launcher-ui",
+    ]),
+    gateStepFromCaptured("desktop-test", "desktop launcher tests", "pnpm", [
+      "--filter",
+      "@stagesync/desktop",
+      "test",
+    ]),
+    gateStepFromCaptured(
+      "version-sync",
+      "sync-version --check",
+      "node",
+      ["scripts/release/sync-version.mjs", "--check"],
+      {
+        ok: (output) => parseSyncVersionDetail(output, true),
+        fail: (output) => parseSyncVersionDetail(output, false),
+      },
+    ),
+    runOwnerTypoGate(),
+    gateStepFromCaptured("audit", "pnpm audit", "pnpm", ["audit"], {
+      ok: (output) => parsePnpmAuditDetail(output, true),
+      fail: (output) => parsePnpmAuditDetail(output, false),
+    }),
+  ];
+  const ok = summarizeGate("Kompletny audyt", steps);
+  await offerSaveVerifyLog("Kompletny audyt", steps);
+  return ok;
 }

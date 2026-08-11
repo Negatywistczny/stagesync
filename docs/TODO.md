@@ -22,8 +22,8 @@ Otwarte zadania. Plan etapów: [ROADMAP.md](./ROADMAP.md). Historia: [CHANGELOG.
 
 #### Skrypty DX i Narzędzia (`scripts/`)
 
-- [ ] `scripts/hub/dev-hub.ts` (2 766 LOC) &rarr; podział na `dev-hub/tasks/`, `dev-hub/ui/`, `dev-hub/env.ts`
-- [ ] `apps/desktop/scripts/build-desktop-sidecar.mjs` (914 LOC) &rarr; wydzielenie helperów budowania
+- [x] `scripts/hub/dev-hub.ts` (2 766 &rarr; 188 LOC) &rarr; podział na `scripts/hub/menus/`, `gate.ts`, `doctor.ts`, `network.ts`, `utils.ts`
+- [x] `apps/desktop/scripts/build-desktop-sidecar.mjs` (914 &rarr; 190 LOC) &rarr; wydzielenie `sidecar/node-runtime.mjs`, `sidecar/prune.mjs`, `sidecar/smoke.mjs`
 
 #### Ostatnie Pliki Produkcyjne TS/JS (`packages/` & `apps/`)
 

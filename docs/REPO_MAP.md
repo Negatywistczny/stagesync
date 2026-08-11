@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1485
-* **Liczba katalogów:** 249
-* **Data aktualizacji:** 2026-08-11T20:59:45.154Z
+* **Liczba wszystkich plików:** 1494
+* **Liczba katalogów:** 251
+* **Data aktualizacji:** 2026-08-11T21:41:19.595Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1068 |
+| Kod | 1077 |
 | Docs | 147 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 663 |
+| `.ts` | 669 |
 | `.tsx` | 226 |
 | `.md` | 125 |
 | `.png` | 94 |
@@ -32,7 +32,7 @@
 | `.css` | 52 |
 | `.json` | 37 |
 | `.xml` | 35 |
-| `.mjs` | 29 |
+| `.mjs` | 32 |
 | `brak rozszerzenia` | 24 |
 | _(pozostałe)_ | 129 |
 
@@ -40,9 +40,9 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1092) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1095) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
-  - **desktop/** (101) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
+  - **desktop/** (104) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (174) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (619) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
@@ -88,8 +88,8 @@
   - **shared/** (161) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (5) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (26) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (27) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
-  - **hub/** (5)
+- **scripts/** (33) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+  - **hub/** (11)
   - **merge-train/** (4) — Automatyzacja merge train i walidacji PR
   - **quality/** (5) — Narzędzia jakości kodu, linków i generator mapy repozytorium
   - **release/** (9) — Skrypty wydań SemVer, budowania paczek i release notes
@@ -245,6 +245,10 @@ stagesync/
 │   │   │   ├── updateDialog.js
 │   │   │   └── updateDialog.test.js
 │   │   ├── scripts/
+│   │   │   ├── sidecar/
+│   │   │   │   ├── node-runtime.mjs
+│   │   │   │   ├── prune.mjs
+│   │   │   │   └── smoke.mjs
 │   │   │   ├── build-desktop-sidecar.mjs
 │   │   │   ├── build-nsis-smoke.mjs
 │   │   │   ├── check-rust.mjs
@@ -881,6 +885,13 @@ stagesync/
 │   └── README.md
 ├── scripts/
 │   ├── hub/
+│   │   ├── menus/
+│   │   │   ├── menu-clean.ts
+│   │   │   ├── menu-data.ts
+│   │   │   ├── menu-deps.ts
+│   │   │   ├── menu-release.ts
+│   │   │   ├── menu-run.ts
+│   │   │   └── menu-testing.ts
 │   │   ├── dev-hub.ts
 │   │   ├── doctor.ts
 │   │   ├── gate.ts
