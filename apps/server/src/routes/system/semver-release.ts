@@ -1,0 +1,151 @@
+import { releaseMatchesUpdateChannel } from "../../env-settings.js";
+import type { LatestReleaseResult } from "./types.js";
+
+export type { LatestReleaseResult } from "./types.js";
+
+const GITHUB_REPO = "Negatywistczny/stagesync";
+
+type GitHubReleaseListItem = {
+  tag_name?: string;
+  draft?: boolean;
+  prerelease?: boolean;
+  published_at?: string | null;
+  created_at?: string;
+};
+
+type ParsedSemver = {
+  core: [number, number, number];
+  pre: string[] | null;
+};
+
+function parseSemver(raw: string): ParsedSemver | null {
+  const m = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/i.exec(raw.trim());
+  if (!m) return null;
+  return {
+    core: [Number(m[1]), Number(m[2]), Number(m[3])],
+    pre: m[4] ? m[4].split(".") : null,
+  };
+}
+
+function comparePreIds(a: string, b: string): number {
+  const an = /^\d+$/.test(a) ? Number(a) : null;
+  const bn = /^\d+$/.test(b) ? Number(b) : null;
+  if (an != null && bn != null) return an - bn;
+  if (an != null) return -1;
+  if (bn != null) return 1;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/** True when `candidate` is a newer SemVer than `current` (not merely unequal). */
+export function isSemverNewer(candidate: string, current: string): boolean {
+  const a = parseSemver(candidate);
+  const b = parseSemver(current);
+  if (!a || !b) return candidate !== current;
+  for (let i = 0; i < 3; i++) {
+    if (a.core[i]! !== b.core[i]!) return a.core[i]! > b.core[i]!;
+  }
+  if (a.pre == null && b.pre == null) return false;
+  if (a.pre == null) return true;
+  if (b.pre == null) return false;
+  const n = Math.max(a.pre.length, b.pre.length);
+  for (let i = 0; i < n; i++) {
+    const ai = a.pre[i];
+    const bi = b.pre[i];
+    if (ai == null) return false;
+    if (bi == null) return true;
+    const cmp = comparePreIds(ai, bi);
+    if (cmp !== 0) return cmp > 0;
+  }
+  return false;
+}
+
+/**
+ * Resolve newest published GitHub release semver (includes prereleases).
+ *
+ * `/releases/latest` is intentionally unused: it ignores prereleases, so
+ * alpha/beta-only repos always 404 even when Releases exist.
+ */
+export async function fetchLatestReleaseVersion(
+  token?: string,
+  fetchImpl: typeof fetch = fetch,
+  channel: string = process.env.STAGESYNC_UPDATE_CHANNEL ?? "stable",
+): Promise<LatestReleaseResult> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "StageSync-UpdateStatus",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  try {
+    const res = await fetchImpl(
+      `https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=20`,
+      { headers, signal: AbortSignal.timeout(8000) },
+    );
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        latest: null,
+        error: token
+          ? "GitHub Releases API odmówił dostępu (token / uprawnienia)"
+          : "GitHub Releases API wymaga tokenu (STAGESYNC_GITHUB_TOKEN) — repo prywatne",
+      };
+    }
+
+    if (res.status === 404) {
+      return {
+        latest: null,
+        error: token
+          ? "GitHub Releases API: repo lub Releases niedostępne"
+          : "GitHub Releases niedostępne bez tokenu (repo prywatne?) — ustaw STAGESYNC_GITHUB_TOKEN",
+      };
+    }
+
+    if (!res.ok) {
+      return {
+        latest: null,
+        error: `GitHub Releases API niedostępne (HTTP ${res.status})`,
+      };
+    }
+
+    const data = (await res.json()) as unknown;
+    if (!Array.isArray(data)) {
+      return {
+        latest: null,
+        error: "GitHub Releases API: nieoczekiwana odpowiedź",
+      };
+    }
+
+    const published = (data as GitHubReleaseListItem[])
+      .filter(
+        (r) =>
+          r &&
+          r.draft !== true &&
+          typeof r.tag_name === "string" &&
+          releaseMatchesUpdateChannel(
+            r.tag_name,
+            Boolean(r.prerelease),
+            channel,
+          ),
+      )
+      .sort((a, b) => {
+        const ta = Date.parse(a.published_at ?? a.created_at ?? "") || 0;
+        const tb = Date.parse(b.published_at ?? b.created_at ?? "") || 0;
+        return tb - ta;
+      });
+
+    const tag = published[0]?.tag_name?.replace(/^v/, "") ?? null;
+    if (!tag) {
+      return {
+        latest: null,
+        error: "Brak opublikowanych wydań na wybranym kanale aktualizacji",
+      };
+    }
+    return { latest: tag, error: null };
+  } catch {
+    return {
+      latest: null,
+      error: "GitHub Releases API nieosiągalne (sieć / timeout)",
+    };
+  }
+}

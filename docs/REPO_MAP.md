@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1321
-* **Liczba katalogów:** 202
-* **Data aktualizacji:** 2026-08-11T03:07:55.460Z
+* **Liczba wszystkich plików:** 1330
+* **Liczba katalogów:** 203
+* **Data aktualizacji:** 2026-08-11T03:08:44.585Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 895 |
+| Kod | 904 |
 | Docs | 156 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 538 |
+| `.ts` | 547 |
 | `.tsx` | 178 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -40,11 +40,11 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (945) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (954) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (140) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **server/** (149) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (505) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
@@ -317,6 +317,7 @@ stagesync/
 │   │   │   ├── push/
 │   │   │   │   └── tokens.ts
 │   │   │   ├── routes/
+│   │   │   │   ├── system/  … (9 plików)
 │   │   │   │   ├── youtube-audio/  … (5 plików)
 │   │   │   │   ├── assets-helpers.test.ts
 │   │   │   │   ├── assets-helpers.ts
