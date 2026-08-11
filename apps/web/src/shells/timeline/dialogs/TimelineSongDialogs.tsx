@@ -1,6 +1,11 @@
 import React from "react";
 import { Link } from "react-router";
-import type { Project, UgImportOk, UgTabMetadata, UltrastarImportOk } from "@stagesync/shared";
+import type {
+  Project,
+  UgImportOk,
+  UgTabMetadata,
+  UltrastarImportOk,
+} from "@stagesync/shared";
 import { Button } from "@stagesync/ui";
 import { ShellIconButton } from "../../components/ShellIconButton.js";
 import { IconClose } from "../../components/icons.js";
@@ -26,7 +31,9 @@ export type TimelineSongDialogsProps = {
   setSavePending: (pending: boolean) => void;
   setSavedProject: (p: Project | null) => void;
   setDraftProject: (p: Project | null) => void;
-  setDraftHistory: (fn: (h: DraftHistory | null) => DraftHistory | null) => void;
+  setDraftHistory: (
+    fn: (h: DraftHistory | null) => DraftHistory | null,
+  ) => void;
   setLoadError: (err: string | null) => void;
   onDiscard: () => void;
   helpOpen: boolean;
@@ -259,9 +266,15 @@ export function TimelineSongDialogs({
                 onCancel={closeImportModals}
                 onApplyUsUg={onImportUsUgBridge}
                 onApplyUltrastar={onImportUltrastar}
-                onApplyUg={({ result, runWand, metadata }: { result: UgImportOk; runWand: boolean; metadata?: UgTabMetadata | null }) =>
-                  onImportUg(result, runWand, metadata)
-                }
+                onApplyUg={({
+                  result,
+                  runWand,
+                  metadata,
+                }: {
+                  result: UgImportOk;
+                  runWand: boolean;
+                  metadata?: UgTabMetadata | null;
+                }) => onImportUg(result, runWand, metadata)}
               />
             </div>
           </div>

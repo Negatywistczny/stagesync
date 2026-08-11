@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
+import { useCallback, useRef, useState, type RefObject } from "react";
 import type { Project, SnapMode } from "@stagesync/shared";
 import {
   clearSelection as clearClipSelectionHelper,
@@ -54,12 +49,18 @@ export type UseTimelineSelectionStateParams = {
   commitDraft: (next: Project) => void;
   setSongMetaOpen: (open: boolean) => void;
   setLocatorTicks: (ticks: number) => void;
-  setLoop: (loop: { enabled: boolean; startTicks: number; endTicks: number }) => void | Promise<void>;
+  setLoop: (loop: {
+    enabled: boolean;
+    startTicks: number;
+    endTicks: number;
+  }) => void | Promise<void>;
   snapMode: SnapMode;
   displayTicks: number;
   setSoloBusIds: (fn: (prev: string[]) => string[]) => void;
   setSoloAudioTrackIds: (fn: (prev: string[]) => string[]) => void;
-  setTrackVisibility: (fn: (prev: TrackVisibilityMap) => TrackVisibilityMap) => void;
+  setTrackVisibility: (
+    fn: (prev: TrackVisibilityMap) => TrackVisibilityMap,
+  ) => void;
 };
 
 export function useTimelineSelectionState({
@@ -80,7 +81,9 @@ export function useTimelineSelectionState({
   const clipSelectionRef = useRef(clipSelection);
   clipSelectionRef.current = clipSelection;
 
-  const [selectedMapLane, setSelectedMapLane] = useState<MapLaneId | null>(null);
+  const [selectedMapLane, setSelectedMapLane] = useState<MapLaneId | null>(
+    null,
+  );
   const [selectedMapIds, setSelectedMapIds] = useState<string[]>([]);
   const [selectedAnchorId, setSelectedAnchorId] = useState<string | null>(null);
   const [selectedSubsectionIdx, setSelectedSubsectionIdx] = useState<
@@ -284,12 +287,14 @@ export function useTimelineSelectionState({
       clearMapSelection();
       setSelectedAnchorId(null);
       const maxEnd = selectionMaxEndTicks(
-        board.items.map((it: { startTicks: number; lengthTicks: number }, i: number) => ({
-          id: result.newIds[i] ?? `n${i}`,
-          startTicks:
-            anchorTicks + (it.startTicks - board.items[0]!.startTicks),
-          lengthTicks: it.lengthTicks,
-        })),
+        board.items.map(
+          (it: { startTicks: number; lengthTicks: number }, i: number) => ({
+            id: result.newIds[i] ?? `n${i}`,
+            startTicks:
+              anchorTicks + (it.startTicks - board.items[0]!.startTicks),
+            lengthTicks: it.lengthTicks,
+          }),
+        ),
       );
       setLocatorTicks(Math.max(0, maxEnd));
       return true;

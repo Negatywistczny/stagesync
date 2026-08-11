@@ -6,29 +6,16 @@ import {
   type AudioLaneId,
 } from "@lib/timeline/timelineTracks.js";
 import type { ContentLaneId } from "@lib/timeline-edit/contentLaneEdit.js";
-import {
-  clipStylePx,
-  tickToPx,
-} from "@lib/timeline-edit/formaCanvas.js";
-import {
-  peaksToPolylinePoints,
-} from "@lib/audio/waveformPeaks.js";
-import {
-  resolveTrackColor,
-} from "@stagesync/shared";
-import {
-  type MapLaneId,
-} from "@lib/timeline/mapLaneEdit.js";
-import {
-  segmentStylePx,
-} from "@lib/timeline/mapSegments.js";
+import { clipStylePx, tickToPx } from "@lib/timeline-edit/formaCanvas.js";
+import { peaksToPolylinePoints } from "@lib/audio/waveformPeaks.js";
+import { resolveTrackColor } from "@stagesync/shared";
+import { type MapLaneId } from "@lib/timeline/mapLaneEdit.js";
+import { segmentStylePx } from "@lib/timeline/mapSegments.js";
 import {
   isClipSelected,
   type ClipSelection,
 } from "@lib/timeline/timelineSelection.js";
-import {
-  isAudioAssetDecodeFailed,
-} from "@lib/audio/audioPlayback.js";
+import { isAudioAssetDecodeFailed } from "@lib/audio/audioPlayback.js";
 import {
   toolAllowsClipHitZones,
   toolIsPencilDraw,
@@ -61,7 +48,11 @@ export type TimelineLanesRendererProps = {
   selectedAnchorId: string | null;
   selectedMapLane: MapLaneId | null;
   selectedMapIds: string[];
-  mapDragPreview: { lane: MapLaneId; moveIds: string[]; deltaTicks: number } | null;
+  mapDragPreview: {
+    lane: MapLaneId;
+    moveIds: string[];
+    deltaTicks: number;
+  } | null;
   tempoSegments: any[];
   meterSegments: any[];
   keySegments: any[];
@@ -76,18 +67,34 @@ export type TimelineLanesRendererProps = {
   setSelectedAnchorId: (id: string | null) => void;
   setInspectorVisible: (v: boolean) => void;
   setSongMetaOpen: (v: boolean) => void;
-  setMapSelection: (lane: MapLaneId, ids: string[], primaryId: string | null) => void;
+  setMapSelection: (
+    lane: MapLaneId,
+    ids: string[],
+    primaryId: string | null,
+  ) => void;
   openMapEdit: (lane: MapLaneId, ticks: number) => void;
   openClipContextMenu: (args: any) => void;
   selectLaneClip: (lane: any, id: string) => void;
   focusInspectorPanel: () => void;
   rawTicksAtClientX: (clientX: number) => number | null;
-  onAudioClipPointerDown: (e: React.PointerEvent<any>, lane: AudioLaneId, clip: any) => void;
+  onAudioClipPointerDown: (
+    e: React.PointerEvent<any>,
+    lane: AudioLaneId,
+    clip: any,
+  ) => void;
   onFormaClipPointerDown: (e: React.PointerEvent<any>, clip: any) => void;
-  onContentClipPointerDown: (e: React.PointerEvent<any>, lane: ContentLaneId, clip: any) => void;
+  onContentClipPointerDown: (
+    e: React.PointerEvent<any>,
+    lane: ContentLaneId,
+    clip: any,
+  ) => void;
   onFormaClipPointerMove: (e: React.PointerEvent<any>) => void;
   onFormaClipPointerUp: (e: React.PointerEvent<any>) => void;
-  onMapSegmentPointerDown: (e: React.PointerEvent<any>, lane: MapLaneId, seg: any) => void;
+  onMapSegmentPointerDown: (
+    e: React.PointerEvent<any>,
+    lane: MapLaneId,
+    seg: any,
+  ) => void;
   onMapSegmentPointerMove: (e: React.PointerEvent<any>) => void;
   onMapSegmentPointerUp: (e: React.PointerEvent<any>) => void;
 };
@@ -140,10 +147,13 @@ export function renderLaneContent({
   if (isAudioLaneId(trackId)) {
     const lane = trackId as AudioLaneId;
     const trackUuid = audioTrackIdFromLane(lane);
-    const clips = draftProject.audioClips.filter((c) => c.trackId === trackUuid);
+    const clips = draftProject.audioClips.filter(
+      (c) => c.trackId === trackUuid,
+    );
     const assetById = new Map(draftProject.assets.map((a) => [a.id, a]));
     const trackColor = resolveTrackColor(
-      draftProject.audioTracks.find((t: AudioTrack) => t.id === trackUuid)?.color,
+      draftProject.audioTracks.find((t: AudioTrack) => t.id === trackUuid)
+        ?.color,
     );
 
     const isAudioMoving =
@@ -153,7 +163,8 @@ export function renderLaneContent({
       ? (gestureSession!.lane as AudioLaneId)
       : null;
     const targetAudioLane = isAudioMoving
-      ? ((gesturePreview?.targetLane as AudioLaneId | undefined) ?? sourceAudioLane)
+      ? ((gesturePreview?.targetLane as AudioLaneId | undefined) ??
+        sourceAudioLane)
       : null;
     const moveIds = isAudioMoving
       ? gestureSession!.moveIds?.length
@@ -753,8 +764,8 @@ export function renderLaneContent({
                 : clip.startTicks,
               lengthTicks: previewing
                 ? gestureSession?.kind === "move"
-                ? clip.lengthTicks
-                : gesturePreview!.lengthTicks
+                  ? clip.lengthTicks
+                  : gesturePreview!.lengthTicks
                 : clip.lengthTicks,
             };
             const tapTarget = lane === "tekst" && tapActiveClipId === clip.id;

@@ -1,10 +1,7 @@
 import React from "react";
 import type { Project } from "@stagesync/shared";
 import { Button } from "@stagesync/ui";
-import {
-  IconWand,
-  IconTap,
-} from "../../components/icons.js";
+import { IconWand, IconTap } from "../../components/icons.js";
 import {
   isAudioTrackSelected,
   type TrackSelection,

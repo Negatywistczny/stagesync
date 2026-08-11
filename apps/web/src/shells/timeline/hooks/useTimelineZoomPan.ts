@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import {
   ZOOM_H_MAX,
   ZOOM_H_MIN,
@@ -103,11 +109,7 @@ export function useTimelineZoomPan({
         Math.max(ZOOM_H_MIN, Math.round(nextBaseRaw)),
       );
       const newEff = nextBase * uiScaleRef.current;
-      if (
-        nextBase === zoomHBaseRef.current ||
-        !(oldEff > 0) ||
-        !(newEff > 0)
-      ) {
+      if (nextBase === zoomHBaseRef.current || !(oldEff > 0) || !(newEff > 0)) {
         return;
       }
       const ax =

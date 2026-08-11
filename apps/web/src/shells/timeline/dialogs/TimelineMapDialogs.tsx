@@ -2,10 +2,7 @@ import React from "react";
 import type { Project } from "@stagesync/shared";
 import { Button } from "@stagesync/ui";
 import { ShellAlertDialog } from "../../components/ShellBlockingDialog.js";
-import {
-  resolveKeyAt,
-  normalizeKeyTonic,
-} from "@stagesync/shared";
+import { resolveKeyAt, normalizeKeyTonic } from "@stagesync/shared";
 import {
   upsertKeyAt,
   upsertMeterAt,

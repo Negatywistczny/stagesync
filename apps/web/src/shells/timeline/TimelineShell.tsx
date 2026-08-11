@@ -954,7 +954,6 @@ export function TimelineShell() {
     setInspectorVisible(true);
   }, []);
 
-
   /** Desktop dblclick → focus Właściwości (v4); tablet canvas double-tap stays Fit Zoom. */
   const focusInspectorPanel = useCallback(() => {
     if (touchTier === "mobile") return;
@@ -1119,14 +1118,10 @@ export function TimelineShell() {
     gesturePreviewRef.current = gesturePreview;
   }, [gesturePreview]);
 
-
-
   const toggleInspectorPanel = useCallback(() => {
     if (touchTier === "mobile") return;
     setInspectorVisible((v) => !v);
   }, [touchTier]);
-
-
 
   useEffect(() => {
     const scrollEl = document.querySelector(
@@ -1195,8 +1190,6 @@ export function TimelineShell() {
       trackRowsRoRef.current = null;
     };
   }, []);
-
-
 
   useLayoutEffect(() => {
     if (!eyeOpen) {
@@ -1364,9 +1357,6 @@ export function TimelineShell() {
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
 
   // Follow playhead: continuous center (v4 scrollFollowToX) while playing — not edge-only.
-
-
-
 
   const loopOn = Boolean(state.loop?.enabled);
   const loopRange = loopDraft ?? usableLoopRange(state.loop);
@@ -1657,7 +1647,6 @@ export function TimelineShell() {
     // audioAssetDecodeKey tracks which audio assets still need meta.
   }, [projectId, audioAssetDecodeKey, draftProject]);
 
-
   useEffect(() => {
     function onMenu(ev: Event) {
       const detail = parseDesktopMenuDetail(ev);
@@ -1754,8 +1743,6 @@ export function TimelineShell() {
     setDraftHistory(resetDraftHistory(savedProject));
     clearClipSelection();
   }
-
-
 
   useEffect(() => {
     function onSongImport(ev: Event) {

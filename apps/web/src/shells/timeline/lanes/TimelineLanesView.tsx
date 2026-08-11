@@ -7,10 +7,7 @@ import {
   type TrackVisibilityMap,
 } from "@lib/timeline/timelineTracks.js";
 import { MAX_AUDIO_TRACKS } from "@lib/audio/audioLaneEdit.js";
-import {
-  isMapLaneId,
-  type MapLaneId,
-} from "@lib/timeline/mapLaneEdit.js";
+import { isMapLaneId, type MapLaneId } from "@lib/timeline/mapLaneEdit.js";
 import type { ContentLaneId } from "@lib/timeline-edit/contentLaneEdit.js";
 import {
   toolIsPencilDraw,
@@ -23,7 +20,10 @@ import {
   contentClipCoveringTicks,
   splitContentClipAt,
 } from "@lib/timeline-edit/contentLaneEdit.js";
-import { insertScoreAnchor, canEditKotwice } from "@lib/timeline-edit/scoreBarEdit.js";
+import {
+  insertScoreAnchor,
+  canEditKotwice,
+} from "@lib/timeline-edit/scoreBarEdit.js";
 import { snapEditTicks } from "@lib/timeline-edit/formaCanvas.js";
 import { tickToPx } from "@lib/timeline-edit/formaCanvas.js";
 import type { ToolId } from "../timelineToolsData.js";
@@ -70,7 +70,12 @@ export type TimelineLanesViewProps = {
   rulerBeatMarks: Array<{ ticks: number }>;
   bindTrackRowsRef: (el: HTMLDivElement | null) => void;
   lanesCoordRef: RefObject<HTMLDivElement | null>;
-  marqueeBox: { left: number; top: number; width: number; height: number } | null;
+  marqueeBox: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null;
   draftProject: Project | null;
   trackVisibility: TrackVisibilityMap;
   rowHeightStyle: (trackId: string) => React.CSSProperties;
@@ -97,7 +102,9 @@ export type TimelineLanesViewProps = {
   ) => void;
   heldZoom: boolean;
   audioLaneDropId: string | null;
-  setAudioLaneDropId: (fn: ((id: string | null) => string | null) | string | null) => void;
+  setAudioLaneDropId: (
+    fn: ((id: string | null) => string | null) | string | null,
+  ) => void;
   onUploadAudioToTrack: (
     trackId: string,
     file: File,
@@ -117,7 +124,10 @@ export type TimelineLanesViewProps = {
   onMapLanePointerDown: (e: React.PointerEvent<any>, lane: MapLaneId) => void;
   onFormaLanePointerMove: (e: React.PointerEvent<any>) => void;
   onFormaLanePointerUp: (e: React.PointerEvent<any>) => void;
-  beginContentPencilDraw: (e: React.PointerEvent<any>, lane: ContentLaneId) => void;
+  beginContentPencilDraw: (
+    e: React.PointerEvent<any>,
+    lane: ContentLaneId,
+  ) => void;
   rawTicksAtClientX: (clientX: number) => number | null;
   commitDraft: (next: Project) => void;
   clearMapSelection: () => void;
@@ -205,7 +215,11 @@ export function TimelineLanesView({
   lanesRendererProps,
 }: TimelineLanesViewProps) {
   return (
-    <div ref={canvasScrollRef} className={styles.canvasScroll} data-canvas-scroll>
+    <div
+      ref={canvasScrollRef}
+      className={styles.canvasScroll}
+      data-canvas-scroll
+    >
       <div
         className={styles.canvasInner}
         style={{
@@ -345,7 +359,9 @@ export function TimelineLanesView({
                   />
 
                   <div
-                    data-audio-lane={isAudioLaneId(track.id) ? track.id : undefined}
+                    data-audio-lane={
+                      isAudioLaneId(track.id) ? track.id : undefined
+                    }
                     onPointerDown={
                       track.id === "forma"
                         ? onFormaLanePointerDown
@@ -390,11 +406,17 @@ export function TimelineLanesView({
                                       hit.id,
                                       raw,
                                     );
-                                    if (next !== draftProject) commitDraft(next);
+                                    if (next !== draftProject)
+                                      commitDraft(next);
                                     return;
                                   }
                                   if (!toolIsPencilDraw(tool)) {
-                                    if (toolUsesMarqueeGesture(tool, e.pointerType)) {
+                                    if (
+                                      toolUsesMarqueeGesture(
+                                        tool,
+                                        e.pointerType,
+                                      )
+                                    ) {
                                       beginMarquee(e);
                                     } else if (
                                       isTouchPointerType(e.pointerType) &&
@@ -429,16 +451,32 @@ export function TimelineLanesView({
                                         raw,
                                         mode,
                                       );
-                                      if (laneImportTrackIdRef && laneImportTrackIdRef.current !== undefined) {
-                                        (laneImportTrackIdRef as any).current = track.audioTrackId;
+                                      if (
+                                        laneImportTrackIdRef &&
+                                        laneImportTrackIdRef.current !==
+                                          undefined
+                                      ) {
+                                        (laneImportTrackIdRef as any).current =
+                                          track.audioTrackId;
                                       }
-                                      if (laneImportStartTicksRef && laneImportStartTicksRef.current !== undefined) {
-                                        (laneImportStartTicksRef as any).current = snapped;
+                                      if (
+                                        laneImportStartTicksRef &&
+                                        laneImportStartTicksRef.current !==
+                                          undefined
+                                      ) {
+                                        (
+                                          laneImportStartTicksRef as any
+                                        ).current = snapped;
                                       }
                                       laneAudioFileRef?.current?.click();
                                       return;
                                     }
-                                    if (toolUsesMarqueeGesture(tool, e.pointerType)) {
+                                    if (
+                                      toolUsesMarqueeGesture(
+                                        tool,
+                                        e.pointerType,
+                                      )
+                                    ) {
                                       beginMarquee(e);
                                     } else if (
                                       isTouchPointerType(e.pointerType) &&
@@ -510,7 +548,9 @@ export function TimelineLanesView({
                     data-track={track.id}
                     onContextMenu={(e) => {
                       if (
-                        (e.target as HTMLElement).closest("button[data-clip-id]")
+                        (e.target as HTMLElement).closest(
+                          "button[data-clip-id]",
+                        )
                       ) {
                         return;
                       }
@@ -568,7 +608,10 @@ export function TimelineLanesView({
                             setAudioLaneDropId(null);
                             const file = e.dataTransfer.files?.[0];
                             if (file && track.audioTrackId) {
-                              void onUploadAudioToTrack(track.audioTrackId, file);
+                              void onUploadAudioToTrack(
+                                track.audioTrackId,
+                                file,
+                              );
                             }
                           }
                         : undefined

@@ -1,4 +1,9 @@
-import { useCallback, type RefObject, type Dispatch, type SetStateAction } from "react";
+import {
+  useCallback,
+  type RefObject,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { flushSync } from "react-dom";
 import type { Project } from "@stagesync/shared";
 import {
@@ -34,10 +39,7 @@ import {
   deleteAkordyClip,
   pencilAkordyClick,
 } from "@lib/timeline-edit/akordyEdit.js";
-import {
-  deleteCueClip,
-  pencilCueClick,
-} from "@lib/timeline-edit/cueEdit.js";
+import { deleteCueClip, pencilCueClick } from "@lib/timeline-edit/cueEdit.js";
 import { splitContentClipAt } from "@lib/timeline-edit/contentLaneEdit.js";
 import {
   setAudioClipMuted,
@@ -98,319 +100,327 @@ export function useTimelineContextMenus({
   laneAudioFileRef,
   locatorTicks,
 }: UseTimelineContextMenusOptions) {
-  const openClipContextMenu = useCallback((args: {
-    clientX: number;
-    clientY: number;
-    lane: ClipMenuLane;
-    clipId: string;
-    clipMuted?: boolean;
-    canSplit: boolean;
-    canDelete?: boolean;
-    selectionLane: ClipSelectionLane;
-  }) => {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    const {
-      clientX,
-      clientY,
-      lane,
-      clipId,
-      clipMuted,
-      canSplit,
-      canDelete = true,
-    } = args;
-    clearMapSelection();
-    const prev = clipSelectionRef.current ?? { items: [], primaryId: null };
-    const alreadySelected = isClipSelected(prev, clipId, args.selectionLane);
-    const onLaneIds = alreadySelected
-      ? idsOnLane(prev, args.selectionLane)
-      : [];
-    const multiIds = onLaneIds.length > 1 ? onLaneIds : null;
-    const selectionCount = multiIds?.length ?? 1;
-    flushSync(() => {
-      if (multiIds) {
-        setClipSelection(setSelection(prev.items, clipId));
-        setSelectedSubsectionIdx(null);
-        setSelectedAnchorId(null);
-        setSongMetaOpen(false);
-        setInspectorVisible(true);
-      } else {
-        selectLaneClip(args.selectionLane, clipId);
+  const openClipContextMenu = useCallback(
+    (args: {
+      clientX: number;
+      clientY: number;
+      lane: ClipMenuLane;
+      clipId: string;
+      clipMuted?: boolean;
+      canSplit: boolean;
+      canDelete?: boolean;
+      selectionLane: ClipSelectionLane;
+    }) => {
+      if (isMobilePreview) {
+        setTouchAlertOpen(true);
+        return;
       }
-    });
-    const board = clipboardRef.current;
-    const canPaste = Boolean(board);
-    const splitTicks = rawTicksAtClientX(clientX);
-
-    const copyThisClip = (): boolean => {
-      const draft = draftRef.current;
-      if (!draft) return false;
-      let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
-      if (lane === "forma") {
-        const c = draft.forma.clips.find(
-          (x) => x.id === clipId && x.kind === "section",
-        );
-        if (c) clips = [c];
-      } else if (lane === "tekst") {
-        const c = draft.tekst?.clips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      } else if (lane === "akordy") {
-        const c = draft.akordy?.clips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      } else if (lane === "cue") {
-        const c = draft.cue?.clips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      } else if (lane === "audio") {
-        const c = draft.audioClips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      }
-      const nextBoard = buildClipboardFromClips(args.selectionLane, clips);
-      if (!nextBoard) return false;
-      clipboardRef.current = nextBoard;
-      return true;
-    };
-
-    const deleteThisClip = () => {
-      const draft = draftRef.current;
-      if (!draft || !canDelete) return;
-      if (lane === "forma") {
-        const next = deleteFormaClip(draft, clipId);
-        if (next !== draft) commitDraft(next);
-      } else if (lane === "tekst") {
-        commitDraft(deleteTekstClip(draft, clipId));
-      } else if (lane === "akordy") {
-        commitDraft(deleteAkordyClip(draft, clipId));
-      } else if (lane === "cue") {
-        commitDraft(deleteCueClip(draft, clipId));
-      } else if (lane === "audio") {
-        const next = deleteClipsOnLane(draft, args.selectionLane, [clipId]);
-        if (next !== draft) commitDraft(next);
-      }
-      setClipSelection(clearSelection());
-    };
-
-    openContextMenu({
-      x: clientX,
-      y: clientY,
-      label: clipContextMenuLabel(selectionCount),
-      items: buildClipContextMenuItems({
+      const {
+        clientX,
+        clientY,
         lane,
-        canPaste,
-        canSplit: canSplit && splitTicks != null && !multiIds,
+        clipId,
         clipMuted,
-        onCopy: () => {
-          if (multiIds) {
-            copyClipSelection();
-            return;
-          }
-          copyThisClip();
-        },
-        onCut: () => {
-          if (multiIds) {
-            if (!copyClipSelection()) return;
-            deleteSelectedFormaClip();
-            return;
-          }
-          if (!canDelete) return;
-          if (!copyThisClip()) return;
-          deleteThisClip();
-        },
-        onPaste: () => {
-          pasteClipClipboard(locatorTicks);
-        },
-        onDuplicate: () => {
-          if (multiIds) {
-            duplicateClipSelection();
-            return;
-          }
-          if (!copyThisClip()) return;
-          const draft = draftRef.current;
-          if (!draft) return;
-          let end = 0;
-          if (lane === "forma") {
-            const c = draft.forma.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "tekst") {
-            const c = draft.tekst?.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "akordy") {
-            const c = draft.akordy?.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "cue") {
-            const c = draft.cue?.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "audio") {
-            const c = draft.audioClips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          }
-          pasteClipClipboard(end);
-        },
-        onDelete: () => {
-          if (multiIds) {
-            deleteSelectedFormaClip();
-            return;
-          }
-          deleteThisClip();
-        },
-        onMuteToggle:
-          lane === "audio"
-            ? () => {
-                const draft = draftRef.current;
-                if (!draft) return;
-                const clip = draft.audioClips.find((c) => c.id === clipId);
-                if (!clip) return;
-                commitDraft(setAudioClipMuted(draft, clipId, !clip.muted));
-              }
-            : undefined,
-        onFocusInspector: () => focusInspectorPanel(),
-        onSplit:
-          canSplit && splitTicks != null && !multiIds
-            ? () => {
-                const draft = draftRef.current;
-                if (!draft) return;
-                if (lane === "forma") {
-                  const next = splitFormaClipAt(draft, clipId, splitTicks);
-                  if (next !== draft) commitDraft(next);
-                  return;
-                }
-                if (lane === "tekst" || lane === "akordy" || lane === "cue") {
-                  const next = splitContentClipAt(
-                    draft,
-                    lane,
-                    clipId,
-                    splitTicks,
-                  );
-                  if (next !== draft) commitDraft(next);
-                  return;
-                }
-                if (lane === "audio") {
-                  const next = splitAudioClipAt(draft, clipId, splitTicks);
-                  if (next !== draft) commitDraft(next);
-                }
-              }
-            : undefined,
-      }).map((item) => {
-        if (!("id" in item)) return item;
-        if (
-          !canDelete &&
-          (item.id === "cut" || item.id === "delete" || item.id === "duplicate")
-        ) {
-          return { ...item, disabled: true };
+        canSplit,
+        canDelete = true,
+      } = args;
+      clearMapSelection();
+      const prev = clipSelectionRef.current ?? { items: [], primaryId: null };
+      const alreadySelected = isClipSelected(prev, clipId, args.selectionLane);
+      const onLaneIds = alreadySelected
+        ? idsOnLane(prev, args.selectionLane)
+        : [];
+      const multiIds = onLaneIds.length > 1 ? onLaneIds : null;
+      const selectionCount = multiIds?.length ?? 1;
+      flushSync(() => {
+        if (multiIds) {
+          setClipSelection(setSelection(prev.items, clipId));
+          setSelectedSubsectionIdx(null);
+          setSelectedAnchorId(null);
+          setSongMetaOpen(false);
+          setInspectorVisible(true);
+        } else {
+          selectLaneClip(args.selectionLane, clipId);
         }
-        return item;
-      }),
-    });
-  }, [
-    isMobilePreview,
-    setTouchAlertOpen,
-    clearMapSelection,
-    clipSelectionRef,
-    rawTicksAtClientX,
-    clipboardRef,
-    setClipSelection,
-    setSelectedSubsectionIdx,
-    setSelectedAnchorId,
-    setSongMetaOpen,
-    setInspectorVisible,
-    selectLaneClip,
-    draftRef,
-    commitDraft,
-    openContextMenu,
-    copyClipSelection,
-    deleteSelectedFormaClip,
-    pasteClipClipboard,
-    duplicateClipSelection,
-    focusInspectorPanel,
-    locatorTicks,
-  ]);
+      });
+      const board = clipboardRef.current;
+      const canPaste = Boolean(board);
+      const splitTicks = rawTicksAtClientX(clientX);
 
-  const openEmptyLaneContextMenu = useCallback((args: {
-    clientX: number;
-    clientY: number;
-    laneKind: EmptyLaneMenuKind;
-    audioTrackId?: string;
-  }) => {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    const { clientX, clientY, laneKind, audioTrackId } = args;
-    const ticks = rawTicksAtClientX(clientX);
-    if (ticks == null) return;
-    const board = clipboardRef.current;
-    const canPaste = clipboardMatchesEmptyLane(board?.lane, laneKind);
-    openContextMenu({
-      x: clientX,
-      y: clientY,
-      label: "Menu ścieżki",
-      items: buildEmptyLaneContextMenuItems({
-        lane: laneKind,
-        canPaste,
-        onPaste: () => {
-          pasteClipClipboard(ticks);
-        },
-        onImportAudio:
-          laneKind === "audio" && audioTrackId
-            ? () => {
-                if (laneImportTrackIdRef.current !== undefined) {
-                  (laneImportTrackIdRef as any).current = audioTrackId;
-                }
-                if (laneImportStartTicksRef.current !== undefined) {
-                  (laneImportStartTicksRef as any).current = null;
-                }
-                laneAudioFileRef.current?.click();
-              }
-            : undefined,
-        onAddClip:
-          laneKind === "forma"
-            ? () => {
-                const draft = draftRef.current;
-                if (!draft) return;
-                const n =
-                  draft.forma.clips.filter((c) => c.kind === "section").length +
-                  1;
-                const next = pencilFormaClick(draft, ticks, `Sekcja ${n}`);
-                if (next !== draft) commitDraft(next);
-              }
-            : laneKind === "tekst"
+      const copyThisClip = (): boolean => {
+        const draft = draftRef.current;
+        if (!draft) return false;
+        let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
+        if (lane === "forma") {
+          const c = draft.forma.clips.find(
+            (x) => x.id === clipId && x.kind === "section",
+          );
+          if (c) clips = [c];
+        } else if (lane === "tekst") {
+          const c = draft.tekst?.clips.find((x) => x.id === clipId);
+          if (c) clips = [c];
+        } else if (lane === "akordy") {
+          const c = draft.akordy?.clips.find((x) => x.id === clipId);
+          if (c) clips = [c];
+        } else if (lane === "cue") {
+          const c = draft.cue?.clips.find((x) => x.id === clipId);
+          if (c) clips = [c];
+        } else if (lane === "audio") {
+          const c = draft.audioClips.find((x) => x.id === clipId);
+          if (c) clips = [c];
+        }
+        const nextBoard = buildClipboardFromClips(args.selectionLane, clips);
+        if (!nextBoard) return false;
+        clipboardRef.current = nextBoard;
+        return true;
+      };
+
+      const deleteThisClip = () => {
+        const draft = draftRef.current;
+        if (!draft || !canDelete) return;
+        if (lane === "forma") {
+          const next = deleteFormaClip(draft, clipId);
+          if (next !== draft) commitDraft(next);
+        } else if (lane === "tekst") {
+          commitDraft(deleteTekstClip(draft, clipId));
+        } else if (lane === "akordy") {
+          commitDraft(deleteAkordyClip(draft, clipId));
+        } else if (lane === "cue") {
+          commitDraft(deleteCueClip(draft, clipId));
+        } else if (lane === "audio") {
+          const next = deleteClipsOnLane(draft, args.selectionLane, [clipId]);
+          if (next !== draft) commitDraft(next);
+        }
+        setClipSelection(clearSelection());
+      };
+
+      openContextMenu({
+        x: clientX,
+        y: clientY,
+        label: clipContextMenuLabel(selectionCount),
+        items: buildClipContextMenuItems({
+          lane,
+          canPaste,
+          canSplit: canSplit && splitTicks != null && !multiIds,
+          clipMuted,
+          onCopy: () => {
+            if (multiIds) {
+              copyClipSelection();
+              return;
+            }
+            copyThisClip();
+          },
+          onCut: () => {
+            if (multiIds) {
+              if (!copyClipSelection()) return;
+              deleteSelectedFormaClip();
+              return;
+            }
+            if (!canDelete) return;
+            if (!copyThisClip()) return;
+            deleteThisClip();
+          },
+          onPaste: () => {
+            pasteClipClipboard(locatorTicks);
+          },
+          onDuplicate: () => {
+            if (multiIds) {
+              duplicateClipSelection();
+              return;
+            }
+            if (!copyThisClip()) return;
+            const draft = draftRef.current;
+            if (!draft) return;
+            let end = 0;
+            if (lane === "forma") {
+              const c = draft.forma.clips.find((x) => x.id === clipId);
+              if (c) end = c.startTicks + c.lengthTicks;
+            } else if (lane === "tekst") {
+              const c = draft.tekst?.clips.find((x) => x.id === clipId);
+              if (c) end = c.startTicks + c.lengthTicks;
+            } else if (lane === "akordy") {
+              const c = draft.akordy?.clips.find((x) => x.id === clipId);
+              if (c) end = c.startTicks + c.lengthTicks;
+            } else if (lane === "cue") {
+              const c = draft.cue?.clips.find((x) => x.id === clipId);
+              if (c) end = c.startTicks + c.lengthTicks;
+            } else if (lane === "audio") {
+              const c = draft.audioClips.find((x) => x.id === clipId);
+              if (c) end = c.startTicks + c.lengthTicks;
+            }
+            pasteClipClipboard(end);
+          },
+          onDelete: () => {
+            if (multiIds) {
+              deleteSelectedFormaClip();
+              return;
+            }
+            deleteThisClip();
+          },
+          onMuteToggle:
+            lane === "audio"
               ? () => {
                   const draft = draftRef.current;
                   if (!draft) return;
-                  const next = pencilTekstClick(draft, ticks, "…");
+                  const clip = draft.audioClips.find((c) => c.id === clipId);
+                  if (!clip) return;
+                  commitDraft(setAudioClipMuted(draft, clipId, !clip.muted));
+                }
+              : undefined,
+          onFocusInspector: () => focusInspectorPanel(),
+          onSplit:
+            canSplit && splitTicks != null && !multiIds
+              ? () => {
+                  const draft = draftRef.current;
+                  if (!draft) return;
+                  if (lane === "forma") {
+                    const next = splitFormaClipAt(draft, clipId, splitTicks);
+                    if (next !== draft) commitDraft(next);
+                    return;
+                  }
+                  if (lane === "tekst" || lane === "akordy" || lane === "cue") {
+                    const next = splitContentClipAt(
+                      draft,
+                      lane,
+                      clipId,
+                      splitTicks,
+                    );
+                    if (next !== draft) commitDraft(next);
+                    return;
+                  }
+                  if (lane === "audio") {
+                    const next = splitAudioClipAt(draft, clipId, splitTicks);
+                    if (next !== draft) commitDraft(next);
+                  }
+                }
+              : undefined,
+        }).map((item) => {
+          if (!("id" in item)) return item;
+          if (
+            !canDelete &&
+            (item.id === "cut" ||
+              item.id === "delete" ||
+              item.id === "duplicate")
+          ) {
+            return { ...item, disabled: true };
+          }
+          return item;
+        }),
+      });
+    },
+    [
+      isMobilePreview,
+      setTouchAlertOpen,
+      clearMapSelection,
+      clipSelectionRef,
+      rawTicksAtClientX,
+      clipboardRef,
+      setClipSelection,
+      setSelectedSubsectionIdx,
+      setSelectedAnchorId,
+      setSongMetaOpen,
+      setInspectorVisible,
+      selectLaneClip,
+      draftRef,
+      commitDraft,
+      openContextMenu,
+      copyClipSelection,
+      deleteSelectedFormaClip,
+      pasteClipClipboard,
+      duplicateClipSelection,
+      focusInspectorPanel,
+      locatorTicks,
+    ],
+  );
+
+  const openEmptyLaneContextMenu = useCallback(
+    (args: {
+      clientX: number;
+      clientY: number;
+      laneKind: EmptyLaneMenuKind;
+      audioTrackId?: string;
+    }) => {
+      if (isMobilePreview) {
+        setTouchAlertOpen(true);
+        return;
+      }
+      const { clientX, clientY, laneKind, audioTrackId } = args;
+      const ticks = rawTicksAtClientX(clientX);
+      if (ticks == null) return;
+      const board = clipboardRef.current;
+      const canPaste = clipboardMatchesEmptyLane(board?.lane, laneKind);
+      openContextMenu({
+        x: clientX,
+        y: clientY,
+        label: "Menu ścieżki",
+        items: buildEmptyLaneContextMenuItems({
+          lane: laneKind,
+          canPaste,
+          onPaste: () => {
+            pasteClipClipboard(ticks);
+          },
+          onImportAudio:
+            laneKind === "audio" && audioTrackId
+              ? () => {
+                  if (laneImportTrackIdRef.current !== undefined) {
+                    (laneImportTrackIdRef as any).current = audioTrackId;
+                  }
+                  if (laneImportStartTicksRef.current !== undefined) {
+                    (laneImportStartTicksRef as any).current = null;
+                  }
+                  laneAudioFileRef.current?.click();
+                }
+              : undefined,
+          onAddClip:
+            laneKind === "forma"
+              ? () => {
+                  const draft = draftRef.current;
+                  if (!draft) return;
+                  const n =
+                    draft.forma.clips.filter((c) => c.kind === "section")
+                      .length + 1;
+                  const next = pencilFormaClick(draft, ticks, `Sekcja ${n}`);
                   if (next !== draft) commitDraft(next);
                 }
-              : laneKind === "akordy"
+              : laneKind === "tekst"
                 ? () => {
                     const draft = draftRef.current;
                     if (!draft) return;
-                    const next = pencilAkordyClick(draft, ticks, "C");
+                    const next = pencilTekstClick(draft, ticks, "…");
                     if (next !== draft) commitDraft(next);
                   }
-                : laneKind === "cue"
+                : laneKind === "akordy"
                   ? () => {
                       const draft = draftRef.current;
                       if (!draft) return;
-                      const next = pencilCueClick(draft, ticks, "Cue");
+                      const next = pencilAkordyClick(draft, ticks, "C");
                       if (next !== draft) commitDraft(next);
                     }
-                  : undefined,
-      }),
-    });
-  }, [
-    isMobilePreview,
-    setTouchAlertOpen,
-    rawTicksAtClientX,
-    clipboardRef,
-    openContextMenu,
-    pasteClipClipboard,
-    laneImportTrackIdRef,
-    laneImportStartTicksRef,
-    laneAudioFileRef,
-    draftRef,
-    commitDraft,
-  ]);
+                  : laneKind === "cue"
+                    ? () => {
+                        const draft = draftRef.current;
+                        if (!draft) return;
+                        const next = pencilCueClick(draft, ticks, "Cue");
+                        if (next !== draft) commitDraft(next);
+                      }
+                    : undefined,
+        }),
+      });
+    },
+    [
+      isMobilePreview,
+      setTouchAlertOpen,
+      rawTicksAtClientX,
+      clipboardRef,
+      openContextMenu,
+      pasteClipClipboard,
+      laneImportTrackIdRef,
+      laneImportStartTicksRef,
+      laneAudioFileRef,
+      draftRef,
+      commitDraft,
+    ],
+  );
 
   return {
     openClipContextMenu,

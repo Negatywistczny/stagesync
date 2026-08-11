@@ -1,9 +1,6 @@
 import React, { type RefObject } from "react";
 import { createPortal } from "react-dom";
-import {
-  IconChecked,
-  IconUnchecked,
-} from "../../components/icons.js";
+import { IconChecked, IconUnchecked } from "../../components/icons.js";
 import {
   isTrackVisible,
   TRACKS,
@@ -16,10 +13,7 @@ import {
   saveToolbarVisibleTools,
   type ToolbarToolId,
 } from "@lib/timeline/timelineToolbarTools.js";
-import {
-  TOOLS,
-  type ToolId,
-} from "../timelineToolsData.js";
+import { TOOLS, type ToolId } from "../timelineToolsData.js";
 import type { WandMode } from "@stagesync/shared";
 import styles from "../TimelineShell.module.css";
 

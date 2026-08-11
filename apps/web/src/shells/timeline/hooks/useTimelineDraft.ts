@@ -47,43 +47,51 @@ export function useTimelineDraft({
   const draftRef = useRef<Project | null>(null);
   draftRef.current = draftProject;
 
-  const reloadProject = useCallback(
-    async (id: string) => {
-      setLoading(true);
-      setLoadError(null);
-      try {
-        const project = await fetchProject(id);
-        if (onProjectLoaded) {
-          await onProjectLoaded(project);
-        }
-        setSavedProject(project);
-        setDraftProject(project);
-        setDraftHistory(createDraftHistory(project));
-        onEnsureAudioTracks?.(project.audioTracks ?? []);
-      } catch (err) {
-        setLoadError(
-          err instanceof Error ? err.message : "Nie udało się wczytać",
-        );
-        setSavedProject(null);
-        setDraftProject(null);
-        setDraftHistory(null);
-      } finally {
-        setLoading(false);
+  const callbacksRef = useRef({
+    onEnsureAudioTracks,
+    onProjectLoaded,
+    onRestoreClipSelection,
+  });
+  callbacksRef.current = {
+    onEnsureAudioTracks,
+    onProjectLoaded,
+    onRestoreClipSelection,
+  };
+
+  const reloadProject = useCallback(async (id: string) => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const project = await fetchProject(id);
+      if (callbacksRef.current.onProjectLoaded) {
+        await callbacksRef.current.onProjectLoaded(project);
       }
-    },
-    [onEnsureAudioTracks, onProjectLoaded],
-  );
+      setSavedProject(project);
+      setDraftProject(project);
+      setDraftHistory(createDraftHistory(project));
+      callbacksRef.current.onEnsureAudioTracks?.(project.audioTracks ?? []);
+    } catch (err) {
+      setLoadError(
+        err instanceof Error ? err.message : "Nie udało się wczytać",
+      );
+      setSavedProject(null);
+      setDraftProject(null);
+      setDraftHistory(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const commitDraft = useCallback(
     (next: Project) => {
       const sel = clipSelectionRef.current;
       setDraftProject(next);
-      onEnsureAudioTracks?.(next.audioTracks ?? []);
+      callbacksRef.current.onEnsureAudioTracks?.(next.audioTracks ?? []);
       setDraftHistory((h) =>
         h ? pushDraftHistory(h, next, sel) : createDraftHistory(next, sel),
       );
     },
-    [clipSelectionRef, onEnsureAudioTracks],
+    [clipSelectionRef],
   );
 
   const onSave = useCallback(async () => {
@@ -110,20 +118,20 @@ export function useTimelineDraft({
       if (!h || !canUndo(h)) return h;
       const next = undoDraft(h);
       setDraftProject(next.present.project);
-      onRestoreClipSelection?.(next.present.clipSelection);
+      callbacksRef.current.onRestoreClipSelection?.(next.present.clipSelection);
       return next;
     });
-  }, [onRestoreClipSelection]);
+  }, []);
 
   const onRedo = useCallback(() => {
     setDraftHistory((h) => {
       if (!h || !canRedo(h)) return h;
       const next = redoDraft(h);
       setDraftProject(next.present.project);
-      onRestoreClipSelection?.(next.present.clipSelection);
+      callbacksRef.current.onRestoreClipSelection?.(next.present.clipSelection);
       return next;
     });
-  }, [onRestoreClipSelection]);
+  }, []);
 
   const dirty =
     savedProject !== null &&

@@ -54,7 +54,11 @@ export type UseTimelinePlaybackParams = {
   clipSelection: ClipSelection;
   state: TransportState;
   seek: (ticks: number) => Promise<void>;
-  play: (body?: { bpm?: number; timeSignature?: MeterType; projectId?: string }) => Promise<void>;
+  play: (body?: {
+    bpm?: number;
+    timeSignature?: MeterType;
+    projectId?: string;
+  }) => Promise<void>;
   pause: () => Promise<void>;
   stop: () => Promise<void>;
   soloAudioTrackIds: string[];
@@ -359,7 +363,9 @@ export function useTimelinePlayback({
     requestAnimationFrame(() => {
       scrollCanvasToStart(
         canvasScrollRef.current ??
-          (document.querySelector("[data-canvas-scroll]") as HTMLElement | null),
+          (document.querySelector(
+            "[data-canvas-scroll]",
+          ) as HTMLElement | null),
       );
     });
   }, [canvasScrollRef, draftRef, setLocatorTicks, stop]);

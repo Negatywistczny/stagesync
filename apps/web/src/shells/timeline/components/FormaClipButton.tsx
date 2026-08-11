@@ -90,26 +90,28 @@ export function FormaClipButton({
     >
       {ranges.length > 1 ? (
         <span className={styles.formaSubs}>
-          {ranges.map((sub: { index: number; startRel: number; lengthRel: number }) => (
-            <span
-              key={`band-${sub.index}`}
-              className={[
-                styles.formaSubBand,
-                sub.index % 2 === 1 ? styles.formaSubBandAlt : "",
-                selected && selectedSubsectionIdx === sub.index
-                  ? styles.formaSubBandSelected
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              data-sub-idx={sub.index}
-              style={{
-                left: `${(sub.startRel / clip.lengthTicks) * 100}%`,
-                width: `${(sub.lengthRel / clip.lengthTicks) * 100}%`,
-              }}
-              title={`Podsekcja ${sub.index + 1}`}
-            />
-          ))}
+          {ranges.map(
+            (sub: { index: number; startRel: number; lengthRel: number }) => (
+              <span
+                key={`band-${sub.index}`}
+                className={[
+                  styles.formaSubBand,
+                  sub.index % 2 === 1 ? styles.formaSubBandAlt : "",
+                  selected && selectedSubsectionIdx === sub.index
+                    ? styles.formaSubBandSelected
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                data-sub-idx={sub.index}
+                style={{
+                  left: `${(sub.startRel / clip.lengthTicks) * 100}%`,
+                  width: `${(sub.lengthRel / clip.lengthTicks) * 100}%`,
+                }}
+                title={`Podsekcja ${sub.index + 1}`}
+              />
+            ),
+          )}
           {ranges.slice(1).map((sub: { index: number; startRel: number }) => (
             <span
               key={`bound-${sub.index}`}

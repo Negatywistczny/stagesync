@@ -84,10 +84,7 @@ export function TimelineRulerView({
         >
           {loopRange ? (
             <div
-              className={[
-                styles.loopRegion,
-                loopOn ? "" : styles.loopRegionOff,
-              ]
+              className={[styles.loopRegion, loopOn ? "" : styles.loopRegionOff]
                 .filter(Boolean)
                 .join(" ")}
               style={{
