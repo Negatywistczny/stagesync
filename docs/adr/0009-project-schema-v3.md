@@ -31,7 +31,7 @@ dodają m.in. lane’y treści / `keyMap` / metadata — bez unieważniania decy
 izolacji `assets/` i `setlist.json`.
 
 **Kanon runtime dziś:** `ProjectSchema = ProjectSchemaV5` (`formatVersion: 5`)
-w [`packages/shared/src/schema.ts`](../../packages/shared/src/schema.ts). Odczyt starszych v2/v3/v4 = upgrade path w
+w [`packages/shared/src/schema.ts`](../../packages/shared/src/project/schema.ts). Odczyt starszych v2/v3/v4 = upgrade path w
 storage — nie osobny „powrót do v3” w UI.
 
 Historia decyzji schema / parytetu: [CHANGELOG.md](../../CHANGELOG.md) · [ADR 0011](./0011-ui-parity-behavior.md).

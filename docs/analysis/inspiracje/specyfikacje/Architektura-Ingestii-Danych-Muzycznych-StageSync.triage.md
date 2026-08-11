@@ -5,7 +5,7 @@
 **Obszar:** Import offline — UltraStar · ChordPro/UG · MusicXML/MIDI jako siatka · mapowanie do Timeline (Forma / Tekst / Akordy / Cue / melodia)  
 **Data triage:** 2026-07-31  
 **Kąt:** spec wprowadzenia feature **5.2+ / później** — nie SSOT; nie claim Done  
-**Companion:** [Analiza-Importu-ChordProUG.triage.md](../testy-pokrycie/Analiza-Importu-ChordProUG.triage.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md) · `packages/shared` [`ug-import.ts`](../../../../packages/shared/src/ug-import.ts) / [`schema.ts`](../../../../packages/shared/src/schema.ts)
+**Companion:** [Analiza-Importu-ChordProUG.triage.md](../testy-pokrycie/Analiza-Importu-ChordProUG.triage.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md) · `packages/shared` [`ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts) / [`schema.ts`](../../../../packages/shared/src/project/schema.ts)
 
 ## Werdykt przydatności
 
@@ -13,7 +13,7 @@
 
 **Hard conflict z SSOT repo:** kanoniczna pozycja w StageSync to **integer ticks + PPQ** (ADR 0002), nie `startTimeMs` / `durationMs` w storage. Proponowany `StageSyncSongAST` to **osobny IR** — wolno go trzymać tylko jako wynik parserów na krawędzi, potem mapować do `Project` (`forma` / `tekst` / `akordy` / `cue` / ewentualnie nowa ścieżka melodii). Nie wdrażać AST z ms jako drugiego SSOT czasu.
 
-**Już częściowo on-tree:** ChordPro-lite / Plain CRD → Forma + Tekst + Akordy (`importUgText`, UG fetch). UltraStar lexer → ticks + melody. **Text-Anchor Bridging (US+UG)** — [`text-anchor-bridge.ts`](../../../../packages/shared/src/text-anchor-bridge.ts) + wizard Import US+UG. **Brak w produkcie:** MusicXML/MIDI jako autorytet siatki taktowej; flagi `isAutoPlaced` / `isUserOverridden` w schemacie.
+**Już częściowo on-tree:** ChordPro-lite / Plain CRD → Forma + Tekst + Akordy (`importUgText`, UG fetch). UltraStar lexer → ticks + melody. **Text-Anchor Bridging (US+UG)** — [`text-anchor-bridge.ts`](../../../../packages/shared/src/text-anchor-bridge/text-anchor-bridge.ts) + wizard Import US+UG. **Brak w produkcie:** MusicXML/MIDI jako autorytet siatki taktowej; flagi `isAutoPlaced` / `isUserOverridden` w schemacie.
 
 ## Macierz hipotez
 

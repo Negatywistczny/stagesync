@@ -58,7 +58,7 @@ pnpm dev:hub
 - `[t/N]` — domyślnie **Nie** (Enter = odmawia); operacje destrukcyjne (np. cut release).
 - W Dev Hub (clack): etykiety **Tak** / **Nie**; domyślna opcja = `initialValue`.
 
-## 🎛️ Centrum Dowodzenia — Dev Hub ([`scripts/dev-hub.ts`](../../scripts/dev-hub.ts))
+## 🎛️ Centrum Dowodzenia — Dev Hub ([`scripts/hub/dev-hub.ts`](../../scripts/hub/dev-hub.ts))
 
 Dev Hub to interaktywne TUI, które zarządza wszystkimi aspektami projektu. Logika huba jest podzielona na czytelne submoduły w katalogu [`scripts/hub/`](../../scripts/hub/) (`doctor.ts`, `network.ts`, `gate.ts`, `utils.ts`).
 

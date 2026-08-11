@@ -160,10 +160,7 @@ export function isNoiseFailureLine(line: string): boolean {
  * Best one-line failure hint for gate summaries and verify logs.
  * Prefers turbo package target and vitest FAIL over generic Error: lines.
  */
-export function failureHint(
-  output: string,
-  maxLen = 96,
-): string | undefined {
+export function failureHint(output: string, maxLen = 96): string | undefined {
   const plain = stripAnsi(output);
   const lines = plain
     .split(/\r?\n/)

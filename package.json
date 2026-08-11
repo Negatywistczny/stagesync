@@ -19,7 +19,7 @@
     "benchmark:record": "npx tsx apps/web/scripts/benchmark/record-benchmark.ts",
     "prepare": "node -e \"try{require('child_process').execSync('husky',{stdio:'inherit'})}catch{}\"",
     "generate:map": "node scripts/quality/generate-repo-map.mjs",
-    "dev:hub": "tsx --no-warnings scripts/dev-hub.ts",
+    "dev:hub": "tsx --no-warnings scripts/hub/dev-hub.ts",
     "clean:android": "cd apps/console/android && ./gradlew clean && cd ../../../apps/performer/android && ./gradlew clean",
     "clean": "pnpm run clean:android"
   },
@@ -32,6 +32,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "husky": "^9.1.7",
     "knip": "^6.32.1",
+    "picocolors": "^1.1.1",
     "prettier": "^3.9.6",
     "qrcode-terminal": "^0.12.0",
     "tsx": "^4.23.12",

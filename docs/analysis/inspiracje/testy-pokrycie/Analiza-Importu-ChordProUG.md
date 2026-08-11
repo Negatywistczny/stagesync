@@ -4,10 +4,10 @@
 
 message time: 2026-07-27 14:28:31
 
-Jesteś ekspertem od importu ChordPro/UG w StageSync. Przeanalizuj [`packages/shared/src/ug-import.ts`](../../../../packages/shared/src/ug-import.ts) — parsowanie tekstu → Forma + Tekst + Akordy (fail-soft, Zod na wyjściu).
+Jesteś ekspertem od importu ChordPro/UG w StageSync. Przeanalizuj [`packages/shared/src/ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts) — parsowanie tekstu → Forma + Tekst + Akordy (fail-soft, Zod na wyjściu).
 
 CEL ANALIZY
-[`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) jest bogaty; moduł ma >50 uncovered lines. Znajdź luki w parserze sekcji, onsets, `reflowUgImportSectionBars`, `applyUgImportToProject`.
+[`ug-import.test.ts`](../../../../packages/shared/src/import/ug/ug-import.test.ts) jest bogaty; moduł ma >50 uncovered lines. Znajdź luki w parserze sekcji, onsets, `reflowUgImportSectionBars`, `applyUgImportToProject`.
 
 PYTANIA BADAWCZE
 
@@ -58,15 +58,15 @@ Analiza UG Import StageSync
 
 # Systemowa Analiza Parseru UG/ChordPro oraz Audyt Pokrycia Testowego Modułu ug-import.ts w StageSync
 
-Moduł importu Ultimate Guitar (UG) oraz ChordPro-lite, umiejscowiony w ścieżce [`packages/shared/src/ug-import.ts`](../../../../packages/shared/src/ug-import.ts), stanowi kluczowy element architektoniczny warstwy dzielonej (_pure shared domain_) w systemie StageSync . Odpowiada on za bezwyjątkową (_fail-soft_) transformację surowego tekstu piosenki z akordami na deterministyczne struktury danych: sekcje Formy (`formaMusic`), linie wokalne (`tekst`) oraz klipy akordowe (`akordy`) . Proces ten opiera się na siatce czasowej wyznaczonej przez wskaźnik PPQ (_Pulses Per Quarter Note_, domyślnie 960) oraz metrum .
+Moduł importu Ultimate Guitar (UG) oraz ChordPro-lite, umiejscowiony w ścieżce [`packages/shared/src/ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts), stanowi kluczowy element architektoniczny warstwy dzielonej (_pure shared domain_) w systemie StageSync . Odpowiada on za bezwyjątkową (_fail-soft_) transformację surowego tekstu piosenki z akordami na deterministyczne struktury danych: sekcje Formy (`formaMusic`), linie wokalne (`tekst`) oraz klipy akordowe (`akordy`) . Proces ten opiera się na siatce czasowej wyznaczonej przez wskaźnik PPQ (_Pulses Per Quarter Note_, domyślnie 960) oraz metrum .
 
-Mimo że istniejąca suita testowa [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) weryfikuje podstawowe przypadki użycia, szczegółowa analiza wykazuje ponad 50 niepokrytych linii kodu . Luki te dotyczą krawędziowych ścieżek parsowania tokenów akordowych, nietypowych nagłówków sekcji, matematyki czasowej przy parametrze `barsPerLine > 1`, przeliczania metrum podczas operacji `reflowUgImportSectionBars`, a także integracji wyniku importu z dokumentem projektu i modułem Różdżki (`shared-wand.ts`) .
+Mimo że istniejąca suita testowa [`ug-import.test.ts`](../../../../packages/shared/src/import/ug/ug-import.test.ts) weryfikuje podstawowe przypadki użycia, szczegółowa analiza wykazuje ponad 50 niepokrytych linii kodu . Luki te dotyczą krawędziowych ścieżek parsowania tokenów akordowych, nietypowych nagłówków sekcji, matematyki czasowej przy parametrze `barsPerLine > 1`, przeliczania metrum podczas operacji `reflowUgImportSectionBars`, a także integracji wyniku importu z dokumentem projektu i modułem Różdżki (`shared-wand.ts`) .
 
 ---
 
 ## Audyt Wyrażeń Regularnych i Parsera Tokenów (`CHORD_TOKEN`, `SECTION_BRACKET`)
 
-Infrastruktura rozpoznawania akordów oraz struktury utworów w [`ug-import.ts`](../../../../packages/shared/src/ug-import.ts) opiera się na dwóch głównych wyrażeniach regularnych: `CHORD_TOKEN` oraz `SECTION_BRACKET` . Choć zapewniają one wysoką elastyczność w przetwarzaniu tekstu, brak negatywnych testów jednostkowych stwarza ryzyko wprowadzania regresji .
+Infrastruktura rozpoznawania akordów oraz struktury utworów w [`ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts) opiera się na dwóch głównych wyrażeniach regularnych: `CHORD_TOKEN` oraz `SECTION_BRACKET` . Choć zapewniają one wysoką elastyczność w przetwarzaniu tekstu, brak negatywnych testów jednostkowych stwarza ryzyko wprowadzania regresji .
 
 ```typescript
 const CHORD_TOKEN =
@@ -105,7 +105,7 @@ Konfiguracja importu przekazywana w obiekcie `UgImportOptions` steruje rozmieszc
 
 Gdy parametr `barsPerLine` przybiera wartość większą od 1 (np. `barsPerLine = 2`), jedna linia tekstu zajmuje w projekcie 2 takty (7680 ticków przy PPQ 960 i metrum 4/4) . Klip tekstu (`TekstClip`) otrzymuje wówczas `lengthTicks = 7680` .
 
-Akordy przypisane do tej linii są rozmieszczane przez funkcję `chordOnsetsInBar` w granicach **pierwszego taktu** (`barTicks = 3840`) . Jednakże funkcja `clipsFromOnsets` wylicza długość ostatniego akordu w linii jako `spanEnd - startTicks`, gdzie `spanEnd = lineStart + lineTicks` . W efekcie ostatni akord danej linii rozciąga się przez cały drugi takt, aż do rozpoczęcia kolejnej linii wokalnej . Jest to zachowanie zgodne z historyczną specyfikacją systemu StageSync (_legacy parity_), ale nie posiada ono testu weryfikacyjnego w [`ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts) .
+Akordy przypisane do tej linii są rozmieszczane przez funkcję `chordOnsetsInBar` w granicach **pierwszego taktu** (`barTicks = 3840`) . Jednakże funkcja `clipsFromOnsets` wylicza długość ostatniego akordu w linii jako `spanEnd - startTicks`, gdzie `spanEnd = lineStart + lineTicks` . W efekcie ostatni akord danej linii rozciąga się przez cały drugi takt, aż do rozpoczęcia kolejnej linii wokalnej . Jest to zachowanie zgodne z historyczną specyfikacją systemu StageSync (_legacy parity_), ale nie posiada ono testu weryfikacyjnego w [`ug-import.test.ts`](../../../../packages/shared/src/import/ug/ug-import.test.ts) .
 
 ---
 
@@ -157,9 +157,9 @@ W zestawie testów brakuje weryfikacji, czy wywołanie `applyUgImportToProject` 
 
 ### Spójność Algorytmiczna z Modułem Różdżki (`shared-wand.ts`)
 
-Podczas parsowania tekstu w [`ug-import.ts`](../../../../packages/shared/src/ug-import.ts), każdy klip tekstu otrzymuje pole `sourceSection` (nazwa sekcji), a każdy klip akordowy pole `sourceLineId` (identyfikator linii tekstu) . Te metadane stanowią fundament działania algorytmu Różdżki (`placeContentFromForma`) w pliku `shared-wand.ts` .
+Podczas parsowania tekstu w [`ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts), każdy klip tekstu otrzymuje pole `sourceSection` (nazwa sekcji), a każdy klip akordowy pole `sourceLineId` (identyfikator linii tekstu) . Te metadane stanowią fundament działania algorytmu Różdżki (`placeContentFromForma`) w pliku `shared-wand.ts` .
 
-Gdy użytkownik uruchamia Różdżkę w celu ponownego dopasowania tekstu lub akordów do zmienionych długości sekcji Formy, moduł [`wand.ts`](../../../../packages/shared/src/wand.ts) wylicza nowe pozycje startowe klipów, a następnie wywołuje funkcję `sealAkordyLengths` zaimportowaną bezpośrednio z [`ug-import.ts`](../../../../packages/shared/src/ug-import.ts) . Zapewnia to jednolitą regułę domenną: klipy akordowe w całym systemie StageSync są przycinane do punktu startowego kolejnego akordu, co wyklucza nakładanie się elementów na torze .
+Gdy użytkownik uruchamia Różdżkę w celu ponownego dopasowania tekstu lub akordów do zmienionych długości sekcji Formy, moduł [`wand.ts`](../../../../packages/shared/src/ui-helpers/wand.ts) wylicza nowe pozycje startowe klipów, a następnie wywołuje funkcję `sealAkordyLengths` zaimportowaną bezpośrednio z [`ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts) . Zapewnia to jednolitą regułę domenną: klipy akordowe w całym systemie StageSync są przycinane do punktu startowego kolejnego akordu, co wyklucza nakładanie się elementów na torze .
 
 ---
 
@@ -200,7 +200,7 @@ Jedyny istniejący test walidacji schematu wymusza błąd poprzez przepełnienie
 
 ### Suita Uzupełniających Testów Jednostkowych
 
-Poniższy kod stanowi gotowy zestaw testów jednostkowych Vitest, przeznaczony do wdrożenia w pliku [`packages/shared/src/ug-import.test.ts`](../../../../packages/shared/src/ug-import.test.ts). Testy są w 100% czyste (_pureshared_), nie używają atrap (_mocks_), nie wykonują I/O i są w pełni deterministyczne .
+Poniższy kod stanowi gotowy zestaw testów jednostkowych Vitest, przeznaczony do wdrożenia w pliku [`packages/shared/src/ug-import.test.ts`](../../../../packages/shared/src/import/ug/ug-import.test.ts). Testy są w 100% czyste (_pureshared_), nie używają atrap (_mocks_), nie wykonują I/O i są w pełni deterministyczne .
 
 ```typescript
 import { describe, expect, it } from "vitest";

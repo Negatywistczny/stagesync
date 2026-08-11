@@ -57,19 +57,33 @@ export async function showLANInfo() {
     }
   }
 
-  clack.log.info(pc.bold(pc.cyan("🌐 Dedykowane URLe w sieci lokalnej (LAN):")));
-  console.log(`   ${pc.bold("Localhost Admin UI")}:    ${pc.underline(pc.cyan("http://localhost:3000/admin"))}`);
-  console.log(`   ${pc.bold("Localhost Client UI")}:   ${pc.underline(pc.cyan("http://localhost:3000/client"))}`);
-  console.log(`   ${pc.bold("Localhost Server API")}:  ${pc.underline(pc.cyan("http://localhost:4000/api/health"))}`);
+  clack.log.info(
+    pc.bold(pc.cyan("🌐 Dedykowane URLe w sieci lokalnej (LAN):")),
+  );
+  console.log(
+    `   ${pc.bold("Localhost Admin UI")}:    ${pc.underline(pc.cyan("http://localhost:3000/admin"))}`,
+  );
+  console.log(
+    `   ${pc.bold("Localhost Client UI")}:   ${pc.underline(pc.cyan("http://localhost:3000/client"))}`,
+  );
+  console.log(
+    `   ${pc.bold("Localhost Server API")}:  ${pc.underline(pc.cyan("http://localhost:4000/api/health"))}`,
+  );
   console.log();
-  console.log(`   ${pc.bold("LAN Client (Performer)")}: ${pc.underline(pc.cyan(`http://${selectedIP}:3000/client`))}`);
-  console.log(`   ${pc.bold("LAN Admin UI")}:           ${pc.underline(pc.cyan(`http://${selectedIP}:3000/admin`))}`);
+  console.log(
+    `   ${pc.bold("LAN Client (Performer)")}: ${pc.underline(pc.cyan(`http://${selectedIP}:3000/client`))}`,
+  );
+  console.log(
+    `   ${pc.bold("LAN Admin UI")}:           ${pc.underline(pc.cyan(`http://${selectedIP}:3000/admin`))}`,
+  );
   console.log(
     `   ${pc.bold("LAN Server API")}:         ${pc.underline(pc.cyan(`http://${selectedIP}:4000/api/health`))}`,
   );
 
   const clientURL = `http://${selectedIP}:3000/client`;
-  console.log(`\n${pc.green(pc.bold("📱 Kod QR dla tabletów / telefonów (Performer Client):"))}`);
+  console.log(
+    `\n${pc.green(pc.bold("📱 Kod QR dla tabletów / telefonów (Performer Client):"))}`,
+  );
   console.log(`   ${pc.underline(pc.cyan(clientURL))}\n`);
   qrcode.generate(clientURL, { small: true });
 }

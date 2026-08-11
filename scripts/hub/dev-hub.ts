@@ -10,7 +10,7 @@ import * as path from "node:path";
 import * as os from "node:os";
 import qrcode from "qrcode-terminal";
 
-const rootDir = path.resolve(__dirname, "..");
+const rootDir = path.resolve(__dirname, "../..");
 const require = createRequire(__filename);
 
 /** Last `clack.intro` title; cleared by `clearTerminalScreen` (submenus). */
@@ -462,7 +462,7 @@ function parseSyncVersionDetail(output: string, ok: boolean): string {
 }
 
 const GITHUB_OWNER = "Negatywistczny";
-const OWNER_TYPO = "Negatywistyczny";
+const OWNER_TYPO = "Negatywist" + "yczny";
 
 /** Fail if the known GitHub owner typo appears outside intentional script/test mentions. */
 function runOwnerTypoGate(): GateStep {
@@ -479,6 +479,7 @@ function runOwnerTypoGate(): GateStep {
       ":!scripts/release/cut-release.mjs",
       ":!scripts/release/cut-release.test.mjs",
       ":!scripts/dev-hub.ts",
+      ":!scripts/hub/**",
     ],
     { cwd: rootDir, encoding: "utf8" },
   );
@@ -936,7 +937,10 @@ const UNLINKED_STEP_LABEL = "unlinked";
 function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
   const autoFix = options.autoFix === true;
   const label = UNLINKED_STEP_LABEL;
-  clack.note(`Skan niepodlinkowanych odniesień ${pc.dim("(check-unlinked.mjs)")}…`, "Skan");
+  clack.note(
+    `Skan niepodlinkowanych odniesień ${pc.dim("(check-unlinked.mjs)")}…`,
+    "Skan",
+  );
   const first = scanUnlinkedCount();
   if (first.output) {
     process.stdout.write(
@@ -1323,9 +1327,13 @@ function previewReleaseNotes(pkgVer: string) {
   clack.log.info(
     `👁  Podgląd informacji o wydaniu dla wersji ${pc.bold(pc.cyan(`v${pkgVer}`))} ${pc.dim("(Preview Mode)")}:`,
   );
-  console.log(`\n${pc.dim("───")} ${pc.bold("TYTUŁ WYDANIA")} ${pc.dim("───")}`);
+  console.log(
+    `\n${pc.dim("───")} ${pc.bold("TYTUŁ WYDANIA")} ${pc.dim("───")}`,
+  );
   runCommand("node", ["scripts/release/release-title.mjs", pkgVer]);
-  console.log(`\n\n${pc.dim("───")} ${pc.bold("OPIS WYDANIA (RELEASE NOTES)")} ${pc.dim("───")}`);
+  console.log(
+    `\n\n${pc.dim("───")} ${pc.bold("OPIS WYDANIA (RELEASE NOTES)")} ${pc.dim("───")}`,
+  );
   runCommand("node", ["scripts/release/build-release-notes.mjs", pkgVer]);
 }
 
@@ -1374,19 +1382,33 @@ async function showLANInfo() {
     }
   }
 
-  clack.log.info(pc.bold(pc.cyan("🌐 Dedykowane URLe w sieci lokalnej (LAN):")));
-  console.log(`   ${pc.bold("Localhost Admin UI")}:    ${pc.underline(pc.cyan("http://localhost:3000/admin"))}`);
-  console.log(`   ${pc.bold("Localhost Client UI")}:   ${pc.underline(pc.cyan("http://localhost:3000/client"))}`);
-  console.log(`   ${pc.bold("Localhost Server API")}:  ${pc.underline(pc.cyan("http://localhost:4000/api/health"))}`);
+  clack.log.info(
+    pc.bold(pc.cyan("🌐 Dedykowane URLe w sieci lokalnej (LAN):")),
+  );
+  console.log(
+    `   ${pc.bold("Localhost Admin UI")}:    ${pc.underline(pc.cyan("http://localhost:3000/admin"))}`,
+  );
+  console.log(
+    `   ${pc.bold("Localhost Client UI")}:   ${pc.underline(pc.cyan("http://localhost:3000/client"))}`,
+  );
+  console.log(
+    `   ${pc.bold("Localhost Server API")}:  ${pc.underline(pc.cyan("http://localhost:4000/api/health"))}`,
+  );
   console.log();
-  console.log(`   ${pc.bold("LAN Client (Performer)")}: ${pc.underline(pc.cyan(`http://${selectedIP}:3000/client`))}`);
-  console.log(`   ${pc.bold("LAN Admin UI")}:           ${pc.underline(pc.cyan(`http://${selectedIP}:3000/admin`))}`);
+  console.log(
+    `   ${pc.bold("LAN Client (Performer)")}: ${pc.underline(pc.cyan(`http://${selectedIP}:3000/client`))}`,
+  );
+  console.log(
+    `   ${pc.bold("LAN Admin UI")}:           ${pc.underline(pc.cyan(`http://${selectedIP}:3000/admin`))}`,
+  );
   console.log(
     `   ${pc.bold("LAN Server API")}:         ${pc.underline(pc.cyan(`http://${selectedIP}:4000/api/health`))}`,
   );
 
   const clientURL = `http://${selectedIP}:3000/client`;
-  console.log(`\n${pc.green(pc.bold("📱 Kod QR dla tabletów / telefonów (Performer Client):"))}`);
+  console.log(
+    `\n${pc.green(pc.bold("📱 Kod QR dla tabletów / telefonów (Performer Client):"))}`,
+  );
   console.log(`   ${pc.underline(pc.cyan(clientURL))}\n`);
   qrcode.generate(clientURL, { small: true });
 }
@@ -1457,7 +1479,9 @@ function findListeningProcessesOnPort(port: number): ProcessInfo[] {
 function killProcessTree(p: ProcessInfo) {
   const isWin = os.platform() === "win32";
   try {
-    clack.log.message(`Zamykanie ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)} na ${pc.cyan(`:${p.port}`)}…`);
+    clack.log.message(
+      `Zamykanie ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)} na ${pc.cyan(`:${p.port}`)}…`,
+    );
     if (isWin) {
       execSync(
         `powershell -NoProfile -Command "Stop-Process -Id ${p.pid} -ErrorAction SilentlyContinue"`,
@@ -1491,16 +1515,22 @@ function freeDevPortsForE2e(ports: number[] = [3000, 4000]): void {
   }
   if (all.length === 0) return;
   clack.log.warn(
-    pc.yellow(`E2E: zwalniam zajęte porty ${ports.map((p) => pc.cyan(`:${p}`)).join(", ")} ${pc.dim("(może zabić lokalny pnpm dev / Vite / API)")}`),
+    pc.yellow(
+      `E2E: zwalniam zajęte porty ${ports.map((p) => pc.cyan(`:${p}`)).join(", ")} ${pc.dim("(może zabić lokalny pnpm dev / Vite / API)")}`,
+    ),
   );
   all.forEach((p) => {
-    clack.log.message(` • Port ${pc.cyan(`:${p.port}`)} — ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)}`);
+    clack.log.message(
+      ` • Port ${pc.cyan(`:${p.port}`)} — ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)}`,
+    );
   });
   for (const p of all) killProcessTree(p);
 }
 
 async function managePortsAndZombies() {
-  clack.log.info(pc.bold(pc.cyan("🔌 Bezpieczny Port Guard & Kill-Zombies...")));
+  clack.log.info(
+    pc.bold(pc.cyan("🔌 Bezpieczny Port Guard & Kill-Zombies...")),
+  );
 
   const procs3000 = findListeningProcessesOnPort(3000);
   const procs4000 = findListeningProcessesOnPort(4000);
@@ -1511,7 +1541,9 @@ async function managePortsAndZombies() {
   } else {
     clack.log.warn(pc.yellow(pc.bold("Wykryto procesy zajmujące porty:")));
     allProcs.forEach((p) => {
-      clack.log.message(` • Port ${pc.cyan(`:${p.port}`)} — ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)}`);
+      clack.log.message(
+        ` • Port ${pc.cyan(`:${p.port}`)} — ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)}`,
+      );
     });
 
     const confirmKill = await confirmPl("Czy chcesz zamknąć te procesy?", true);
@@ -1524,7 +1556,9 @@ async function managePortsAndZombies() {
     }
   }
 
-  clack.log.info(pc.dim("🧹 Czyszczenie zalegających procesów sidecarów Tauri..."));
+  clack.log.info(
+    pc.dim("🧹 Czyszczenie zalegających procesów sidecarów Tauri..."),
+  );
   const zombieScript = path.join(
     rootDir,
     "apps",
@@ -1538,19 +1572,27 @@ async function managePortsAndZombies() {
 }
 
 async function runDoctorScan() {
-  clack.log.info(pc.bold(pc.cyan("🏥 Doctor / Preflight — Lekka Diagnostyka Środowiska:")));
+  clack.log.info(
+    pc.bold(pc.cyan("🏥 Doctor / Preflight — Lekka Diagnostyka Środowiska:")),
+  );
 
   // 1. Node.js
   try {
     const nodeVer = execSync("node -v", { encoding: "utf8" }).trim();
     const isNodeOk = nodeVer.match(/^v(2[2-9]|[3-9]\d)/);
     if (isNodeOk) {
-      clack.log.success(`${pc.bold("Node.js")}: ${pc.cyan(nodeVer)} ${pc.dim("(Zgodny ≥22)")}`);
+      clack.log.success(
+        `${pc.bold("Node.js")}: ${pc.cyan(nodeVer)} ${pc.dim("(Zgodny ≥22)")}`,
+      );
     } else {
-      clack.log.warn(`${pc.bold("Node.js")}: ${pc.yellow(nodeVer)} ${pc.dim("(Zalecany Node 22 LTS)")}`);
+      clack.log.warn(
+        `${pc.bold("Node.js")}: ${pc.yellow(nodeVer)} ${pc.dim("(Zalecany Node 22 LTS)")}`,
+      );
     }
   } catch {
-    clack.log.error(`${pc.bold("Node.js")}: ${pc.red("Nie znaleziono w systemie!")}`);
+    clack.log.error(
+      `${pc.bold("Node.js")}: ${pc.red("Nie znaleziono w systemie!")}`,
+    );
   }
 
   // 2. pnpm
@@ -1558,7 +1600,9 @@ async function runDoctorScan() {
     const pnpmVer = execSync("pnpm -v", { encoding: "utf8" }).trim();
     clack.log.success(`${pc.bold("pnpm")}: ${pc.cyan(`v${pnpmVer}`)}`);
   } catch {
-    clack.log.error(`${pc.bold("pnpm")}: ${pc.red("Nie znaleziono w systemie!")}`);
+    clack.log.error(
+      `${pc.bold("pnpm")}: ${pc.red("Nie znaleziono w systemie!")}`,
+    );
   }
 
   // 3. Rust / Cargo
@@ -1579,7 +1623,9 @@ async function runDoctorScan() {
     }).trim();
     clack.log.success(`${pc.bold("Docker")}: ${pc.cyan(dockerVer)}`);
   } catch {
-    clack.log.warn(`${pc.bold("Docker")}: Brak klienta Docker ${pc.dim("(opcjonalny dla kontenerów)")}`);
+    clack.log.warn(
+      `${pc.bold("Docker")}: Brak klienta Docker ${pc.dim("(opcjonalny dla kontenerów)")}`,
+    );
   }
 
   // 5. GitHub CLI (Release Hub)
@@ -1596,7 +1642,9 @@ async function runDoctorScan() {
       shell: true,
     });
     if (auth.status === 0) {
-      clack.log.success(`${pc.bold("GitHub CLI (gh)")}: ${pc.cyan(ghVer)} — ${pc.green("zalogowany")}`);
+      clack.log.success(
+        `${pc.bold("GitHub CLI (gh)")}: ${pc.cyan(ghVer)} — ${pc.green("zalogowany")}`,
+      );
     } else {
       clack.log.warn(
         `${pc.bold("GitHub CLI (gh)")}: ${pc.cyan(ghVer)} — ${pc.yellow("brak auth")} ${pc.dim("(wymagane dla Release Hub)")}`,
@@ -1623,27 +1671,37 @@ async function runDoctorScan() {
           encoding: "utf8",
         }).trim() === "True";
       if (hasWv2) {
-        clack.log.success(`${pc.bold("WebView2 Runtime")}: ${pc.green("Obecny")}`);
+        clack.log.success(
+          `${pc.bold("WebView2 Runtime")}: ${pc.green("Obecny")}`,
+        );
       } else {
         clack.log.warn(
           `${pc.bold("WebView2 Runtime")}: Brak ${pc.dim("(wymagany do uruchomienia Tauri na Windows)")}`,
         );
       }
     } catch {
-      clack.log.warn(`${pc.bold("WebView2 Runtime")}: ${pc.dim("Nie można zweryfikować stanu rejestru")}`);
+      clack.log.warn(
+        `${pc.bold("WebView2 Runtime")}: ${pc.dim("Nie można zweryfikować stanu rejestru")}`,
+      );
     }
   }
 
   // 7. Dostępność Portów
   const p3000 = findListeningProcessesOnPort(3000);
   const p4000 = findListeningProcessesOnPort(4000);
-  if (p3000.length === 0) clack.log.success(`${pc.bold("Port")} ${pc.cyan(":3000")}: ${pc.green("Wolny")}`);
+  if (p3000.length === 0)
+    clack.log.success(
+      `${pc.bold("Port")} ${pc.cyan(":3000")}: ${pc.green("Wolny")}`,
+    );
   else
     clack.log.warn(
       `${pc.bold("Port")} ${pc.cyan(":3000")}: Zajęty przez ${pc.yellow(`PID ${p3000[0].pid} (${p3000[0].name})`)}`,
     );
 
-  if (p4000.length === 0) clack.log.success(`${pc.bold("Port")} ${pc.cyan(":4000")}: ${pc.green("Wolny")}`);
+  if (p4000.length === 0)
+    clack.log.success(
+      `${pc.bold("Port")} ${pc.cyan(":4000")}: ${pc.green("Wolny")}`,
+    );
   else
     clack.log.warn(
       `${pc.bold("Port")} ${pc.cyan(":4000")}: Zajęty przez ${pc.yellow(`PID ${p4000[0].pid} (${p4000[0].name})`)}`,
@@ -1652,21 +1710,32 @@ async function runDoctorScan() {
   // 8. Pliki .env
   const envExists = fs.existsSync(path.join(rootDir, ".env"));
   const envExampleExists = fs.existsSync(path.join(rootDir, ".env.example"));
-  if (envExists) clack.log.success(`${pc.bold("Plik .env")}: Obecny w korzeniu`);
+  if (envExists)
+    clack.log.success(`${pc.bold("Plik .env")}: Obecny w korzeniu`);
   else if (envExampleExists)
-    clack.log.warn(`${pc.bold("Plik .env")}: Brak ${pc.dim("(dostępny .env.example)")}`);
+    clack.log.warn(
+      `${pc.bold("Plik .env")}: Brak ${pc.dim("(dostępny .env.example)")}`,
+    );
   else clack.log.warn(`${pc.bold("Plik .env")}: Brak pliku konfiguracji`);
 
   // 9. Efektywny data dir (ADR 0012)
   const { dir: dataDir, rule } = resolveHubDataDir();
-  clack.log.success(`${pc.bold("Efektywny data dir")}: ${pc.dim(dataDir)} ${pc.dim(`(reguła: ${rule})`)}`);
+  clack.log.success(
+    `${pc.bold("Efektywny data dir")}: ${pc.dim(dataDir)} ${pc.dim(`(reguła: ${rule})`)}`,
+  );
   if (process.env.STAGESYNC_REPO_DEV) {
-    clack.log.info(`${pc.bold("STAGESYNC_REPO_DEV")}: ${pc.dim(process.env.STAGESYNC_REPO_DEV)}`);
+    clack.log.info(
+      `${pc.bold("STAGESYNC_REPO_DEV")}: ${pc.dim(process.env.STAGESYNC_REPO_DEV)}`,
+    );
   } else {
-    clack.log.info(`${pc.bold("STAGESYNC_REPO_DEV")}: ${pc.dim("nieustawiona")}`);
+    clack.log.info(
+      `${pc.bold("STAGESYNC_REPO_DEV")}: ${pc.dim("nieustawiona")}`,
+    );
   }
   if (process.env.STAGESYNC_DATA_DIR) {
-    clack.log.info(`${pc.bold("STAGESYNC_DATA_DIR")}: ${pc.dim(process.env.STAGESYNC_DATA_DIR)}`);
+    clack.log.info(
+      `${pc.bold("STAGESYNC_DATA_DIR")}: ${pc.dim(process.env.STAGESYNC_DATA_DIR)}`,
+    );
   }
 }
 
@@ -1746,14 +1815,20 @@ async function cleanCache(): Promise<boolean> {
 
   if (cleanedPaths.length > 0) {
     clack.log.success(pc.green("Wyczyszczone katalogi:"));
-    cleanedPaths.forEach((cp) => clack.log.message(` ${pc.green("•")} ${pc.dim(cp)}`));
+    cleanedPaths.forEach((cp) =>
+      clack.log.message(` ${pc.green("•")} ${pc.dim(cp)}`),
+    );
   }
 
   if (lockedPaths.length > 0) {
     clack.log.warn(
-      pc.yellow("Zablokowane katalogi (zamknij działające procesy Vite/Tauri/Node):"),
+      pc.yellow(
+        "Zablokowane katalogi (zamknij działające procesy Vite/Tauri/Node):",
+      ),
     );
-    lockedPaths.forEach((lp) => clack.log.message(` ${pc.yellow("⚠️")} ${pc.yellow(lp)}`));
+    lockedPaths.forEach((lp) =>
+      clack.log.message(` ${pc.yellow("⚠️")} ${pc.yellow(lp)}`),
+    );
   }
   return true;
 }
@@ -1878,7 +1953,10 @@ async function menuRunAndDev() {
       clack.log.info("Anulowano tauri:build.");
       return;
     }
-    clack.note(`Budowanie instalatora Tauri ${pc.dim("(pnpm tauri:build)")}...`, "Build");
+    clack.note(
+      `Budowanie instalatora Tauri ${pc.dim("(pnpm tauri:build)")}...`,
+      "Build",
+    );
     runCommand("pnpm", ["--filter", "@stagesync/desktop", "tauri:build"]);
     await waitReturn();
   } else if (choice === "desktop-nsis-smoke") {
@@ -2059,11 +2137,17 @@ async function menuTestingDocs() {
   if (clack.isCancel(choice) || choice === "back") return;
 
   if (choice === "map") {
-    clack.note(`Generowanie mapy repozytorium ${pc.dim("(pnpm generate:map)")}...`, "Map");
+    clack.note(
+      `Generowanie mapy repozytorium ${pc.dim("(pnpm generate:map)")}...`,
+      "Map",
+    );
     runCommand("pnpm", ["generate:map"]);
     await waitReturn();
   } else if (choice === "ss-css") {
-    clack.note(`Sprawdzanie tokenów CSS ${pc.dim("(pnpm lint:ss-css)")}...`, "CSS");
+    clack.note(
+      `Sprawdzanie tokenów CSS ${pc.dim("(pnpm lint:ss-css)")}...`,
+      "CSS",
+    );
     runCommand("pnpm", ["lint:ss-css"]);
     await waitReturn();
   } else if (choice === "knip") {
@@ -2151,7 +2235,10 @@ async function menuTestingBuild() {
   if (clack.isCancel(choice) || choice === "back") return;
 
   if (choice === "build") {
-    clack.note(`Uruchamianie pełnego buildu ${pc.dim("(turbo run build)")}...`, "Build");
+    clack.note(
+      `Uruchamianie pełnego buildu ${pc.dim("(turbo run build)")}...`,
+      "Build",
+    );
     runCommand("pnpm", ["build"]);
     await waitReturn();
   } else if (choice === "sync-ui") {

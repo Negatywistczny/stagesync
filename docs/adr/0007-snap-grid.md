@@ -28,7 +28,7 @@ Ten ADR dotyczy **snap grid** / **edit quantize** — siatki **czasu**, nie layo
 
 - **Kanon storage / transport:** ticks ([ADR 0002](./0002-timebase-ssot.md)).
 - **Snap:** polityka **edycji UI** — czyste funkcje w `@stagesync/shared`
-  ([`snap-grid.ts`](../../packages/shared/src/snap-grid.ts)), bez DOM i bez `Date.now()`.
+  ([`snap-grid.ts`](../../packages/shared/src/time-tempo/snap-grid.ts)), bez DOM i bez `Date.now()`.
 - Wynik snapu = **integer ticks** przed zapisem do draftu / PUT.
 
 ### 2. Tryby snap (rozszerzalne)
@@ -60,7 +60,7 @@ Opcjonalnie: `contentFloorTicks` (koniec Countdown) — clamp jak v4
 
 ### 4. Kontrakt API (shared)
 
-Publiczne typy i funkcje — patrz [`packages/shared/src/snap-grid.ts`](../../packages/shared/src/snap-grid.ts):
+Publiczne typy i funkcje — patrz [`packages/shared/src/snap-grid.ts`](../../packages/shared/src/time-tempo/snap-grid.ts):
 
 - `SnapMode`, `SnapContext`
 - `quantizeTicks(ticks, mode, ctx)` — jeden entry point dla narzędzi

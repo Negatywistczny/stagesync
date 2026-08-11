@@ -1,7 +1,7 @@
 # Button (`@stagesync/ui`)
 
 Kanoniczny przycisk StageSync. Źródło:
-[`packages/ui/src/button.tsx`](../../packages/ui/src/button.tsx),
+[`packages/ui/src/button.tsx`](../../packages/ui/src/components/button/button.tsx),
 [`button.css`](../../apps/desktop/launcher/vendor/button.css).
 
 Zamknięty zbiór stanów — konstytucja; **nie** twórz `Button2` ani lokalnych

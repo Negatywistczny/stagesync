@@ -197,7 +197,7 @@ Zgodnie z wymaganiami schematu `ProjectSchemaV5`:
 
 Operacja zbiorczego przemapowania numerów Program Change realizowana jest przez punkt końcowy `POST /api/library/batch-midi-pc` . Transakcja rozpoczyna się w panelu wywołaniem modala `BatchPcModal`. Interfejs wysyła żądanie HTTP z tablicą nowych przypisań. Router [`library.ts`](../../../../apps/server/src/routes/library.ts) dokonuje walidacji struktury za pomocą parsera Zod (`BatchMidiPcBodySchema`). Po pomyślnej weryfikacji warstwa storage wykonuje metodę `batchMidiProgramIds`, która iteruje po plikach w bazie danych, ignoruje wpisy wzorcowe i zapisuje zaktualizowane wartości numeryczne. W odpowiedzi serwer zwraca zaktualizowaną strukturę biblioteki, co odświeża stan widoku u wszystkich podłączonych klientów.
 
-Interfejs użytkownika w panelu Admina ([`AdminShell.tsx`](../../../../apps/web/src/shells/AdminShell.tsx)) udostępnia automatyczne przeliczenie sekwencyjne (_Renumber from Start_) . Użytkownik określa numer początkowy $PC_{\text{start}}$ (np. 0), po czym algorytm przypisuje kolejnym utworom z listy wartości $PC_{i} = PC_{\text{start}} + i$, z zachowaniem twardego ograniczenia górnego $\min(127, PC_{i})$ .
+Interfejs użytkownika w panelu Admina ([`AdminShell.tsx`](../../../../apps/web/src/shells/admin/AdminShell.tsx)) udostępnia automatyczne przeliczenie sekwencyjne (_Renumber from Start_) . Użytkownik określa numer początkowy $PC_{\text{start}}$ (np. 0), po czym algorytm przypisuje kolejnym utworom z listy wartości $PC_{i} = PC_{\text{start}} + i$, z zachowaniem twardego ograniczenia górnego $\min(127, PC_{i})$ .
 
 ---
 

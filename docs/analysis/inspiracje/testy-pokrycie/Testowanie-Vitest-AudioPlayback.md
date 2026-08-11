@@ -23,7 +23,7 @@ KONTEKST ARCHITEKTURY
 - Serwer = SSOT czasu; klient wygładza tylko między tickami — bez własnego zegara muzycznego.
 - Zod na krawędziach API; helpery czasu w `@stagesync/shared` bez Date.now wewnątrz konwersji.
 - Vitest w monorepo; istniejące mocki: `mockAudioContext`, `mockAudioParam`, stub `metronome`.
-- Integracja: [`TimelineShell.tsx`](../../../../apps/web/src/shells/TimelineShell.tsx) wywołuje sync przy tickach transportu.
+- Integracja: [`TimelineShell.tsx`](../../../../apps/web/src/shells/timeline/TimelineShell.tsx) wywołuje sync przy tickach transportu.
 
 OCZEKIWANY OUTPUT
 

@@ -31,9 +31,9 @@ komponentów: [`packages/ui`](../../packages/ui/).
 - Gęstość / spacing / hover: [`.cursor/rules/ui-density.mdc`](../../.cursor/rules/ui-density.mdc).
 - Animacje: `--ss-duration-fast` (120ms) / `normal` (200ms) / `slow` (700ms);
   hover przez `--ss-transition` (= fast + ease). Bez ad-hoc `0.7s` itd.
-- Ikony shelli: **Lucide** przez [`apps/web/src/shells/icons.tsx`](../../apps/web/src/shells/icons.tsx)
+- Ikony shelli: **Lucide** przez [`apps/web/src/shells/icons.tsx`](../../apps/web/src/shells/components/icons.tsx)
   — bez nowych lokalnych SVG w shellach.
-- Wordmark: [`apps/web/src/shells/ShellWordmark.tsx`](../../apps/web/src/shells/ShellWordmark.tsx)
+- Wordmark: [`apps/web/src/shells/ShellWordmark.tsx`](../../apps/web/src/shells/components/ShellWordmark.tsx)
   (`Stage` + amber `Sync`; opcjonalnie suffix roli i wersja).
 - Chrome shelli (współdzielone): `ShellIconButton`, `SettingsPopover`, `ConnectionIndicator`, `ShellSwitchRow` oraz `shells/shared/*`.
 - Launcher: `pnpm sync:launcher-ui` kopiuje [`tokens.css`](../../apps/desktop/launcher/vendor/tokens.css) + [`button.css`](../../apps/desktop/launcher/vendor/button.css) do `apps/desktop/launcher/vendor/`.

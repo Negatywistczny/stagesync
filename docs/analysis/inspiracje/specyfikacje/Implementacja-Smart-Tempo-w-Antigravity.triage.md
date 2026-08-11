@@ -5,7 +5,7 @@
 **Obszar:** Smart Tempo Adapt · ODF sub-bas · ACF · Viterbi · sparsyfikacja · benchmark drift  
 **Data triage:** 2026-08-05  
 **Kąt:** blueprint implementacyjny Antigravity vs kod **5.4.2** — nie SSOT; nie claim Done / green PO  
-**Companion:** [Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md](./Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md) · [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md) § Smart Tempo · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) / [ADR 0017](../../../adr/0017-live-show-control-contracts.md) (Flex OUT 5.x) · [`packages/shared/src/smart-tempo.ts`](../../../../packages/shared/src/smart-tempo.ts) · `apps/web/src/lib/audioTempoAnalysis.ts` · `apps/web/src/lib/smartTempoBenchmark.test.ts` · [ROADMAP 5.4.2](../../../ROADMAP.md) · [TODO](../../../TODO.md)
+**Companion:** [Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md](./Dynamic-Tempo-Mapping-Technical-Blueprint.triage.md) · [ADR 0015](../../../adr/0015-daw-reference-and-product-decisions.md) § Smart Tempo · [ADR 0002](../../../adr/0002-timebase-ssot.md) · [ADR 0008](../../../adr/0008-timeline-clip-editing.md) / [ADR 0017](../../../adr/0017-live-show-control-contracts.md) (Flex OUT 5.x) · [`packages/shared/src/smart-tempo.ts`](../../../../packages/shared/src/smart-tempo/smart-tempo.ts) · `apps/web/src/lib/audioTempoAnalysis.ts` · `apps/web/src/lib/smartTempoBenchmark.test.ts` · [ROADMAP 5.4.2](../../../ROADMAP.md) · [TODO](../../../TODO.md)
 
 ## Werdykt przydatności
 
@@ -13,7 +13,7 @@
 
 **Niższa jako backlog nowych feature:** dump opisuje stan zbliżony do cutu `v5.4.2` + szkic TS dla agenta; nie otwierać drugiego TODO „wdrożyć Smart Tempo”. Residual = **jakość mapy** (żywy perkusista → dryf sekundowy w bench) oraz **Later** (WASM/Essentia, stem sep, pełny Ellis DBN) — już w DTM triage.
 
-**Hard reject / defer (overfitting):** wyniki bench dla konkretnych utworów (_Winner_, _Billie Jean_, …) oraz sugestie strojenia pod Winner BPM **nie** wchodzą do produktu SSOT. Seed BPM / prior = ogólny mid-tempo (na dysku center ~120, σ szerokie); testy: soft-diagnose w paśmie Logic, **bez** hardcodu BPM utworu ([`smart-tempo.test.ts`](../../../../packages/shared/src/smart-tempo.test.ts)).
+**Hard reject / defer (overfitting):** wyniki bench dla konkretnych utworów (_Winner_, _Billie Jean_, …) oraz sugestie strojenia pod Winner BPM **nie** wchodzą do produktu SSOT. Seed BPM / prior = ogólny mid-tempo (na dysku center ~120, σ szerokie); testy: soft-diagnose w paśmie Logic, **bez** hardcodu BPM utworu ([`smart-tempo.test.ts`](../../../../packages/shared/src/smart-tempo/smart-tempo.test.ts)).
 
 ## Macierz hipotez
 
@@ -43,7 +43,7 @@
 | Sub-bas dual-band flux               | [`audioTempoAnalysis.ts`](../../../../apps/web/src/lib/audio/audioTempoAnalysis.ts) |
 | ACF + musical prior + bar harmonics  | on-tree                                                                             |
 | Beat path Viterbi-like + snap/scale  | `buildBeatGridViterbi` / `buildBeatGridAsync`                                       |
-| Sparsyfikacja + Drift Gate + maxStep | [`smart-tempo.ts`](../../../../packages/shared/src/smart-tempo.ts)                  |
+| Sparsyfikacja + Drift Gate + maxStep | [`smart-tempo.ts`](../../../../packages/shared/src/smart-tempo/smart-tempo.ts)      |
 | Beat 1 / trimInMs                    | Import + Beat Mapper                                                                |
 | Benchmark errorMs / ≤15 ms t₀        | testy + skrypty launch                                                              |
 | Keep / Flex stretch                  | **OUT 5.x**                                                                         |

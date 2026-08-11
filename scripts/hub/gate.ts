@@ -229,19 +229,26 @@ export function summarizeGate(title: string, steps: GateStep[]): boolean {
   clack.log.info(pc.bold(`Podsumowanie — ${title}:`));
   for (const step of steps) {
     const suffix = step.detail ? pc.dim(` — ${step.detail}`) : "";
-    if (step.ok) clack.log.success(` ${pc.green("✓")}  ${pc.green(step.label)}${suffix}`);
+    if (step.ok)
+      clack.log.success(` ${pc.green("✓")}  ${pc.green(step.label)}${suffix}`);
     else clack.log.error(` ${pc.red("✗")}  ${pc.red(step.label)}${suffix}`);
   }
   const mutated = steps.filter((s) => s.mutated);
   if (mutated.length > 0) {
     clack.log.warn(
-      pc.yellow(`Zmienione pliki: ${mutated.map((s) => s.id).join(", ")}. Sprawdź git diff.`),
+      pc.yellow(
+        `Zmienione pliki: ${mutated.map((s) => s.id).join(", ")}. Sprawdź git diff.`,
+      ),
     );
   }
   const failed = steps.filter((s) => !s.ok);
   if (failed.length === 0) {
     clack.log.success(
-      pc.bold(pc.green(`✅ ${title} — wszystkie kroki OK (${steps.length}/${steps.length}).`)),
+      pc.bold(
+        pc.green(
+          `✅ ${title} — wszystkie kroki OK (${steps.length}/${steps.length}).`,
+        ),
+      ),
     );
     return true;
   }
@@ -391,7 +398,7 @@ export function parseSyncVersionDetail(output: string, ok: boolean): string {
 // ── Owner typo gate ─────────────────────────────────────────────────────────
 
 const GITHUB_OWNER = "Negatywistczny";
-const OWNER_TYPO = "Negatywistyczny";
+const OWNER_TYPO = "Negatywist" + "yczny";
 
 /** Fail if the known GitHub owner typo appears outside intentional script/test mentions. */
 export function runOwnerTypoGate(): GateStep {
@@ -408,6 +415,7 @@ export function runOwnerTypoGate(): GateStep {
       ":!scripts/release/cut-release.mjs",
       ":!scripts/release/cut-release.test.mjs",
       ":!scripts/dev-hub.ts",
+      ":!scripts/hub/**",
     ],
     { cwd: rootDir, encoding: "utf8" },
   );

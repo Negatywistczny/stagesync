@@ -7,7 +7,7 @@ message time: 2026-07-27 14:27:51
 Jesteś ekspertem od testów WebSocket w StageSync server. Przeanalizuj [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) — broadcast transport tick + stage/liveDesk/setlist hubs, client presence hello.
 
 CEL ANALIZY
-[`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts) pokrywa podstawy REST+WS; `attachTransportWs` ma luki w hub broadcast, presence, error handling, malformed messages.
+[`transport-api.test.ts`](../../../../apps/server/src/transport/transport-api.test.ts) pokrywa podstawy REST+WS; `attachTransportWs` ma luki w hub broadcast, presence, error handling, malformed messages.
 
 PYTANIA BADAWCZE
 
@@ -22,7 +22,7 @@ PYTANIA BADAWCZE
 KONTEKST
 
 - Path `/ws/transport`; biblioteka `ws`.
-- Wzorzec testów: createServer + WebSocket client w [`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts).
+- Wzorzec testów: createServer + WebSocket client w [`transport-api.test.ts`](../../../../apps/server/src/transport/transport-api.test.ts).
 - Vitest + prawdziwy WS na localhost.
 
 OCZEKIWANY OUTPUT
@@ -58,7 +58,7 @@ Plan Testów StageSync WebSocket
 
 # Architektura i Strategia Testów Integracyjnych WebSocket Transport w StageSync Server
 
-Moduł transportu WebSocket zlokalizowany w ścieżce [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) pełni funkcję centralnego węzła dystrybucji stanu w czasie rzeczywistym dla całego środowiska StageSync . Jego podstawowym zadaniem jest realizacja wzorca rozgłaszania jedno- do-wielokrotnego (fanout) dla zdarzeń generowanych przez silnik odtwarzacza (`TransportEngine`), sklepu ustawień konsolety (`LiveDeskStore`), dystrybutora migawek listy utworów (`SetlistHub`), komunikatora scenicznego (`StageHub`) oraz modułu śledzenia obecności klientów (`ClientPresence`) . Dotychczasowa pakietowa weryfikacja w [`transport-api.test.ts`](../../../../apps/server/src/transport-api.test.ts) skupiała się na podstawowych operacjach interfejsu REST oraz pojedynczym połączeniu WebSocket . Zapewnienie pełnej niezawodności w warunkach koncertowych wymaga jednak głębokiej analizy wieloklienckiej, odporności na uszkodzone ramki danych, weryfikacji właściwego czyszczenia zasobów oraz eliminacji ryzyka nieobsłużonych wyjątków .
+Moduł transportu WebSocket zlokalizowany w ścieżce [`apps/server/src/transport/ws.ts`](../../../../apps/server/src/transport/ws.ts) pełni funkcję centralnego węzła dystrybucji stanu w czasie rzeczywistym dla całego środowiska StageSync . Jego podstawowym zadaniem jest realizacja wzorca rozgłaszania jedno- do-wielokrotnego (fanout) dla zdarzeń generowanych przez silnik odtwarzacza (`TransportEngine`), sklepu ustawień konsolety (`LiveDeskStore`), dystrybutora migawek listy utworów (`SetlistHub`), komunikatora scenicznego (`StageHub`) oraz modułu śledzenia obecności klientów (`ClientPresence`) . Dotychczasowa pakietowa weryfikacja w [`transport-api.test.ts`](../../../../apps/server/src/transport/transport-api.test.ts) skupiała się na podstawowych operacjach interfejsu REST oraz pojedynczym połączeniu WebSocket . Zapewnienie pełnej niezawodności w warunkach koncertowych wymaga jednak głębokiej analizy wieloklienckiej, odporności na uszkodzone ramki danych, weryfikacji właściwego czyszczenia zasobów oraz eliminacji ryzyka nieobsłużonych wyjątków .
 
 ---
 
