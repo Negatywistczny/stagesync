@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useTimelineContextMenus } from "./useTimelineContextMenus.js";
@@ -13,7 +14,13 @@ function createTestProject(): Project {
     defaultMeter: { numerator: 4, denominator: 4 },
     forma: {
       clips: [
-        { id: "c1", name: "Intro", kind: "section", startTicks: 0, lengthTicks: 3840 },
+        {
+          id: "c1",
+          name: "Intro",
+          kind: "section",
+          startTicks: 0,
+          lengthTicks: 3840,
+        },
       ],
     },
     audioTracks: [],
