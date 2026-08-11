@@ -20,7 +20,7 @@
     "noEmit": true,
     "paths": {
       "@stagesync/shared": [
-        "../../packages/shared/src/index.ts"
+        "../packages/shared/src/index.ts"
       ]
     }
   },
