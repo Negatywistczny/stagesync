@@ -148,12 +148,7 @@ export function TimelineContentLaneRenderer({
               selectedSubsectionIdx={
                 primaryId === clip.id ? selectedSubsectionIdx : null
               }
-              style={clipStylePx(
-                styleClip,
-                viewSpan,
-                barTicks,
-                effectiveZoomH,
-              )}
+              style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
               pencilActive={toolIsPencilDraw(tool)}
               allowHitZones={toolAllowsClipHitZones(tool)}
               dimmed={Boolean(previewing)}
@@ -208,12 +203,7 @@ export function TimelineContentLaneRenderer({
                 <FormaClipPreview
                   key={ghost.id}
                   label={clip.name}
-                  style={clipStylePx(
-                    ghost,
-                    viewSpan,
-                    barTicks,
-                    effectiveZoomH,
-                  )}
+                  style={clipStylePx(ghost, viewSpan, barTicks, effectiveZoomH)}
                 />
               );
             })
@@ -303,16 +293,9 @@ export function TimelineContentLaneRenderer({
             key={clip.id}
             clip={styleClip}
             dataClipLane={lane}
-            selected={
-              isClipSelected(clipSelection, clip.id, lane) || tapTarget
-            }
+            selected={isClipSelected(clipSelection, clip.id, lane) || tapTarget}
             selectedSubsectionIdx={null}
-            style={clipStylePx(
-              styleClip,
-              viewSpan,
-              barTicks,
-              effectiveZoomH,
-            )}
+            style={clipStylePx(styleClip, viewSpan, barTicks, effectiveZoomH)}
             pencilActive={toolIsPencilDraw(tool)}
             allowHitZones={toolAllowsClipHitZones(tool)}
             dimmed={Boolean(previewing)}
@@ -374,12 +357,7 @@ export function TimelineContentLaneRenderer({
               <FormaClipPreview
                 key={ghost.id}
                 label={label}
-                style={clipStylePx(
-                  ghost,
-                  viewSpan,
-                  barTicks,
-                  effectiveZoomH,
-                )}
+                style={clipStylePx(ghost, viewSpan, barTicks, effectiveZoomH)}
               />
             );
           })

@@ -1,7 +1,5 @@
 import { useState, useRef, useCallback, type RefObject } from "react";
-import {
-  isTouchPointerType,
-} from "@lib/timeline/timelineGesture.js";
+import { isTouchPointerType } from "@lib/timeline/timelineGesture.js";
 import {
   isMarqueeClick,
   rectsIntersect,
@@ -187,14 +185,17 @@ export function useTimelineMarquee({
     ],
   );
 
-  const beginTouchCanvasNav = useCallback((e: React.PointerEvent<HTMLElement>) => {
-    touchCanvasNavRef.current = {
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-    };
-    setTouchCanvasNavActive(true);
-  }, []);
+  const beginTouchCanvasNav = useCallback(
+    (e: React.PointerEvent<HTMLElement>) => {
+      touchCanvasNavRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+      };
+      setTouchCanvasNavActive(true);
+    },
+    [],
+  );
 
   const finishTouchCanvasNav = useCallback(
     (clientX: number, clientY: number) => {
@@ -210,7 +211,12 @@ export function useTimelineMarquee({
       setSelectedAnchorId(null);
       setLocatorFromClientX(clientX, { seekTransport: true });
     },
-    [clearClipSelection, clearMapSelection, setSelectedAnchorId, setLocatorFromClientX],
+    [
+      clearClipSelection,
+      clearMapSelection,
+      setSelectedAnchorId,
+      setLocatorFromClientX,
+    ],
   );
 
   const beginMarquee = useCallback(
@@ -234,13 +240,19 @@ export function useTimelineMarquee({
       };
 
       function onMove(ev: PointerEvent) {
-        if (!marqueeRef.current || ev.pointerId !== marqueeRef.current.pointerId)
+        if (
+          !marqueeRef.current ||
+          ev.pointerId !== marqueeRef.current.pointerId
+        )
           return;
         updateMarqueeBoxFromPointer(ev.clientX, ev.clientY);
       }
 
       function onUp(ev: PointerEvent) {
-        if (!marqueeRef.current || ev.pointerId !== marqueeRef.current.pointerId)
+        if (
+          !marqueeRef.current ||
+          ev.pointerId !== marqueeRef.current.pointerId
+        )
           return;
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);

@@ -80,7 +80,14 @@ export function useTimelineWandTool({
       setWandMenu(null);
       setTool("pointer");
     },
-    [draftRef, clipSelection, commitDraft, flashCanvasNotice, setWandMenu, setTool],
+    [
+      draftRef,
+      clipSelection,
+      commitDraft,
+      flashCanvasNotice,
+      setWandMenu,
+      setTool,
+    ],
   );
 
   return { applyWand };

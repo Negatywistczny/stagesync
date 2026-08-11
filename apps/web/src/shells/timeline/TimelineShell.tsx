@@ -2048,8 +2048,6 @@ export function TimelineShell() {
     setSongMetaOpen(false);
   }
 
-
-
   function beginFormaGesture(
     session: FormaGestureSession,
     preview: FormaGesturePreview,
@@ -3104,8 +3102,6 @@ export function TimelineShell() {
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [wandMenu]);
 
-
-
   function toggleTrack(id: string) {
     const def = buildTrackList(draftProject?.audioTracks ?? []).find(
       (t) => t.id === id,
@@ -3639,7 +3635,6 @@ export function TimelineShell() {
     );
   }
 
-
   function onMapLanePointerDown(
     e: React.PointerEvent<HTMLDivElement>,
     lane: MapLaneId,
@@ -3899,8 +3894,6 @@ export function TimelineShell() {
       canvasNoticeTimerRef.current = null;
     }, 3200);
   }
-
-
 
   function openToolMenuAt(clientX: number, clientY: number) {
     const pad = 8;

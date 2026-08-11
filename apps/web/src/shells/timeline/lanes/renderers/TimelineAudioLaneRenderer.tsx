@@ -1,5 +1,10 @@
 import React from "react";
-import type { AudioClip, AudioTrack, FormaClip, Project } from "@stagesync/shared";
+import type {
+  AudioClip,
+  AudioTrack,
+  FormaClip,
+  Project,
+} from "@stagesync/shared";
 import {
   audioTrackIdFromLane,
   type AudioLaneId,
@@ -264,9 +269,11 @@ export function TimelineAudioLaneRenderer({
           <button
             key={`ghost-${ghostClip.id}`}
             type="button"
-            className={[styles.clip, styles.audioClip, styles.formaClipDim].join(
-              " ",
-            )}
+            className={[
+              styles.clip,
+              styles.audioClip,
+              styles.formaClipDim,
+            ].join(" ")}
             style={{
               ...style,
               ["--tl-track-color" as string]: trackColor,

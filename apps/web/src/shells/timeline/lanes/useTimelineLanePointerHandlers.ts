@@ -35,7 +35,10 @@ export type UseTimelineLanePointerHandlersOptions = {
     lane: ContentLaneId,
   ) => void;
   onFormaLanePointerDown: (e: React.PointerEvent<HTMLElement>) => void;
-  onMapLanePointerDown: (e: React.PointerEvent<HTMLElement>, lane: MapLaneId) => void;
+  onMapLanePointerDown: (
+    e: React.PointerEvent<HTMLElement>,
+    lane: MapLaneId,
+  ) => void;
   draftRef: RefObject<Project | null>;
   laneImportTrackIdRef?: RefObject<string | null>;
   laneImportStartTicksRef?: RefObject<number | null>;

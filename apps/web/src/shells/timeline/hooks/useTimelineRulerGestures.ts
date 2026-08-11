@@ -3,7 +3,10 @@ import type { Project, TransportLoop } from "@stagesync/shared";
 import { projectEndTicks, resolveMeterAt } from "@stagesync/shared";
 import { mapSnapMode } from "@lib/timeline/mapLaneEdit.js";
 import { contentSnapModeFromModifiers } from "@lib/timeline/timelineGesture.js";
-import { ticksFromPointer, snapLocatorTicks } from "@lib/timeline-edit/formaCanvas.js";
+import {
+  ticksFromPointer,
+  snapLocatorTicks,
+} from "@lib/timeline-edit/formaCanvas.js";
 import {
   usableLoopRange,
   ticksInLoopRegion,
