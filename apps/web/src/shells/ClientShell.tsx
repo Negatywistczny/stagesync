@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { toggleAppFullscreen } from "@lib/client/desktopBridge.js";
 import {
   DESKTOP_MENU_EVENT,
@@ -9,36 +9,25 @@ import {
   releaseScreenWakeLock,
   requestScreenWakeLock,
 } from "@lib/client/screenWakeLock.js";
-import { Button, Input } from "@stagesync/ui";
-import { getOperatorAppJumpLinks } from "@lib/shell-operator/operatorNavRoutes.js";
-import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import {
   shouldShowFullscreenControl,
   shouldShowOperatorNav,
 } from "@lib/shell-operator/operatorSurface.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
-import { ChangeServerControl } from "./ChangeServerControl.js";
-import { OperatorPinFields } from "./OperatorPinFields.js";
 import { OperatorNav } from "./components/OperatorNav.js";
 import {
   DEVICE_DISPLAY_NAME_CHANGED_EVENT,
-  DEVICE_DISPLAY_NAME_MAX,
   getStoredDeviceDisplayName,
   setStoredDeviceDisplayName,
 } from "@lib/client/deviceNamePrefs.js";
 import {
-  INSTRUMENT_PITCH_MANUAL_MAX,
-  INSTRUMENT_PITCH_MANUAL_MIN,
   resolveMeterAt,
   resolveStageCueBanner,
   resolveTempoAt,
-  stageCueBannerLabel,
   ticksToBbt,
   type Project,
 } from "@stagesync/shared";
 import { loadClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
-import { applyVocalTap, vocalTapQueue } from "@lib/client/clientVocalTap.js";
-import { putProject } from "@lib/shell-operator/libraryApi.js";
 import {
   ticksFromSyncLeadAlongMap,
   ticksFromSyncLeadMs,
@@ -48,36 +37,23 @@ import { useTransport } from "../transport/useTransport.js";
 import { noteH01ConsumerRender } from "../transport/h01PerfProbe.js";
 import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
-import { DrumsPane } from "./client/DrumsPane.js";
-import { GridPane } from "./client/GridPane.js";
-import { KaraokePane } from "./client/KaraokePane.js";
-import { ScorePane } from "./client/ScorePane.js";
 import {
   loadScoreHiddenParts,
   loadScoreOctave,
-  saveScoreHiddenParts,
-  saveScoreOctave,
   type ScoreOctave,
   type ScorePartInfo,
 } from "@lib/timeline-edit/scoreOsmd.js";
 import { SCORE_ZOOM_DEFAULT } from "@lib/timeline-edit/scorePlayhead.js";
-import { IconMixer, IconPencil } from "./icons.js";
-import { SettingsPopover, SettingsPopoverAnchor } from "./SettingsPopover.js";
-import { ShellIconButton } from "./ShellIconButton.js";
-import { ShellWordmark } from "./ShellWordmark.js";
 import { CueToast } from "./client/CueToast.js";
 import { ClientChrome } from "./client/ClientChrome.js";
-import { RoleSettingsFields } from "./client/ClientSettingsFields.js";
 import styles from "./ClientShell.module.css";
+import { ClientNameModal } from "./client/ClientNameModal.js";
+import { ClientStagePanes } from "./client/ClientStagePanes.js";
+import { ClientWelcome } from "./client/ClientWelcome.js";
+import { CLIENT_ROLES, type ClientRoleId } from "./client/clientRoles.js";
 
-type RoleId = "karaoke" | "grid" | "score" | "drums";
 
-const ROLES: { id: RoleId; label: string; icon: string }[] = [
-  { id: "karaoke", label: "Tekst", icon: "🎤" },
-  { id: "grid", label: "Akordy", icon: "🎹" },
-  { id: "score", label: "Partytura", icon: "🎼" },
-  { id: "drums", label: "Forma", icon: "🥁" },
-];
+type RoleId = ClientRoleId;
 
 export function ClientShell() {
   const { pathname } = useLocation();
@@ -355,111 +331,31 @@ export function ClientShell() {
 
   if (nameModal) {
     return (
-      <div className={styles.page}>
-        <div
-          className={styles.modal}
-          role="dialog"
-          aria-modal
-          aria-labelledby="name-title"
-        >
-          <div className={styles.modalConn}>
-            <ConnectionIndicator status={wsStatus} latencyMs={latencyMs} />
-          </div>
-          <ConnectionLostBanner status={wsStatus} />
-          <h1 id="name-title" className={styles.modalTitle}>
-            Zmień nazwę
-          </h1>
-          <p className={styles.modalHint}>
-            Podaj swoje imię lub nazwę urządzenia.
-          </p>
-          <form className={styles.modalForm} onSubmit={submitName}>
-            <Input
-              maxLength={DEVICE_DISPLAY_NAME_MAX}
-              placeholder="np. Ania · saksofon"
-              value={nameDraft}
-              onChange={(e) => setNameDraft(e.target.value)}
-              autoFocus
-              aria-label="Imię lub nazwa urządzenia"
-            />
-            <Button variant="primary" type="submit">
-              Zapisz
-            </Button>
-          </form>
-        </div>
-      </div>
+      <ClientNameModal
+        wsStatus={wsStatus}
+        latencyMs={latencyMs}
+        nameDraft={nameDraft}
+        setNameDraft={setNameDraft}
+        onSubmit={submitName}
+      />
     );
   }
 
   if (!started) {
     return (
-      <div className={styles.page}>
-        {renderClientChrome(false)}
-        <ConnectionLostBanner status={wsStatus} />
-        <main
-          className={[
-            styles.welcome,
-            isCompactMobile ? styles.welcomeMobile : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          <div className={styles.welcomeHero}>
-            <ShellWordmark className={styles.welcomeBrand} />
-            <div className={styles.greetingRow}>
-              <p className={styles.greeting}>Cześć, {name}</p>
-              <ShellIconButton
-                label="Zmień nazwę"
-                onClick={() => {
-                  setNameDraft(name);
-                  setNameModal(true);
-                }}
-              >
-                <IconPencil />
-              </ShellIconButton>
-            </div>
-            <h1 className={styles.welcomeTitle}>
-              Wybierz <span className={styles.welcomeAccent}>rolę</span>
-            </h1>
-          </div>
-
-          <div className={styles.roleGrid}>
-            {ROLES.map((r) => {
-              const on = picked.includes(r.id);
-              return (
-                <button
-                  key={r.id}
-                  type="button"
-                  className={[styles.roleTile, on ? styles.roleOn : ""]
-                    .filter(Boolean)
-                    .join(" ")}
-                  aria-pressed={isCompactMobile ? undefined : on}
-                  onClick={() => onRoleTileClick(r.id)}
-                >
-                  <span className={styles.roleIcon} aria-hidden>
-                    {r.icon}
-                  </span>
-                  <strong className={styles.roleLabel}>{r.label}</strong>
-                </button>
-              );
-            })}
-          </div>
-
-          {!isCompactMobile ? (
-            <div className={styles.startBar}>
-              <Button
-                variant="primary"
-                className={styles.startBarBtn}
-                disabled={picked.length === 0}
-                onClick={() => setStarted(true)}
-              >
-                {picked.length === 2
-                  ? "Rozpocznij widok dzielony"
-                  : "Rozpocznij"}
-              </Button>
-            </div>
-          ) : null}
-        </main>
-      </div>
+      <ClientWelcome
+        wsStatus={wsStatus}
+        isCompactMobile={isCompactMobile}
+        name={name}
+        picked={picked}
+        onRoleTileClick={onRoleTileClick}
+        onEditName={() => {
+          setNameDraft(name);
+          setNameModal(true);
+        }}
+        onStart={() => setStarted(true)}
+        chrome={renderClientChrome(false)}
+      />
     );
   }
 
@@ -474,218 +370,36 @@ export function ClientShell() {
         </p>
       ) : null}
 
-      <div
-        className={[styles.stage, picked.length === 2 ? styles.stageSplit : ""]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {picked.map((id) => {
-          const role = ROLES.find((r) => r.id === id)!;
-          return (
-            <section
-              key={id}
-              className={styles.rolePane}
-              aria-label={role.label}
-            >
-              {/* Role display prefs: v4 view-settings sliders (not global gear) */}
-              <SettingsPopoverAnchor className={styles.roleSettings}>
-                <ShellIconButton
-                  label={`Ustawienia ${role.label}`}
-                  aria-expanded={roleSettings === id}
-                  aria-controls={`role-settings-${id}`}
-                  onClick={() => toggleRoleSettings(id)}
-                >
-                  <IconMixer />
-                </ShellIconButton>
-                {roleSettings === id ? (
-                  <SettingsPopover
-                    id={`role-settings-${id}`}
-                    title={role.label}
-                    onClose={() => setRoleSettings(null)}
-                  >
-                    <RoleSettingsFields
-                      role={id}
-                      prefs={displayPrefs}
-                      onPrefsChange={setDisplayPrefs}
-                      vocalTapOn={vocalTapOn}
-                      onVocalTapToggle={(on) => {
-                        setVocalTapOn(on);
-                        setVocalTapIndex(0);
-                      }}
-                      scoreZoom={scoreZoom}
-                      onScoreZoomChange={setScoreZoom}
-                      scoreFollowPlayhead={scoreFollowPlayhead}
-                      onScoreFollowPlayheadChange={setScoreFollowPlayhead}
-                      scoreOctave={scoreOctave}
-                      onScoreOctaveChange={(next) => {
-                        setScoreOctave(next);
-                        if (activeProject?.id) {
-                          saveScoreOctave(activeProject.id, next);
-                        }
-                      }}
-                      scoreParts={scoreParts}
-                      scoreHiddenPartIds={scoreHiddenPartIds}
-                      onScorePartVisible={(partId, visible) => {
-                        setScoreHiddenPartIds((prev) => {
-                          let next = visible
-                            ? prev.filter((pid) => pid !== partId)
-                            : prev.includes(partId)
-                              ? prev
-                              : [...prev, partId];
-                          if (
-                            scoreParts.length > 0 &&
-                            next.length >= scoreParts.length
-                          ) {
-                            next = scoreParts
-                              .filter((p) => p.id !== partId)
-                              .map((p) => p.id);
-                          }
-                          if (activeProject?.id) {
-                            saveScoreHiddenParts(activeProject.id, next);
-                          }
-                          return next;
-                        });
-                      }}
-                    />
-                  </SettingsPopover>
-                ) : null}
-              </SettingsPopoverAnchor>
-              {id === "drums" ? (
-                activeProject ? (
-                  <DrumsPane
-                    project={activeProject}
-                    displayTicks={displayTicks}
-                    notesEdit={
-                      displayPrefs.formNotesEdit && liveDesk.clientEditEnabled
-                    }
-                    sectionNamesPolish={displayPrefs.sectionNamesPolish}
-                    onNoteChange={(clipId, note) => {
-                      if (!state.activeProjectId || !liveDesk.clientEditEnabled)
-                        return;
-                      const prev = activeProject;
-                      const next: Project = {
-                        ...activeProject,
-                        forma: {
-                          clips: activeProject.forma.clips.map((c) =>
-                            c.id === clipId
-                              ? {
-                                  ...c,
-                                  note: note.length > 0 ? note : undefined,
-                                }
-                              : c,
-                          ),
-                        },
-                      };
-                      setDrumsNoteError(null);
-                      setActiveProject(next);
-                      void putProject(state.activeProjectId, next)
-                        .then((saved) => setActiveProject(saved))
-                        .catch((err) => {
-                          setActiveProject(prev);
-                          setDrumsNoteError(
-                            err instanceof Error
-                              ? err.message
-                              : "Nie udało się zapisać notatki perkusji",
-                          );
-                        });
-                    }}
-                  />
-                ) : (
-                  <p className={styles.empty}>
-                    {state.activeProjectId
-                      ? projectLoading
-                        ? "Wczytywanie utworu…"
-                        : "Nie udało się wczytać utworu."
-                      : "Oczekiwanie na utwór…"}
-                  </p>
-                )
-              ) : id === "karaoke" ? (
-                <KaraokePane
-                  project={activeProject}
-                  displayTicks={displayTicks}
-                  loading={projectLoading}
-                  hasActiveProjectId={Boolean(state.activeProjectId)}
-                  prefs={displayPrefs}
-                  vocalTapOn={vocalTapOn && liveDesk.clientEditEnabled}
-                  vocalTapIndex={vocalTapIndex}
-                  onVocalTap={() => {
-                    if (
-                      !activeProject ||
-                      !state.activeProjectId ||
-                      !liveDesk.clientEditEnabled
-                    )
-                      return;
-                    const queue = vocalTapQueue(activeProject);
-                    const clip = queue[vocalTapIndex];
-                    if (!clip) {
-                      setVocalTapOn(false);
-                      return;
-                    }
-                    const next = applyVocalTap(
-                      activeProject,
-                      clip.id,
-                      displayTicks,
-                    );
-                    setActiveProject(next);
-                    void putProject(state.activeProjectId, next)
-                      .then(() => {
-                        const qi = vocalTapIndex + 1;
-                        if (qi >= queue.length) {
-                          setVocalTapOn(false);
-                          setVocalTapIndex(0);
-                        } else {
-                          setVocalTapIndex(qi);
-                        }
-                      })
-                      .catch(() => undefined);
-                  }}
-                  onVocalTapStep={(dir) => {
-                    if (!activeProject) return;
-                    const queue = vocalTapQueue(activeProject);
-                    const max = Math.max(0, queue.length - 1);
-                    setVocalTapIndex((i) =>
-                      Math.max(0, Math.min(max, i + dir)),
-                    );
-                  }}
-                />
-              ) : id === "grid" ? (
-                <GridPane
-                  project={activeProject}
-                  displayTicks={displayTicks}
-                  loading={projectLoading}
-                  hasActiveProjectId={Boolean(state.activeProjectId)}
-                  prefs={displayPrefs}
-                  teamSemitones={liveDesk.transpositionSemitones}
-                />
-              ) : id === "score" ? (
-                <ScorePane
-                  project={activeProject}
-                  loading={projectLoading}
-                  hasActiveProjectId={Boolean(state.activeProjectId)}
-                  displayTicks={displayTicks}
-                  scoreZoom={scoreZoom}
-                  followPlayhead={scoreFollowPlayhead}
-                  scoreOctave={scoreOctave}
-                  hiddenPartIds={scoreHiddenPartIds}
-                  onPartsChange={setScoreParts}
-                  teamSemitones={liveDesk.transpositionSemitones}
-                  instrumentPitch={displayPrefs.instrumentPitch}
-                  instrumentPitchManual={displayPrefs.instrumentPitchManual}
-                  onSeek={(ticks) => {
-                    void seek(ticks);
-                  }}
-                />
-              ) : (
-                <p className={styles.empty}>Oczekiwanie na utwór…</p>
-              )}
-            </section>
-          );
-        })}
-        {picked.length === 2 ? (
-          <div className={styles.divider} aria-hidden />
-        ) : null}
-      </div>
-
+      <ClientStagePanes
+        picked={picked}
+        activeProject={activeProject}
+        displayTicks={displayTicks}
+        projectLoading={projectLoading}
+        activeProjectId={state.activeProjectId}
+        displayPrefs={displayPrefs}
+        setDisplayPrefs={setDisplayPrefs}
+        liveDesk={liveDesk}
+        vocalTapOn={vocalTapOn}
+        setVocalTapOn={setVocalTapOn}
+        vocalTapIndex={vocalTapIndex}
+        setVocalTapIndex={setVocalTapIndex}
+        setActiveProject={setActiveProject}
+        setDrumsNoteError={setDrumsNoteError}
+        roleSettings={roleSettings}
+        setRoleSettings={setRoleSettings}
+        toggleRoleSettings={toggleRoleSettings}
+        scoreZoom={scoreZoom}
+        setScoreZoom={setScoreZoom}
+        scoreFollowPlayhead={scoreFollowPlayhead}
+        setScoreFollowPlayhead={setScoreFollowPlayhead}
+        scoreOctave={scoreOctave}
+        setScoreOctave={setScoreOctave}
+        scoreParts={scoreParts}
+        setScoreParts={setScoreParts}
+        scoreHiddenPartIds={scoreHiddenPartIds}
+        setScoreHiddenPartIds={setScoreHiddenPartIds}
+        seek={seek}
+      />
       <div
         className={styles.cueHost}
         data-empty={!cueNow && !cueNext ? "true" : undefined}
