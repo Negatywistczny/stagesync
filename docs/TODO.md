@@ -22,7 +22,7 @@ Otwarte zadania. Plan etapów: [ROADMAP.md](./ROADMAP.md). Historia: [CHANGELOG.
 
 #### Szlif UI Timeline (`apps/web`)
 
-- [ ] `TimelineShell.tsx` (5 100 LOC) &rarr; dalsze wyciąganie pod-dialogów, toolbara i hooków zdarzeń
+- [x] `TimelineShell.tsx` &rarr; wyciągnięto renderer ścieżek (`TimelineLanesRenderer`), akcje miksera (`useTimelineTrackActions`, `useTimelineMixerCallbacks`), gesty ścieżek (`useTimelineLanePointerHandlers`), edycję mapy (`useTimelineMapEdits`) oraz Różdżkę (`useTimelineWandTool`)
 
 #### Kod Natywny (Rust & Kotlin)
 
