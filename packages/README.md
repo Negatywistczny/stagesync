@@ -6,28 +6,12 @@ Katalog `packages/` grupuje pakiety i moduły deweloperskie, które są współd
 
 ## 📁 Pakiety
 
-Każdy z poniższych podkatalogów posiada własną konfigurację deweloperską ([`package.json`](../package.json), konfiguracje kompilatora TypeScript i narzędzi testowych):
-
-1. **[`@stagesync/shared`](shared/README.md)**
-   - **Rola:** Czysta logika biznesowa, helpery czasu muzycznego, schematy walidacyjne Zod.
-   - **Główna zasada:** Brak jakichkolwiek zależności od przeglądarkowego DOM czy systemu plików Node.js (`no DOM/FS`).
-
-2. **[`@stagesync/ui`](ui/README.md)**
-   - **Rola:** Scentralizowany Design System i zestaw komponentów interfejsu użytkownika.
-   - **Główna zasada:** Komponenty bez logiki biznesowej, stylizowane wyłącznie przy użyciu **CSS Modules** oraz zmiennych CSS (tokenów `--ss-*`).
-
-3. **[`eslint-config`](./eslint-config/README.md)**
-   - **Rola:** Współdzielona konfiguracja linterów (ESLint/Prettier) dla całego projektu, wymuszająca spójność stylu pisania kodu.
-
-4. **[`typescript-config`](./typescript-config/README.md)**
-   - **Rola:** Bazowe pliki konfiguracyjne TypeScript ([`base.json`](./typescript-config/base.json)) dla różnych środowisk (aplikacje webowe, biblioteki, środowisko Node.js).
-
-5. **[`android-keystore`](./android-keystore/README.md)**
-   - **Rola:** Stały klucz sideload ([`sideload.keystore`](./android-keystore/sideload.keystore)) dla APK Console / Performer (Releases + lokalny `assembleDebug` / `assembleRelease`).
-   - **Główna zasada:** Wspólny certyfikat debug/release sideload — nie klucz Google Play.
-
-6. **[`plugins`](./plugins/README.md)**
-   - **Rola:** Wtyczki zewnętrzne dla DAW (np. MuseScore).
+1. **[`@stagesync/shared`](shared/README.md)** — Czysta logika domenowa, solver czasu muzycznego (ticks/PPQ) i schematy walidacyjne Zod (wymóg `no DOM/FS`).
+2. **[`@stagesync/ui`](ui/README.md)** — Scentralizowany Design System i komponenty prezentacyjne stylizowane przy użyciu CSS Modules i tokenów `--ss-*`.
+3. **[`eslint-config`](./eslint-config/README.md)** — Współdzielona konfiguracja linterów (ESLint/Prettier) wymuszająca spójność stylu kodowania.
+4. **[`typescript-config`](./typescript-config/README.md)** — Bazowe pliki konfiguracyjne TypeScript (`base.json`, `node-library.json`, `react-library.json`).
+5. **[`android-keystore`](./android-keystore/README.md)** — Stały certyfikat podpisujący sideload APK Console / Performer dla wydań GitHub Releases.
+6. **[`plugins`](./plugins/README.md)** — Wtyczki zewnętrzne integrujące StageSync z zewnętrznym oprogramowaniem muzycznym (np. MuseScore).
 
 ## ⚙️ Wykorzystanie w monorepo
 
