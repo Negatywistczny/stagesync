@@ -1,4 +1,6 @@
-# referencje-daw/
+> [📦 StageSync](../../../../README.md) / [docs](../../../README.md) / [analysis](../../README.md) / [inspiracje](../README.md)
+
+# 🎹 referencje-daw/ — Referencje Zachowań DAW i Show-Tools
 
 Spec zachowań DAW / show-tools / Client charts vs ADR.
 

@@ -1,4 +1,6 @@
-# testy-pokrycie/
+> [📦 StageSync](../../../../README.md) / [docs](../../../README.md) / [analysis](../../README.md) / [inspiracje](../README.md)
+
+# 🧪 testy-pokrycie/ — Plany Uzupełnienia Testów Vitest
 
 Plany uzupełnienia testów Vitest (DEFER / partial). Zamknięte plany usunięte.
 

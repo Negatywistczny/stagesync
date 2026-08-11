@@ -1,4 +1,6 @@
-# Design System UI (StageSync v5)
+> [📦 StageSync](../../README.md) / [docs](../README.md)
+
+# 🎨 ui/ — Design System UI (StageSync v5)
 
 Kanoniczna dokumentacja warstwy prezentacji. Implementacja tokenów i
 komponentów: [`packages/ui`](../../packages/ui/).

@@ -94,22 +94,13 @@ Więcej informacji znajdziesz w pełnej [Dokumentacji DX](./docs/guides/DX.md).
 
 ## 📦 Monorepo
 
-| Ścieżka                                           | Rola                         | Opis                                                   |
-| :------------------------------------------------ | :--------------------------- | :----------------------------------------------------- |
-| 📱 **[`apps/`](apps/README.md)**                  | **Kontener aplikacji**       | Główny katalog aplikacji monorepo                      |
-| -> ⚙️ **[`server`](apps/server/README.md)**       | API i transport SSOT         | Serwer czasu, persystencja                             |
-| -> 💻 **[`web`](apps/web/README.md)**             | UI Admin / Client / Timeline | Oś czasu, panele, sterowanie                           |
-| -> 🖥️ **[`desktop`](apps/desktop/README.md)**     | Tauri Shell                  | Natywne paczkowanie i autowykrywanie                   |
-| -> 📱 **[`performer`](apps/performer/README.md)** | Android Client               | Lekki klient sceniczny                                 |
-| -> 📱 **[`console`](apps/console/README.md)**     | Android Admin Shell          | Zarządzanie z tabletu                                  |
-| -> 🌐 **[`www`](apps/www/README.md)**             | Publiczne WWW                | Portal i aktualności                                   |
-| 📦 **[`packages/`](packages/README.md)**          | **Pakiety współdzielone**    | Biblioteki, konfiguracje i design system               |
-| -> 📐 **[`shared`](packages/shared/README.md)**   | Czysta logika i czas         | Walidacja Zod, helpery ticks/PPQ                       |
-| -> 🎨 **[`ui`](packages/ui/README.md)**           | Design System                | Komponenty bez logiki, CSS Modules                     |
-| -> 🔌 **[`plugins`](packages/plugins/README.md)** | Wtyczki zewnętrzne           | Integracje z oprogramowaniem muzycznym (np. MuseScore) |
-| 📂 **[`data/`](data/README.md)**                  | Dane operacyjne              | Magazyn runtime, projekty v3 i logi _(w `.gitignore`)_ |
-| 🛠️ **[`scripts/`](scripts/README.md)**            | Narzędzia i automatyzacja    | Skrypty release, build i generowania mapy              |
-| 📚 **[`docs/`](docs/README.md)**                  | Baza wiedzy                  | Dokumentacja techniczna, specyfikacje i decyzje ADR    |
+| Ścieżka | Opis |
+| :--- | :--- |
+| 📱 **[`apps/`](apps/README.md)** | Aplikacje końcowe: Serwer SSOT, Web UI, Desktop (Tauri), Android (Performer / Console), WWW |
+| 📦 **[`packages/`](packages/README.md)** | Pakiety współdzielone: logika domenowa (`shared`), Design System (`ui`), wtyczki i tooling |
+| 📂 **[`data/`](data/README.md)** | Magazyn runtime: pliki projektów v5, biblioteka utworów oraz logi _(w `.gitignore`)_ |
+| 🛠️ **[`scripts/`](scripts/README.md)** | Narzędzia deweloperskie: Dev Hub, skrypty release, setup oraz automatyzacja CI |
+| 📚 **[`docs/`](docs/README.md)** | Baza wiedzy: podręczniki operatorskie, specyfikacje API, architektura i decyzje ADR |
 
 ## 📚 Dokumentacja
 

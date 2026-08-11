@@ -1,4 +1,6 @@
-# audyty-silnik/
+> [📦 StageSync](../../../../README.md) / [docs](../../../README.md) / [analysis](../../README.md) / [inspiracje](../README.md)
+
+# 🔍 audyty-silnik/ — Audyty Kodu Silnika
 
 Audyty kodu (DEFER / partial — nie zamknięte). Zamknięte audyty usunięte; historia → git / CHANGELOG.
 

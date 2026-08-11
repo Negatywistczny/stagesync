@@ -1,4 +1,6 @@
-# specyfikacje/
+> [📦 StageSync](../../../../README.md) / [docs](../../../README.md) / [analysis](../../README.md) / [inspiracje](../README.md)
+
+# 📋 specyfikacje/ — Specyfikacje i Hipotezy Produktowe
 
 Specyfikacje i oceny produktowe (hipotezy / design, nie claim Done). Tylko hipotezy wpływające na otwartą / przyszłą pracę.
 

@@ -1,3 +1,5 @@
+> [📦 StageSync](../../README.md) / [packages](../README.md)
+
 # 🔌 plugins/ — Wtyczki zewnętrzne
 
 Katalog `packages/plugins/` zawiera wtyczki zewnętrzne integrujące StageSync z oprogramowaniem muzycznym (np. MuseScore).

@@ -1,4 +1,6 @@
-# StageSync v5 — Analysis
+> [📦 StageSync](../../README.md) / [docs](../README.md)
+
+# 🔬 analysis/ — Analizy, Raporty i Inspiracje
 
 Trzy typy artefaktów:
 

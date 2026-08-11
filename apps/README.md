@@ -1,8 +1,10 @@
+> [📦 StageSync](../README.md)
+
 # 📱 apps/ — Aplikacje Monorepo (Uruchomieniowe)
 
 Katalog `apps/` grupuje wszystkie aplikacje końcowe wspierane w ramach ekosystemu StageSync. Każda z aplikacji reprezentuje oddzielną platformę uruchomieniową, ale korzysta ze wspólnych reguł biznesowych oraz design systemu zadeklarowanego w `packages/`.
 
-## 📁 Aplikacje drugiego rzędu
+## 📁 Aplikacje
 
 Każda aplikacja w monorepo odpowiada za inny aspekt systemu synchronizacji scenicznej:
 
@@ -30,7 +32,7 @@ Każda aplikacja w monorepo odpowiada za inny aspekt systemu synchronizacji scen
    - **Rola:** Publiczny portal informacyjny (Strona WWW).
    - **Odpowiedzialność:** Prezentacja możliwości systemu, dokumentacja, sekcja aktualności i wsparcie dla użytkowników końcowych.
 
-## ⚙️ Lokalne uruchomienie (pnpm)
+## ⚙️ Budowanie i testowanie
 
 Główne komendy do uruchamiania i budowania aplikacji znajdują się w głównym katalogu monorepo. Przykładowo:
 

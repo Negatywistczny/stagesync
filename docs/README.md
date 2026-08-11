@@ -1,8 +1,10 @@
-# docs/ — Dokumentacja Techniczna, Standardy i ADR
+> [📦 StageSync](../README.md)
+
+# 📚 docs/ — Dokumentacja Techniczna, Standardy i ADR
 
 Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, muzyków i operatorów systemu StageSync. Znajdują się tu specyfikacje techniczne, indeksy decyzji architektonicznych (ADR) oraz poradniki operacyjne.
 
-## Struktura katalogu
+## 📁 Struktura projektu
 
 ### Dokumenty główne
 
@@ -21,14 +23,14 @@ Katalog `docs/` stanowi centralną bazę wiedzy dla twórców, instalatorów, mu
 
 ### Podkatalogi specjalistyczne
 
-- **`adr/`** — Indeks decyzji architektonicznych (_Architecture Decision Records_).
-- **`api/`** — Specyfikacja punktów końcowych interfejsu REST i WebSockets.
-- **`analysis/`** — Raporty kanoniczne (`reports/{current,milestones,hygiene}/`), inspiracje zewnętrzne + triage, oraz lokalny scratch `working/`.
-- **`examples/`** — Przykładowe pliki projektów / pakietów biblioteki v5.
-- **`ui/`** — Design system (kolory, typografia, spacing, Button) oraz inwentarz shelli.
-- **`guides/`** — Podręczniki operatorskie (INSTALL / DESKTOP / MOBILE / DX).
+- **[`adr/`](./adr/README.md)** — Indeks decyzji architektonicznych (_Architecture Decision Records_).
+- **[`api/`](./api/README.md)** — Specyfikacja punktów końcowych interfejsu REST i WebSockets.
+- **[`analysis/`](./analysis/README.md)** — Raporty kanoniczne (`reports/`), inspiracje zewnętrzne oraz brudnopis `working/`.
+- **[`examples/`](./examples/README.md)** — Przykładowe pliki projektów / pakietów biblioteki v5.
+- **[`ui/`](./ui/README.md)** — Design system (kolory, typografia, spacing, Button) oraz inwentarz shelli.
+- **[`guides/`](./guides/README.md)** — Podręczniki operatorskie (INSTALL / DESKTOP / MOBILE / DX).
 
-## Rola w projekcie
+## 🎨 Standardy
 
 Wszelkie modyfikacje funkcjonalności interfejsu lub mechaniki synchronizacji czasu muszą być uprzednio weryfikowane z zapisami w tym katalogu. Działa tu **Zasada Parity** (parytetu funkcjonalnego z wersją v4 legacy) jako nadrzędny wymóg stabilności systemu estradowego.
 

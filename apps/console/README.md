@@ -1,16 +1,31 @@
-# StageSync Console
+> [📦 StageSync](../../README.md) / [apps](../README.md)
+
+# 📱 apps/console — Pełnoprawny Klient Android (Console)
 
 **Produkt:** pełnoprawny odpowiednik desktopu na Androidzie (Admin + Timeline + Client + lokalny host).  
 **Mapowanie:** `mobile-full` w [#674](https://github.com/Negatywistczny/stagesync/issues/674) → **Console**.  
-**Po połączeniu:** WebView ładuje host `{origin}/admin` z **pełnym SPA** (link „Klient” działa).
+**Po połączeniu:** WebView ładuje host `{origin}/admin` z **pełnym SPA** (link „Klient" działa).
 
-## Stack
+## 📁 Struktura projektu
+
+- **`android/`** — Projekt Kotlin + Gradle (WebView, CameraX, ML Kit, mDNS, nodejs-mobile).
+- **`scripts/`** — Skrypty budowania APK i przygotowania lokalnego hosta (`build-apk.sh`, `prepare-local-host.mjs`).
+- **[`android-boot.mjs`](./android-boot.mjs)** — Skrypt startowy silnika nodejs-mobile na urządzeniu.
+
+## 🚀 Natywny Launcher i Lokalny Host (Android)
+
+Natywny interfejs startowy zaimplementowany w Kotlin (`android/`):
+- **Wykrywanie hostów (Discovery):** „Uruchom lokalny host” (nodejs-mobile) + live QR + mDNS (`_stagesync._tcp`) + ręczny URL + lista ostatnich połączeń (recent).
+- **Punkt wejścia:** Po weryfikacji `/api/health` przekierowuje do `{origin}/admin` (z pełnym SPA: Admin + Timeline + Client).
+- **Lokalny host:** Przycisk widoczny i aktywny (`LocalHostService` + JNI + `libnode` + `assets/host` → `127.0.0.1:4000/api/health`). Patrz [ADR 0014](../../docs/adr/0014-desktop-launcher.md), [ADR 0016](../../docs/adr/0016-android-performer-console.md) oraz [MOBILE.md](../../docs/guides/MOBILE.md).
+
+## 🔧 Stack technologiczny
 
 - Kotlin + WebView — [ADR 0016](../../docs/adr/0016-android-performer-console.md)
-- Launcher jak desktop ([ADR 0014](../../docs/adr/0014-desktop-launcher.md)): QR + mDNS + recent + **„Uruchom lokalny host”**
+- Launcher jak desktop ([ADR 0014](../../docs/adr/0014-desktop-launcher.md)): QR + mDNS + recent + **„Uruchom lokalny host"**
 - Lokalny host: nodejs-mobile (`libnode`) + JNI + `assets/host` (serwer jak sidecar desktop). Bez silnika w APK → uczciwy status (nie atrapa).
 
-## Build
+## ⚙️ Budowanie i testowanie
 
 ```sh
 ./scripts/build-apk.sh
@@ -20,7 +35,7 @@ cd android && ./gradlew assembleDebug
 
 Gradle kopiuje **pełne SPA** `apps/web/dist-console` → `assets/www` (ABI: arm64-v8a + armeabi-v7a).
 
-Domyślnie [`build-apk.sh`](./scripts/build-apk.sh) uruchamia [`prepare-local-host.mjs`](./scripts/prepare-local-host.mjs) (libnode 16 KB–aligned + headers + server/web/seed + [`android-boot.mjs`](./android-boot.mjs)). Wymaga NDK 26 + CMake 3.22.1. Zip: digidem `v18.20.4` (nadpisanie `NODEJS_MOBILE_ZIP_URL`). Sideload: `versionCode` ≥ **50213** (`com.stagesync.console.debug`).
+Domyślnie [`build-apk.sh`](./scripts/build-apk.sh) uruchamia [`prepare-local-host.mjs`](./scripts/prepare-local-host.mjs) (libnode 16 KB–aligned + headers + server/web/seed + [`android-boot.mjs`](./android-boot.mjs)). Wymaga NDK 26 + CMake 3.22.1. Zip: digidem `v18.20.4` (nadpisanie `NODEJS_MOBILE_ZIP_URL`). Sideload: `versionCode` ≥ **50213** (`com.stagesync.console.debug`).
 
 ```sh
 node scripts/prepare-local-host.mjs              # pełny pack (domyślny)
@@ -33,13 +48,13 @@ Nazwa release CI: `StageSync-Console-vX.Y.Z.apk`
 
 `./scripts/build-apk.sh` kopiuje wynik do `data/downloads/stagesync-console.apk`. Host (desktop / monorepo) serwuje go automatycznie pod `/downloads/` — bez ręcznego kopiowania do Documents.
 
-## Zakazy
+## 🚫 Zakazy
 
 - Google Play; sekrety w APK; Capacitor-as-magic
 - Auto-update w tle
-- Atrapa „host uruchomiony” bez `/api/health` na 127.0.0.1
+- Atrapa „host uruchomiony" bez `/api/health` na 127.0.0.1
 - Performer ≠ Console (Performer zostaje Client-only, bez lokalnego hosta)
 
-## Docs
+## 📚 Dokumentacja
 
 [docs/guides/MOBILE.md](../../docs/guides/MOBILE.md)

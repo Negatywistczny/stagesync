@@ -1,3 +1,5 @@
+> [📦 StageSync](../README.md)
+
 # 🛠️ StageSync Root Scripts (`scripts/`)
 
 Katalog `scripts/` zawiera skrypty automatyzacji, narzędzia wydań SemVer, skrypty pre-flight, generatory dokumentacji oraz pociągi integracyjne CI/CD.

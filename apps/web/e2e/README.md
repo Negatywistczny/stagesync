@@ -1,33 +1,34 @@
-# Web E2E (Playwright)
+> [📦 StageSync](../../../README.md) / [apps](../../README.md) / [web](../README.md)
 
-Minimal browser smoke for Timeline shells (not Vitest mounts of `TimelineShell`).
+# 🧪 apps/web/e2e — Testy End-to-End (Playwright)
 
-## Forma drag / resize (P0)
+Zestaw scenariuszy testowych end-to-end dla aplikacji webowej (Admin / Timeline / Client) realizowany w przeglądarce przy użyciu **Playwright**.
 
-- Spec: [`forma-drag.spec.ts`](./forma-drag.spec.ts)
-- Flow: create seeded project via `/api/projects` → open `/timeline/:id` → assert Forma lane + Intro/Countdown clips → pointer drag move + right-edge resize → assert inspector tick readout.
+## 📁 Testy i specyfikacje
 
-## Run locally
+- **Forma drag / resize (P0):** [`forma-drag.spec.ts`](./forma-drag.spec.ts)
+  - Przepływ: utworzenie seed projektu via `/api/projects` → otwarcie `/timeline/:id` → asercja toru Formy oraz klipów Intro/Countdown → przeciągnięcie klipu i zmiana rozmiaru ramką → weryfikacja pozycji ticków w inspektorze.
 
-From repo root (shared must be built for the server):
+## ⚙️ Uruchamianie lokalne
+
+Z korzenia repozytorium (wymaga zbudowania pakietu `@stagesync/shared` dla serwera):
 
 ```bash
 pnpm --filter @stagesync/shared build
 pnpm --filter @stagesync/web test:e2e
 ```
 
-First time (or after Playwright upgrade):
+Pierwsze uruchomienie (lub po aktualizacji Playwright):
 
 ```bash
 pnpm --filter @stagesync/web exec playwright install chromium
 ```
 
-Uses an isolated `STAGESYNC_DATA_DIR` under the OS temp dir (override with env). Vite on `:3000` proxies `/api` to the server on `:4000`.
+Testy wykorzystują odizolowany katalog `STAGESYNC_DATA_DIR` w katalogu tymczasowym systemu. Vite (port `:3000`) automatycznie przekierowuje żądania `/api` do serwera (port `:4000`).
 
-## CI
+## 🔧 Integracja CI/CD
 
-Job `playwright-smoke` in `.github/workflows/ci.yml`:
-
-- Runs on push to `main`, `workflow_dispatch`, or PRs that touch `apps/web/src/**` / `apps/web/e2e/**` / Playwright config (docs-only PRs skip)
-- Caches Playwright Chromium under `~/.cache/ms-playwright`
-- Command: `pnpm --filter @stagesync/web test:e2e`
+Zadanie `playwright-smoke` w workflow `.github/workflows/ci.yml`:
+- Uruchamiane przy push do `main`, `workflow_dispatch` oraz na PR dotykających kodu web (`apps/web/src/**`, `apps/web/e2e/**`).
+- Cache'uje przeglądarkę Playwright Chromium w `~/.cache/ms-playwright`.
+- Polecenie wykonawcze: `pnpm --filter @stagesync/web test:e2e`.

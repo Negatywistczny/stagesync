@@ -1,8 +1,10 @@
+> [📦 StageSync](../README.md)
+
 # 📂 data/ — Katalog Runtime i Persystencja
 
 Katalog `data/` służy jako lokalny magazyn danych operacyjnych w czasie działania aplikacji (_runtime_). Jest on domyślnie zignorowany w systemie kontroli wersji Git (poza plikami konfiguracyjnymi i tym dokumentem), aby zapobiec commitowaniu lokalnych danych projektów, logów i pobranych zasobów użytkownika.
 
-## 📁 Struktura katalogu
+## 📁 Struktura projektu
 
 - **`projects/`** — Pliki projektów StageSync w formacie JSON (schemat zgodny z wersją v3, walidowany przez Zod w `@stagesync/shared`).
 - **`library/`** — Biblioteka utworów, w tym pliki tekstowe, akordy, pliki XML/MXML/OSMD (partytury) oraz inne zasoby multimedialne przypisane do utworów.
@@ -10,7 +12,7 @@ Katalog `data/` służy jako lokalny magazyn danych operacyjnych w czasie dział
 - **`logs/`** — Logi działania serwera (`apps/server`) oraz deskryptorów desktopowych.
 - **`host/`** — Pliki konfiguracyjne specyficzne dla hosta sieciowego lub środowiska lokalnego.
 
-## ⚙️ Integracja z systemem
+## 🔗 Powiązane
 
 Katalog ten jest wykorzystywany przez:
 

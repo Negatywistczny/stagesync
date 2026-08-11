@@ -1,4 +1,6 @@
-# API (REST + WebSocket)
+> [📦 StageSync](../../README.md) / [docs](../README.md)
+
+# 🔌 api/ — Specyfikacja REST API & WebSockets
 
 Cienkie API wewnętrzne StageSync **v5** — własny JSON + Zod na krawędziach,
 nie JSON:API ([ADR 0006](../adr/0006-no-json-api.md)).

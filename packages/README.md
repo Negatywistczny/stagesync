@@ -1,30 +1,32 @@
+> [📦 StageSync](../README.md)
+
 # 🎨 packages/ — Pakiety Współdzielone i Biblioteki Monorepo
 
 Katalog `packages/` grupuje pakiety i moduły deweloperskie, które są współdzielone pomiędzy wieloma aplikacjami w monorepo (np. pomiędzy serwerem, interfejsem webowym a aplikacjami mobilnymi). Pomaga to zachować spójność typów, logiki domenowej oraz systemu wizualnego (Design System).
 
-## 📁 Zawartość drugiego rzędu (Kategorie)
+## 📁 Pakiety
 
 Każdy z poniższych podkatalogów posiada własną konfigurację deweloperską ([`package.json`](../package.json), konfiguracje kompilatora TypeScript i narzędzi testowych):
 
-1. **[`@stagesync/shared`](shared/README.md) (`packages/shared/`)**
+1. **[`@stagesync/shared`](shared/README.md)**
    - **Rola:** Czysta logika biznesowa, helpery czasu muzycznego, schematy walidacyjne Zod.
    - **Główna zasada:** Brak jakichkolwiek zależności od przeglądarkowego DOM czy systemu plików Node.js (`no DOM/FS`).
 
-2. **[`@stagesync/ui`](ui/README.md) (`packages/ui/`)**
+2. **[`@stagesync/ui`](ui/README.md)**
    - **Rola:** Scentralizowany Design System i zestaw komponentów interfejsu użytkownika.
    - **Główna zasada:** Komponenty bez logiki biznesowej, stylizowane wyłącznie przy użyciu **CSS Modules** oraz zmiennych CSS (tokenów `--ss-*`).
 
-3. **[`eslint-config`](./eslint-config/README.md) (`packages/eslint-config/`)**
+3. **[`eslint-config`](./eslint-config/README.md)**
    - **Rola:** Współdzielona konfiguracja linterów (ESLint/Prettier) dla całego projektu, wymuszająca spójność stylu pisania kodu.
 
-4. **[`typescript-config`](./typescript-config/) (`packages/typescript-config/`)**
+4. **[`typescript-config`](./typescript-config/README.md)**
    - **Rola:** Bazowe pliki konfiguracyjne TypeScript ([`base.json`](./typescript-config/base.json)) dla różnych środowisk (aplikacje webowe, biblioteki, środowisko Node.js).
 
-5. **[`android-keystore`](./android-keystore/README.md) (`packages/android-keystore/`)**
+5. **[`android-keystore`](./android-keystore/README.md)**
    - **Rola:** Stały klucz sideload ([`sideload.keystore`](./android-keystore/sideload.keystore)) dla APK Console / Performer (Releases + lokalny `assembleDebug` / `assembleRelease`).
    - **Główna zasada:** Wspólny certyfikat debug/release sideload — nie klucz Google Play.
 
-6. **[`plugins`](./plugins/README.md) (`packages/plugins/`)**
+6. **[`plugins`](./plugins/README.md)**
    - **Rola:** Wtyczki zewnętrzne dla DAW (np. MuseScore).
 
 ## ⚙️ Wykorzystanie w monorepo

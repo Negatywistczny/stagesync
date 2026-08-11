@@ -7,21 +7,60 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ## [Unreleased]
 
-### Zmieniono
-
-#### 📚 Dokumentacja
-
-- **Przewodniki:** INSTALL / DESKTOP / MOBILE ujednolicone (odbiorca, mapa aktualizacji, kontrakty operatora w INSTALL; odchudzone menu desktop i wall-of-text Android).
+### Dodano
 
 #### ⏱️ Timeline & DAW
 
+- **Tab selection i nożyczki:** zaznaczanie klipów zakładkami oraz narzędzie nożyczek (scissors) do podziału klipów na osi czasu.
+
+#### 🧪 Testy i pokrycie
+
+- **Smart Tempo beat-grid:** pokrycie testami powyżej 85 % (nowe scenariusze grid, sekcje, krawędzie).
+- **Pristine grid:** testy jednostkowe dla `buildPristineSectionGrid`.
+- **Top-10 I/O files:** pokrycie linii powyżej 50 % dla najcięższych plików wejścia/wyjścia.
+- **yt-dlp stubs:** precyzyjniejsze matchery URL w testach sieciowych serwera.
+
+#### 🛠️ DX & Dev Hub
+
+- **Scoped verify gates:** bramy weryfikacji CI/Daily/Audit z parsowaniem wyników Vitest/Coverage/Playwright.
+- **Interaktywny zapis logów verify:** po zakończeniu weryfikacji można zapisać logi do pliku.
+- **Danger confirms:** potwierdzenia i ostrzeżenia efektów ubocznych w destrukcyjnych akcjach Dev Hub.
+- **Richer Verify summary:** per-step details w podsumowaniu verify.
+
+### Zmieniono
+
+#### 🏗️ Architektura
+
+- **Modularyzacja kodu źródłowego:** split `smart-tempo`, `audioTempoAnalysis`, `audioPlayback`, `text-anchor-bridge` na wyspecjalizowane moduły; split ~20 komponentów `apps/web` pod limit `max-lines` (inspektory, mixer, edycja, dashboard); split tras serwera (`system`, `youtube-audio`).
+- **Reorganizacja `shells/`:** pliki przeniesione z płaskiego katalogu `shells/` do subdirectories: `client/`, `desktop/`, `import/`, `settings/`, `timeline/`, `components/`.
+- **Reorganizacja `server/src/` i `shared/src/`:** pliki pogrupowane w katalogi domenowe.
+
+#### ⏱️ Timeline & DAW
+
+- **Smart Tempo forma layout:** poprawiony algorytm rozkładu sekcji Formy oraz onset grid w text-anchor bridge.
 - **Import US+UG:** przy ciasnym oknie Formy mostek pomija nadmiarowe akordy zamiast upychać je w odcinki 1-tick (ostrzeżenie w wyniku importu); sekcja bez miejsca przed następnym Beat 1 wokalu dostaje 1-taktowy stub Formy zamiast zerowej długości.
+
+#### 🛠️ DX & Dev Hub
+
+- **Modularyzacja Dev Hub:** rozbicie monolitycznego skryptu na moduły `scripts/hub/` (`dev-hub`, `doctor`, `network`, `gate`, `utils`) z ulepszonym stylem terminala.
+- **Audit summary:** wzmocniony full audit z pinem postcss dla nanoid CVE.
+
+#### 📚 Dokumentacja
+
+- **DX.md → `docs/guides/`:** przewodnik deweloperski przeniesiony do katalogu `guides/` i uproszczony; scentralizowana dokumentacja DX.
+- **Usunięcie balastu historycznego:** usunięcie przestarzałych docs i preferencji z ery early-v5.
+- **Linki po restrukturyzacji:** aktualizacja wszystkich odnośników w dokumentacji po reorganizacji folderów.
+- **Przewodniki:** INSTALL / DESKTOP / MOBILE ujednolicone (odbiorca, mapa aktualizacji, kontrakty operatora w INSTALL; odchudzone menu desktop i wall-of-text Android).
 
 #### 🖥️ App Shell & UI
 
 - **Client Grid / Partytura:** `prefers-reduced-motion` wyłącza też CSS karuzeli fraz (nie tylko hero); kursor OSMD na ticku idzie tylko do przodu bez pełnego `reset` przy każdym takcie.
 
 ### Naprawiono
+
+#### 🔒 Bezpieczeństwo
+
+- **CodeQL:** zamknięcie alertów ReDoS (regexpy) i walidacja `postMessage` origin.
 
 #### 📚 Dokumentacja
 

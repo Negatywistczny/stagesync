@@ -1,4 +1,6 @@
-# inspiracje/
+> [📦 StageSync](../../../README.md) / [docs](../../README.md) / [analysis](../README.md)
+
+# 💡 inspiracje/ — Zewnętrzne Audyty i Hipotezy
 
 Zewnętrzne / eksperymentalne audyty i notatki — **hipotezy**, nie SSOT produktu.
 Polityka: trzymaj tylko materiał wpływający na otwartą / przyszłą pracę. Historia wydań → [CHANGELOG.md](../../../CHANGELOG.md).

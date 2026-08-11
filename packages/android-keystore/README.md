@@ -1,17 +1,22 @@
-# Android sideload signing
+> [📦 StageSync](../../README.md) / [packages](../README.md)
 
-[`sideload.keystore`](./sideload.keystore) is the **stable** signing key for StageSync Console / Performer
-sideload APKs (GitHub Releases + local `assembleDebug` / `assembleRelease`).
+# 🔑 packages/android-keystore — Stały Certyfikat Sideload
 
-It is **not** a Google Play upload key. Password and alias are intentional for
-sideload MVP (same idea as the Android debug keystore):
+Katalog `packages/android-keystore` zawiera stały klucz podpisujący [`sideload.keystore`](./sideload.keystore) dla wydań APK aplikacji mobilnych StageSync Console oraz Performer.
 
-|                      |                      |
-| -------------------- | -------------------- |
-| Store / key password | `android`            |
-| Alias                | `stagesync-sideload` |
+## 📁 Struktura projektu
 
-Gradle (`apps/*/android/app/build.gradle.kts`) points both `debug` and `release`
-at this file so CI and local builds share one certificate. Ephemeral
-`~/.android/debug.keystore` on GitHub runners previously made each Release APK
-impossible to upgrade over the previous cut (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`).
+- **[`sideload.keystore`](./sideload.keystore)** — Stabilny certyfikat sideload wykorzystywany w GitHub Releases oraz lokalnych kompilacjach (`assembleDebug` / `assembleRelease`).
+
+## 🎨 Standardy i Parametry Klucza
+
+Jest to klucz dla dystrybucji sideload (nie dla sklepu Google Play). Hasło i alias są jawne, analogicznie do kluczy debug w Android SDK:
+
+| Parametr | Wartość |
+| :--- | :--- |
+| **Hasło keystore / klucza** | `android` |
+| **Alias** | `stagesync-sideload` |
+
+## ⚙️ Budowanie i wykorzystanie
+
+Skrypty Gradle (`apps/*/android/app/build.gradle.kts`) wskazują ten plik zarówno dla wariantu `debug`, jak i `release`, zapewniając, że kompilacje CI oraz lokalne korzystają z tego samego certyfikatu. Zapobiega to błędom instalacji `INSTALL_FAILED_UPDATE_INCOMPATIBLE` podczas aktualizacji APK wydanych na GitHub.
