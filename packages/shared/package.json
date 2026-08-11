@@ -18,7 +18,7 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "check-types": "tsc -p tsconfig.build.json --noEmit",
-    "lint": "eslint . --max-warnings 11",
+    "lint": "eslint . --max-warnings 7",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
