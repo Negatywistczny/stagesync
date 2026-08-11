@@ -2,12 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { Button, Select } from "@stagesync/ui";
 import {
-  applyUgImportToProject,
-  applyUltrastarImportToProject,
-  applyUsUgBridgeToProject,
-  importUgText,
-  placeContentFromForma,
-  reflowUgImportSectionBars,
   looksLikeZipBytes,
   resolveFormaClipAt,
   resolveMeterAt,
@@ -25,8 +19,6 @@ import {
   putProject,
   updateProject,
 } from "@lib/shell-operator/libraryApi.js";
-import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
-import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
 import {
   postSystemRestart,
   postSystemShutdown,
@@ -84,6 +76,9 @@ import { Modal } from "./admin/modals/Modal.js";
 import { MusicXmlModal } from "./admin/modals/MusicXmlModal.js";
 import { BatchPcModal } from "./admin/modals/BatchPcModal.js";
 import { SongsView } from "./admin/views/SongsView.js";
+import { useDoubleConfirm } from "./admin/useDoubleConfirm.js";
+import { AdminFooter } from "./admin/AdminFooter.js";
+import { useAdminImportHandlers } from "./admin/useAdminImportHandlers.js";
 import styles from "./AdminShell.module.css";
 
 function errMessage(err: unknown): string {
@@ -332,9 +327,18 @@ export function AdminShell() {
     [commandPending],
   );
 
-  const onCreate = () => {
-    setCreatePromptOpen(true);
-  };
+  const { onApplyUg, onApplyUltrastar, onApplyUsUg } = useAdminImportHandlers({
+    selectedId,
+    setCommandPending,
+    setImportModalOpen,
+    setActionNotice,
+    refreshLibrary,
+  });
+
+  const onCreate = useCallback(
+    () => setCreatePromptOpen(true),
+    [setCreatePromptOpen],
+  );
 
   const onDelete = () => {
     if (!selectedId || !selected) return;
@@ -635,55 +639,18 @@ export function AdminShell() {
         {section === "dev" ? import.meta.env.DEV ? <DevView /> : null : null}
       </main>
 
-      <footer className={styles.status} aria-label="Status koncertu">
-        <div className={styles.statusGroup}>
-          <span className={styles.statusLab}>Teraz</span>
-          <span
-            className={styles.statusVal}
-            title={
-              selectedId &&
-              state.activeProjectId &&
-              selectedId !== state.activeProjectId
-                ? `Zaznaczony: ${selected?.name ?? "—"}`
-                : undefined
-            }
-          >
-            {nowName}
-          </span>
-        </div>
-        <div className={styles.statusGroup}>
-          <span className={styles.statusLab}>Sekcja</span>
-          <span className={styles.statusVal}>{activeSection?.name ?? "—"}</span>
-        </div>
-        <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
-          <span className={styles.statusLab}>Pozycja</span>
-          <span className={[styles.statusVal, styles.statusMono].join(" ")}>
-            <span>{clockLabel}</span>
-            <span className={styles.statusInlineSep} aria-hidden>
-              |
-            </span>
-            <span>{state.bpm} BPM</span>
-            <span className={styles.statusInlineSep} aria-hidden>
-              |
-            </span>
-            <span>
-              {state.timeSignature.numerator}/{state.timeSignature.denominator}
-            </span>
-          </span>
-        </div>
-        <div className={[styles.statusGroup, styles.statusOptional].join(" ")}>
-          <span className={styles.statusLab}>Dalej</span>
-          <span className={[styles.statusVal, styles.statusMuted].join(" ")}>
-            {nextName}
-          </span>
-        </div>
-        <div className={styles.statusGroup}>
-          <span className={styles.statusLab}>Połączenie</span>
-          <span className={styles.statusVal}>
-            {connectionStatusLabel(wsStatus)}
-          </span>
-        </div>
-      </footer>
+      <AdminFooter
+        nowName={nowName}
+        nextName={nextName}
+        selectedId={selectedId}
+        activeProjectId={state.activeProjectId}
+        selectedName={selected?.name}
+        activeSection={activeSection}
+        clockLabel={clockLabel}
+        bpm={state.bpm}
+        timeSignature={state.timeSignature}
+        wsStatus={wsStatus}
+      />
 
       {importModalOpen ? (
         <Modal
@@ -713,191 +680,9 @@ export function AdminShell() {
                 : undefined
             }
             onCancel={() => setImportModalOpen(false)}
-            onApplyUg={async ({
-              text,
-              barsPerLine,
-              sectionBars,
-              runWand,
-              metadata,
-            }) => {
-              setCommandPending(true);
-              try {
-                if (selectedId) {
-                  const project = await fetchProject(selectedId);
-                  const meter = resolveMeterAt(project, 0);
-                  const parsed = importUgText(text, {
-                    ppq: project.ppq,
-                    meter,
-                    barsPerLine,
-                  });
-                  if (!parsed.ok) throw new Error(parsed.message);
-                  const reflowed = reflowUgImportSectionBars(
-                    parsed,
-                    sectionBars,
-                    { ppq: project.ppq, meter },
-                  );
-                  if (!reflowed.ok) throw new Error(reflowed.message);
-                  let next = applyUgImportToProject(project, reflowed);
-                  const title = metadata?.title?.trim();
-                  const artist = metadata?.artist?.trim();
-                  if (title) next = { ...next, name: title.slice(0, 200) };
-                  if (artist) next = { ...next, artist: artist.slice(0, 200) };
-                  if (runWand) {
-                    const wand = placeContentFromForma(next, "both");
-                    if (wand.ok) next = wand.project;
-                  }
-                  await putProject(selectedId, next);
-                  setImportModalOpen(false);
-                  setActionNotice(
-                    runWand
-                      ? `Import UG: ${reflowed.sections.length} sekcji + Różdżka. Sprawdź w Timeline.`
-                      : `Import UG: ${reflowed.sections.length} sekcji — w Timeline Różdżka (W) po dopracowaniu Formy.`,
-                  );
-                  await refreshLibrary(selectedId);
-                  return;
-                }
-                const name =
-                  metadata?.title?.trim() ||
-                  `Import UG ${new Date().toLocaleTimeString("pl")}`;
-                const saved = await createSongWithContent(name, (shell) => {
-                  const meter = resolveMeterAt(shell, 0);
-                  const parsed = importUgText(text, {
-                    ppq: shell.ppq,
-                    meter,
-                    barsPerLine,
-                  });
-                  if (!parsed.ok) throw new Error(parsed.message);
-                  const reflowed = reflowUgImportSectionBars(
-                    parsed,
-                    sectionBars,
-                    { ppq: shell.ppq, meter },
-                  );
-                  if (!reflowed.ok) throw new Error(reflowed.message);
-                  let next = applyUgImportToProject(shell, reflowed);
-                  const title = metadata?.title?.trim();
-                  const artist = metadata?.artist?.trim();
-                  if (title) next = { ...next, name: title.slice(0, 200) };
-                  if (artist) next = { ...next, artist: artist.slice(0, 200) };
-                  if (runWand) {
-                    const wand = placeContentFromForma(next, "both");
-                    if (wand.ok) next = wand.project;
-                  }
-                  return next;
-                });
-                setImportModalOpen(false);
-                setActionNotice(`Nowy utwór „${saved.name}”: Import UG`);
-                await refreshLibrary(saved.id);
-                navigate(`/timeline/${saved.id}`);
-              } finally {
-                setCommandPending(false);
-              }
-            }}
-            onApplyUltrastar={async (result) => {
-              setCommandPending(true);
-              try {
-                if (selectedId) {
-                  const project = await fetchProject(selectedId);
-                  const next = applyUltrastarImportToProject(project, result);
-                  await putProject(selectedId, next);
-                  setImportModalOpen(false);
-                  setActionNotice(
-                    `Import UltraStar: ${result.syllableCount} sylab. Sprawdź w Timeline.`,
-                  );
-                  await refreshLibrary(selectedId);
-                  return;
-                }
-                const name =
-                  result.title?.trim() ||
-                  `Import UltraStar ${new Date().toLocaleTimeString("pl")}`;
-                const saved = await createSongWithContent(name, (shell) =>
-                  applyUltrastarImportToProject(shell, result),
-                );
-                setImportModalOpen(false);
-                setActionNotice(`Nowy utwór „${saved.name}”: Import UltraStar`);
-                await refreshLibrary(saved.id);
-                navigate(`/timeline/${saved.id}`);
-              } finally {
-                setCommandPending(false);
-              }
-            }}
-            onApplyUsUg={async (payload) => {
-              const result = payload.bridge;
-              const smartAudio = payload.smartTempoAudio;
-              const pendingFile = payload.pendingAudioFile;
-              setCommandPending(true);
-              try {
-                if (selectedId) {
-                  let project = await fetchProject(selectedId);
-                  if (payload.serverProjectSnapshot) {
-                    project = {
-                      ...project,
-                      updatedAt: payload.serverProjectSnapshot.updatedAt,
-                      assets: payload.serverProjectSnapshot.assets,
-                      audioTracks: payload.serverProjectSnapshot.audioTracks,
-                      audioClips: payload.serverProjectSnapshot.audioClips,
-                    };
-                  }
-                  let next = applyUsUgBridgeToProject(project, result, {
-                    smartTempoAudio: smartAudio,
-                  });
-                  if (pendingFile) {
-                    next = await uploadProjectAudio(selectedId, pendingFile, {
-                      startTicks: 0,
-                    });
-                    const asset = next.assets.at(-1);
-                    if (asset && smartAudio) {
-                      next = applyUsUgBridgeToProject(next, result, {
-                        smartTempoAudio: {
-                          ...smartAudio,
-                          assetId: asset.id,
-                        },
-                      });
-                    }
-                  }
-                  await putProject(selectedId, next);
-                  setImportModalOpen(false);
-                  setActionNotice(
-                    `Import US+UG: ${result.sections.length} sekcji. Sprawdź w Timeline.`,
-                  );
-                  await refreshLibrary(selectedId);
-                  return;
-                }
-                const name =
-                  result.title?.trim() ||
-                  `Import US+UG ${new Date().toLocaleTimeString("pl")}`;
-                let saved = await createSongWithContent(name, (shell) =>
-                  applyUsUgBridgeToProject(shell, result, {
-                    smartTempoAudio: pendingFile ? undefined : smartAudio,
-                  }),
-                );
-                if (pendingFile && saved.id) {
-                  saved = await uploadProjectAudio(saved.id, pendingFile, {
-                    startTicks: 0,
-                  });
-                  const asset = saved.assets.at(-1);
-                  if (asset && smartAudio) {
-                    const withClip = applyUsUgBridgeToProject(saved, result, {
-                      smartTempoAudio: {
-                        ...smartAudio,
-                        assetId: asset.id,
-                      },
-                    });
-                    saved = await putProject(saved.id, {
-                      ...withClip,
-                      id: saved.id,
-                      updatedAt: saved.updatedAt,
-                      midiProgramId: saved.midiProgramId,
-                    });
-                  }
-                }
-                setImportModalOpen(false);
-                setActionNotice(`Nowy utwór „${saved.name}”: Import US+UG`);
-                await refreshLibrary(saved.id);
-                navigate(`/timeline/${saved.id}`);
-              } finally {
-                setCommandPending(false);
-              }
-            }}
+            onApplyUg={onApplyUg}
+            onApplyUltrastar={onApplyUltrastar}
+            onApplyUsUg={onApplyUsUg}
           />
         </Modal>
       ) : null}
@@ -944,62 +729,4 @@ export function AdminShell() {
       />
     </div>
   );
-}
-
-function useDoubleConfirm(action: () => Promise<void>, label: string) {
-  const [pending, setPending] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
-
-  const cancel = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = null;
-    setPending(false);
-  }, []);
-
-  const arm = useCallback(() => {
-    if (pending) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = null;
-      setPending(false);
-      void action();
-      return;
-    }
-    setPending(true);
-    timerRef.current = setTimeout(() => setPending(false), 4000);
-  }, [action, pending]);
-
-  useEffect(
-    () => () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (!pending) return;
-    let remove: (() => void) | undefined;
-    const attachId = window.setTimeout(() => {
-      const onDocClick = (event: MouseEvent) => {
-        const el = buttonRef.current;
-        if (el && event.target instanceof Node && el.contains(event.target)) {
-          return;
-        }
-        cancel();
-      };
-      document.addEventListener("click", onDocClick);
-      remove = () => document.removeEventListener("click", onDocClick);
-    }, 0);
-    return () => {
-      window.clearTimeout(attachId);
-      remove?.();
-    };
-  }, [pending, cancel]);
-
-  return {
-    pending,
-    arm,
-    buttonRef,
-    label: pending ? `Potwierdź ${label}` : label,
-  };
 }
