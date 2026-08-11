@@ -8,10 +8,7 @@ import {
   ticksToMs,
   type TimeSignature,
 } from "../time.js";
-import {
-  DEFAULT_METER,
-  TEMPO_SOLVER_ANACRUSIS_MAX_BARS,
-} from "./constants.js";
+import { DEFAULT_METER, TEMPO_SOLVER_ANACRUSIS_MAX_BARS } from "./constants.js";
 import type { AnacrusisGapInput, TempoSolverSectionPlan } from "./types.js";
 
 /**

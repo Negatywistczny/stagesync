@@ -5,10 +5,7 @@ import {
   type LibraryProjectEntry,
 } from "@stagesync/shared";
 import { catalogSongBadges } from "../songCatalogBadges.js";
-import {
-  projectDurationMs,
-  type DraftItem,
-} from "../setlistDraft.js";
+import { projectDurationMs, type DraftItem } from "../setlistDraft.js";
 import shell from "../../AdminShell.module.css";
 import styles from "../SetView.module.css";
 
@@ -150,7 +147,9 @@ export function SetEditorCard({
               onChange={(e) => {
                 const n = Number(e.target.value);
                 if (!Number.isFinite(n)) return;
-                onTimeBudgetChange(Math.min(24 * 60, Math.max(1, Math.trunc(n))));
+                onTimeBudgetChange(
+                  Math.min(24 * 60, Math.max(1, Math.trunc(n))),
+                );
               }}
             />
             <span className={shell.muted}>min</span>

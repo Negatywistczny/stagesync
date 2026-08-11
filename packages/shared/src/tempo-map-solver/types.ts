@@ -104,4 +104,3 @@ export type MsTickAnchor = {
   ms: number;
   targetTick: number;
 };
-

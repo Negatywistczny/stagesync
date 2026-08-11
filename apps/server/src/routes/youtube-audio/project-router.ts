@@ -12,10 +12,7 @@ import { downloadYoutubeMp3Bytes } from "./download.js";
 import type { YoutubeAudioJob } from "./types.js";
 import { ytDlpResolver } from "./ytdlp-resolve.js";
 
-export type {
-  YoutubeAudioJob,
-  YoutubeAudioJobStatus,
-} from "./types.js";
+export type { YoutubeAudioJob, YoutubeAudioJobStatus } from "./types.js";
 
 /** @internal — in-memory job store (single-process server). */
 export const youtubeAudioJobsForTests = new Map<string, YoutubeAudioJob>();

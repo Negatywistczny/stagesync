@@ -1,6 +1,9 @@
 import styles from "../ClientShell.module.css";
 import type { ChordNameParts } from "@stagesync/shared";
-import { cycleTotalBars, type GridCycleStep } from "@lib/timeline/clientGrid.js";
+import {
+  cycleTotalBars,
+  type GridCycleStep,
+} from "@lib/timeline/clientGrid.js";
 import { ChordName } from "./ChordName.js";
 import { CHORD_NAME_CLASSES, slotBarUnitsStyle } from "./gridPaneUtils.js";
 

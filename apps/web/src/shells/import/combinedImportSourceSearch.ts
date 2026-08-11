@@ -9,9 +9,7 @@ import {
   searchUgTabs,
 } from "@lib/shell-operator/ugImportApi.js";
 import { shouldOpenUsdbAccount } from "./UsdbAccountPanel.js";
-import type {
-  ImportSourceSearchContext,
-} from "./combinedImportIngestTypes.js";
+import type { ImportSourceSearchContext } from "./combinedImportIngestTypes.js";
 import type { UgSearchHit, UltrastarSearchHit } from "@stagesync/shared";
 
 export async function pickUsHit(
@@ -31,8 +29,7 @@ export async function pickUsHit(
     ctx.setUsText(fetched.content);
     ctx.setSelectedUsUrl(hit.url);
     ctx.setGridBpmDraft(null);
-    const metaTitle =
-      fetched.metadata.title?.trim() || hit.title?.trim() || "";
+    const metaTitle = fetched.metadata.title?.trim() || hit.title?.trim() || "";
     const metaArtist =
       fetched.metadata.artist?.trim() || hit.artist?.trim() || "";
     if (metaTitle) ctx.setUsTitle(metaTitle);

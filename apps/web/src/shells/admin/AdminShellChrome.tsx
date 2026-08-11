@@ -83,9 +83,7 @@ export function AdminShellChrome({
               iconOnly={isTablet}
               onClick={onNavigateHome}
               title={
-                canReturnToLauncher()
-                  ? "Wróć do wyboru hosta"
-                  : "Strona główna"
+                canReturnToLauncher() ? "Wróć do wyboru hosta" : "Strona główna"
               }
             />
           </div>

@@ -152,14 +152,7 @@ export function BeatMapperWaveCanvas({
     }
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [
-    hasAudio,
-    durationMs,
-    frameWidth,
-    setZoom,
-    setViewStartMs,
-    viewRef,
-  ]);
+  }, [hasAudio, durationMs, frameWidth, setZoom, setViewStartMs, viewRef]);
 
   // Paint DAW envelope (min/max bins → filled path).
   useEffect(() => {
@@ -293,10 +286,7 @@ export function BeatMapperWaveCanvas({
             {beatMarkerMs.map((bm, i) => {
               const left = msToPct(bm);
               if (left < -1 || left > 101) return null;
-              if (
-                Math.abs(bm - beat1AnchorMs) < 0.5 &&
-                beat1AnchorMs > 0
-              ) {
+              if (Math.abs(bm - beat1AnchorMs) < 0.5 && beat1AnchorMs > 0) {
                 return null;
               }
               return (

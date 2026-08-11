@@ -223,7 +223,13 @@ export function AdminShell() {
       setSection("songs");
       clearAction("songs");
     }
-  }, [searchParams, setSearchParams, setActionNotice, setCreatePromptOpen, setTemplatesOpen]);
+  }, [
+    searchParams,
+    setSearchParams,
+    setActionNotice,
+    setCreatePromptOpen,
+    setTemplatesOpen,
+  ]);
 
   useEffect(() => {
     if (!sectionProjectId) {

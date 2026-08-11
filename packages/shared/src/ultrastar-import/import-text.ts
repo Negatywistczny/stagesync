@@ -25,10 +25,7 @@ import {
   parseUltrastarNoteLine,
   playerToRole,
 } from "./parse-note.js";
-import {
-  ultrastarBeatToMs,
-  ultrastarHeaderBpmToMetronome,
-} from "./timing.js";
+import { ultrastarBeatToMs, ultrastarHeaderBpmToMetronome } from "./timing.js";
 import type {
   RawNote,
   UltrastarImportOptions,

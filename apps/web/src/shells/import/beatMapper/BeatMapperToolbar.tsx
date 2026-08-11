@@ -27,11 +27,7 @@ export function BeatMapperToolbar({
 }: BeatMapperToolbarProps) {
   return (
     <>
-      <div
-        className={styles.toolbar}
-        role="toolbar"
-        aria-label="Beat Mapper"
-      >
+      <div className={styles.toolbar} role="toolbar" aria-label="Beat Mapper">
         <Button
           type="button"
           variant="secondary"
@@ -56,9 +52,7 @@ export function BeatMapperToolbar({
             aria-label="Audio Start Offset ms"
             onChange={(e) => {
               const n = Number.parseInt(e.target.value, 10);
-              onAudioStartOffsetChange(
-                Number.isFinite(n) && n >= 0 ? n : 0,
-              );
+              onAudioStartOffsetChange(Number.isFinite(n) && n >= 0 ? n : 0);
             }}
           />
         </label>

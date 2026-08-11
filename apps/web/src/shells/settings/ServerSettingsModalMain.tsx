@@ -1,6 +1,9 @@
 import { Button } from "@stagesync/ui";
 import { type PreferencesTab } from "@lib/client/preferencesEvents.js";
-import { browseServerPath, postSystemRestore } from "@lib/shell-operator/setlistApi.js";
+import {
+  browseServerPath,
+  postSystemRestore,
+} from "@lib/shell-operator/setlistApi.js";
 import { clampLatencyCompensationMs } from "@lib/audio/audioLatencyPrefs.js";
 import { ShellConfirmDialog } from "../ShellBlockingDialog.js";
 import { GeneralSettingsTab } from "./tabs/GeneralSettingsTab.js";

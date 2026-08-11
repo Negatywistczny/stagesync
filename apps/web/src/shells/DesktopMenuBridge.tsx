@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { ContextMenuProvider } from "@stagesync/ui";
 import {
@@ -26,7 +21,10 @@ import {
 import { handleDesktopMenuShortcut } from "@lib/client/desktopMenuShortcuts.js";
 import { shouldAllowNativeTextClipboard } from "@lib/client/isEditableKeyboardTarget.js";
 import { DesktopTitleBar } from "./DesktopTitleBar.js";
-import { fetchSetlist, postSystemRestart } from "@lib/shell-operator/setlistApi.js";
+import {
+  fetchSetlist,
+  postSystemRestart,
+} from "@lib/shell-operator/setlistApi.js";
 import { suppressAudioPlayback } from "@lib/audio/audioPlayback.js";
 import { restoreAudioOutputSink } from "@lib/audio/audioOutputPrefs.js";
 import {

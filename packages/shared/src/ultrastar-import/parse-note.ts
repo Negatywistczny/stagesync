@@ -13,7 +13,9 @@ export const NOTE_KIND: Record<string, NoteKind> = {
   F: "freestyle",
 };
 
-export function parseHeaderValue(line: string): { key: string; value: string } | null {
+export function parseHeaderValue(
+  line: string,
+): { key: string; value: string } | null {
   const trimmed = line.trim();
   // `#P1` / `#P2` (no colon) — duet player switch
   const playerOnly = /^#(P[12])$/i.exec(trimmed);
@@ -25,7 +27,9 @@ export function parseHeaderValue(line: string): { key: string; value: string } |
   return { key: (m[1] ?? "").toUpperCase(), value: (m[2] ?? "").trim() };
 }
 
-export function playerToRole(player: number | null): TekstBlockRole | undefined {
+export function playerToRole(
+  player: number | null,
+): TekstBlockRole | undefined {
   if (player === 1) return "vocal_1";
   if (player === 2) return "vocal_2";
   return undefined;

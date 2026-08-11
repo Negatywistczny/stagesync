@@ -17,7 +17,6 @@ import {
   ConvergenceChart,
 } from "./SmartTempoCharts.js";
 
-
 export type {
   StageTier,
   DawTier,
@@ -39,7 +38,6 @@ import { DashboardKpiCards } from "./smartTempo/DashboardKpiCards.js";
 const DEFAULT_DATASET = benchmarkDataRaw as unknown as TrackBenchmarkDataset[];
 const DEFAULT_HISTORY =
   benchmarkHistoryRaw as unknown as BenchmarkHistoryEntry[];
-
 
 export function SmartTempoAccuracyDashboard({
   dataset = DEFAULT_DATASET,
@@ -377,12 +375,7 @@ export function SmartTempoAccuracyDashboard({
         setGradeMode={setGradeMode}
       />
 
-      <DashboardKpiCards
-        gradeMode={gradeMode}
-        stats={stats}
-        deltas={deltas}
-      />
-
+      <DashboardKpiCards gradeMode={gradeMode} stats={stats} deltas={deltas} />
 
       {/* Main Charts Layout */}
       <div className={styles.chartGrid}>
@@ -488,4 +481,3 @@ export function SmartTempoAccuracyDashboard({
     </div>
   );
 }
-

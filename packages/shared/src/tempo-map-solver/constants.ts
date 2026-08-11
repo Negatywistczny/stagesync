@@ -30,4 +30,3 @@ export const TEMPO_MAP_MIN_BPM = 40;
 export const TEMPO_MAP_MAX_BPM = 320;
 
 export const DEFAULT_METER: TimeSignature = { numerator: 4, denominator: 4 };
-

@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  applyAppearance,
-  setAppearance,
-} from "@lib/client/appearance.js";
+import { applyAppearance, setAppearance } from "@lib/client/appearance.js";
 import {
   applyAudioOutputSink,
   setStoredAudioOutputDeviceId,

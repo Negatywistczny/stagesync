@@ -108,8 +108,7 @@ export function CombinedImportFooter({
                   ? (usPreview.artist?.trim() ?? "")
                   : "") ||
                 "";
-              if (fromUsTitle)
-                setUgTitle((prev) => prev.trim() || fromUsTitle);
+              if (fromUsTitle) setUgTitle((prev) => prev.trim() || fromUsTitle);
               if (fromUsArtist)
                 setUgArtist((prev) => prev.trim() || fromUsArtist);
               go("ug");

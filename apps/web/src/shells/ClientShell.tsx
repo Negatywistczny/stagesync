@@ -52,7 +52,6 @@ import { ClientStagePanes } from "./client/ClientStagePanes.js";
 import { ClientWelcome } from "./client/ClientWelcome.js";
 import { CLIENT_ROLES, type ClientRoleId } from "./client/clientRoles.js";
 
-
 type RoleId = ClientRoleId;
 
 export function ClientShell() {

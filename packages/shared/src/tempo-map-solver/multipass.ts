@@ -9,7 +9,10 @@ import {
   pristineBarsFromMsSpan,
   sectionBeat1Ms,
 } from "./anacrusis.js";
-import { resolveAnchorTargetTicks, tempoEventsFromMsTickAnchors } from "./anchors.js";
+import {
+  resolveAnchorTargetTicks,
+  tempoEventsFromMsTickAnchors,
+} from "./anchors.js";
 import {
   DEFAULT_METER,
   TEMPO_SOLVER_HIGH_WEIGHT,

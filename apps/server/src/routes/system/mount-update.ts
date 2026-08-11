@@ -1,9 +1,6 @@
 import type { Router } from "express";
 import { ApplyUpdateBodySchema } from "@stagesync/shared";
-import {
-  fetchLatestReleaseVersion,
-  isSemverNewer,
-} from "./semver-release.js";
+import { fetchLatestReleaseVersion, isSemverNewer } from "./semver-release.js";
 
 type UpdateMountContext = {
   version: string;

@@ -3,10 +3,7 @@
  */
 
 import type { Project } from "../schema.js";
-import type {
-  ApplyUltrastarOptions,
-  UltrastarImportOk,
-} from "./types.js";
+import type { ApplyUltrastarOptions, UltrastarImportOk } from "./types.js";
 
 /**
  * Sync project tempo with imported metronome BPM: set `defaultBpm` and ensure

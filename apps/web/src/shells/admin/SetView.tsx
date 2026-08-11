@@ -280,9 +280,7 @@ export function SetView({ library, selectedId }: SetViewProps) {
   const onBreakDurationChange = (index: number, durationMinutes: number) => {
     setDraftItems((items) =>
       items.map((row, i) =>
-        i === index && row.type === "break"
-          ? { ...row, durationMinutes }
-          : row,
+        i === index && row.type === "break" ? { ...row, durationMinutes } : row,
       ),
     );
     setDirty(true);

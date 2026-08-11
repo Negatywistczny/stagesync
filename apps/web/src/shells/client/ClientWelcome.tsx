@@ -32,10 +32,7 @@ export function ClientWelcome({
       {chrome}
       <ConnectionLostBanner status={wsStatus} />
       <main
-        className={[
-          styles.welcome,
-          isCompactMobile ? styles.welcomeMobile : "",
-        ]
+        className={[styles.welcome, isCompactMobile ? styles.welcomeMobile : ""]
           .filter(Boolean)
           .join(" ")}
       >
@@ -82,9 +79,7 @@ export function ClientWelcome({
               disabled={picked.length === 0}
               onClick={onStart}
             >
-              {picked.length === 2
-                ? "Rozpocznij widok dzielony"
-                : "Rozpocznij"}
+              {picked.length === 2 ? "Rozpocznij widok dzielony" : "Rozpocznij"}
             </Button>
           </div>
         ) : null}

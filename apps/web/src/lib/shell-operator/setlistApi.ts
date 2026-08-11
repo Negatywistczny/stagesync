@@ -36,10 +36,7 @@ export {
   apkSameOriginProbeUrl,
 } from "./setlist/network-apk.js";
 
-export type {
-  NetworkInfo,
-  ApkDownloadKind,
-} from "./setlist/network-apk.js";
+export type { NetworkInfo, ApkDownloadKind } from "./setlist/network-apk.js";
 
 export {
   fetchMidiHostStatus,
@@ -79,4 +76,3 @@ export type {
   HostUpdateStatus,
   SafetyNetStatus,
 } from "./setlist/system-host.js";
-

@@ -56,7 +56,10 @@ export function readLocalSnapshot(): PrefsSnapshot {
   };
 }
 
-export function midiDraftEqual(a: MidiDraft | null, b: MidiDraft | null): boolean {
+export function midiDraftEqual(
+  a: MidiDraft | null,
+  b: MidiDraft | null,
+): boolean {
   if (a == null || b == null) return a === b;
   return (
     a.inputId === b.inputId &&

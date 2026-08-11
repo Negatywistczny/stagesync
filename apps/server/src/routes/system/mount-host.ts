@@ -5,7 +5,10 @@ import {
   withMdnsJoinUrl,
 } from "../../network-info.js";
 import { writeManagedSettings } from "../../env-settings.js";
-import { isOperatorPinRequired, verifyOperatorPin } from "../../operator-pin.js";
+import {
+  isOperatorPinRequired,
+  verifyOperatorPin,
+} from "../../operator-pin.js";
 import { promoteToMaster, safetyNetStatus } from "../../safety-net.js";
 import type { SystemRouterDeps } from "./types.js";
 

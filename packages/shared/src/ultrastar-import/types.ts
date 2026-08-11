@@ -2,11 +2,7 @@
  * UltraStar / USDX import — public types.
  */
 
-import type {
-  MelodyNoteClip,
-  TekstBlockRole,
-  TekstClip,
-} from "../schema.js";
+import type { MelodyNoteClip, TekstBlockRole, TekstClip } from "../schema.js";
 import type { TimeSignature } from "../time.js";
 
 export type UltrastarImportOk = {

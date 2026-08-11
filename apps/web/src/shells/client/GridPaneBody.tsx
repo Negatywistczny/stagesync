@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import styles from "../ClientShell.module.css";
 import type { ChordNameParts } from "@stagesync/shared";

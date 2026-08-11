@@ -96,8 +96,15 @@ function applySmartTempoFromAnalysis(
     resetDraftTempoNodes: boolean;
   },
 ): void {
-  const { assetId, buffer, meta, analysis, offsetMs, audioFile, resetDraftTempoNodes } =
-    params;
+  const {
+    assetId,
+    buffer,
+    meta,
+    analysis,
+    offsetMs,
+    audioFile,
+    resetDraftTempoNodes,
+  } = params;
   ctx.setAudioStartOffsetUserEdited(false);
   ctx.setAudioStartOffsetMs(offsetMs);
   ctx.setLocalBuffer(buffer);
@@ -322,9 +329,7 @@ export async function fetchYoutubeAudio(
     );
   } catch (err) {
     ctx.setPipelineStages((prev) =>
-      prev.map((s) =>
-        s.status === "running" ? { ...s, status: "error" } : s,
-      ),
+      prev.map((s) => (s.status === "running" ? { ...s, status: "error" } : s)),
     );
     ctx.setApplyError(err instanceof Error ? err.message : String(err));
   } finally {

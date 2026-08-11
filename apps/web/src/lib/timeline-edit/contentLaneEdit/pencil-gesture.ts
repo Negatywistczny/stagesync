@@ -32,7 +32,6 @@ import {
   type ContentLaneId,
 } from "./helpers.js";
 
-
 /** Pencil drag / click: overwrite span on content lane (v4 insertClipRange). */
 export function commitPencilContentSpan(
   project: Project,
@@ -220,4 +219,3 @@ export function previewContentFromSession(
     lengthTicks: Math.max(1, end - start),
   };
 }
-

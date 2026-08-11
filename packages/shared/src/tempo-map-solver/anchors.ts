@@ -8,7 +8,11 @@ import {
   TEMPO_MAP_MIN_BPM,
   TEMPO_SOLVER_MAX_STEP_RATIO,
 } from "./constants.js";
-import type { MsTickAnchor, TempoSolverAnchor, TempoSolverSectionPlan } from "./types.js";
+import type {
+  MsTickAnchor,
+  TempoSolverAnchor,
+  TempoSolverSectionPlan,
+} from "./types.js";
 
 /** True when tick sits on Beat 1 or Beat 3 of a bar (half-bar grid). */
 export function isTickOnBarOrHalf(

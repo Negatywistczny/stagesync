@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, type Dispatch, type SetStateAction } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   TEXT_ANCHOR_WEAK_ALIGN,
   bridgeUsUgFromTexts,
@@ -12,7 +18,10 @@ import {
   type AudioAnalysisResult,
 } from "@stagesync/shared";
 import { resolveInitialAudioStartOffsetMs } from "@lib/audio/waveformPeaks.js";
-import { parseGridBpmInput, refineBeat1OffsetMs } from "./combinedImportHelpers.js";
+import {
+  parseGridBpmInput,
+  refineBeat1OffsetMs,
+} from "./combinedImportHelpers.js";
 import type { ImportWizardStep } from "./combinedImportHelpers.js";
 
 type BridgeInputs = {
@@ -203,7 +212,12 @@ export function useCombinedImportBridging({
     setDraftTempoNodes([]);
     setDraftTempoNodesUserEdited(false);
     setGridBpmDraft(null);
-  }, [audioAnalysis, setDraftTempoNodes, setDraftTempoNodesUserEdited, setGridBpmDraft]);
+  }, [
+    audioAnalysis,
+    setDraftTempoNodes,
+    setDraftTempoNodesUserEdited,
+    setGridBpmDraft,
+  ]);
 
   const error =
     applyError ??

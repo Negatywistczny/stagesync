@@ -44,7 +44,9 @@ export function draftToSetlistItems(draft: DraftItem[]): SetlistItem[] {
   );
 }
 
-export function projectDurationMs(entry: LibraryProjectEntry | undefined): number {
+export function projectDurationMs(
+  entry: LibraryProjectEntry | undefined,
+): number {
   if (entry?.durationMs != null && entry.durationMs > 0) {
     return entry.durationMs;
   }

@@ -1,4 +1,9 @@
-import { useEffect, type MutableRefObject, type Dispatch, type SetStateAction } from "react";
+import {
+  useEffect,
+  type MutableRefObject,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { useNavigate } from "react-router";
 import {
   DESKTOP_MENU_EVENT,
@@ -10,9 +15,7 @@ import {
   downloadLibraryExport,
   listTemplateIds,
 } from "@lib/client/desktopFileMenu.js";
-import {
-  getLastTimelineProjectId,
-} from "@lib/client/lastTimelineProject.js";
+import { getLastTimelineProjectId } from "@lib/client/lastTimelineProject.js";
 import {
   quitDesktopApp,
   toggleAppFullscreen,
@@ -250,5 +253,4 @@ export function useDesktopMenuActions({
     setRestartError,
     setRestartOpen,
   ]);
-
 }

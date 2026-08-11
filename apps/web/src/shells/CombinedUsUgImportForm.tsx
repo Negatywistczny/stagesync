@@ -18,11 +18,7 @@ import type { CombinedUsUgImportFormProps } from "./import/combinedImportHelpers
 import styles from "./CombinedUsUgImportForm.module.css";
 
 export function CombinedUsUgImportForm(props: CombinedUsUgImportFormProps) {
-  const {
-    applyLabel,
-    onCancel,
-    applying = false,
-  } = props;
+  const { applyLabel, onCancel, applying = false } = props;
   const wizard = useCombinedUsUgImport(props);
 
   return (

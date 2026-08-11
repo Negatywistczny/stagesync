@@ -56,7 +56,6 @@ export type SystemViewProps = {
   onAutoCheckUpdateConsumed?: () => void;
 };
 
-
 type HostCardId = "network" | "about" | "logs" | "midi";
 
 /** Admin Host — two-column content-height layout (Sieć+APK | Logi / About | MIDI). */
@@ -497,4 +496,3 @@ export function SystemView({
     </div>
   );
 }
-

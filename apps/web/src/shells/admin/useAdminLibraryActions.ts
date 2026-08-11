@@ -124,9 +124,12 @@ export function useAdminLibraryActions() {
 
   const onCreateTemplate = () =>
     void runMutation(async () => {
-      const p = await createProject(`Wzór ${new Date().toLocaleTimeString("pl")}`, {
-        isTemplate: true,
-      });
+      const p = await createProject(
+        `Wzór ${new Date().toLocaleTimeString("pl")}`,
+        {
+          isTemplate: true,
+        },
+      );
       await refreshLibrary(p.id);
     });
 

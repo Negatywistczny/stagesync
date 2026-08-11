@@ -266,10 +266,34 @@ describe("AdminShell chrome", () => {
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const adminDir = join(dirname(fileURLToPath(import.meta.url)), "admin");
-    for (const file of ["SetView.tsx", "StageView.tsx", "SystemView.tsx"]) {
-      const src = readFileSync(join(adminDir, file), "utf8");
-      expect(src).toContain("useMqMobileCompact");
-      expect(src).not.toContain("useMqMobile.js");
+    /**
+     * Admin section views — entry under admin/ vs file that must hold useMqMobileCompact.
+     * Thin barrels (#834): set `barrelExport` to the expected re-export path.
+     */
+    const sectionViews: Array<{
+      entry: string;
+      impl: string;
+      barrelExport?: string;
+    }> = [
+      { entry: "SetView.tsx", impl: "SetView.tsx" },
+      // Future barrel: entry SetView.tsx → impl set/SetViewMain.tsx, barrelExport ./set/SetViewMain.js
+      { entry: "StageView.tsx", impl: "StageView.tsx" },
+      // Future barrel: entry StageView.tsx → impl stage/StageViewMain.tsx, barrelExport ./stage/StageViewMain.js
+      {
+        entry: "SystemView.tsx",
+        impl: "system/SystemViewMain.tsx",
+        barrelExport: "./system/SystemViewMain.js",
+      },
+      { entry: "views/SongsView.tsx", impl: "views/SongsView.tsx" },
+    ];
+    for (const { entry, impl, barrelExport } of sectionViews) {
+      const src = readFileSync(join(adminDir, impl), "utf8");
+      expect(src, impl).toContain("useMqMobileCompact");
+      expect(src, impl).not.toContain("useMqMobile.js");
+      if (barrelExport) {
+        const barrel = readFileSync(join(adminDir, entry), "utf8");
+        expect(barrel, entry).toContain(barrelExport);
+      }
     }
     const shellSrc = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "AdminShell.tsx"),

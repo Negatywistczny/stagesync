@@ -134,9 +134,7 @@ export async function ingestProjectAsset(
     );
   } catch (err) {
     ctx.setPipelineStages((prev) =>
-      prev.map((s) =>
-        s.status === "running" ? { ...s, status: "error" } : s,
-      ),
+      prev.map((s) => (s.status === "running" ? { ...s, status: "error" } : s)),
     );
     ctx.setApplyError(err instanceof Error ? err.message : String(err));
   } finally {
@@ -279,9 +277,7 @@ export async function ingestLocalFile(
     }
   } catch (err) {
     ctx.setPipelineStages((prev) =>
-      prev.map((s) =>
-        s.status === "running" ? { ...s, status: "error" } : s,
-      ),
+      prev.map((s) => (s.status === "running" ? { ...s, status: "error" } : s)),
     );
     ctx.setApplyError(err instanceof Error ? err.message : String(err));
   } finally {

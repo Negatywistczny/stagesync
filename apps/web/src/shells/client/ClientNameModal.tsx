@@ -1,9 +1,7 @@
 import type { FormEvent } from "react";
 import { Button, Input } from "@stagesync/ui";
 import { DEVICE_DISPLAY_NAME_MAX } from "@lib/client/deviceNamePrefs.js";
-import {
-  ConnectionIndicator,
-} from "../ConnectionIndicator.js";
+import { ConnectionIndicator } from "../ConnectionIndicator.js";
 import type { WsStatus } from "../../transport/transportContext.js";
 import { ConnectionLostBanner } from "../ConnectionLostBanner.js";
 import styles from "../ClientShell.module.css";

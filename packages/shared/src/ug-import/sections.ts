@@ -89,7 +89,10 @@ export function splitUgSections(
   return out.filter((s) => s.lines.length > 0);
 }
 
-export function defaultSectionName(index: number, named: string | null): string {
+export function defaultSectionName(
+  index: number,
+  named: string | null,
+): string {
   const n = named?.trim();
   if (n) return n.slice(0, 120);
   return `Sekcja ${index + 1}`;

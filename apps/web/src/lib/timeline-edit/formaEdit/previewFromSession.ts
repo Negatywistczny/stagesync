@@ -2,11 +2,7 @@
  * Forma gesture preview geometry (pointer-move).
  */
 
-import {
-  resolveMeterAt,
-  ticksPerBar,
-  type Project,
-} from "@stagesync/shared";
+import { resolveMeterAt, ticksPerBar, type Project } from "@stagesync/shared";
 import { contentFloorTicks } from "../formaCanvas.js";
 import {
   moveSubsectionBoundary,
