@@ -166,6 +166,9 @@ import { useTimelineRulerGestures } from "./hooks/useTimelineRulerGestures.js";
 import { useTimelineMapPointerHandlers } from "./hooks/useTimelineMapPointerHandlers.js";
 import { useTimelineFormaGestures } from "./hooks/useTimelineFormaGestures.js";
 import { useTimelineDockCallbacks } from "./hooks/useTimelineDockCallbacks.js";
+import { TimelineHeaderContainer } from "./containers/TimelineHeaderContainer.js";
+import { TimelineDialogsContainer } from "./containers/TimelineDialogsContainer.js";
+import { TimelineCanvasViewport } from "./containers/TimelineCanvasViewport.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -458,17 +461,13 @@ import { ShellAlertDialog } from "../components/ShellBlockingDialog.js";
 import { loadTransport } from "../../transport/api.js";
 import { useTransport } from "../../transport/useTransport.js";
 import { IconFullscreen } from "../components/icons.js";
-import { ConnectionLostBanner } from "../client/ConnectionLostBanner.js";
 import { ShellIconButton } from "../components/ShellIconButton.js";
-import { AppHeader, AppHeaderActions } from "../components/AppHeader.js";
-import { OperatorNav } from "../components/OperatorNav.js";
+import { AppHeaderActions } from "../components/AppHeader.js";
 import type { UsUgApplyPayload } from "../import/CombinedUsUgImportForm.js";
 import {
   SONG_IMPORT_EVENT,
   parseSongImportDetail,
 } from "@lib/client/songImportEvents.js";
-import { TimelineToolbar } from "./TimelineToolbar.js";
-import { MixerDock } from "./MixerDock.js";
 import styles from "./TimelineShell.module.css";
 
 import { TOOLS, type ToolId } from "./timelineToolsData.js";
@@ -2657,41 +2656,20 @@ export function TimelineShell() {
           }
         }}
       />
-      {operatorNavCompact ? (
-        <div className={styles.topChrome}>
-          <OperatorNav
-            activeApp="timeline"
-            center={draftProject?.name ?? projectId ?? undefined}
-            trailing={fullscreenButton}
-          />
-        </div>
-      ) : (
-        <AppHeader
-          suffix="Timeline"
-          version={APP_VERSION}
-          appJump={[
-            { to: "/admin", label: "Admin" },
-            { to: "/client", label: "Klient" },
-          ]}
-          operatorApp="timeline"
-          history={headerHistory}
-          helpPressed={helpOpen}
-          onHelp={() => setHelpOpen(true)}
-          onFullscreen={headerOnFullscreen}
-          hideOnDesktop={!shouldShowOperatorNav(pathname)}
-        />
-      )}
-
-      <ConnectionLostBanner status={wsStatus} />
-
-      {fullscreenError ? (
-        <p className={styles.chromeAlert} role="alert">
-          {fullscreenError}
-        </p>
-      ) : null}
-
-      <TimelineToolbar
+      <TimelineHeaderContainer
         operatorNavCompact={operatorNavCompact}
+        draftProject={draftProject}
+        projectId={projectId}
+        fullscreenButton={fullscreenButton}
+        APP_VERSION={APP_VERSION}
+        headerHistory={headerHistory}
+        helpOpen={helpOpen}
+        setHelpOpen={setHelpOpen}
+        headerOnFullscreen={headerOnFullscreen}
+        shouldShowOperatorNav={shouldShowOperatorNav}
+        pathname={pathname}
+        wsStatus={wsStatus}
+        fullscreenError={fullscreenError}
         timelineHeaderActions={timelineHeaderActions}
         isMobilePreview={isMobilePreview}
         tools={TOOLS}
@@ -2717,7 +2695,6 @@ export function TimelineShell() {
         loopOn={loopOn}
         onLoopToggle={onLoopToggle}
         meterAtPlayhead={meterAtPlayhead}
-        draftProject={draftProject}
         metronomeOn={metronomeOn}
         onMetronomeToggle={onMetronomeToggle}
         followPlayhead={followPlayhead}
@@ -2729,8 +2706,8 @@ export function TimelineShell() {
         clearMapSelection={clearMapSelection}
         setInspectorVisible={setInspectorVisible}
         setSongMetaOpen={setSongMetaOpen}
-        prevSetlistId={prevSetlistId}
-        nextSetlistId={nextSetlistId}
+        prevSetlistId={prevSetlistId ?? null}
+        nextSetlistId={nextSetlistId ?? null}
         songScreenOpen={songScreenOpen}
         setSongScreenOpen={setSongScreenOpen}
         songScreenId={songScreenId}
@@ -2740,155 +2717,123 @@ export function TimelineShell() {
         setAutoAdvance={setAutoAdvance}
       />
 
-      <div
-        className={[
-          styles.main,
-          inspectorOpen ? "" : styles.mainInspectorHidden,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        style={{
-          ["--tl-zoom-ui" as string]: String(uiScale),
-          ["--tl-row-h" as string]: `${effectiveZoomV}px`,
-        }}
-      >
-        <div className={styles.timelinePane}>
-          {timelineSurface === "mixer" && draftProject ? (
-            <MixerDock
-              draftProject={draftProject}
-              trackSelection={trackSelection}
-              soloAudioTrackIds={soloAudioTrackIds}
-              soloBusIds={soloBusIds}
-              selectedBusId={selectedBusId}
-              selectedHwOutputId={selectedHwOutputId}
-              trackRename={trackRename}
-              busRename={busRename}
-              buildChannelStripCallbacks={buildChannelStripCallbacks}
-              buildBusCallbacks={buildBusCallbacks}
-              buildMasterStripCallbacks={buildMasterStripCallbacks()}
-              onMetronomeToggle={onMetronomeToggle}
-              metronomeOn={metronomeOn}
-              playing={state.playing}
-              onAddAudioTrack={onAddAudioTrack}
-              onAddBus={onAddBus}
-              onAddHwOut={onAddHwOut}
-              onHwSelect={onHwSelect}
-              onHwContextMenu={onHwContextMenu}
-              onHwGainChange={onHwGainChange}
-              onHwMuteToggle={onHwMuteToggle}
-              onHwChannelModeChange={onHwChannelModeChange}
-            />
-          ) : (
-            <TimelineLanesView
-              canvasScrollRef={canvasScrollRef}
-              canvasInnerWidth={canvasInnerWidth}
-              dockWidthBase={dockWidthBase}
-              markerOverlayRef={markerOverlayRef}
-              showMidiPlayhead={showMidiPlayhead}
-              playheadPx={playheadPx}
-              locatorPx={locatorPx}
-              viewSpan={viewSpan}
-              barTicks={barTicks}
-              effectiveLocatorTicks={effectiveLocatorTicks}
-              locatorLabel={locatorLabel}
-              onLocatorPointerDown={onLocatorPointerDown}
-              onLocatorPointerMove={onLocatorPointerMove}
-              onLocatorPointerUp={onLocatorPointerUp}
-              eyeBtnRef={eyeBtnRef}
-              eyeOpen={eyeOpen}
-              eyeMenuId={eyeMenuId}
-              setEyeOpen={setEyeOpen}
-              touchTier={touchTier}
-              beginDockWidthResize={beginDockWidthResize}
-              onDockWidthResizePointerMove={onDockWidthResizePointerMove}
-              endDockWidthResize={endDockWidthResize}
-              effectiveZoomH={effectiveZoomH}
-              loopRange={loopRange}
-              loopOn={loopOn}
-              barMarks={barMarks}
-              rulerBeatMarks={rulerBeatMarks}
-              bindTrackRowsRef={bindTrackRowsRef}
-              lanesCoordRef={lanesCoordRef}
-              marqueeBox={marqueeBox}
-              draftProject={draftProject}
-              trackVisibility={trackVisibility}
-              rowHeightStyle={rowHeightStyle}
-              trackSelection={trackSelection}
-              soloAudioTrackIds={soloAudioTrackIds}
-              trackRename={trackRename}
-              buildChannelStripCallbacks={buildChannelStripCallbacks}
-              laneHeights={laneHeights}
-              zoomV={zoomV}
-              uiScale={uiScale}
-              tool={tool}
-              onTool={onTool}
-              isMobilePreview={isMobilePreview}
-              laneResizeTrackId={laneResizeTrackId}
-              beginLaneResize={beginLaneResize}
-              onLaneResizePointerMove={onLaneResizePointerMove}
-              endLaneResize={endLaneResize}
-              onLaneResizeDblClick={onLaneResizeDblClick}
-              onAudioTrackHeaderClick={onAudioTrackHeaderClick}
-              openAudioTrackContextMenu={openAudioTrackContextMenu}
-              heldZoom={heldZoom}
-              audioLaneDropId={audioLaneDropId}
-              setAudioLaneDropId={setAudioLaneDropId}
-              onUploadAudioToTrack={onUploadAudioToTrack}
-              openEmptyLaneContextMenu={openEmptyLaneContextMenu}
-              beginMarquee={beginMarquee}
-              beginTouchCanvasNav={beginTouchCanvasNav}
-              heldZoomRef={heldZoomRef}
-              onAddAudioTrack={onAddAudioTrack}
-              onFormaLanePointerDown={onFormaLanePointerDown}
-              onMapLanePointerDown={onMapLanePointerDown}
-              onFormaLanePointerMove={onFormaLanePointerMove}
-              onFormaLanePointerUp={onFormaLanePointerUp}
-              beginContentPencilDraw={beginContentPencilDraw}
-              rawTicksAtClientX={rawTicksAtClientX}
-              commitDraft={commitDraft}
-              clearMapSelection={clearMapSelection}
-              selectLaneClip={selectLaneClip}
-              laneImportTrackIdRef={laneImportTrackIdRef}
-              laneImportStartTicksRef={laneImportStartTicksRef}
-              laneAudioFileRef={laneAudioFileRef}
-              draftRef={draftRef}
-              lanesRendererProps={lanesRendererProps}
-            />
-          )}
-        </div>
-
-        {!isMobilePreview ? (
-          <TimelineInspector
-            inspectorOpen={inspectorOpen}
-            closeInspectorPanel={closeInspectorPanel}
-            clipSelectionItemsLength={clipSelection.items.length}
-            selectionLane={selectionLane}
-            songMetaOpen={songMetaOpen}
-            draftProject={draftProject}
-            commitDraft={commitDraft}
-            openSongImportWizard={openSongImportWizard}
-            selectedMapLane={selectedMapLane}
-            selectedMapIds={selectedMapIds}
-            primaryMapId={primaryMapId}
-            selectedTekstClip={selectedTekstClip}
-            selectedAkordClip={selectedAkordClip}
-            selectedCueClip={selectedCueClip}
-            selectedAnchor={selectedAnchor}
-            selectedAudioClip={selectedAudioClip}
-            selectedDockAudioTrack={selectedDockAudioTrack}
-            selectedClip={selectedClip}
-            selectedSubsectionRows={selectedSubsectionRows}
-            selectedSubsectionIdx={selectedSubsectionIdx}
-            setSelectedSubsectionIdx={setSelectedSubsectionIdx}
-            onClipRename={onClipRename}
-            onCountdownBarsChange={onCountdownBarsChange}
-            audioUploadPending={audioUploadPending}
-            onUploadAudioToTrack={onUploadAudioToTrack}
-            displayTicks={displayTicks}
-            projectId={projectId}
-          />
-        ) : null}
-      </div>
+      <TimelineCanvasViewport
+        inspectorOpen={inspectorOpen}
+        uiScale={uiScale}
+        effectiveZoomV={effectiveZoomV}
+        timelineSurface={timelineSurface}
+        draftProject={draftProject}
+        trackSelection={trackSelection}
+        soloAudioTrackIds={soloAudioTrackIds}
+        soloBusIds={soloBusIds}
+        selectedBusId={selectedBusId}
+        selectedHwOutputId={selectedHwOutputId}
+        trackRename={trackRename}
+        busRename={busRename}
+        buildChannelStripCallbacks={buildChannelStripCallbacks}
+        buildBusCallbacks={buildBusCallbacks}
+        buildMasterStripCallbacks={buildMasterStripCallbacks()}
+        onMetronomeToggle={onMetronomeToggle}
+        metronomeOn={metronomeOn}
+        playing={state.playing}
+        onAddAudioTrack={onAddAudioTrack}
+        onAddBus={onAddBus}
+        onAddHwOut={onAddHwOut}
+        onHwSelect={onHwSelect}
+        onHwContextMenu={onHwContextMenu}
+        onHwGainChange={onHwGainChange}
+        onHwMuteToggle={onHwMuteToggle}
+        onHwChannelModeChange={onHwChannelModeChange}
+        canvasScrollRef={canvasScrollRef}
+        canvasInnerWidth={canvasInnerWidth}
+        dockWidthBase={dockWidthBase}
+        markerOverlayRef={markerOverlayRef}
+        showMidiPlayhead={showMidiPlayhead}
+        playheadPx={playheadPx}
+        locatorPx={locatorPx}
+        viewSpan={viewSpan}
+        barTicks={barTicks}
+        effectiveLocatorTicks={effectiveLocatorTicks}
+        locatorLabel={locatorLabel}
+        onLocatorPointerDown={onLocatorPointerDown}
+        onLocatorPointerMove={onLocatorPointerMove}
+        onLocatorPointerUp={onLocatorPointerUp}
+        eyeBtnRef={eyeBtnRef}
+        eyeOpen={eyeOpen}
+        eyeMenuId={eyeMenuId}
+        setEyeOpen={setEyeOpen}
+        touchTier={touchTier}
+        beginDockWidthResize={beginDockWidthResize}
+        onDockWidthResizePointerMove={onDockWidthResizePointerMove}
+        endDockWidthResize={endDockWidthResize}
+        effectiveZoomH={effectiveZoomH}
+        loopRange={loopRange}
+        loopOn={loopOn}
+        barMarks={barMarks}
+        rulerBeatMarks={rulerBeatMarks}
+        bindTrackRowsRef={bindTrackRowsRef}
+        lanesCoordRef={lanesCoordRef}
+        marqueeBox={marqueeBox}
+        trackVisibility={trackVisibility}
+        rowHeightStyle={rowHeightStyle}
+        laneHeights={laneHeights}
+        zoomV={zoomV}
+        tool={tool}
+        onTool={onTool}
+        isMobilePreview={isMobilePreview}
+        laneResizeTrackId={laneResizeTrackId}
+        beginLaneResize={beginLaneResize}
+        onLaneResizePointerMove={onLaneResizePointerMove}
+        endLaneResize={endLaneResize}
+        onLaneResizeDblClick={onLaneResizeDblClick}
+        onAudioTrackHeaderClick={onAudioTrackHeaderClick}
+        openAudioTrackContextMenu={openAudioTrackContextMenu}
+        heldZoom={heldZoom}
+        audioLaneDropId={audioLaneDropId}
+        setAudioLaneDropId={setAudioLaneDropId}
+        onUploadAudioToTrack={onUploadAudioToTrack}
+        openEmptyLaneContextMenu={openEmptyLaneContextMenu}
+        beginMarquee={beginMarquee}
+        beginTouchCanvasNav={beginTouchCanvasNav}
+        heldZoomRef={heldZoomRef}
+        onFormaLanePointerDown={onFormaLanePointerDown}
+        onMapLanePointerDown={onMapLanePointerDown}
+        onFormaLanePointerMove={onFormaLanePointerMove}
+        onFormaLanePointerUp={onFormaLanePointerUp}
+        beginContentPencilDraw={beginContentPencilDraw}
+        rawTicksAtClientX={rawTicksAtClientX}
+        commitDraft={commitDraft}
+        clearMapSelection={clearMapSelection}
+        selectLaneClip={selectLaneClip}
+        laneImportTrackIdRef={laneImportTrackIdRef}
+        laneImportStartTicksRef={laneImportStartTicksRef}
+        laneAudioFileRef={laneAudioFileRef}
+        draftRef={draftRef}
+        lanesRendererProps={lanesRendererProps}
+        closeInspectorPanel={closeInspectorPanel}
+        clipSelection={clipSelection}
+        selectionLane={selectionLane}
+        songMetaOpen={songMetaOpen}
+        openSongImportWizard={openSongImportWizard}
+        selectedMapLane={selectedMapLane}
+        selectedMapIds={selectedMapIds}
+        primaryMapId={primaryMapId}
+        selectedTekstClip={selectedTekstClip}
+        selectedAkordClip={selectedAkordClip}
+        selectedCueClip={selectedCueClip}
+        selectedAnchor={selectedAnchor}
+        selectedAudioClip={selectedAudioClip}
+        selectedDockAudioTrack={selectedDockAudioTrack}
+        selectedClip={selectedClip}
+        selectedSubsectionRows={selectedSubsectionRows}
+        selectedSubsectionIdx={selectedSubsectionIdx}
+        setSelectedSubsectionIdx={setSelectedSubsectionIdx}
+        onClipRename={onClipRename}
+        onCountdownBarsChange={onCountdownBarsChange}
+        audioUploadPending={audioUploadPending}
+        displayTicks={displayTicks}
+        projectId={projectId}
+      />
 
       <TimelineStatusFooter
         wsStatus={wsStatus}
@@ -2946,7 +2891,7 @@ export function TimelineShell() {
         </p>
       ) : null}
 
-      <TimelineSongDialogs
+      <TimelineDialogsContainer
         blocker={blocker}
         projectId={projectId}
         draftProject={draftProject}
@@ -2972,9 +2917,6 @@ export function TimelineShell() {
         onImportUsUgBridge={onImportUsUgBridge}
         onImportUltrastar={onImportUltrastar}
         onImportUg={onImportUg}
-      />
-
-      <TimelinePortals
         eyeOpen={eyeOpen}
         eyeMenuPos={eyeMenuPos}
         eyeMenuRef={eyeMenuRef}
@@ -2994,10 +2936,6 @@ export function TimelineShell() {
         wandMenu={wandMenu}
         wandMenuRef={wandMenuRef}
         applyWand={applyWand}
-      />
-
-      <TimelineMapDialogs
-        draftProject={draftProject}
         displayTicks={displayTicks}
         mapEditTicks={mapEditTicks}
         commitDraft={commitDraft}
