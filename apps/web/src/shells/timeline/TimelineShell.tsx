@@ -160,6 +160,8 @@ import { useTimelineAudioUpload } from "./hooks/useTimelineAudioUpload.js";
 import { useTimelineContextMenus } from "./hooks/useTimelineContextMenus.js";
 import { useTimelineMapEdits } from "./hooks/useTimelineMapEdits.js";
 import { useTimelineWandTool } from "./hooks/useTimelineWandTool.js";
+import { useTimelineMarquee } from "./hooks/useTimelineMarquee.js";
+import { useTimelineRulerGestures } from "./hooks/useTimelineRulerGestures.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -665,12 +667,6 @@ export function TimelineShell() {
   } | null>(null);
 
   const [primaryMapId, setPrimaryMapId] = useState<string | null>(null);
-  const [loopDraft, setLoopDraft] = useState<{
-    startTicks: number;
-    endTicks: number;
-  } | null>(null);
-  const loopDraftRef = useRef(loopDraft);
-  loopDraftRef.current = loopDraft;
   const [trackVisibility, setTrackVisibility] = useState<TrackVisibilityMap>(
     () => defaultTrackVisibility(),
   );
@@ -870,14 +866,6 @@ export function TimelineShell() {
     startX: number;
     startY: number;
   } | null>(null);
-  const [marqueeBox, setMarqueeBox] = useState<{
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  } | null>(null);
-  /** Re-run touch-nav window listeners when a nav session starts. */
-  const [touchCanvasNavActive, setTouchCanvasNavActive] = useState(false);
   const [canvasNotice, setCanvasNotice] = useState<string | null>(null);
   const canvasNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -1388,7 +1376,65 @@ export function TimelineShell() {
   );
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
 
-  // Follow playhead: continuous center (v4 scrollFollowToX) while playing — not edge-only.
+  const rawTicksAtClientX = useCallback((clientX: number): number | null => {
+    const coordRoot = lanesCoordRef.current;
+    if (!coordRoot || !draftRef.current) return null;
+    return ticksFromPointer(
+      clientX,
+      coordRoot,
+      viewSpanRef.current,
+      barTicksRef.current,
+      zoomHRef.current,
+    );
+  }, []);
+
+  const {
+    loopDraft,
+    placeLocatorAtTicks,
+    setLocatorFromClientX,
+    onLocatorPointerDown,
+    onLocatorPointerMove,
+    onLocatorPointerUp,
+    onLoopToggle,
+    nudgeLocator,
+  } = useTimelineRulerGestures({
+    draftRef,
+    draftProject,
+    state,
+    locatorTicks,
+    seek,
+    setLoop,
+    setLocatorTicks,
+    markerOverlayRef,
+    lanesCoordRef,
+    viewSpanRef,
+    barTicksRef,
+    zoomHRef,
+    rawTicksAtClientX,
+  });
+
+  const {
+    marqueeBox,
+    touchCanvasNavActive,
+    beginMarquee,
+    beginTouchCanvasNav,
+    finishTouchCanvasNav,
+  } = useTimelineMarquee({
+    toolRef,
+    heldZoomRef,
+    lanesCoordRef,
+    canvasScrollRef,
+    zoomHBaseRef,
+    setZoomH,
+    fitZoom,
+    clearClipSelection,
+    clearMapSelection,
+    setSelectedAnchorId,
+    setSongMetaOpen,
+    setSelectedSubsectionIdx,
+    setClipSelection,
+    setLocatorFromClientX,
+  });
 
   const loopOn = Boolean(state.loop?.enabled);
   const loopRange = loopDraft ?? usableLoopRange(state.loop);
@@ -2002,17 +2048,7 @@ export function TimelineShell() {
     setSongMetaOpen(false);
   }
 
-  function rawTicksAtClientX(clientX: number): number | null {
-    const coordRoot = lanesCoordRef.current;
-    if (!coordRoot || !draftRef.current) return null;
-    return ticksFromPointer(
-      clientX,
-      coordRoot,
-      viewSpanRef.current,
-      barTicksRef.current,
-      zoomHRef.current,
-    );
-  }
+
 
   function beginFormaGesture(
     session: FormaGestureSession,
@@ -3018,189 +3054,6 @@ export function TimelineShell() {
     endFormaGesture(e.metaKey, e.ctrlKey);
   }
 
-  function clientToCanvasLocal(clientX: number, clientY: number) {
-    const root = lanesCoordRef.current;
-    if (!root) return { x: 0, y: 0 };
-    const rect = root.getBoundingClientRect();
-    return { x: clientX - rect.left, y: clientY - rect.top };
-  }
-
-  function updateMarqueeBoxFromPointer(clientX: number, clientY: number) {
-    const drag = marqueeRef.current;
-    if (!drag) return;
-    drag.currentX = clientX;
-    drag.currentY = clientY;
-    const a = clientToCanvasLocal(drag.startX, drag.startY);
-    const b = clientToCanvasLocal(clientX, clientY);
-    setMarqueeBox({
-      left: Math.min(a.x, b.x),
-      top: Math.min(a.y, b.y),
-      width: Math.abs(b.x - a.x),
-      height: Math.abs(b.y - a.y),
-    });
-  }
-
-  function finishMarquee(clientX: number, clientY: number) {
-    const drag = marqueeRef.current;
-    marqueeRef.current = null;
-    setMarqueeBox(null);
-    if (!drag) return;
-    const dx = clientX - drag.startX;
-    const dy = clientY - drag.startY;
-    if (isMarqueeClick(dx, dy)) {
-      if (toolRef.current === "zoom" || heldZoomRef.current) {
-        fitZoom();
-        return;
-      }
-      clearClipSelection();
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      setLocatorFromClientX(clientX, { seekTransport: true });
-      return;
-    }
-    const a = clientToCanvasLocal(drag.startX, drag.startY);
-    const b = clientToCanvasLocal(clientX, clientY);
-    const box = {
-      left: Math.min(a.x, b.x),
-      right: Math.max(a.x, b.x),
-      top: Math.min(a.y, b.y),
-      bottom: Math.max(a.y, b.y),
-    };
-    if (toolRef.current === "zoom" || heldZoomRef.current) {
-      const boxW = box.right - box.left;
-      const scroll = canvasScrollRef.current;
-      if (scroll && boxW > 16) {
-        const ratio = scroll.clientWidth / boxW;
-        const next = Math.round(zoomHBaseRef.current * ratio);
-        setZoomH(Math.min(ZOOM_H_MAX, Math.max(ZOOM_H_MIN, next)));
-        requestAnimationFrame(() => {
-          scroll.scrollLeft = Math.max(0, box.left * ratio - 24);
-        });
-      }
-      return;
-    }
-    const overlay = lanesCoordRef.current;
-    const root = overlay?.parentElement;
-    if (!overlay || !root) {
-      clearClipSelection();
-      return;
-    }
-    const rootRect = overlay.getBoundingClientRect();
-    const viewportBox = {
-      left: rootRect.left + box.left,
-      right: rootRect.left + box.right,
-      top: rootRect.top + box.top,
-      bottom: rootRect.top + box.bottom,
-    };
-    const hits: { id: string; lane: ClipSelectionLane }[] = [];
-    root
-      .querySelectorAll<HTMLElement>("[data-clip-id][data-clip-lane]")
-      .forEach((el) => {
-        const id = el.dataset.clipId;
-        const lane = el.dataset.clipLane as ClipSelectionLane | undefined;
-        if (!id || !lane) return;
-        const r = el.getBoundingClientRect();
-        if (rectsIntersect(viewportBox, r)) {
-          hits.push({ id, lane });
-        }
-      });
-    clearMapSelection();
-    setSelectedAnchorId(null);
-    setSongMetaOpen(false);
-    setSelectedSubsectionIdx(null);
-    setClipSelection(marqueeSelectFromHits(hits));
-  }
-
-  function beginTouchCanvasNav(e: React.PointerEvent<HTMLElement>) {
-    // Do not preventDefault — browser pans the scroll viewport.
-    touchCanvasNavRef.current = {
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-    };
-    setTouchCanvasNavActive(true);
-  }
-
-  function finishTouchCanvasNav(clientX: number, clientY: number) {
-    const nav = touchCanvasNavRef.current;
-    touchCanvasNavRef.current = null;
-    setTouchCanvasNavActive(false);
-    if (!nav) return;
-    const dx = clientX - nav.startX;
-    const dy = clientY - nav.startY;
-    if (!isMarqueeClick(dx, dy)) return;
-    clearClipSelection();
-    clearMapSelection();
-    setSelectedAnchorId(null);
-    setLocatorFromClientX(clientX, { seekTransport: true });
-  }
-
-  function beginMarquee(e: React.PointerEvent<HTMLElement>) {
-    if (
-      isTouchPointerType(e.pointerType) &&
-      toolRef.current === "pointer" &&
-      !heldZoomRef.current
-    ) {
-      beginTouchCanvasNav(e);
-      return;
-    }
-    e.preventDefault();
-    e.stopPropagation();
-    marqueeRef.current = {
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-      currentX: e.clientX,
-      currentY: e.clientY,
-    };
-    updateMarqueeBoxFromPointer(e.clientX, e.clientY);
-  }
-
-  useEffect(() => {
-    if (!marqueeBox) return;
-    function onMove(e: PointerEvent) {
-      const drag = marqueeRef.current;
-      if (!drag || e.pointerId !== drag.pointerId) return;
-      updateMarqueeBoxFromPointer(e.clientX, e.clientY);
-    }
-    function onUp(e: PointerEvent) {
-      const drag = marqueeRef.current;
-      if (!drag || e.pointerId !== drag.pointerId) return;
-      finishMarquee(e.clientX, e.clientY);
-    }
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- marquee session gated by box
-  }, [marqueeBox != null]);
-
-  useEffect(() => {
-    if (!touchCanvasNavActive) return;
-    function onUp(e: PointerEvent) {
-      const nav = touchCanvasNavRef.current;
-      if (!nav || e.pointerId !== nav.pointerId) return;
-      finishTouchCanvasNav(e.clientX, e.clientY);
-    }
-    function onCancel(e: PointerEvent) {
-      const nav = touchCanvasNavRef.current;
-      if (!nav || e.pointerId !== nav.pointerId) return;
-      touchCanvasNavRef.current = null;
-      setTouchCanvasNavActive(false);
-    }
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onCancel);
-    return () => {
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onCancel);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- session gated by active flag
-  }, [touchCanvasNavActive]);
-
   useEffect(() => {
     function onPointerMove(e: PointerEvent) {
       lastPointerRef.current = { x: e.clientX, y: e.clientY };
@@ -3251,204 +3104,7 @@ export function TimelineShell() {
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [wandMenu]);
 
-  function placeLocatorAtTicks(
-    ticks: number,
-    opts?: {
-      seekTransport?: boolean;
-      metaKey?: boolean;
-      ctrlKey?: boolean;
-    },
-  ) {
-    if (!draftRef.current) return;
-    const mode = mapSnapMode(opts?.metaKey ?? false, opts?.ctrlKey ?? false);
-    const snapped = snapLocatorTicks(draftRef.current, ticks, mode);
-    setLocatorTicks(snapped);
-    if (opts?.seekTransport !== false) {
-      void seek(snapped);
-    }
-  }
 
-  function setLocatorFromClientX(
-    clientX: number,
-    opts?: {
-      seekTransport?: boolean;
-      metaKey?: boolean;
-      ctrlKey?: boolean;
-    },
-  ) {
-    const coordRoot = markerOverlayRef.current ?? lanesCoordRef.current;
-    if (!coordRoot || !draftRef.current) return;
-    const raw = ticksFromPointer(
-      clientX,
-      coordRoot,
-      viewSpanRef.current,
-      barTicksRef.current,
-      zoomHRef.current,
-    );
-    placeLocatorAtTicks(raw, opts);
-  }
-
-  function onLocatorPointerDown(
-    e: React.PointerEvent<HTMLElement>,
-    source: "ruler-loop" | "ruler-beat" | "locator",
-  ) {
-    if (e.button !== 0) return;
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    const existing = usableLoopRange(state.loop);
-    if (source === "ruler-loop") {
-      if (existing && ticksInLoopRegion(raw, existing)) {
-        loopDragRef.current = {
-          pointerId: e.pointerId,
-          originTicks: raw,
-          originClientX: e.clientX,
-          source,
-          kind: "move",
-          moveOriginRange: existing,
-        };
-        setLoopDraft(existing);
-        return;
-      }
-      loopDragRef.current = {
-        pointerId: e.pointerId,
-        originTicks: raw,
-        originClientX: e.clientX,
-        source,
-        kind: "create",
-      };
-      setLoopDraft(null);
-      return;
-    }
-    loopDragRef.current = {
-      pointerId: e.pointerId,
-      originTicks: raw,
-      originClientX: e.clientX,
-      source,
-      kind: "seek",
-    };
-    setLoopDraft(null);
-    setLocatorFromClientX(e.clientX, {
-      seekTransport: true,
-      metaKey: e.metaKey,
-      ctrlKey: e.ctrlKey,
-    });
-  }
-
-  function onLocatorPointerMove(e: React.PointerEvent<HTMLElement>) {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    const drag = loopDragRef.current;
-    if (!drag || drag.pointerId !== e.pointerId) {
-      setLocatorFromClientX(e.clientX, {
-        seekTransport: true,
-        metaKey: e.metaKey,
-        ctrlKey: e.ctrlKey,
-      });
-      return;
-    }
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    const mode = contentSnapModeFromModifiers(e.metaKey, e.ctrlKey);
-    if (drag.kind === "create" && draftProject) {
-      const dx = Math.abs(e.clientX - drag.originClientX);
-      if (dx >= 5) {
-        const a = Math.min(drag.originTicks, raw);
-        const b = Math.max(drag.originTicks, raw);
-        setLoopDraft(snapLoopRange(draftProject, a, b, mode));
-      }
-      return;
-    }
-    if (drag.kind === "move" && drag.moveOriginRange && draftProject) {
-      const delta = raw - drag.originTicks;
-      setLoopDraft(
-        snapMovedLoopRange(draftProject, drag.moveOriginRange, delta, mode),
-      );
-      return;
-    }
-    setLocatorFromClientX(e.clientX, {
-      seekTransport: true,
-      metaKey: e.metaKey,
-      ctrlKey: e.ctrlKey,
-    });
-  }
-
-  function onLocatorPointerUp(e: React.PointerEvent<HTMLElement>) {
-    const drag = loopDragRef.current;
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    if (!drag || drag.pointerId !== e.pointerId) return;
-    const draft = loopDraftRef.current;
-    const dx = Math.abs(e.clientX - drag.originClientX);
-    loopDragRef.current = null;
-    if (
-      drag.kind === "create" &&
-      draft &&
-      draft.endTicks > draft.startTicks &&
-      draftProject
-    ) {
-      const snapped = snapLoopRange(
-        draftProject,
-        draft.startTicks,
-        draft.endTicks,
-        contentSnapModeFromModifiers(e.metaKey, e.ctrlKey),
-      );
-      void setLoop({
-        enabled: true,
-        startTicks: snapped.startTicks,
-        endTicks: snapped.endTicks,
-      }).finally(() => setLoopDraft(null));
-      return;
-    }
-    if (drag.kind === "move" && drag.moveOriginRange) {
-      if (dx < 5) {
-        setLoopDraft(null);
-        void setLoop({ enabled: !state.loop?.enabled });
-        return;
-      }
-      if (draft && draft.endTicks > draft.startTicks) {
-        void setLoop({
-          enabled: state.loop?.enabled ?? true,
-          startTicks: draft.startTicks,
-          endTicks: draft.endTicks,
-        }).finally(() => setLoopDraft(null));
-        return;
-      }
-    }
-    setLoopDraft(null);
-    if (drag.kind === "seek") {
-      setLocatorFromClientX(e.clientX, {
-        seekTransport: true,
-        metaKey: e.metaKey,
-        ctrlKey: e.ctrlKey,
-      });
-    }
-  }
-
-  function onLoopToggle() {
-    const range = usableLoopRange(state.loop);
-    if (range) {
-      void setLoop({ enabled: !state.loop?.enabled });
-      return;
-    }
-    if (!draftProject) return;
-    const end = projectEndTicks(draftProject);
-    if (end <= 0) return;
-    void setLoop({ enabled: true, startTicks: 0, endTicks: end });
-  }
-
-  function nudgeLocator(dir: -1 | 1) {
-    const draft = draftRef.current;
-    if (!draft) return;
-    const meter = resolveMeterAt(draft, locatorTicks);
-    const beatTicks = Math.max(
-      1,
-      Math.round((draft.ppq * 4) / Math.max(1, meter.denominator)),
-    );
-    placeLocatorAtTicks(locatorTicks + dir * beatTicks, {
-      seekTransport: true,
-    });
-  }
 
   function toggleTrack(id: string) {
     const def = buildTrackList(draftProject?.audioTracks ?? []).find(
