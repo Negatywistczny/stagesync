@@ -22,9 +22,9 @@ Otwarte zadania. Plan etapów: [ROADMAP.md](./ROADMAP.md). Historia: [CHANGELOG.
 
 #### Szlif UI Timeline (`apps/web`)
 
-- [ ] `TimelineShell.tsx` (obecnie 4 575 LOC) &rarr; dalsze wyciąganie sub-komponentów:
+- [ ] `TimelineShell.tsx` (obecnie 4 352 LOC) &rarr; dalsze wyciąganie sub-komponentów:
   - [x] Wyciągnięte renderery ścieżek (`TimelineAudioLaneRenderer`, `TimelineContentLaneRenderer`, `TimelineMapLaneRenderer`, `useTimelineLanePointerHandlers`)
-  - [x] Wyciągnięta logika miksera i edycji mapy (`useTimelineTrackActions`, `useTimelineMixerCallbacks`, `useTimelineMapEdits`, `useTimelineWandTool`)
+  - [x] Wyciągnięta logika miksera i edycji mapy (`useTimelineTrackActions`, `useTimelineMixerCallbacks`, `useTimelineMapEdits`, `useTimelineWandTool`, `useTimelineMapPointerHandlers`)
   - [x] Wyciągnięte gesty zaznaczania ramką oraz linijki/pętli (`useTimelineMarquee`, `useTimelineRulerGestures`)
   - [x] Obsługa klawiatury i skrótów (`useTimelineKeyboardEvents`)
   - [ ] Górny pasek narzędzi &rarr; `TimelineHeaderToolbar.tsx`
