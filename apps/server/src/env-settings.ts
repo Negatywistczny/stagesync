@@ -5,7 +5,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { REPO_ROOT } from "./storage/paths.js";
-import { validateHostDisplayName } from "./network-info.js";
+import { validateHostDisplayName } from "./system/network-info.js";
 
 /** Dev / compose bootstrap file at monorepo (or image) root. */
 export const REPO_ENV_PATH = join(REPO_ROOT, ".env");

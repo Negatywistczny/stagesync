@@ -8,8 +8,8 @@ import {
   maskSecretSettingsValues,
   readManagedSettings,
   writeManagedSettings,
-} from "../../env-settings.js";
-import { refreshMdnsAdvertise } from "../../mdns-registry.js";
+} from "../../system/env-settings.js";
+import { refreshMdnsAdvertise } from "../../system/mdns-registry.js";
 import {
   listBrowseDirectory,
   resolveBrowseStartPath,

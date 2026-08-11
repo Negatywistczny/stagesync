@@ -4,8 +4,8 @@ import type { AddressInfo } from "node:net";
 import { WebSocket } from "ws";
 import { attachTransportWs, TRANSPORT_WS_PATH } from "./ws.js";
 import { createTransportEngine, type TransportEngine } from "./engine.js";
-import { createClientPresence } from "../client-presence.js";
-import type { LiveDeskStore } from "../live-desk.js";
+import { createClientPresence } from "../presence/client-presence.js";
+import type { LiveDeskStore } from "../routes/live-desk.js";
 import type { SetlistHub } from "./setlist-hub.js";
 import type { StageHub } from "./stage-hub.js";
 

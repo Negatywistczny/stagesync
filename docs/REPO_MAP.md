@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1422
-* **Liczba katalogów:** 230
-* **Data aktualizacji:** 2026-08-11T12:21:10.298Z
+* **Liczba wszystkich plików:** 1439
+* **Liczba katalogów:** 239
+* **Data aktualizacji:** 2026-08-11T12:21:37.363Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 996 |
+| Kod | 1013 |
 | Docs | 156 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 601 |
+| `.ts` | 618 |
 | `.tsx` | 216 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -40,11 +40,11 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1024) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1041) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (149) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **server/** (166) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (575) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
@@ -304,17 +304,38 @@ stagesync/
 │   │   └── README.md
 │   ├── server/
 │   │   ├── src/
+│   │   │   ├── library/
+│   │   │   │   ├── assets-api.test.ts
+│   │   │   │   ├── downloads.test.ts
+│   │   │   │   ├── downloads.ts
+│   │   │   │   ├── library-crud.test.ts
+│   │   │   │   ├── path-browser.test.ts
+│   │   │   │   └── path-browser.ts
+│   │   │   ├── live-desk/
+│   │   │   │   ├── live-desk-api.test.ts
+│   │   │   │   └── live-desk.ts
 │   │   │   ├── midi/
 │   │   │   │   ├── backend.ts
 │   │   │   │   ├── config-persist.test.ts
 │   │   │   │   ├── config-persist.ts
 │   │   │   │   ├── host.test.ts
 │   │   │   │   ├── host.ts
+│   │   │   │   ├── midi-api.test.ts
+│   │   │   │   ├── midi-pc-handler-edges.test.ts
+│   │   │   │   ├── midi-pc-load.test.ts
+│   │   │   │   ├── midi-pc-out-edges.test.ts
+│   │   │   │   ├── midi-pc-out.test.ts
+│   │   │   │   ├── midi-router-unit.test.ts
 │   │   │   │   ├── mock-backend.ts
 │   │   │   │   ├── native-backend.test.ts
 │   │   │   │   ├── native-backend.ts
 │   │   │   │   ├── program-change-out.ts
 │   │   │   │   └── program-change.ts
+│   │   │   ├── presence/
+│   │   │   │   ├── client-presence-edges.test.ts
+│   │   │   │   ├── client-presence.ts
+│   │   │   │   ├── host-stability.test.ts
+│   │   │   │   └── presence-logs.test.ts
 │   │   │   ├── push/
 │   │   │   │   └── tokens.ts
 │   │   │   ├── routes/
@@ -322,25 +343,53 @@ stagesync/
 │   │   │   │   ├── youtube-audio/  … (5 plików)
 │   │   │   │   ├── assets-helpers.test.ts
 │   │   │   │   ├── assets-helpers.ts
+│   │   │   │   ├── assets-router-unit.test.ts
 │   │   │   │   ├── assets.ts
 │   │   │   │   ├── errors.test.ts
 │   │   │   │   ├── errors.ts
 │   │   │   │   ├── import.test.ts
 │   │   │   │   ├── import.ts
+│   │   │   │   ├── library-router-unit.test.ts
 │   │   │   │   ├── library.ts
 │   │   │   │   ├── live-desk.ts
 │   │   │   │   ├── midi.ts
+│   │   │   │   ├── projects-router-unit.test.ts
 │   │   │   │   ├── projects.ts
 │   │   │   │   ├── push.test.ts
 │   │   │   │   ├── push.ts
 │   │   │   │   ├── selective-catches.test.ts
+│   │   │   │   ├── setlist-router-unit.test.ts
 │   │   │   │   ├── setlist.ts
+│   │   │   │   ├── stage-router-unit.test.ts
 │   │   │   │   ├── stage.ts
+│   │   │   │   ├── system-lifecycle-routes.test.ts
+│   │   │   │   ├── system-router-unit.test.ts
+│   │   │   │   ├── system-routes.test.ts
+│   │   │   │   ├── system-settings-routes.test.ts
 │   │   │   │   ├── system.ts
 │   │   │   │   ├── transport.ts
 │   │   │   │   ├── youtube-audio-download.test.ts
 │   │   │   │   ├── youtube-audio.test.ts
 │   │   │   │   └── youtube-audio.ts
+│   │   │   ├── security/
+│   │   │   │   ├── lifecycle-guard.test.ts
+│   │   │   │   ├── lifecycle.create.test.ts
+│   │   │   │   ├── lifecycle.test.ts
+│   │   │   │   ├── lifecycle.ts
+│   │   │   │   ├── operator-pin-api.test.ts
+│   │   │   │   ├── operator-pin.test.ts
+│   │   │   │   ├── operator-pin.ts
+│   │   │   │   ├── safety-net-api.test.ts
+│   │   │   │   ├── safety-net.test.ts
+│   │   │   │   └── safety-net.ts
+│   │   │   ├── setlist/
+│   │   │   │   ├── setlist-api.test.ts
+│   │   │   │   ├── setlist-auto-advance.test.ts
+│   │   │   │   └── settings-api.test.ts
+│   │   │   ├── stage/
+│   │   │   │   ├── pause-at-end.test.ts
+│   │   │   │   ├── song-end-race.test.ts
+│   │   │   │   └── stage-api.test.ts
 │   │   │   ├── storage/
 │   │   │   │   ├── atomic-write.test.ts
 │   │   │   │   ├── atomic-write.ts
@@ -354,6 +403,22 @@ stagesync/
 │   │   │   │   ├── restore-backup.ts
 │   │   │   │   ├── shadow-backup.test.ts
 │   │   │   │   └── shadow-backup.ts
+│   │   │   ├── system/
+│   │   │   │   ├── diagnostics-zip.ts
+│   │   │   │   ├── diagnostics.test.ts
+│   │   │   │   ├── env-settings.test.ts
+│   │   │   │   ├── env-settings.ts
+│   │   │   │   ├── file-logger.test.ts
+│   │   │   │   ├── file-logger.ts
+│   │   │   │   ├── log-buffer.test.ts
+│   │   │   │   ├── log-buffer.ts
+│   │   │   │   ├── mdns-advertise.test.ts
+│   │   │   │   ├── mdns-advertise.ts
+│   │   │   │   ├── mdns-registry.ts
+│   │   │   │   ├── network-info.ts
+│   │   │   │   ├── sentry.test.ts
+│   │   │   │   ├── sentry.ts
+│   │   │   │   └── update-status.test.ts
 │   │   │   ├── transport/
 │   │   │   │   ├── auto-advance.ts
 │   │   │   │   ├── engine.test.ts
@@ -363,86 +428,47 @@ stagesync/
 │   │   │   │   ├── setlist-hub.ts
 │   │   │   │   ├── stage-hub.test.ts
 │   │   │   │   ├── stage-hub.ts
+│   │   │   │   ├── transport-api.test.ts
 │   │   │   │   ├── ws.integration.test.ts
 │   │   │   │   └── ws.ts
 │   │   │   ├── ug/
 │   │   │   │   ├── fixtures/  … (1 plik)
 │   │   │   │   ├── ug-fetch.test.ts
 │   │   │   │   └── ug-fetch.ts
+│   │   │   ├── ui-meta/
+│   │   │   │   ├── ui-meta-role-hashes.test.ts
+│   │   │   │   ├── ui-meta.test.ts
+│   │   │   │   └── ui-meta.ts
 │   │   │   ├── usdb/
 │   │   │   │   ├── usdb-fetch.test.ts
 │   │   │   │   └── usdb-fetch.ts
+│   │   │   ├── web-static/
+│   │   │   │   ├── json-body-limit.test.ts
+│   │   │   │   ├── resolve-static-dir.test.ts
+│   │   │   │   ├── static-web-marker.test.ts
+│   │   │   │   ├── static-web.test.ts
+│   │   │   │   └── static-web.ts
 │   │   │   ├── app.ts
-│   │   │   ├── assets-api.test.ts
-│   │   │   ├── assets-router-unit.test.ts
-│   │   │   ├── client-presence-edges.test.ts
 │   │   │   ├── client-presence.ts
 │   │   │   ├── diagnostics-zip.ts
-│   │   │   ├── diagnostics.test.ts
-│   │   │   ├── downloads.test.ts
 │   │   │   ├── downloads.ts
-│   │   │   ├── env-settings.test.ts
 │   │   │   ├── env-settings.ts
-│   │   │   ├── file-logger.test.ts
 │   │   │   ├── file-logger.ts
-│   │   │   ├── host-stability.test.ts
 │   │   │   ├── index.ts
-│   │   │   ├── json-body-limit.test.ts
-│   │   │   ├── library-crud.test.ts
-│   │   │   ├── library-router-unit.test.ts
-│   │   │   ├── lifecycle-guard.test.ts
-│   │   │   ├── lifecycle.create.test.ts
-│   │   │   ├── lifecycle.test.ts
 │   │   │   ├── lifecycle.ts
-│   │   │   ├── live-desk-api.test.ts
 │   │   │   ├── live-desk.ts
-│   │   │   ├── log-buffer.test.ts
 │   │   │   ├── log-buffer.ts
-│   │   │   ├── mdns-advertise.test.ts
 │   │   │   ├── mdns-advertise.ts
 │   │   │   ├── mdns-registry.ts
-│   │   │   ├── midi-api.test.ts
-│   │   │   ├── midi-pc-handler-edges.test.ts
-│   │   │   ├── midi-pc-load.test.ts
-│   │   │   ├── midi-pc-out-edges.test.ts
-│   │   │   ├── midi-pc-out.test.ts
-│   │   │   ├── midi-router-unit.test.ts
 │   │   │   ├── near-pure-coverage.test.ts
 │   │   │   ├── network-info.ts
-│   │   │   ├── operator-pin-api.test.ts
-│   │   │   ├── operator-pin.test.ts
 │   │   │   ├── operator-pin.ts
-│   │   │   ├── path-browser.test.ts
 │   │   │   ├── path-browser.ts
-│   │   │   ├── pause-at-end.test.ts
-│   │   │   ├── presence-logs.test.ts
-│   │   │   ├── projects-router-unit.test.ts
-│   │   │   ├── resolve-static-dir.test.ts
-│   │   │   ├── safety-net-api.test.ts
-│   │   │   ├── safety-net.test.ts
 │   │   │   ├── safety-net.ts
-│   │   │   ├── sentry.test.ts
 │   │   │   ├── sentry.ts
-│   │   │   ├── setlist-api.test.ts
-│   │   │   ├── setlist-auto-advance.test.ts
-│   │   │   ├── setlist-router-unit.test.ts
-│   │   │   ├── settings-api.test.ts
 │   │   │   ├── smoke-e2e.test.ts
-│   │   │   ├── song-end-race.test.ts
-│   │   │   ├── stage-api.test.ts
-│   │   │   ├── stage-router-unit.test.ts
-│   │   │   ├── static-web-marker.test.ts
-│   │   │   ├── static-web.test.ts
 │   │   │   ├── static-web.ts
-│   │   │   ├── system-lifecycle-routes.test.ts
-│   │   │   ├── system-router-unit.test.ts
-│   │   │   ├── system-routes.test.ts
-│   │   │   ├── system-settings-routes.test.ts
-│   │   │   ├── transport-api.test.ts
-│   │   │   ├── ui-meta-role-hashes.test.ts
-│   │   │   ├── ui-meta.test.ts
-│   │   │   ├── ui-meta.ts
-│   │   │   └── update-status.test.ts
+│   │   │   └── ui-meta.ts
 │   │   ├── eslint.config.js
 │   │   ├── package.json
 │   │   ├── README.md

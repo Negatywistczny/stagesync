@@ -25,7 +25,7 @@ import {
 } from "./config-persist.js";
 import { createDefaultMidiBackend } from "./native-backend.js";
 import type { TransportEngine } from "../transport/engine.js";
-import { isMidiOutAllowed } from "../safety-net.js";
+import { isMidiOutAllowed } from "../security/safety-net.js";
 
 const WINDOW_MS = 1000;
 /** Max MIDI clock pulses emitted in one transport notify (anti-flood on huge jumps). */

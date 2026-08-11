@@ -8,7 +8,7 @@ import { createSetlistRouter } from "./setlist.js";
 import { createTransportRouter } from "./transport.js";
 import type { Stores } from "../storage/index.js";
 import type { TransportEngine } from "../transport/engine.js";
-import type { LiveDeskStore } from "../live-desk.js";
+import type { LiveDeskStore } from "./live-desk.js";
 
 async function listen(app: express.Express): Promise<{
   server: Server;

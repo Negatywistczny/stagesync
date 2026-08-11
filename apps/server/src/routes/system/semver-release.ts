@@ -1,4 +1,4 @@
-import { releaseMatchesUpdateChannel } from "../../env-settings.js";
+import { releaseMatchesUpdateChannel } from "../../system/env-settings.js";
 import type { LatestReleaseResult } from "./types.js";
 
 export type { LatestReleaseResult } from "./types.js";

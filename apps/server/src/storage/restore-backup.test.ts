@@ -2,7 +2,7 @@ import { mkdtemp, writeFile, readFile, mkdir, rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildStoreZip } from "../diagnostics-zip.js";
+import { buildStoreZip } from "../system/diagnostics-zip.js";
 import {
   resolveLiveNameFromBak,
   resolveLivePathFromBak,

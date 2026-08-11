@@ -2,14 +2,14 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { hostname as osHostname, tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed, projectEndTicks } from "@stagesync/shared";
-import { createLiveDeskStore } from "./live-desk.js";
+import { createProjectV6Seed, projectEndTicks } from "@stagesync/shared";
+import { createLiveDeskStore } from "./live-desk/live-desk.js";
 import {
   buildNetworkInfo,
   isLoopbackJoinUrl,
   normalizeAdvertiseHostname,
   pickPrimaryJoinUrl,
-} from "./network-info.js";
+} from "./system/network-info.js";
 import { wireSetlistAutoAdvance } from "./transport/auto-advance.js";
 import { createTransportEngine } from "./transport/engine.js";
 import type { Stores } from "./storage/index.js";
@@ -72,7 +72,7 @@ describe("live-desk first-write failure", () => {
 
 describe("auto-advance stops when no next song", () => {
   it("calls stop on current project when resolveSetlistNext is null", async () => {
-    const project = createProjectV5Seed(
+    const project = createProjectV6Seed(
       "00000000-0000-4000-8000-00000000aa01",
       "Only",
       "2026-07-21T00:00:00.000Z",

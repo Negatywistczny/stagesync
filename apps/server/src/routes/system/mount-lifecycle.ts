@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { Router } from "express";
-import { isRunningUnderPm2 } from "../../lifecycle.js";
-import { buildStoreZip, type ZipEntry } from "../../diagnostics-zip.js";
+import { isRunningUnderPm2 } from "../../security/lifecycle.js";
+import { buildStoreZip, type ZipEntry } from "../../system/diagnostics-zip.js";
 import { assertLifecycleAllowed } from "./lifecycle-auth.js";
 import type { SystemRouterDeps } from "./types.js";
 

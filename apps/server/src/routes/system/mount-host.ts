@@ -3,13 +3,13 @@ import {
   buildMdnsJoinUrl,
   buildNetworkInfo,
   withMdnsJoinUrl,
-} from "../../network-info.js";
-import { writeManagedSettings } from "../../env-settings.js";
+} from "../../system/network-info.js";
+import { writeManagedSettings } from "../../system/env-settings.js";
 import {
   isOperatorPinRequired,
   verifyOperatorPin,
-} from "../../operator-pin.js";
-import { promoteToMaster, safetyNetStatus } from "../../safety-net.js";
+} from "../../security/operator-pin.js";
+import { promoteToMaster, safetyNetStatus } from "../../security/safety-net.js";
 import type { SystemRouterDeps } from "./types.js";
 
 type HostMountContext = {

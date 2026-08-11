@@ -12,7 +12,7 @@ import {
   relative,
   resolve,
 } from "node:path";
-import { parseZipArchive } from "../diagnostics-zip.js";
+import { parseZipArchive } from "../system/diagnostics-zip.js";
 import { isUnderAllowedRoot } from "../path-browser.js";
 import { shadowBackup } from "./shadow-backup.js";
 

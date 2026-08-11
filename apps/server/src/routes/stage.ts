@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { StageMessageBodySchema } from "@stagesync/shared";
-import type { ClientPresence } from "../client-presence.js";
+import type { ClientPresence } from "../presence/client-presence.js";
 import type { StageHub } from "../transport/stage-hub.js";
 import { handleRouteError, sendError } from "./errors.js";
 

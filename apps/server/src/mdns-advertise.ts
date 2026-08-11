@@ -4,7 +4,7 @@
  */
 
 import { Bonjour } from "bonjour-service";
-import { resolveHostDisplayName } from "./network-info.js";
+import { resolveHostDisplayName } from "./system/network-info.js";
 
 export type MdnsTransportStatus = "PLAYING" | "PAUSED" | "STOPPED";
 

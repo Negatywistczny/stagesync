@@ -1,11 +1,14 @@
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
-import { loadDotenvIntoProcess } from "./env-settings.js";
-import { createLifecycle } from "./lifecycle.js";
-import { registerMdnsRefresh, clearMdnsRefresh } from "./mdns-registry.js";
-import { startMdnsAdvertiser } from "./mdns-advertise.js";
-import { resolveHostDisplayName } from "./network-info.js";
-import { initServerSentry } from "./sentry.js";
+import { loadDotenvIntoProcess } from "./system/env-settings.js";
+import { createLifecycle } from "./security/lifecycle.js";
+import {
+  registerMdnsRefresh,
+  clearMdnsRefresh,
+} from "./system/mdns-registry.js";
+import { startMdnsAdvertiser } from "./system/mdns-advertise.js";
+import { resolveHostDisplayName } from "./system/network-info.js";
+import { initServerSentry } from "./system/sentry.js";
 import { migrateVolumeOnBoot } from "./storage/migrate-volume.js";
 import { publishSetlistHubFromStores } from "./transport/setlist-hub.js";
 import { attachTransportWs } from "./transport/ws.js";

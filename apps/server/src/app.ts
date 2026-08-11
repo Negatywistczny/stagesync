@@ -10,14 +10,20 @@ import {
 import {
   createClientPresence,
   type ClientPresence,
-} from "./client-presence.js";
-import { createFileLogger, installConsoleFileMirror } from "./file-logger.js";
-import { createLogBuffer, type LogBuffer } from "./log-buffer.js";
-import { resolveHostDisplayName } from "./network-info.js";
+} from "./presence/client-presence.js";
+import {
+  createFileLogger,
+  installConsoleFileMirror,
+} from "./system/file-logger.js";
+import { createLogBuffer, type LogBuffer } from "./system/log-buffer.js";
+import { resolveHostDisplayName } from "./system/network-info.js";
 import { createMidiHost, type MidiHost } from "./midi/host.js";
 import { createMidiProgramChangeHandler } from "./midi/program-change.js";
 import { wireMidiProgramChangeOut } from "./midi/program-change-out.js";
-import { createLiveDeskStore, type LiveDeskStore } from "./live-desk.js";
+import {
+  createLiveDeskStore,
+  type LiveDeskStore,
+} from "./live-desk/live-desk.js";
 import { createLiveDeskRouter } from "./routes/live-desk.js";
 import { createImportRouter } from "./routes/import.js";
 import { createLibraryRouter } from "./routes/library.js";
@@ -32,13 +38,13 @@ import { createPushTokenStore } from "./push/tokens.js";
 import { sendError } from "./routes/errors.js";
 import { createStores, type Stores } from "./storage/index.js";
 import { defaultDataDir, resolveDataPaths } from "./storage/paths.js";
-import { mountApkDownloads } from "./downloads.js";
+import { mountApkDownloads } from "./library/downloads.js";
 import {
   mountDevUiRedirect,
   mountStaticWeb,
   resolveDevUiOrigin,
   resolveStaticDir,
-} from "./static-web.js";
+} from "./web-static/static-web.js";
 import { loadUiMeta, mountUiMetaRoutes } from "./ui-meta.js";
 import {
   createTransportEngine,
@@ -52,7 +58,7 @@ import {
   publishSetlistHubFromStores,
   type SetlistHub,
 } from "./transport/setlist-hub.js";
-import { createOperatorPinMiddleware } from "./operator-pin.js";
+import { createOperatorPinMiddleware } from "./security/operator-pin.js";
 
 function resolveServiceVersion(): string {
   const staged = process.env.STAGESYNC_VERSION?.trim();
@@ -76,7 +82,7 @@ export type CreateAppOptions = {
   presence?: ClientPresence;
   midi?: MidiHost;
   /** When set, enables POST /api/system/restart|shutdown. Omitted in unit tests. */
-  lifecycle?: import("./lifecycle.js").Lifecycle;
+  lifecycle?: import("./security/lifecycle.js").Lifecycle;
   port?: number;
   /** Serve Vite `dist` (Docker / prod). Default: STAGESYNC_STATIC_DIR. */
   staticDir?: string | null;
