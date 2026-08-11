@@ -102,6 +102,8 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 >
 > Podsumowanie każdego Verify wypisuje krótkie `detail` per krok (liczby testów / links; auto-fix / instalacja e2e **tylko gdy faktycznie zaszły**) oraz linię **Zmienione pliki** gdy krok zapisał pliki (`format`, `unlinked`, `generate:map`).
 >
+> Po zakończeniu Verify (menu interaktywne) Dev Hub pyta o zapis logu do `tmp/verify-logs/` — domyślnie **Tak** przy błędach lub mutacji plików, **Nie** przy czystym zielonym przebiegu. Log zawiera meta (czas, gałąź, `failed_packages`, wynik), status wszystkich kroków oraz pełny output **tylko** dla kroków z błędem lub zapisem plików (duże logi są skracane do excerptów wokół `FAIL` / `Failed:`). Podsumowanie kroku preferuje pakiet turbo i linię Vitest zamiast szumu stderr (np. fixture serwera). Headless (`./dev verify|pr|all`): bez pytania; zapis przez `--save-log` lub `STAGESYNC_VERIFY_SAVE_LOG=1`. Przed `test` brak `packages/shared/dist` → auto-build shared (jak przed e2e).
+>
 > **📚 Docs i quality**
 >
 > 1. **Wygeneruj mapę kodu**: Aktualizacja [`docs/REPO_MAP.md`](../REPO_MAP.md) (`pnpm generate:map`).

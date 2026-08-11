@@ -240,20 +240,83 @@ function stripAnsi(text: string): string {
   return text.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "");
 }
 
-function firstFailureHint(output: string, maxLen = 96): string | undefined {
-  const lines = stripAnsi(output)
+function truncateHint(text: string, maxLen: number): string {
+  return text.length > maxLen ? `${text.slice(0, maxLen - 1)}…` : text;
+}
+
+/** Known stderr from passing server/web tests — must not win over real turbo/vitest fails. */
+function isNoiseFailureLine(line: string): boolean {
+  if (/^#\s/.test(line)) return true;
+  if (/listener-boom/i.test(line)) return true;
+  if (/transport listener error/i.test(line)) return true;
+  if (/\[DevLayoutMatrix\] screenshot failed/i.test(line)) return true;
+  if (/An update to .* was not wrapped in act\(\)/i.test(line)) return true;
+  return false;
+}
+
+/**
+ * Best one-line failure hint for gate summaries and verify logs.
+ * Prefers turbo package target and vitest FAIL over generic Error: lines.
+ */
+function failureHint(output: string, maxLen = 96): string | undefined {
+  const plain = stripAnsi(output);
+  const lines = plain
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean);
+
+  const failedPkg = plain.match(/Failed:\s+(@stagesync\/[^\s]+)/);
+  if (failedPkg) {
+    const vitestFail = [...lines]
+      .reverse()
+      .find((l) => /\sFAIL\s+/.test(l) && !isNoiseFailureLine(l));
+    if (vitestFail) {
+      return truncateHint(`${failedPkg[1]} — ${vitestFail}`, maxLen);
+    }
+    return truncateHint(failedPkg[1], maxLen);
+  }
+
+  const vitestFails = lines.filter(
+    (l) =>
+      /\sFAIL\s+/.test(l) && !/Failed Tests/i.test(l) && !isNoiseFailureLine(l),
+  );
+  if (vitestFails.length > 0) {
+    return truncateHint(vitestFails[vitestFails.length - 1]!, maxLen);
+  }
+
+  const testFilesFailed = [
+    ...plain.matchAll(/Test Files\s+\d+\s+failed[^\n]*/g),
+  ];
+  if (testFilesFailed.length > 0) {
+    return truncateHint(
+      testFilesFailed[testFilesFailed.length - 1]![0],
+      maxLen,
+    );
+  }
+
+  const turboErr = lines.find(
+    (l) =>
+      (/ ERROR  run failed/.test(l) ||
+        /exited \(1\)/.test(l) ||
+        /\[ELIFECYCLE\].*failed/i.test(l)) &&
+      !isNoiseFailureLine(l),
+  );
+  if (turboErr) return truncateHint(turboErr, maxLen);
+
   const interesting = lines.find(
     (l) =>
-      /error TS\d+|✖|FAIL |Error:|ELIFECYCLE| failed|broken=/i.test(l) &&
-      !/DeprecationWarning|ExperimentalWarning/.test(l),
+      (/error TS\d+|✖|FAIL |Error:|ELIFECYCLE| failed|broken=/i.test(l) ||
+        /AssertionError:/i.test(l)) &&
+      !/DeprecationWarning|ExperimentalWarning/.test(l) &&
+      !isNoiseFailureLine(l),
   );
   if (!interesting) return undefined;
-  return interesting.length > maxLen
-    ? `${interesting.slice(0, maxLen - 1)}…`
-    : interesting;
+  return truncateHint(interesting, maxLen);
+}
+
+/** @deprecated Use failureHint — kept as alias for clarity at call sites. */
+function firstFailureHint(output: string, maxLen = 96): string | undefined {
+  return failureHint(output, maxLen);
 }
 
 function hashFileContent(relPath: string): string | null {
@@ -423,19 +486,23 @@ function runOwnerTypoGate(): GateStep {
     const hits = (grepped.stdout ?? "").trim().split(/\r?\n/).filter(Boolean);
     const preview = hits.slice(0, 3).join("; ");
     const more = hits.length > 3 ? ` (+${hits.length - 3})` : "";
+    const output = `${grepped.stdout ?? ""}${grepped.stderr ?? ""}`;
     return {
       id: "owner-typo",
       label: "owner typo",
       ok: false,
       detail: `${hits.length}× ${OWNER_TYPO} → ${GITHUB_OWNER}: ${preview}${more}`,
+      logBody: gateLogBody(output, false),
     };
   }
   if (grepped.status !== 0 && grepped.status !== 1) {
+    const output = `${grepped.stdout ?? ""}${grepped.stderr ?? ""}`;
     return {
       id: "owner-typo",
       label: "owner typo",
       ok: false,
       detail: firstFailureHint(grepped.stderr ?? "") ?? "git grep failed",
+      logBody: gateLogBody(output, false),
     };
   }
   return {
@@ -525,7 +592,192 @@ type GateStep = {
   detail?: string;
   /** Step wrote tracked files (git dirty delta). */
   mutated?: boolean;
+  /** Full command output when step failed or mutated (plain text, no ANSI). */
+  logBody?: string;
 };
+
+/** Headless `./dev verify|pr|all --save-log` or STAGESYNC_VERIFY_SAVE_LOG=1 */
+let verifySaveLogRequested =
+  process.env.STAGESYNC_VERIFY_SAVE_LOG === "1" ||
+  process.env.STAGESYNC_VERIFY_SAVE_LOG === "true";
+
+const VERIFY_LOG_SLUGS: Record<string, string> = {
+  "Lustrzane CI": "ci-mirror",
+  "Codzienny gate": "daily",
+  "Kompletny audyt": "full-audit",
+};
+
+function initVerifySaveLogFromArgs(args: string[]): string[] {
+  if (args.includes("--save-log")) verifySaveLogRequested = true;
+  return args.filter((a) => a !== "--save-log");
+}
+
+function hasGateSignal(steps: GateStep[]): boolean {
+  return steps.some((s) => !s.ok || s.mutated);
+}
+
+function gateLogBody(
+  output: string,
+  ok: boolean,
+  mutated = false,
+): string | undefined {
+  if (ok && !mutated) return undefined;
+  const plain = stripAnsi(output).trim();
+  if (!plain) return undefined;
+  return trimVerifyLogBody(plain);
+}
+
+const VERIFY_LOG_BODY_MAX_CHARS = 80_000;
+const VERIFY_LOG_EXCERPT_CONTEXT = 30;
+
+/** Keep turbo header, failure excerpts, and tail summary when output is huge. */
+function trimVerifyLogBody(body: string): string {
+  if (body.length <= VERIFY_LOG_BODY_MAX_CHARS) return body;
+  const lines = body.split(/\r?\n/);
+  const keep = new Set<number>();
+  const anchor = (pred: (line: string) => boolean) => {
+    for (let i = 0; i < lines.length; i++) {
+      if (!pred(lines[i] ?? "")) continue;
+      for (
+        let j = Math.max(0, i - VERIFY_LOG_EXCERPT_CONTEXT);
+        j <= Math.min(lines.length - 1, i + VERIFY_LOG_EXCERPT_CONTEXT);
+        j++
+      ) {
+        keep.add(j);
+      }
+    }
+  };
+  for (let i = 0; i < Math.min(25, lines.length); i++) keep.add(i);
+  for (let i = Math.max(0, lines.length - 20); i < lines.length; i++) {
+    keep.add(i);
+  }
+  anchor((l) => /Failed:\s+@stagesync\//.test(l));
+  anchor((l) => /\sFAIL\s+/.test(l) && !/Failed Tests/i.test(l));
+  anchor((l) => /Test Files\s+\d+\s+failed/.test(l));
+  anchor((l) => /^ ERROR  run failed/.test(l));
+  anchor((l) => /\[ELIFECYCLE\].*failed/i.test(l));
+  const ordered = [...keep].sort((a, b) => a - b);
+  const parts: string[] = [
+    `… output trimmed (${body.length} chars → excerpts below) …`,
+    "",
+  ];
+  let prev = -2;
+  for (const idx of ordered) {
+    if (idx > prev + 1) parts.push("…");
+    parts.push(lines[idx] ?? "");
+    prev = idx;
+  }
+  parts.push("", `… end trimmed output (${body.length} chars total) …`);
+  return parts.join("\n");
+}
+
+function parseTurboFailedPackages(output: string): string[] {
+  const pkgs = new Set<string>();
+  for (const m of stripAnsi(output).matchAll(
+    /Failed:\s+(@stagesync\/[^\s]+)/g,
+  )) {
+    pkgs.add(m[1]!);
+  }
+  return [...pkgs];
+}
+
+function ensureSharedBuiltForGate(): void {
+  const distEntry = path.join(rootDir, "packages/shared/dist/index.js");
+  if (fs.existsSync(distEntry)) return;
+  clack.log.warn(
+    "Brak packages/shared/dist — buduję @stagesync/shared przed test…",
+  );
+  runCommand("pnpm", ["--filter", "@stagesync/shared", "build"]);
+}
+
+function readGitBranch(): string | undefined {
+  try {
+    const branch = execSync("git branch --show-current", {
+      cwd: rootDir,
+      encoding: "utf8",
+    }).trim();
+    return branch || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function formatVerifyLogTimestamp(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-` +
+    `${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
+  );
+}
+
+function writeVerifyLog(
+  title: string,
+  slug: string,
+  steps: GateStep[],
+): string {
+  const dir = path.join(rootDir, "tmp", "verify-logs");
+  fs.mkdirSync(dir, { recursive: true });
+  const now = new Date();
+  const fileName = `verify-${formatVerifyLogTimestamp(now)}-${slug}.log`;
+  const relPath = path.join("tmp", "verify-logs", fileName);
+  const absPath = path.join(rootDir, relPath);
+  const allOk = steps.every((s) => s.ok);
+  const lines: string[] = [`# ${title}`, `time: ${now.toISOString()}`];
+  const branch = readGitBranch();
+  if (branch) lines.push(`branch: ${branch}`);
+  const failedSteps = steps.filter((s) => !s.ok);
+  const failedPackages = [
+    ...new Set(
+      failedSteps.flatMap((s) =>
+        s.logBody ? parseTurboFailedPackages(s.logBody) : [],
+      ),
+    ),
+  ];
+  if (failedPackages.length > 0) {
+    lines.push(`failed_packages: ${failedPackages.join(", ")}`);
+  }
+  lines.push(`result: ${allOk ? "OK" : "FAIL"}`, "", "## Steps");
+  for (const step of steps) {
+    const status = step.ok ? "OK" : "FAIL";
+    const mut = step.mutated ? " [mutated]" : "";
+    const detail = step.detail ? ` — ${step.detail}` : "";
+    lines.push(`- [${status}${mut}] ${step.label} (${step.id})${detail}`);
+  }
+  const withBody = steps.filter((s) => s.logBody);
+  if (withBody.length > 0) {
+    lines.push("", "## Captured output");
+    for (const step of withBody) {
+      lines.push(
+        "",
+        `--- output: ${step.id} (${step.label}) ---`,
+        step.logBody!,
+      );
+    }
+  }
+  fs.writeFileSync(absPath, `${lines.join("\n")}\n`, "utf8");
+  return relPath.replace(/\\/g, "/");
+}
+
+async function offerSaveVerifyLog(
+  title: string,
+  steps: GateStep[],
+): Promise<void> {
+  const slug = VERIFY_LOG_SLUGS[title];
+  if (!slug) return;
+  const isTty = Boolean(process.stdout.isTTY);
+  let shouldSave = false;
+  if (isTty) {
+    shouldSave = await confirmPl(
+      "Zapisać log weryfikacji (błędy / zmiany)?",
+      hasGateSignal(steps),
+    );
+  } else {
+    shouldSave = verifySaveLogRequested;
+  }
+  if (!shouldSave) return;
+  const relPath = writeVerifyLog(title, slug, steps);
+  clack.log.success(`Zapisano log: ${relPath}`);
+}
 
 function summarizeGate(title: string, steps: GateStep[]): boolean {
   console.log();
@@ -570,7 +822,7 @@ function gateStepFromCaptured(
   const detail = ok
     ? detailFrom?.ok?.(output)
     : (detailFrom?.fail?.(output) ?? firstFailureHint(output) ?? "błąd");
-  return { id, label, ok, detail };
+  return { id, label, ok, detail, logBody: gateLogBody(output, ok) };
 }
 
 function gateStepMutatingPnpm(
@@ -584,16 +836,19 @@ function gateStepMutatingPnpm(
   const detail = ok
     ? formatChangedFilesDetail(changed)
     : (firstFailureHint(output) ?? formatChangedFilesDetail(changed));
+  const mutated = changed.length > 0;
   return {
     id,
     label,
     ok,
     detail,
-    mutated: changed.length > 0,
+    mutated,
+    logBody: gateLogBody(output, ok, mutated),
   };
 }
 
 function runCiLikeVerifySteps(): GateStep[] {
+  ensureSharedBuiltForGate();
   return [
     gateStepFromCaptured("types", "check-types", "pnpm", ["check-types"]),
     gateStepFromCaptured("ss-css", "lint:ss-css", "pnpm", ["lint:ss-css"]),
@@ -604,15 +859,18 @@ function runCiLikeVerifySteps(): GateStep[] {
   ];
 }
 
-function runCiLikeVerify(): boolean {
+async function runCiLikeVerify(): Promise<boolean> {
   clack.note(
     "Lustrzane CI: check-types → lint:ss-css → lint → test (bez formatu)…",
   );
-  return summarizeGate("Lustrzane CI", runCiLikeVerifySteps());
+  const steps = runCiLikeVerifySteps();
+  const ok = summarizeGate("Lustrzane CI", steps);
+  await offerSaveVerifyLog("Lustrzane CI", steps);
+  return ok;
 }
 
 /** Codzienny gate: format → CI-like → docs links → knip. */
-function runDailyGate(): boolean {
+async function runDailyGate(): Promise<boolean> {
   warnSideEffects([
     "Prettier zapisze zmiany w plikach (format) — sprawdź git diff po zakończeniu",
     "Reszta kroków tylko sprawdza (types / ss-css / lint / test / links / knip)",
@@ -635,7 +893,9 @@ function runDailyGate(): boolean {
     ),
     gateStepFromCaptured("knip", "knip", "pnpm", ["lint:knip"]),
   ];
-  return summarizeGate("Codzienny gate", steps);
+  const ok = summarizeGate("Codzienny gate", steps);
+  await offerSaveVerifyLog("Codzienny gate", steps);
+  return ok;
 }
 
 /** Parse check-unlinked.mjs stdout; returns null on tool failure. */
@@ -675,6 +935,7 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
       label,
       ok: false,
       detail: firstFailureHint(first.output) ?? "błąd skanu",
+      logBody: gateLogBody(first.output, false),
     };
   }
   if (first.total === 0) {
@@ -695,6 +956,7 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
       label,
       ok: false,
       detail: `znaleziono ${first.total}`,
+      logBody: gateLogBody(first.output, false),
     };
   }
 
@@ -713,6 +975,11 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
       ok: false,
       detail: firstFailureHint(fixed.output) ?? "auto-fix failed",
       mutated: changed.length > 0,
+      logBody: gateLogBody(
+        `${first.output}\n${fixed.output}`,
+        false,
+        changed.length > 0,
+      ),
     };
   }
 
@@ -730,6 +997,11 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
       ok: false,
       detail: firstFailureHint(second.output) ?? "błąd skanu po fix",
       mutated: changed.length > 0,
+      logBody: gateLogBody(
+        `${first.output}\n${fixed.output}\n${second.output}`,
+        false,
+        changed.length > 0,
+      ),
     };
   }
   if (second.total > 0) {
@@ -742,6 +1014,11 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
       ok: false,
       detail: `po auto-fix nadal ${second.total}`,
       mutated: changed.length > 0,
+      logBody: gateLogBody(
+        `${first.output}\n${fixed.output}\n${second.output}`,
+        false,
+        changed.length > 0,
+      ),
     };
   }
   clack.log.success("Gate unlinked: auto-fix usunął wszystkie odniesienia.");
@@ -751,6 +1028,11 @@ function runUnlinkedGate(options: { autoFix?: boolean } = {}): GateStep {
     ok: true,
     detail: `auto-fix ${first.total} → 0 (${changed.length} plików)`,
     mutated: changed.length > 0,
+    logBody: gateLogBody(
+      `${first.output}\n${fixed.output}\n${second.output}`,
+      true,
+      changed.length > 0,
+    ),
   };
 }
 
@@ -860,6 +1142,7 @@ function runWebE2eWithBrowserBootstrap(): GateStep {
           [counts ?? firstFailureHint(output) ?? "fail", fixNote]
             .filter(Boolean)
             .join("; ") || "fail",
+        logBody: gateLogBody(output, false),
       };
     }
 
@@ -916,6 +1199,7 @@ function runWebE2eWithBrowserBootstrap(): GateStep {
       ok: false,
       detail:
         parsePlaywrightDetail(output) ?? firstFailureHint(output) ?? "fail",
+      logBody: gateLogBody(output, false),
     };
   }
 
@@ -927,6 +1211,7 @@ function runWebE2eWithBrowserBootstrap(): GateStep {
       parsePlaywrightDetail(lastOutput) ??
       firstFailureHint(lastOutput) ??
       "fail",
+    logBody: gateLogBody(lastOutput, false),
   };
 }
 
@@ -936,7 +1221,7 @@ function runWebE2eWithBrowserBootstrap(): GateStep {
  * Auto-fix: unlinked links; Playwright browser install+retry on missing binary.
  * Skips interactive Tauri build/installers and Smart Tempo benchmark.
  */
-function runFullAudit(): boolean {
+async function runFullAudit(): Promise<boolean> {
   warnSideEffects([
     "Prettier zapisze pliki (format)",
     "unlinked: może auto-naprawić linki w Markdown (mutacja docs)",
@@ -972,6 +1257,7 @@ function runFullAudit(): boolean {
           label: "test:coverage",
           ok: false,
           detail: firstFailureHint(output) ?? "błąd",
+          logBody: gateLogBody(output, false),
         } satisfies GateStep;
       }
       const detail =
@@ -1011,7 +1297,9 @@ function runFullAudit(): boolean {
       fail: (output) => parsePnpmAuditDetail(output, false),
     }),
   ];
-  return summarizeGate("Kompletny audyt", steps);
+  const ok = summarizeGate("Kompletny audyt", steps);
+  await offerSaveVerifyLog("Kompletny audyt", steps);
+  return ok;
 }
 
 function previewReleaseNotes(pkgVer: string) {
@@ -1640,7 +1928,7 @@ async function menuTestingVerify() {
   if (clack.isCancel(choice) || choice === "back") return;
 
   if (choice === "ci-mirror") {
-    runCiLikeVerify();
+    await runCiLikeVerify();
     await waitReturn();
   } else if (choice === "daily") {
     if (
@@ -1653,7 +1941,7 @@ async function menuTestingVerify() {
       await waitReturn();
       return;
     }
-    runDailyGate();
+    await runDailyGate();
     await waitReturn();
   } else if (choice === "full-audit") {
     if (
@@ -1666,7 +1954,7 @@ async function menuTestingVerify() {
       await waitReturn();
       return;
     }
-    runFullAudit();
+    await runFullAudit();
     await waitReturn();
   }
 }
@@ -1920,7 +2208,7 @@ async function menuRelease() {
     await waitReturn();
   } else if (choice === "checklist") {
     clack.note("Uruchamianie Pre-Release Checklist 2.0 (CI-like + preview)…");
-    const ok = runCiLikeVerify();
+    const ok = await runCiLikeVerify();
     if (ok) {
       const pkgVer = readRootPackageVersion();
       if (pkgVer) {
@@ -2143,7 +2431,7 @@ async function menuDependencies() {
 }
 
 async function main() {
-  const args = process.argv.slice(2);
+  const args = initVerifySaveLogFromArgs(process.argv.slice(2));
   if (args.length > 0) {
     const flag = args[0].toLowerCase();
     if (flag === "doctor") {
@@ -2183,7 +2471,7 @@ async function main() {
       return;
     }
     if (flag === "verify" || flag === "ci") {
-      const ok = runCiLikeVerify();
+      const ok = await runCiLikeVerify();
       process.exit(ok ? 0 : 1);
     }
     if (
@@ -2192,7 +2480,7 @@ async function main() {
       flag === "daily" ||
       flag === "gate"
     ) {
-      const ok = runDailyGate();
+      const ok = await runDailyGate();
       process.exit(ok ? 0 : 1);
     }
     if (
@@ -2201,7 +2489,7 @@ async function main() {
       flag === "everything" ||
       flag === "audit"
     ) {
-      const ok = runFullAudit();
+      const ok = await runFullAudit();
       process.exit(ok ? 0 : 1);
     }
     if (flag === "release") {
