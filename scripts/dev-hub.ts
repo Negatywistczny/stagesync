@@ -1453,6 +1453,37 @@ async function cleanCache(): Promise<boolean> {
   return true;
 }
 
+async function menuClean() {
+  clearTerminalScreen();
+  const choice = await clack.select({
+    message: "Konserwacja & Cache:",
+    options: [
+      {
+        value: "monorepo",
+        label:
+          "1. 🧹  Głębokie czyszczenie cache monorepo (.turbo, dist, .cache)",
+      },
+      {
+        value: "android",
+        label:
+          "2. 🤖  Czyszczenie cache budowania Android (Gradle - pnpm clean:android)",
+      },
+      { value: "back", label: "0. ↩️   Powrót" },
+    ],
+  });
+
+  if (clack.isCancel(choice) || choice === "back") return;
+
+  if (choice === "monorepo") {
+    await cleanCache();
+    await waitReturn();
+  } else if (choice === "android") {
+    clack.note("Czyszczenie cache budowania Androida (pnpm clean:android)...");
+    runCommand("pnpm", ["clean:android"]);
+    await waitReturn();
+  }
+}
+
 function showGitStatus() {
   try {
     const branch = execSync("git branch --show-current", {
@@ -2229,7 +2260,7 @@ async function main() {
         { value: "testing", label: "4. 🧪  Testy & Jakość ›" },
         { value: "release", label: "5. 🐙  GitHub & Wydania ›" },
         { value: "deps", label: "6. 📦  Zależności & Pakiety ›" },
-        { value: "clean", label: "7. 🧹  Konserwacja & Cache ⚠️" },
+        { value: "clean", label: "7. 🧹  Konserwacja & Cache ›" },
         { value: "data", label: "8. 💾  Zarządzanie danymi & Logi ›" },
         { value: "setup", label: "9. 🛠   Setup Środowiska ⚠️" },
         { value: "exit", label: "0. 🚪  Wyjście" },
@@ -2250,10 +2281,7 @@ async function main() {
     if (category === "testing") await menuTesting();
     if (category === "release") await menuRelease();
     if (category === "deps") await menuDependencies();
-    if (category === "clean") {
-      await cleanCache();
-      await waitReturn();
-    }
+    if (category === "clean") await menuClean();
     if (category === "data") {
       await menuData();
     }
