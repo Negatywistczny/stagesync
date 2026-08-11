@@ -4,7 +4,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, Input } from "@stagesync/ui";
 import {
   DEFAULT_PPQ,
   ticksToMsAlongTempoMap,
@@ -15,10 +14,6 @@ import {
   type TempoNode,
   type TextAnchorBridgeOk,
 } from "@stagesync/shared";
-import {
-  computeEnvelopeBins,
-  type EnvelopeBin,
-} from "@lib/audio/waveformPeaks.js";
 import {
   auditionBeatIndex,
   beatPeriodMsFromBpm,
@@ -31,16 +26,17 @@ import {
   resumeMetronomeAudio,
   scheduleMetronomeClickAt,
 } from "@lib/audio/metronome.js";
-import { IconPause, IconPlay } from "../icons.js";
-import {
-  BEAT_MAPPER_ZOOM_MAX,
-  BEAT_MAPPER_ZOOM_MIN,
-  beatMapperWheelPanDelta,
-  defaultBeatMapperZoom,
-  isBeatMapperHorizontalWheel,
-} from "@lib/audio/beatMapperView.js";
+import { defaultBeatMapperZoom } from "@lib/audio/beatMapperView.js";
 import { AudioDropzone } from "./AudioDropzone.js";
 import styles from "./BeatMapperPane.module.css";
+import { BeatMapperToolbar } from "./beatMapper/BeatMapperToolbar.js";
+import { BeatMapperWaveCanvas } from "./beatMapper/BeatMapperWaveCanvas.js";
+import {
+  buildTimeTicks,
+  clamp,
+  ZOOM_MAX,
+  ZOOM_MIN,
+} from "./beatMapper/waveMath.js";
 
 export type BeatMapperPaneProps = {
   bridge: TextAnchorBridgeOk;
@@ -59,116 +55,6 @@ export type BeatMapperPaneProps = {
   onRegisterPlayToggle?: (fn: (() => void) | null) => void;
   disabled?: boolean;
 };
-
-const WAVE_H = 160;
-const RULER_H = 20;
-const ENVELOPE_GAIN = 0.85;
-const ZOOM_MIN = BEAT_MAPPER_ZOOM_MIN;
-const ZOOM_MAX = BEAT_MAPPER_ZOOM_MAX;
-
-function clamp(n: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, n));
-}
-
-function formatAxisMs(ms: number): string {
-  const totalSec = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-/** Nice tick step in ms for visible window duration. */
-function timeTickStepMs(durationMs: number): number {
-  const sec = durationMs / 1000;
-  if (sec <= 5) return 500;
-  if (sec <= 15) return 1_000;
-  if (sec <= 30) return 5_000;
-  if (sec <= 90) return 15_000;
-  if (sec <= 180) return 30_000;
-  if (sec <= 600) return 60_000;
-  return 120_000;
-}
-
-function buildTimeTicks(startMs: number, endMs: number): number[] {
-  if (!(endMs > startMs)) return [startMs];
-  const span = endMs - startMs;
-  const step = timeTickStepMs(span);
-  const first = Math.ceil(startMs / step) * step;
-  const ticks: number[] = [];
-  if (first > startMs + step * 0.05) ticks.push(startMs);
-  for (let t = first; t < endMs - step * 0.05; t += step) {
-    ticks.push(t);
-  }
-  ticks.push(endMs);
-  return ticks;
-}
-
-/** Fallback envelope from sparse normalized peaks when buffer missing. */
-function peaksWindowBins(
-  peaks: readonly number[],
-  binCount: number,
-  startMs: number,
-  endMs: number,
-  durationMs: number,
-): EnvelopeBin[] {
-  const bins = Math.max(1, Math.floor(binCount));
-  if (!peaks.length || durationMs <= 0) {
-    return Array.from({ length: bins }, () => ({ min: 0, max: 0 }));
-  }
-  const out: EnvelopeBin[] = [];
-  for (let b = 0; b < bins; b++) {
-    const t0 = startMs + (b / bins) * (endMs - startMs);
-    const t1 = startMs + ((b + 1) / bins) * (endMs - startMs);
-    const i0 = Math.floor((t0 / durationMs) * peaks.length);
-    const i1 = Math.max(i0 + 1, Math.ceil((t1 / durationMs) * peaks.length));
-    let peak = 0;
-    for (let i = i0; i < Math.min(peaks.length, i1); i++) {
-      peak = Math.max(peak, Math.abs(peaks[i] ?? 0));
-    }
-    out.push({ min: -peak, max: peak });
-  }
-  return out;
-}
-
-function drawEnvelope(
-  ctx: CanvasRenderingContext2D,
-  bins: readonly EnvelopeBin[],
-  width: number,
-  height: number,
-  fillStyle: string,
-  zeroStyle: string,
-) {
-  const mid = height / 2;
-  const g = ENVELOPE_GAIN;
-  const n = bins.length;
-  if (n <= 0 || width <= 0 || height <= 0) return;
-
-  ctx.clearRect(0, 0, width, height);
-
-  ctx.beginPath();
-  for (let i = 0; i < n; i++) {
-    const x = n === 1 ? 0 : (i / (n - 1)) * width;
-    const max = Math.max(-1, Math.min(1, bins[i]?.max ?? 0));
-    const y = mid - max * mid * g;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  for (let i = n - 1; i >= 0; i--) {
-    const x = n === 1 ? 0 : (i / (n - 1)) * width;
-    const min = Math.max(-1, Math.min(1, bins[i]?.min ?? 0));
-    ctx.lineTo(x, mid - min * mid * g);
-  }
-  ctx.closePath();
-  ctx.fillStyle = fillStyle;
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(0, mid);
-  ctx.lineTo(width, mid);
-  ctx.strokeStyle = zeroStyle;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
 
 export function BeatMapperPane({
   bridge,
@@ -197,9 +83,7 @@ export function BeatMapperPane({
   const playRef = useRef<BeatMapperAuditionVoice | null>(null);
   const playingRef = useRef(false);
   const auditionEpochRef = useRef(0);
-  const waveStackRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorMsRef = useRef(0);
   const dragNodesRef = useRef(tempoNodes);
@@ -328,103 +212,6 @@ export function BeatMapperPane({
     () => buildTimeTicks(viewStartMs, viewEndMs),
     [viewStartMs, viewEndMs],
   );
-
-  // Measure wave frame width for 1-bin-per-pixel envelope.
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width ?? 0;
-      if (w > 0) setFrameWidth(Math.round(w));
-    });
-    ro.observe(el);
-    setFrameWidth(Math.round(el.getBoundingClientRect().width) || 800);
-    return () => ro.disconnect();
-  }, [hasAudio]);
-
-  // Non-passive wheel on wave stack so Ctrl/⌘+zoom and Shift+pan can preventDefault.
-  useEffect(() => {
-    const el = waveStackRef.current;
-    if (!el || !hasAudio) return;
-    function onWheel(e: WheelEvent) {
-      if (durationMs <= 0) return;
-      const mod = e.ctrlKey || e.metaKey;
-      if (mod) {
-        e.preventDefault();
-        e.stopPropagation();
-        const rect = el!.getBoundingClientRect();
-        const x = clamp(e.clientX - rect.left, 0, rect.width);
-        const { start, duration } = viewRef.current;
-        const anchor = start + (x / Math.max(1, rect.width)) * duration;
-        const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-        setZoom((z) => {
-          const next = clamp(z * factor, ZOOM_MIN, ZOOM_MAX);
-          const win = Math.max(1, durationMs / next);
-          const ratio = duration > 0 ? (anchor - start) / duration : 0.5;
-          setViewStartMs(
-            clamp(anchor - ratio * win, 0, Math.max(0, durationMs - win)),
-          );
-          return next;
-        });
-        return;
-      }
-      if (!isBeatMapperHorizontalWheel(e)) return;
-      const delta = beatMapperWheelPanDelta(e);
-      if (delta === 0) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const { duration } = viewRef.current;
-      const zNow = durationMs / Math.max(1, duration);
-      const pxPerMs = frameWidth / Math.max(1, duration);
-      setViewStartMs((s) => {
-        const win = Math.max(1, durationMs / Math.max(ZOOM_MIN, zNow));
-        return clamp(
-          s + delta / Math.max(0.001, pxPerMs),
-          0,
-          Math.max(0, durationMs - win),
-        );
-      });
-    }
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, [hasAudio, durationMs, frameWidth]);
-
-  // Paint DAW envelope (min/max bins → filled path).
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !hasAudio) return;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const cssW = Math.max(1, frameWidth);
-    const cssH = WAVE_H;
-    canvas.width = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
-    canvas.style.width = `${cssW}px`;
-    canvas.style.height = `${cssH}px`;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const bins =
-      localAudioBuffer != null
-        ? computeEnvelopeBins(localAudioBuffer, cssW, viewStartMs, viewEndMs)
-        : peaksWindowBins(peaks, cssW, viewStartMs, viewEndMs, durationMs);
-
-    const fill =
-      getComputedStyle(canvas).getPropertyValue("--ss-wave-fill").trim() ||
-      "rgba(255, 255, 255, 0.35)";
-    const zero =
-      getComputedStyle(canvas).getPropertyValue("--ss-wave-zero").trim() ||
-      "rgba(255, 255, 255, 0.55)";
-    drawEnvelope(ctx, bins, cssW, cssH, fill, zero);
-  }, [
-    hasAudio,
-    localAudioBuffer,
-    peaks,
-    frameWidth,
-    viewStartMs,
-    viewEndMs,
-    durationMs,
-  ]);
 
   const updateCursorDom = useCallback((ms: number) => {
     cursorMsRef.current = ms;
@@ -683,206 +470,51 @@ export function BeatMapperPane({
         </div>
       ) : (
         <div className={styles.studioBeat}>
-          <div className={styles.waveTop}>
-            <div className={styles.waveHead}>
-              <h3 className={styles.title}>{title}</h3>
-              <div className={styles.zoomGroup} role="group" aria-label="Zoom">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={disabled || zoom <= ZOOM_MIN}
-                  aria-label="Oddal"
-                  onClick={() => setZoomAround(zoom / 1.5)}
-                >
-                  −
-                </Button>
-                <span className={styles.zoomLabel}>{Math.round(zoom)}×</span>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={disabled || zoom >= ZOOM_MAX}
-                  aria-label="Przybliż"
-                  onClick={() => setZoomAround(zoom * 1.5)}
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-            <p className={styles.hint}>
-              Żółty = kursor · niebieski = kotwica Beat 1 / #GAP (tick 0 na
-              Timeline; cisza przed Beat 1 jest przycinana z klipu) ·
-              Ctrl/⌘+kółko zoom · Shift+kółko pan · Spacja odsłuch
-            </p>
-            <div ref={waveStackRef} className={styles.waveStack}>
-              <div
-                className={styles.timeRuler}
-                style={{ height: RULER_H }}
-                aria-hidden
-              >
-                {timeTicks.map((t) => {
-                  const left = msToPct(t);
-                  if (left < -2 || left > 102) return null;
-                  const align =
-                    t <= viewStartMs + 1
-                      ? "start"
-                      : t >= viewEndMs - 1
-                        ? "end"
-                        : "middle";
-                  return (
-                    <span
-                      key={`ruler-${t}`}
-                      className={styles.rulerLabel}
-                      data-align={align}
-                      style={{ left: `${clamp(left, 0, 100)}%` }}
-                    >
-                      {formatAxisMs(t)}
-                    </span>
-                  );
-                })}
-              </div>
-              <div
-                ref={frameRef}
-                className={styles.waveFrame}
-                style={
-                  dragNodeIdx != null || dragBeat1
-                    ? { cursor: "ew-resize" }
-                    : undefined
-                }
-                onPointerDown={onWavePointerDown}
-                onPointerMove={onWavePointerMove}
-                onPointerUp={onWavePointerUp}
-                onPointerCancel={onWavePointerUp}
-              >
-                <canvas
-                  ref={canvasRef}
-                  className={styles.waveCanvas}
-                  role="img"
-                  aria-label="Fala audio"
-                />
-                <div className={styles.waveOverlay} aria-hidden>
-                  {chordBlocks.map((b, i) => {
-                    const left = msToPct(b.startMs);
-                    const right = msToPct(b.endMs);
-                    if (right < 0 || left > 100) return null;
-                    const l = clamp(left, 0, 100);
-                    const w = Math.max(0.2, clamp(right, 0, 100) - l);
-                    return (
-                      <div
-                        key={`ch-${i}`}
-                        className={styles.chordBlock}
-                        style={{ left: `${l}%`, width: `${w}%` }}
-                      />
-                    );
-                  })}
-                  {beatMarkerMs.map((bm, i) => {
-                    const left = msToPct(bm);
-                    if (left < -1 || left > 101) return null;
-                    if (
-                      Math.abs(bm - beat1AnchorMs) < 0.5 &&
-                      beat1AnchorMs > 0
-                    ) {
-                      return null;
-                    }
-                    return (
-                      <div
-                        key={`beat-${i}`}
-                        className={styles.beat}
-                        style={{ left: `${left}%` }}
-                      />
-                    );
-                  })}
-                  {(() => {
-                    const left = msToPct(beat1AnchorMs);
-                    if (left < -1 || left > 101) return null;
-                    return (
-                      <div
-                        className={styles.beat1}
-                        style={{ left: `${left}%` }}
-                        title="Beat 1 — początek utworu na Timeline"
-                      />
-                    );
-                  })()}
-                  {(() => {
-                    const left = msToPct(cursorMs);
-                    if (left < -1 || left > 101) return null;
-                    return (
-                      <div
-                        ref={cursorRef}
-                        className={styles.cursor}
-                        style={{ left: `${left}%` }}
-                        title="Kursor"
-                      />
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-          </div>
+          <BeatMapperWaveCanvas
+            title={title}
+            disabled={disabled}
+            hasAudio={hasAudio}
+            durationMs={durationMs}
+            zoom={zoom}
+            viewStartMs={viewStartMs}
+            viewEndMs={viewEndMs}
+            viewDurationMs={viewDurationMs}
+            frameWidth={frameWidth}
+            setFrameWidth={setFrameWidth}
+            setZoom={setZoom}
+            setViewStartMs={setViewStartMs}
+            setZoomAround={setZoomAround}
+            viewRef={viewRef}
+            frameRef={frameRef}
+            cursorRef={cursorRef}
+            timeTicks={timeTicks}
+            msToPct={msToPct}
+            localAudioBuffer={localAudioBuffer}
+            peaks={peaks}
+            chordBlocks={chordBlocks}
+            beatMarkerMs={beatMarkerMs}
+            beat1AnchorMs={beat1AnchorMs}
+            cursorMs={cursorMs}
+            dragNodeIdx={dragNodeIdx}
+            dragBeat1={dragBeat1}
+            onWavePointerDown={onWavePointerDown}
+            onWavePointerMove={onWavePointerMove}
+            onWavePointerUp={onWavePointerUp}
+          />
 
           <div className={styles.beatBottom}>
             <div className={styles.controlsCol}>
-              <div
-                className={styles.toolbar}
-                role="toolbar"
-                aria-label="Beat Mapper"
-              >
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={disabled || !localAudioBuffer}
-                  onClick={() => void togglePlay()}
-                >
-                  <span className={styles.playBtn}>
-                    {playing ? <IconPause /> : <IconPlay />}
-                    {playing ? "Pauza" : "Play"}
-                  </span>
-                </Button>
-                <span className={styles.toolbarSep} aria-hidden />
-                <label className={styles.offsetInline}>
-                  Audio Start Offset (ms)
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    step={1}
-                    value={String(audioStartOffsetMs)}
-                    disabled={disabled}
-                    aria-label="Audio Start Offset ms"
-                    onChange={(e) => {
-                      const n = Number.parseInt(e.target.value, 10);
-                      onAudioStartOffsetChange(
-                        Number.isFinite(n) && n >= 0 ? n : 0,
-                      );
-                    }}
-                  />
-                </label>
-                <span className={styles.toolbarSep} aria-hidden />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={disabled}
-                  onClick={setBeat1AtCursor}
-                >
-                  Ustaw Beat 1 w miejscu kursora
-                </Button>
-              </div>
-              <div className={styles.metaRow}>
-                <label className={styles.bpmField}>
-                  Tempo
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
-                    min={40}
-                    max={300}
-                    value={gridBpmDisplay}
-                    aria-label="Tempo siatki (BPM)"
-                    disabled={disabled}
-                    onChange={(e) => onGridBpmChange(e.target.value)}
-                  />
-                  <span aria-hidden>BPM</span>
-                </label>
-              </div>
+              <BeatMapperToolbar
+                disabled={disabled}
+                playing={playing}
+                hasLocalAudio={localAudioBuffer != null}
+                audioStartOffsetMs={audioStartOffsetMs}
+                gridBpmDisplay={gridBpmDisplay}
+                onTogglePlay={() => void togglePlay()}
+                onAudioStartOffsetChange={onAudioStartOffsetChange}
+                onSetBeat1AtCursor={setBeat1AtCursor}
+                onGridBpmChange={onGridBpmChange}
+              />
             </div>
             {sectionsBlock}
           </div>
