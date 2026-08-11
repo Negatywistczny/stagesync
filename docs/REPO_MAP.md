@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1418
-* **Liczba katalogów:** 222
-* **Data aktualizacji:** 2026-08-11T11:40:21.650Z
+* **Liczba wszystkich plików:** 1422
+* **Liczba katalogów:** 230
+* **Data aktualizacji:** 2026-08-11T12:21:10.298Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 992 |
+| Kod | 996 |
 | Docs | 156 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 597 |
+| `.ts` | 601 |
 | `.tsx` | 216 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -88,7 +88,8 @@
   - **shared/** (155) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
-- **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+- **scripts/** (27) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
+  - **hub/** (5)
   - **merge-train/** (4) — Automatyzacja merge train i walidacji PR
   - **quality/** (5) — Narzędzia jakości kodu, linków i generator mapy repozytorium
   - **release/** (9) — Skrypty wydań SemVer, budowania paczek i release notes
@@ -902,23 +903,14 @@ stagesync/
 │   │   └── react-library.json
 │   ├── ui/
 │   │   ├── src/
-│   │   │   ├── badge.css
-│   │   │   ├── badge.tsx
-│   │   │   ├── button.css
-│   │   │   ├── button.test.tsx
-│   │   │   ├── button.tsx
-│   │   │   ├── context-menu.css
-│   │   │   ├── context-menu.test.tsx
-│   │   │   ├── context-menu.tsx
-│   │   │   ├── field.css
-│   │   │   ├── field.test.tsx
-│   │   │   ├── field.tsx
+│   │   │   ├── components/
+│   │   │   │   ├── badge/  … (2 pliki)
+│   │   │   │   ├── button/  … (3 pliki)
+│   │   │   │   ├── context-menu/  … (3 pliki)
+│   │   │   │   ├── field/  … (3 pliki)
+│   │   │   │   ├── segmented/  … (2 pliki)
+│   │   │   │   └── slider/  … (3 pliki)
 │   │   │   ├── index.ts
-│   │   │   ├── segmented.css
-│   │   │   ├── segmented.tsx
-│   │   │   ├── slider.css
-│   │   │   ├── slider.test.tsx
-│   │   │   ├── slider.tsx
 │   │   │   ├── tokens.css
 │   │   │   └── vite-env.d.ts
 │   │   ├── eslint.config.mjs
@@ -929,6 +921,12 @@ stagesync/
 │   │   └── vitest.setup.ts
 │   └── README.md
 ├── scripts/
+│   ├── hub/
+│   │   ├── dev-hub.ts
+│   │   ├── doctor.ts
+│   │   ├── gate.ts
+│   │   ├── network.ts
+│   │   └── utils.ts
 │   ├── merge-train/
 │   │   ├── integrate-pr.sh
 │   │   ├── merge-train.sh
@@ -953,7 +951,6 @@ stagesync/
 │   ├── setup/
 │   │   ├── setup.ps1
 │   │   └── setup.sh
-│   ├── dev-hub.ts
 │   ├── README.md
 │   └── tsconfig.json
 ├── .clineignore

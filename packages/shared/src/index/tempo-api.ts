@@ -14,7 +14,7 @@ export {
   type TempoMapEventLike,
   type MeterMapEventLike,
   type TempoMapProject,
-} from "../tempo-map.js";
+} from "../time-tempo/tempo-map.js";
 
 export {
   TEMPO_SOLVER_HIGH_WEIGHT,
@@ -49,7 +49,7 @@ export {
   type MultiPassTempoSolverInput,
   type MultiPassTempoSolverResult,
   type MsTickAnchor,
-} from "../tempo-map-solver.js";
+} from "../tempo-map-solver/tempo-map-solver.js";
 
 export {
   US_UG_BACKING_TRACK_NAME,
@@ -99,4 +99,4 @@ export {
   type AlignedWordFormaSection,
   type PlaceUsUgBackingAudioOpts,
   type SparsifyTempoNodesOptions,
-} from "../smart-tempo.js";
+} from "../smart-tempo/smart-tempo.js";

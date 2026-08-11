@@ -14,7 +14,7 @@ export {
   type ScoreBarMapLike,
   type ScoreBarToSongBarOptions,
   type NormalizedScoreAnchor,
-} from "../score-bar-map.js";
+} from "../music/score-bar-map.js";
 
 export {
   toLiteralStorage,
@@ -26,14 +26,14 @@ export {
   resolveChordNameParts,
   type ChordDisplayOptions,
   type ChordNameParts,
-} from "../chord-display.js";
+} from "../music/chord-display.js";
 
 export {
   COUNTDOWN_NAME,
   formatSectionNameForDisplay,
   normalizeSectionName,
   type FormatSectionNameOptions,
-} from "../section-names.js";
+} from "../ui-helpers/section-names.js";
 
 export {
   INSTRUMENT_PITCH_MANUAL_MAX,
@@ -49,7 +49,7 @@ export {
   transposeChord,
   type InstrumentPitchMode,
   type TransposeResolve,
-} from "../transpose.js";
+} from "../music/transpose.js";
 
 export {
   clampFormaSubsections,
@@ -66,7 +66,7 @@ export {
   type ClipEdge,
   type CollisionOpts,
   type SplitClipOpts,
-} from "../clip-collision.js";
+} from "../audio-clip/clip-collision.js";
 
 export {
   audioClipAbutGapTicks,
@@ -91,4 +91,4 @@ export {
   trimInMsOf,
   trimOutMsOf,
   type AudioTempoCtx,
-} from "../audio-clip.js";
+} from "../audio-clip/audio-clip.js";

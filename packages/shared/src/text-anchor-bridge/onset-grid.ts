@@ -1,12 +1,15 @@
-import type { TempoEvent } from "../schema.js";
-import { DEFAULT_PPQ, type TimeSignature } from "../time.js";
-import { secondsToTicks } from "../tempo-map.js";
-import { pristineBarsFromMsSpan, sectionBeat1Ms } from "../tempo-map-solver.js";
-import type { HarmonicSyllable } from "../harmonic-accent.js";
+import type { TempoEvent } from "../project/schema.js";
+import { DEFAULT_PPQ, type TimeSignature } from "../time-tempo/time.js";
+import { secondsToTicks } from "../time-tempo/tempo-map.js";
+import {
+  pristineBarsFromMsSpan,
+  sectionBeat1Ms,
+} from "../tempo-map-solver/tempo-map-solver.js";
+import type { HarmonicSyllable } from "../music/harmonic-accent.js";
 import {
   quantizeTicksToBar,
   quantizeTicksToBarOrHalf,
-} from "../ug-pipe-bars.js";
+} from "../import/ug/ug-pipe-bars.js";
 import { DEFAULT_BARS_PER_CHORD, DEFAULT_BARS_PER_LINE } from "./constants.js";
 
 /**

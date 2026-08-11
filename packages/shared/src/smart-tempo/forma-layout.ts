@@ -1,9 +1,13 @@
 import {
   layoutContiguousFormaPlans,
   type TempoSolverSectionPlan,
-} from "../tempo-map-solver.js";
-import { DEFAULT_PPQ, ticksPerBar, type TimeSignature } from "../time.js";
-import { sectionStartFromVocalTicks } from "../ug-pipe-bars.js";
+} from "../tempo-map-solver/tempo-map-solver.js";
+import {
+  DEFAULT_PPQ,
+  ticksPerBar,
+  type TimeSignature,
+} from "../time-tempo/time.js";
+import { sectionStartFromVocalTicks } from "../import/ug/ug-pipe-bars.js";
 import type {
   AlignedWordFormaSection,
   LayoutFormaFromUgBarCountsOpts,

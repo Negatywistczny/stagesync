@@ -141,4 +141,4 @@ export {
   type PutMidiHostConfigBody,
   type MidiHostRates,
   type MidiHostStatus,
-} from "../schema.js";
+} from "../project/schema.js";

@@ -1,17 +1,17 @@
-import type { TempoEvent } from "../schema.js";
-import type { TimeSignature } from "../time.js";
+import type { TempoEvent } from "../project/schema.js";
+import type { TimeSignature } from "../time-tempo/time.js";
 import {
   runMultiPassTempoSolver,
   type TempoSolverAnchor,
   type TempoSolverSectionPlan,
-} from "../tempo-map-solver.js";
+} from "../tempo-map-solver/tempo-map-solver.js";
 import {
   runAudioDrivenSmartTempo,
   tempoMapFromTempoNodes,
   type AudioAnalysisResult,
   type SmartTempoAudioRef,
   type TempoNode,
-} from "../smart-tempo.js";
+} from "../smart-tempo/smart-tempo.js";
 import type { UgSectionParsed } from "./types.js";
 
 export type ResolveBridgeTempoInput = {

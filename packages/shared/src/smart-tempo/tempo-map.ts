@@ -1,10 +1,10 @@
-import { BPM_MAX, type TempoEvent } from "../schema.js";
+import { BPM_MAX, type TempoEvent } from "../project/schema.js";
 import {
   tempoEventsFromMsTickAnchors,
   TEMPO_MAP_MIN_BPM,
   type MsTickAnchor,
-} from "../tempo-map-solver.js";
-import { ticksPerBar, type TimeSignature } from "../time.js";
+} from "../tempo-map-solver/tempo-map-solver.js";
+import { ticksPerBar, type TimeSignature } from "../time-tempo/time.js";
 import { SMART_TEMPO_MAX_BEATS } from "./constants.js";
 import type { TempoNode } from "./types.js";
 

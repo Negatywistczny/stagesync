@@ -22,14 +22,14 @@ export {
   parseMeterString,
   type TimeSignature,
   type Bbt,
-} from "../time.js";
+} from "../time-tempo/time.js";
 
 export {
   resolveMeterAtTicks,
   ticksToBbtAlongMeterMap,
   bbtToTicksAlongMeterMap,
   type MeterMapEvent,
-} from "../meter-map-bbt.js";
+} from "../time-tempo/meter-map-bbt.js";
 
 export {
   MIDI_CLOCK_PPQN,
@@ -41,13 +41,13 @@ export {
   sppToTicks,
   midiClockIntervalMs,
   elapsedMsToMidiClocks,
-} from "../midi-clock.js";
+} from "../time-tempo/midi-clock.js";
 
 export {
   getDisplayTicks,
   wrapDisplayTicks,
   type TransportAnchor,
-} from "../soft-clock.js";
+} from "../time-tempo/soft-clock.js";
 
 export {
   quantizeTicks,
@@ -60,4 +60,4 @@ export {
   type SnapMode,
   type SnapContext,
   type SnapSubdivisionParts,
-} from "../snap-grid.js";
+} from "../time-tempo/snap-grid.js";

@@ -1,4 +1,4 @@
-import { DEFAULT_PPQ } from "../time.js";
+import { DEFAULT_PPQ } from "../time-tempo/time.js";
 import type { TempoNode } from "./types.js";
 
 /**

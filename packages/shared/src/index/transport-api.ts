@@ -13,7 +13,7 @@ export {
   type StageCueBannerPriority,
   type StageCueBannerRole,
   type StageCueBannerSession,
-} from "../stage-cue-banner.js";
+} from "../ui-helpers/stage-cue-banner.js";
 
 export {
   defaultSetlist,
@@ -29,9 +29,9 @@ export {
   type SetlistEntry,
   type SetlistView,
   type SetlistViewItem,
-} from "../setlist.js";
+} from "../import/setlist.js";
 
-export { mergePreserveById } from "../merge-preserve.js";
+export { mergePreserveById } from "../project/merge-preserve.js";
 
 export {
   TimeSignatureSchema,
@@ -72,10 +72,10 @@ export {
   type LiveDeskMessage,
   type SetlistSnapshotMessage,
   type TransportWsServerMessage,
-} from "../transport.js";
+} from "../transport/transport.js";
 
 export {
   isUsableLoop,
   normalizeLoop,
   loopWrapTicks,
-} from "../transport-loop.js";
+} from "../transport/transport-loop.js";

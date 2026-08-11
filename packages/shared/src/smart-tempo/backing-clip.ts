@@ -1,5 +1,8 @@
-import type { AudioClip, Project, ProjectAsset } from "../schema.js";
-import { secondsToTicksAlongMap, type TempoMapProject } from "../tempo-map.js";
+import type { AudioClip, Project, ProjectAsset } from "../project/schema.js";
+import {
+  secondsToTicksAlongMap,
+  type TempoMapProject,
+} from "../time-tempo/tempo-map.js";
 import {
   US_UG_BACKING_CLIP_ID,
   US_UG_BACKING_TRACK_ID,

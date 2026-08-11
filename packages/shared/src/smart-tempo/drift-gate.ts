@@ -1,4 +1,4 @@
-import { DEFAULT_PPQ } from "../time.js";
+import { DEFAULT_PPQ } from "../time-tempo/time.js";
 import { msPerBarAtBpm } from "./beat1-align.js";
 import type { ApplyDriftGateOptions, DriftGateResult } from "./types.js";
 

@@ -1,14 +1,14 @@
-import type { FormaClip, Project, TekstClip } from "../schema.js";
-import { DEFAULT_PPQ, ticksPerBar } from "../time.js";
+import type { FormaClip, Project, TekstClip } from "../project/schema.js";
+import { DEFAULT_PPQ, ticksPerBar } from "../time-tempo/time.js";
 import {
   applyUltrastarImportToProject,
   importUltrastarText,
   suggestGridBpmFromPipeAndFirstVocal,
-} from "../ultrastar-import.js";
+} from "../import/ultrastar/ultrastar-import.js";
 import {
   placeUsUgBackingAudioClip,
   suggestBeat1MsFromPipeAndGap,
-} from "../smart-tempo.js";
+} from "../smart-tempo/smart-tempo.js";
 import type {
   ApplyUsUgBridgeOptions,
   TextAnchorBridgeOk,

@@ -2,8 +2,8 @@
  * MultiPassTempoSolver — public types.
  */
 
-import type { TempoEvent } from "../schema.js";
-import type { TimeSignature } from "../time.js";
+import type { TempoEvent } from "../project/schema.js";
+import type { TimeSignature } from "../time-tempo/time.js";
 export type TempoAnchorKind =
   "section" | "phrase" | "chord" | "syllable" | "instrumental";
 

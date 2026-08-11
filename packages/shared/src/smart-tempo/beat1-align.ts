@@ -3,7 +3,7 @@ import {
   ticksPerBar,
   ticksToMs,
   type TimeSignature,
-} from "../time.js";
+} from "../time-tempo/time.js";
 import { YOUTUBE_VIDEO_ID_RE } from "./constants.js";
 
 /**

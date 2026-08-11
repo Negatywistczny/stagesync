@@ -2,7 +2,7 @@
  * MultiPassTempoSolver — Pass 1 seed BPM + metronome fallback.
  */
 
-import type { TimeSignature } from "../time.js";
+import type { TimeSignature } from "../time-tempo/time.js";
 import {
   DEFAULT_METER,
   TEMPO_MAP_MAX_BPM,

@@ -1,10 +1,10 @@
-import type { TempoEvent } from "../schema.js";
+import type { TempoEvent } from "../project/schema.js";
 import {
   DEFAULT_PPQ,
   localTicksPerBeat,
   ticksPerBar,
   type TimeSignature,
-} from "../time.js";
+} from "../time-tempo/time.js";
 import {
   SMART_TEMPO_MAX_UI_NODES,
   SMART_TEMPO_SPARSE_MAX_BPM_STEP,

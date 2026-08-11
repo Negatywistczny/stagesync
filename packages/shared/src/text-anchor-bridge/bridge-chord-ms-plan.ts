@@ -2,9 +2,9 @@ import {
   findHarmonicAccentSyllable,
   syllablesInChordScope,
   type HarmonicSyllable,
-} from "../harmonic-accent.js";
-import { pristineBarsFromMsSpan } from "../tempo-map-solver.js";
-import type { TimeSignature } from "../time.js";
+} from "../music/harmonic-accent.js";
+import { pristineBarsFromMsSpan } from "../tempo-map-solver/tempo-map-solver.js";
+import type { TimeSignature } from "../time-tempo/time.js";
 import {
   barsPerChordForSection,
   sectionLengthBarsFromUg,

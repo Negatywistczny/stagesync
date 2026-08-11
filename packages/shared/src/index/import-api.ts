@@ -17,7 +17,7 @@ export {
   type UgImportResult,
   type UgSectionPreview,
   type SplitUgSectionsOptions,
-} from "../ug-import.js";
+} from "../import/ug/ug-import.js";
 
 export {
   importUltrastarText,
@@ -42,7 +42,7 @@ export {
   type UltrastarSyllable,
   type UltrastarWord,
   type ApplyUltrastarOptions,
-} from "../ultrastar-import.js";
+} from "../import/ultrastar/ultrastar-import.js";
 
 export {
   TEXT_ANCHOR_WEAK_ALIGN,
@@ -95,7 +95,7 @@ export {
   type BuildPristineSectionGridInput,
   type BuildPristineSectionGridResult,
   type PristineSectionChord,
-} from "../text-anchor-bridge.js";
+} from "../text-anchor-bridge/text-anchor-bridge.js";
 
 export {
   scoreHarmonicAccent,
@@ -103,7 +103,7 @@ export {
   syllablesInChordScope,
   type HarmonicSyllable,
   type HarmonicAccentScoreContext,
-} from "../harmonic-accent.js";
+} from "../music/harmonic-accent.js";
 
 export {
   isUgPipeBarLine,
@@ -116,7 +116,7 @@ export {
   floorTicksToBar,
   type UgPipeChordEvent,
   type UgPipeBarsParse,
-} from "../ug-pipe-bars.js";
+} from "../import/ug/ug-pipe-bars.js";
 
 export {
   cleanUgTabContent,
@@ -124,7 +124,7 @@ export {
   isUgAsciiTabLine,
   isUgAuthorNoteLine,
   normalizeUgWikiMarkup,
-} from "../ug-content.js";
+} from "../import/ug/ug-content.js";
 
 export {
   UgFetchBodySchema,
@@ -139,7 +139,7 @@ export {
   type UgSearchHit,
   type UgSearchResponse,
   type UgTabMetadata,
-} from "../ug-api.js";
+} from "../import/ug/ug-api.js";
 
 export {
   UltrastarAccountPutBodySchema,
@@ -164,11 +164,11 @@ export {
   type UltrastarSearchHit,
   type UltrastarSearchResponse,
   type UltrastarSongMetadata,
-} from "../ultrastar-api.js";
+} from "../import/ultrastar/ultrastar-api.js";
 
 export {
   placeContentFromForma,
   type WandMode,
   type WandScope,
   type WandResult,
-} from "../wand.js";
+} from "../ui-helpers/wand.js";

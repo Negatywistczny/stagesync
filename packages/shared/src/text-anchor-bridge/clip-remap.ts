@@ -3,9 +3,9 @@ import type {
   TekstBlock,
   TekstClip,
   TempoEvent,
-} from "../schema.js";
-import type { TimeSignature } from "../time.js";
-import { secondsToTicks, ticksToSeconds } from "../tempo-map.js";
+} from "../project/schema.js";
+import type { TimeSignature } from "../time-tempo/time.js";
+import { secondsToTicks, ticksToSeconds } from "../time-tempo/tempo-map.js";
 import type { TimedWord, UgBridgeWord } from "./types.js";
 
 /** Wall-clock ms for a tick placed on a constant single-event tempo map. */

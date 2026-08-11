@@ -21,12 +21,12 @@ export {
   wholeLineTekstBlock,
   withWholeLineTekstBlocks,
   nextMidiProgramId,
-} from "../project-seed.js";
+} from "../project/project-seed.js";
 
 export {
   joinTekstBlockTexts,
   withTekstBlockWordSpaces,
-} from "../tekst-block-text.js";
+} from "../ui-helpers/tekst-block-text.js";
 
 export {
   resolveTempoAt,
@@ -34,9 +34,12 @@ export {
   resolveKeyAt,
   formatKeySignature,
   resolveFormaClipAt,
-} from "../project-resolve.js";
+} from "../project/project-resolve.js";
 
-export { projectEndTicks, emptyProjectEndTicks } from "../project-bounds.js";
+export {
+  projectEndTicks,
+  emptyProjectEndTicks,
+} from "../project/project-bounds.js";
 
 export {
   isCountdownDigitClipId,
@@ -46,7 +49,7 @@ export {
   syntheticCountdownDisplayFromProject,
   scrubCountdownDigitClips,
   type CountdownDigitLabel,
-} from "../countdown-content.js";
+} from "../ui-helpers/countdown-content.js";
 
 export {
   normalizeSubsectionOffsets,
@@ -54,7 +57,7 @@ export {
   defaultSubsections4Bar,
   hasUsableFormaSubsections,
   ensureFormaSubsections,
-} from "../forma-subsections.js";
+} from "../ui-helpers/forma-subsections.js";
 
 export {
   detectLibraryImportFormat,
@@ -64,4 +67,4 @@ export {
   type LibraryImportFormat,
   type DetectLibraryImportResult,
   type NormalizeLibraryImportResult,
-} from "../library-import.js";
+} from "../import/library-import.js";

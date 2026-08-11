@@ -1,15 +1,26 @@
-import { AkordClipSchema, FormaClipSchema, type FormaClip } from "../schema.js";
-import { DEFAULT_PPQ, ticksPerBar, type TimeSignature } from "../time.js";
+import {
+  AkordClipSchema,
+  FormaClipSchema,
+  type FormaClip,
+} from "../project/schema.js";
+import {
+  DEFAULT_PPQ,
+  ticksPerBar,
+  type TimeSignature,
+} from "../time-tempo/time.js";
 import {
   applySeedMetronomeFallback,
   weightForTempoAnchorKind,
   type TempoSolverAnchor,
-} from "../tempo-map-solver.js";
+} from "../tempo-map-solver/tempo-map-solver.js";
 import {
   suggestGridBpmFromPipeAndFirstVocal,
   type UltrastarImportOk,
-} from "../ultrastar-import.js";
-import { msPerBarAtBpm, suggestBeat1MsFromPipeAndGap } from "../smart-tempo.js";
+} from "../import/ultrastar/ultrastar-import.js";
+import {
+  msPerBarAtBpm,
+  suggestBeat1MsFromPipeAndGap,
+} from "../smart-tempo/smart-tempo.js";
 import { TEXT_ANCHOR_WEAK_ALIGN } from "./constants.js";
 import type {
   SectionContainer,

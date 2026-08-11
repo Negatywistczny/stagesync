@@ -4,8 +4,8 @@ import type {
   BuildPristineSectionGridInput,
   PristineSectionChord,
 } from "./types.js";
-import type { HarmonicSyllable } from "../harmonic-accent.js";
-import type { UgPipeChordEvent } from "../ug-pipe-bars.js";
+import type { HarmonicSyllable } from "../music/harmonic-accent.js";
+import type { UgPipeChordEvent } from "../import/ug/ug-pipe-bars.js";
 
 // ---------------------------------------------------------------------------
 // Helpers

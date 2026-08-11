@@ -2,7 +2,7 @@
  * MultiPassTempoSolver — shared constants.
  */
 
-import type { TimeSignature } from "../time.js";
+import type { TimeSignature } from "../time-tempo/time.js";
 
 export const TEMPO_SOLVER_HIGH_WEIGHT = 0.85;
 export const TEMPO_SOLVER_SECTION_WEIGHT = 1.0;

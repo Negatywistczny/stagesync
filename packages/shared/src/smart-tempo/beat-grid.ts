@@ -1,5 +1,5 @@
-import { BPM_MAX } from "../schema.js";
-import { DEFAULT_PPQ, type TimeSignature } from "../time.js";
+import { BPM_MAX } from "../project/schema.js";
+import { DEFAULT_PPQ, type TimeSignature } from "../time-tempo/time.js";
 import { SMART_TEMPO_MAX_BEATS } from "./constants.js";
 import { evaluateDriftGate } from "./drift-gate.js";
 

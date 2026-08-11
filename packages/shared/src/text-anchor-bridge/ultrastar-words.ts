@@ -1,5 +1,5 @@
-import type { UltrastarImportOk } from "../ultrastar-import.js";
-import type { HarmonicSyllable } from "../harmonic-accent.js";
+import type { UltrastarImportOk } from "../import/ultrastar/ultrastar-import.js";
+import type { HarmonicSyllable } from "../music/harmonic-accent.js";
 import type { TimedWord } from "./types.js";
 import { normalizeLyricToken, tokenizeLyrics } from "./tokenize.js";
 

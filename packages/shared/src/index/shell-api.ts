@@ -16,7 +16,7 @@ export {
   type AppearanceProfileId,
   type ThemeAppearance,
   type ThemeDefaultId,
-} from "../theme-default.js";
+} from "../ui-helpers/theme-default.js";
 
 export {
   formatDiscoveryMeta,
@@ -25,4 +25,4 @@ export {
   normalizeDiscoveryVersion,
   type FormatDiscoveryMetaInput,
   type FormatDiscoveryTitleInput,
-} from "../host-discovery.js";
+} from "../project/host-discovery.js";

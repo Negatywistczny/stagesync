@@ -1,9 +1,9 @@
-import type { AkordClip } from "../schema.js";
+import type { AkordClip } from "../project/schema.js";
 import {
   findHarmonicAccentSyllable,
   syllablesInChordScope,
-} from "../harmonic-accent.js";
-import { quantizeTicksToBar } from "../ug-pipe-bars.js";
+} from "../music/harmonic-accent.js";
+import { quantizeTicksToBar } from "../import/ug/ug-pipe-bars.js";
 import { DEFAULT_BARS_PER_CHORD } from "./constants.js";
 import type {
   BuildPristineSectionGridInput,

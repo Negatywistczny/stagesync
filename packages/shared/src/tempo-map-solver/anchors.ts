@@ -2,7 +2,11 @@
  * MultiPassTempoSolver — (ms, tick) anchors → soft/exact TempoEvent candidates.
  */
 
-import { ticksPerBar, ticksToMs, type TimeSignature } from "../time.js";
+import {
+  ticksPerBar,
+  ticksToMs,
+  type TimeSignature,
+} from "../time-tempo/time.js";
 import {
   TEMPO_MAP_MAX_BPM,
   TEMPO_MAP_MIN_BPM,

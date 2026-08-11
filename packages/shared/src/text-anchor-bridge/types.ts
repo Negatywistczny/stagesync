@@ -1,12 +1,12 @@
-import type { AkordClip, FormaClip, TempoEvent } from "../schema.js";
-import type { TimeSignature } from "../time.js";
-import type { UltrastarImportOk } from "../ultrastar-import.js";
+import type { AkordClip, FormaClip, TempoEvent } from "../project/schema.js";
+import type { TimeSignature } from "../time-tempo/time.js";
+import type { UltrastarImportOk } from "../import/ultrastar/ultrastar-import.js";
 import type {
   AudioAnalysisResult,
   SmartTempoAudioRef,
   TempoNode,
-} from "../smart-tempo.js";
-import type { UgPipeChordEvent } from "../ug-pipe-bars.js";
+} from "../smart-tempo/smart-tempo.js";
+import type { UgPipeChordEvent } from "../import/ug/ug-pipe-bars.js";
 
 export type TimedWord = {
   raw: string;
@@ -193,7 +193,7 @@ export type BuildPristineSectionGridInput = {
   chords: readonly PristineSectionChord[];
   pipeEvents: readonly UgPipeChordEvent[];
   pipeBarCount: number;
-  usSyllables: readonly import("../harmonic-accent.js").HarmonicSyllable[];
+  usSyllables: readonly import("../music/harmonic-accent.js").HarmonicSyllable[];
   /** Resolve UG word index → US word startTicks (null if unmatched). */
   resolveWordStartTicks: (ugWordIndex: number) => number | null;
   barsPerChord?: number;

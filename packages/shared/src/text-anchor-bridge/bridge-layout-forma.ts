@@ -1,6 +1,6 @@
-import type { TimeSignature } from "../time.js";
-import { layoutFormaFromAlignedWords } from "../smart-tempo.js";
-import type { TempoSolverSectionPlan } from "../tempo-map-solver.js";
+import type { TimeSignature } from "../time-tempo/time.js";
+import { layoutFormaFromAlignedWords } from "../smart-tempo/smart-tempo.js";
+import type { TempoSolverSectionPlan } from "../tempo-map-solver/tempo-map-solver.js";
 import type { TimedWord, UgBridgeWord, UgSectionParsed } from "./types.js";
 
 export type LayoutFormaFromBridgeAlignInput = {

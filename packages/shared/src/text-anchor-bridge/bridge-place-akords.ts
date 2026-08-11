@@ -1,6 +1,6 @@
-import type { AkordClip, TempoEvent } from "../schema.js";
-import { secondsToTicks } from "../tempo-map.js";
-import type { TimeSignature } from "../time.js";
+import type { AkordClip, TempoEvent } from "../project/schema.js";
+import { secondsToTicks } from "../time-tempo/tempo-map.js";
+import type { TimeSignature } from "../time-tempo/time.js";
 import {
   evenlySpaceOnsetsOnBarGrid,
   placeChordsWithMinGap,

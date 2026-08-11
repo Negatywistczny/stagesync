@@ -2,8 +2,8 @@
  * MultiPassTempoSolver — Pass 1–5 orchestration.
  */
 
-import type { TempoEvent } from "../schema.js";
-import { DEFAULT_PPQ, ticksPerBar } from "../time.js";
+import type { TempoEvent } from "../project/schema.js";
+import { DEFAULT_PPQ, ticksPerBar } from "../time-tempo/time.js";
 import {
   layoutContiguousFormaPlans,
   pristineBarsFromMsSpan,

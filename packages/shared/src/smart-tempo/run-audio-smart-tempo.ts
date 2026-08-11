@@ -1,4 +1,4 @@
-import { DEFAULT_PPQ } from "../time.js";
+import { DEFAULT_PPQ } from "../time-tempo/time.js";
 import { SMART_TEMPO_MAX_BEATS, SMART_TEMPO_MAX_GRID_MS } from "./constants.js";
 import { msPerBarAtBpm } from "./beat1-align.js";
 import {

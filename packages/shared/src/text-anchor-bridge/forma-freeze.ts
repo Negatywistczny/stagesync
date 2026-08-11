@@ -1,5 +1,5 @@
-import type { FormaClip } from "../schema.js";
-import { sectionStartFromVocalTicks } from "../ug-pipe-bars.js";
+import type { FormaClip } from "../project/schema.js";
+import { sectionStartFromVocalTicks } from "../import/ug/ug-pipe-bars.js";
 import type {
   FreezeFormaContainersInput,
   FreezeFormaContainersResult,

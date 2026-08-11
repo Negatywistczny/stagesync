@@ -34,7 +34,7 @@ export {
   updatePeakHold,
   type MeterPeakBand,
   type PeakHoldState,
-} from "../mixer-math.js";
+} from "../mixer/mixer-math.js";
 
 export {
   DEFAULT_TRACK_COLOR,
@@ -49,7 +49,7 @@ export {
   trackColorForIndex,
   type TrackColor,
   type TrackIcon,
-} from "../track-appearance.js";
+} from "../ui-helpers/track-appearance.js";
 
 export {
   AudioBusSchema,
@@ -86,4 +86,4 @@ export {
   type ChannelMode,
   type MasterOutputRouting,
   type MixerOutputDest,
-} from "../mixer-routing.js";
+} from "../mixer/mixer-routing.js";
