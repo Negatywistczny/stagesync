@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1295
-* **Liczba katalogów:** 197
-* **Data aktualizacji:** 2026-08-11T02:26:54.256Z
+* **Liczba wszystkich plików:** 1309
+* **Liczba katalogów:** 199
+* **Data aktualizacji:** 2026-08-11T03:06:23.675Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 869 |
+| Kod | 883 |
 | Docs | 156 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 518 |
+| `.ts` | 532 |
 | `.tsx` | 172 |
 | `.md` | 134 |
 | `.png` | 94 |
@@ -40,11 +40,11 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (928) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (933) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (98) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (100) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (72) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (135) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **server/** (140) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (493) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
@@ -81,11 +81,11 @@
   - **examples/** (1) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (4) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (169) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (178) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (128) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (137) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (4) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (25) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (23) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -317,6 +317,7 @@ stagesync/
 │   │   │   ├── push/
 │   │   │   │   └── tokens.ts
 │   │   │   ├── routes/
+│   │   │   │   ├── youtube-audio/  … (5 plików)
 │   │   │   │   ├── assets-helpers.test.ts
 │   │   │   │   ├── assets-helpers.ts
 │   │   │   │   ├── assets.ts
@@ -753,6 +754,16 @@ stagesync/
 │   │   ├── src/
 │   │   │   ├── fixtures/
 │   │   │   │   └── us-ug/  … (8 plików, 4 podkatalogi)
+│   │   │   ├── index/
+│   │   │   │   ├── content-api.ts
+│   │   │   │   ├── import-api.ts
+│   │   │   │   ├── mixer-api.ts
+│   │   │   │   ├── project-api.ts
+│   │   │   │   ├── schema-api.ts
+│   │   │   │   ├── shell-api.ts
+│   │   │   │   ├── tempo-api.ts
+│   │   │   │   ├── time-api.ts
+│   │   │   │   └── transport-api.ts
 │   │   │   ├── smart-tempo/
 │   │   │   │   ├── backing-clip.ts
 │   │   │   │   ├── beat-grid.ts
