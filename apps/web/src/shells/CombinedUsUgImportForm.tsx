@@ -89,12 +89,12 @@ import {
 } from "@lib/shell-operator/ugImportApi.js";
 import { Check, Music } from "lucide-react";
 import { AudioDropzone } from "./import/AudioDropzone.js";
-import { BeatMapperPane } from "./import/BeatMapperPane.js";
 import { ImportProgress } from "./import/ImportProgress.js";
-import {
-  UsdbAccountPanel,
-  shouldOpenUsdbAccount,
-} from "./import/UsdbAccountPanel.js";
+import { shouldOpenUsdbAccount } from "./import/UsdbAccountPanel.js";
+import { UsImportStep } from "./import/UsImportStep.js";
+import { UgImportStep } from "./import/UgImportStep.js";
+import { AudioImportStep } from "./import/AudioImportStep.js";
+import { BeatmapImportStep } from "./import/BeatmapImportStep.js";
 import styles from "./CombinedUsUgImportForm.module.css";
 
 /** Continuous 0…100 bar across download → decode → prepare → analyze. */
@@ -1397,502 +1397,99 @@ export function CombinedUsUgImportForm({
   return (
     <div className={styles.wizard}>
       <div className={styles.body}>
-        <header className={styles.stepHead}>
-          <h3 className={styles.stepTitle}>{meta.title}</h3>
-          <p className={styles.stepSubtitle}>{meta.subtitle}</p>
-        </header>
-
         {step === "us" ? (
-          <div className={styles.stepPanel}>
-            <UsdbAccountPanel
-              open={showUsdbAccount}
-              onOpenChange={setShowUsdbAccount}
-              disabled={disabled || applying}
-              onBusyChange={setAccountBusy}
-            />
-            <div className={styles.studioSplit}>
-              <div className={styles.studioColLeft}>
-                <div className={styles.fieldStack}>
-                  <Input
-                    type="text"
-                    value={usTitle}
-                    aria-label="Tytuł USDB"
-                    placeholder="Tytuł"
-                    disabled={locked}
-                    onChange={(e) => setUsTitle(e.target.value)}
-                  />
-                  <div className={styles.artistSearchRow}>
-                    <Input
-                      type="text"
-                      value={usArtist}
-                      aria-label="Artysta USDB"
-                      placeholder="Artysta"
-                      disabled={locked}
-                      onChange={(e) => setUsArtist(e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={locked || !usTitle.trim()}
-                      loading={busyNet}
-                      onClick={() => void searchUs()}
-                    >
-                      Szukaj w USDB
-                    </Button>
-                  </div>
-                </div>
-                {usHits.length > 0 ? (
-                  <ul className={styles.resultList} aria-label="Wyniki USDB">
-                    {usHits.map((hit, i) => {
-                      const label =
-                        [hit.title, hit.artist].filter(Boolean).join(" — ") ||
-                        `Wersja ${i + 1}`;
-                      const meta = [
-                        hit.edition,
-                        hit.language,
-                        hit.rating != null ? `★ ${hit.rating}` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ");
-                      const selected = Boolean(
-                        hit.url && hit.url === selectedUsUrl,
-                      );
-                      return (
-                        <li key={`${hit.url ?? i}-${i}`}>
-                          <button
-                            type="button"
-                            className={[
-                              styles.resultCard,
-                              selected ? styles.resultCardSelected : "",
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                            disabled={locked || !hit.url}
-                            onClick={() => void pickUsHit(hit)}
-                          >
-                            <span className={styles.resultTitle}>
-                              UltraStar: {label}
-                            </span>
-                            {meta ? (
-                              <span className={styles.resultMeta}>{meta}</span>
-                            ) : null}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className={styles.notice} role="status">
-                    Wyszukaj w USDB albo wklej plik po prawej.
-                  </p>
-                )}
-              </div>
-              <div className={styles.studioColRight}>
-                <p className={styles.previewLabel}>Podgląd UltraStar</p>
-                <Textarea
-                  className={styles.previewTextarea}
-                  value={usText}
-                  aria-label="Tekst UltraStar"
-                  placeholder="Wklej UltraStar .txt…"
-                  disabled={locked}
-                  rows={12}
-                  onChange={(e) => {
-                    setUsText(e.target.value);
-                    setGridBpmDraft(null);
-                  }}
-                />
-                {usPreview?.ok ? (
-                  <p className={styles.notice} role="status">
-                    {usPreview.syllableCount} sylab (UltraStar Tekst)
-                    {usPreview.youtubeVideoId
-                      ? ` · YouTube ${usPreview.youtubeVideoId}`
-                      : ""}
-                  </p>
-                ) : stepNotice ? (
-                  <p className={styles.notice} role="status">
-                    {stepNotice}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
+          <UsImportStep
+            meta={meta}
+            showUsdbAccount={showUsdbAccount}
+            setShowUsdbAccount={setShowUsdbAccount}
+            disabled={disabled}
+            applying={applying || false}
+            setAccountBusy={setAccountBusy}
+            usTitle={usTitle}
+            setUsTitle={setUsTitle}
+            usArtist={usArtist}
+            setUsArtist={setUsArtist}
+            locked={locked}
+            busyNet={busyNet}
+            searchUs={searchUs}
+            usHits={usHits}
+            selectedUsUrl={selectedUsUrl}
+            pickUsHit={pickUsHit}
+            usText={usText}
+            setUsText={setUsText}
+            setGridBpmDraft={setGridBpmDraft}
+            usPreview={usPreview}
+            stepNotice={stepNotice}
+          />
         ) : null}
 
         {step === "ug" ? (
-          <div className={styles.stepPanel}>
-            <div className={styles.studioSplit}>
-              <div className={styles.studioColLeft}>
-                <div className={styles.fieldStack}>
-                  <Input
-                    type="text"
-                    value={ugTitle}
-                    aria-label="Tytuł UG"
-                    placeholder="Tytuł"
-                    disabled={locked}
-                    onChange={(e) => setUgTitle(e.target.value)}
-                  />
-                  <div className={styles.artistSearchRow}>
-                    <Input
-                      type="text"
-                      value={ugArtist}
-                      aria-label="Artysta UG"
-                      placeholder="Artysta"
-                      disabled={locked}
-                      onChange={(e) => setUgArtist(e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={locked || !ugTitle.trim()}
-                      loading={busyNet}
-                      onClick={() => void searchUg()}
-                    >
-                      Szukaj w UG
-                    </Button>
-                  </div>
-                </div>
-                {sortedUgHits.length > 0 ? (
-                  <ul className={styles.resultList} aria-label="Wyniki UG">
-                    {sortedUgHits.map((hit, i) => {
-                      const label =
-                        [hit.title, hit.artist].filter(Boolean).join(" — ") ||
-                        `Wersja ${i + 1}`;
-                      const meta = [
-                        hit.type,
-                        hit.rating != null ? `★ ${hit.rating}` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ");
-                      const selected = Boolean(
-                        hit.url && hit.url === selectedUgUrl,
-                      );
-                      const score = hit.url ? ugHitScores[hit.url] : undefined;
-                      const scorePct =
-                        score != null ? Math.round(score * 100) : null;
-                      const alignClass =
-                        score != null
-                          ? score >= 0.7
-                            ? styles.alignHigh
-                            : score >= 0.4
-                              ? styles.alignMedium
-                              : styles.alignLow
-                          : "";
-
-                      return (
-                        <li key={`${hit.url ?? i}-${i}`}>
-                          <button
-                            type="button"
-                            className={[
-                              styles.resultCard,
-                              selected ? styles.resultCardSelected : "",
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                            disabled={locked || !hit.url}
-                            onClick={() => void pickUgHit(hit)}
-                          >
-                            <div className={styles.resultCardHeader}>
-                              <span className={styles.resultTitle}>
-                                UG: {label}
-                              </span>
-                              {scorePct != null ? (
-                                <span
-                                  className={`${styles.alignBadge} ${alignClass}`}
-                                  title={`Zgodność tekstu z UltraStar: ${scorePct}%`}
-                                >
-                                  Zgodność: {scorePct}%
-                                </span>
-                              ) : ugHitScoresBusy ? (
-                                <span className={styles.resultMeta}>
-                                  Liczenie…
-                                </span>
-                              ) : null}
-                            </div>
-                            {meta ? (
-                              <span className={styles.resultMeta}>{meta}</span>
-                            ) : null}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className={styles.notice} role="status">
-                    Wyszukaj w UG albo wklej tabulatury po prawej.
-                  </p>
-                )}
-              </div>
-              <div className={styles.studioColRight}>
-                <p className={styles.previewLabel}>Podgląd Ultimate Guitar</p>
-                <Textarea
-                  className={styles.previewTextarea}
-                  value={ugText}
-                  aria-label="Tekst Ultimate Guitar"
-                  placeholder="Wklej ChordPro / UG…"
-                  disabled={locked}
-                  rows={12}
-                  onChange={(e) => {
-                    setUgText(e.target.value);
-                    setGridBpmDraft(null);
-                  }}
-                />
-                {ugText.trim() && bridged?.ok ? (
-                  <p className={styles.notice} role="status">
-                    Zgodność z UltraStar:{" "}
-                    <span
-                      className={`${styles.alignBadge} ${
-                        bridged.alignScore >= 0.7
-                          ? styles.alignHigh
-                          : bridged.alignScore >= 0.4
-                            ? styles.alignMedium
-                            : styles.alignLow
-                      }`}
-                    >
-                      {Math.round(bridged.alignScore * 100)}%
-                    </span>
-                    {bridged.alignScore < TEXT_ANCHOR_WEAK_ALIGN
-                      ? " (Słabe dopasowanie)"
-                      : " (Dobre dopasowanie)"}
-                  </p>
-                ) : stepNotice ? (
-                  <p className={styles.notice} role="status">
-                    {stepNotice}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
+          <UgImportStep
+            meta={meta}
+            ugTitle={ugTitle}
+            setUgTitle={setUgTitle}
+            ugArtist={ugArtist}
+            setUgArtist={setUgArtist}
+            locked={locked}
+            busyNet={busyNet}
+            searchUg={searchUg}
+            sortedUgHits={sortedUgHits}
+            selectedUgUrl={selectedUgUrl}
+            pickUgHit={pickUgHit}
+            ugHitScores={ugHitScores}
+            ugHitScoresBusy={ugHitScoresBusy}
+            ugText={ugText}
+            setUgText={setUgText}
+            setGridBpmDraft={setGridBpmDraft}
+            bridged={bridged}
+            stepNotice={stepNotice}
+          />
         ) : null}
 
-        {step === "audio" && includeAudioStep ? (
-          <div className={styles.stepPanel}>
-            {/* Top Row: 3 equal sections (Project Files, Disk File / DnD, YouTube) */}
-            <div className={styles.audioSplit3Col}>
-              {/* Card 1: Project Audio Files */}
-              <div className={styles.audioCard}>
-                <h4 className={styles.audioCardTitle}>Pliki w projekcie</h4>
-                <div className={styles.projectFilesSection}>
-                  {projectAudioAssets.length > 0 ? (
-                    <ul
-                      className={styles.projectFilesList}
-                      aria-label="Pliki audio w projekcie"
-                    >
-                      {projectAudioAssets.map((asset) => {
-                        const isSelected =
-                          selectedAssetId === asset.id ||
-                          smartTempoAudio?.assetId === asset.id;
-                        const durationLabel = asset.durationMs
-                          ? `${Math.floor(asset.durationMs / 60000)}:${String(
-                              Math.floor((asset.durationMs % 60000) / 1000),
-                            ).padStart(2, "0")}`
-                          : null;
-                        const sizeLabel = asset.sizeBytes
-                          ? formatBytesMb(asset.sizeBytes)
-                          : null;
-                        const metaLabel = [durationLabel, sizeLabel]
-                          .filter(Boolean)
-                          .join(" · ");
-
-                        return (
-                          <li key={asset.id}>
-                            <button
-                              type="button"
-                              className={[
-                                styles.projectFileItem,
-                                isSelected ? styles.projectFileItemActive : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" ")}
-                              disabled={locked}
-                              onClick={() => void ingestProjectAsset(asset.id)}
-                            >
-                              <input
-                                type="radio"
-                                name="projectAudioSelect"
-                                checked={isSelected}
-                                readOnly
-                                className={styles.projectFileRadio}
-                              />
-                              <Music
-                                className={styles.projectFileIcon}
-                                size={18}
-                              />
-                              <div className={styles.projectFileInfo}>
-                                <span className={styles.projectFileName}>
-                                  {asset.originalName || asset.storageName}
-                                </span>
-                                {metaLabel ? (
-                                  <span className={styles.projectFileMeta}>
-                                    {metaLabel}
-                                  </span>
-                                ) : null}
-                              </div>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ) : (
-                    <p className={styles.emptyFilesNotice}>
-                      Brak wgranych plików audio w projekcie.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Card 2: Disk File / DnD */}
-              <div className={styles.audioCard}>
-                <h4 className={styles.audioCardTitle}>Plik z dysku</h4>
-                <AudioDropzone
-                  compact
-                  disabled={locked}
-                  busy={busyNet && !ytJobBusy && !selectedAssetId}
-                  onSelectFile={(f) => void ingestLocalFile(f)}
-                />
-              </div>
-
-              {/* Card 3: YouTube */}
-              <div className={styles.audioCard}>
-                <h4 className={styles.audioCardTitle}>YouTube</h4>
-                <div className={styles.ytInlineGroup}>
-                  <Input
-                    type="url"
-                    className={styles.ytInput}
-                    value={youtubeUrlDraft}
-                    aria-label="Link YouTube"
-                    placeholder="https://www.youtube.com/watch?v=…"
-                    disabled={locked}
-                    onChange={(e) => setYoutubeUrlDraft(e.target.value)}
-                  />
-                  <Button
-                    type="button"
-                    className={styles.ytButton}
-                    variant="secondary"
-                    disabled={locked || !youtubeAvailable}
-                    loading={ytJobBusy}
-                    onClick={() => void fetchYoutubeAudio(resolvedYoutubeId)}
-                  >
-                    Pobierz z YouTube
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Section: Pipeline Progress Checklist */}
-
-            {ytJobBusy ||
-            busyNet ||
-            hasAudio ||
-            pipelineStages.some((s) => s.status !== "pending") ? (
-              <div className={styles.pipelineSection}>
-                <h5 className={styles.pipelineTitle}>
-                  Postęp przygotowania audio
-                </h5>
-                <ul className={styles.pipelineList}>
-                  {pipelineStages.map((s) => {
-                    const isDone = s.status === "done";
-                    const isActive = s.status === "running";
-
-                    return (
-                      <li key={s.id} className={styles.pipelineStep}>
-                        <div
-                          className={[
-                            styles.pipelineStepHeader,
-                            isDone
-                              ? styles.pipelineStepDone
-                              : isActive
-                                ? styles.pipelineStepActive
-                                : styles.pipelineStepPending,
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        >
-                          <span
-                            className={[
-                              styles.pipelineBadge,
-                              isDone
-                                ? styles.pipelineBadgeDone
-                                : isActive
-                                  ? styles.pipelineBadgeActive
-                                  : styles.pipelineBadgePending,
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                          >
-                            {isDone ? (
-                              <Check size={12} strokeWidth={3} />
-                            ) : null}
-                          </span>
-                          <span>{s.label}</span>
-                        </div>
-                        {isActive && s.progress != null && s.progress >= 0 ? (
-                          <div className={styles.pipelineProgressWrapper}>
-                            <ImportProgress
-                              label={`${Math.round(s.progress)}%`}
-                              value={s.progress}
-                            />
-                          </div>
-                        ) : null}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ) : null}
-          </div>
+        {step === "audio" ? (
+          <AudioImportStep
+            meta={meta}
+            includeAudioStep={includeAudioStep}
+            projectAudioAssets={projectAudioAssets}
+            selectedAssetId={selectedAssetId}
+            smartTempoAudio={smartTempoAudio}
+            locked={locked}
+            busyNet={busyNet}
+            ytJobBusy={ytJobBusy}
+            hasAudio={hasAudio}
+            pipelineStages={pipelineStages}
+            youtubeUrlDraft={youtubeUrlDraft}
+            youtubeAvailable={youtubeAvailable}
+            resolvedYoutubeId={resolvedYoutubeId}
+            setYoutubeUrlDraft={setYoutubeUrlDraft}
+            ingestProjectAsset={ingestProjectAsset}
+            ingestLocalFile={ingestLocalFile}
+            fetchYoutubeAudio={fetchYoutubeAudio}
+          />
         ) : null}
 
         {step === "beatmap" && bridgeOk ? (
-          <div className={styles.stepPanel}>
-            {stepNotice ? (
-              <p className={styles.notice} role="status">
-                {stepNotice}
-              </p>
-            ) : null}
-            <BeatMapperPane
-              bridge={bridgeOk}
-              audio={
-                smartTempoAudio
-                  ? { ...smartTempoAudio, audioStartOffsetMs }
-                  : null
-              }
-              localAudioBuffer={localBuffer}
-              tempoNodes={displayTempoNodes}
-              onTempoNodesChange={handleTempoNodesChange}
-              audioStartOffsetMs={audioStartOffsetMs}
-              onAudioStartOffsetChange={handleAudioStartOffsetChange}
-              gridBpmDisplay={gridBpmDisplay}
-              onGridBpmChange={setGridBpmDraft}
-              songTitle={
-                usTitle.trim() ||
-                (usPreview?.ok === true ? usPreview.title?.trim() : "") ||
-                ""
-              }
-              onSelectAudioFile={(file) => void ingestLocalFile(file)}
-              onRegisterPlayToggle={(fn) => {
-                beatPlayToggleRef.current = fn;
-              }}
-              disabled={locked}
-            />
-            {bridgeOk.warnings.length > 0 ? (
-              <ul className={styles.warnList}>
-                {bridgeOk.warnings.map((w) => (
-                  <li key={w}>{w}</li>
-                ))}
-              </ul>
-            ) : null}
-            {weakAlign ? (
-              <label className={styles.checkRow}>
-                <input
-                  type="checkbox"
-                  checked={confirmWeak}
-                  disabled={locked}
-                  onChange={(e) => setConfirmWeak(e.target.checked)}
-                />
-                Potwierdzam import mimo słabego dopasowania tekstu
-              </label>
-            ) : null}
-          </div>
+          <BeatmapImportStep
+            meta={meta}
+            bridgeOk={bridgeOk}
+            stepNotice={stepNotice}
+            smartTempoAudio={smartTempoAudio}
+            audioStartOffsetMs={audioStartOffsetMs}
+            localBuffer={localBuffer}
+            displayTempoNodes={displayTempoNodes}
+            handleTempoNodesChange={handleTempoNodesChange}
+            handleAudioStartOffsetChange={handleAudioStartOffsetChange}
+            gridBpmDisplay={gridBpmDisplay}
+            setGridBpmDraft={setGridBpmDraft}
+            usTitle={usTitle}
+            usPreview={usPreview}
+            ingestLocalFile={ingestLocalFile}
+            beatPlayToggleRef={beatPlayToggleRef}
+            locked={locked}
+            weakAlign={weakAlign}
+            confirmWeak={confirmWeak}
+            setConfirmWeak={setConfirmWeak}
+          />
         ) : null}
 
         {error ? (

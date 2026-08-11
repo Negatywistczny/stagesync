@@ -13,6 +13,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { CombinedUsUgImportForm } from "./CombinedUsUgImportForm.js";
+import { searchUltrastarSongs } from "@lib/shell-operator/ultrastarImportApi.js";
 
 vi.mock("@lib/shell-operator/ultrastarImportApi.js", () => ({
   fetchUltrastarFromServer: vi.fn(),
@@ -199,12 +200,8 @@ describe("CombinedUsUgImportForm", () => {
   });
 
   it("opens Konto USDB when search reports missing credentials", async () => {
-    const { searchUltrastarSongs } =
-      await import("@lib/shell-operator/ultrastarImportApi.js");
     vi.mocked(searchUltrastarSongs).mockRejectedValueOnce(
-      new Error(
-        "Brak konta USDB. Ustaw je w Import UltraStar → Konto USDB albo w Ustawieniach serwera.",
-      ),
+      new Error("Brak konta USDB. Ustaw je w Import UltraStar → Konfiguracja"),
     );
 
     render(
@@ -254,14 +251,14 @@ describe("CombinedUsUgImportForm", () => {
       ],
     });
 
-    fetchUgTabFromServerMock.mockImplementation(async (url) => {
+    fetchUgTabFromServerMock.mockImplementation(async (url: string) => {
       if (url === "https://ug.com/tab1") {
         return {
           content: "[Verse]\nRandom unrelated text",
           metadata: { title: "Low Match Version" },
-        };
+        } as any;
       }
-      return { content: ug, metadata: { title: "High Match Version" } };
+      return { content: ug, metadata: { title: "High Match Version" } } as any;
     });
 
     render(
