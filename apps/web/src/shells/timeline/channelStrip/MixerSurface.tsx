@@ -3,10 +3,8 @@
  */
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { Button } from "@stagesync/ui";
 import {
   emptyPeakHold,
-  listMasterStereoPairOptions,
   resolveMasterOutputRouting,
   type Project,
 } from "@stagesync/shared";
@@ -31,7 +29,6 @@ import {
   type MixerZoneId,
   type MixerZoneVisibility,
 } from "@lib/client/mixerZoneVisibility.js";
-import { IconEye, IconEyeOff } from "../../icons.js";
 import { ChannelStripControls } from "./ChannelStripControls.js";
 import type {
   ChannelStripCallbacks,
@@ -41,6 +38,13 @@ import type {
 import { ClickStrip } from "./ClickStrip.js";
 import { HwOutStrip } from "./HwOutStrip.js";
 import { MasterStrip } from "./MasterStrip.js";
+import { MixerZoneHeader } from "./MixerZoneHeader.js";
+import {
+  buildHwOptions,
+  buildMasterOutOptions,
+  buildTrackOutputOptions,
+  busOutputOptionsFor,
+} from "./mixerOutputOptions.js";
 import {
   serializeOutputDest,
   type OutputSelectorOption,
@@ -75,37 +79,6 @@ export type MixerSurfaceProps = {
   onHwChannelModeChange?: (hwOutputId: string, mode: "mono" | "stereo") => void;
   onEmptyDoubleClick?: (e: MouseEvent) => void;
 };
-
-function ZoneEyeToggle({
-  zoneLabel,
-  visible,
-  onToggle,
-}: {
-  zoneLabel: string;
-  visible: boolean;
-  onToggle: () => void;
-}) {
-  const label = visible
-    ? `Ukryj strefę ${zoneLabel}`
-    : `Pokaż strefę ${zoneLabel}`;
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      iconOnly
-      className={styles.zoneEye}
-      aria-label={label}
-      title={label}
-      aria-pressed={visible}
-      onClick={(e) => {
-        e.stopPropagation();
-        onToggle();
-      }}
-    >
-      {visible ? <IconEye /> : <IconEyeOff />}
-    </Button>
-  );
-}
 
 export function MixerSurface({
   project,
@@ -166,20 +139,16 @@ export function MixerSurface({
     project.masterOutput,
   );
 
-  const masterOutOptions: OutputSelectorOption[] = useMemo(() => {
-    if (!hwCap.uiAllowed) return [];
-    return listMasterStereoPairOptions(hwCap.maxChannelCount, hwOuts)
-      .filter(
-        (o) =>
-          !o.blocked ||
-          o.channelOffset ===
-            resolveMasterOutputRouting(project.masterOutput).channelOffset,
-      )
-      .map((o) => ({
-        value: `ch:${o.channelOffset}`,
-        label: o.blocked ? `${o.label} (zajęte)` : o.label,
-      }));
-  }, [hwCap.uiAllowed, hwCap.maxChannelCount, hwOuts, project.masterOutput]);
+  const masterOutOptions: OutputSelectorOption[] = useMemo(
+    () =>
+      buildMasterOutOptions(
+        hwCap.uiAllowed,
+        hwCap.maxChannelCount,
+        hwOuts,
+        project.masterOutput,
+      ),
+    [hwCap.uiAllowed, hwCap.maxChannelCount, hwOuts, project.masterOutput],
+  );
 
   const masterOutValue = `ch:${resolveMasterOutputRouting(project.masterOutput).channelOffset}`;
 
@@ -203,35 +172,15 @@ export function MixerSurface({
     return () => window.removeEventListener(AUDIO_HW_CAPABILITY_EVENT, onCap);
   }, []);
 
-  const hwOptions: OutputSelectorOption[] = useMemo(() => {
-    if (!hwCap.uiAllowed) return [];
-    return hwOuts.map((h) => ({
-      value: `hw:${h.id}`,
-      label: h.name,
-    }));
-  }, [hwCap.uiAllowed, hwOuts]);
+  const hwOptions: OutputSelectorOption[] = useMemo(
+    () => buildHwOptions(hwCap.uiAllowed, hwOuts),
+    [hwCap.uiAllowed, hwOuts],
+  );
 
-  const trackOutputOptions: OutputSelectorOption[] = useMemo(() => {
-    return [
-      { value: "master", label: "Master" },
-      ...busses.map((b) => ({
-        value: `bus:${b.id}`,
-        label: b.name,
-      })),
-      ...hwOptions,
-    ];
-  }, [busses, hwOptions]);
-
-  const busOutputOptionsFor = (busId: string): OutputSelectorOption[] => [
-    { value: "master", label: "Master" },
-    ...busses
-      .filter((b) => b.id !== busId)
-      .map((b) => ({
-        value: `bus:${b.id}`,
-        label: b.name,
-      })),
-    ...hwOptions,
-  ];
+  const trackOutputOptions: OutputSelectorOption[] = useMemo(
+    () => buildTrackOutputOptions(busses, hwOptions),
+    [busses, hwOptions],
+  );
 
   useEffect(() => {
     function onPrefs(e: Event) {
@@ -259,30 +208,14 @@ export function MixerSurface({
               .join(" ")}
             aria-label="Ścieżki audio"
           >
-            <div className={styles.zoneHead}>
-              <div className={styles.zoneHeadStart}>
-                <span className={styles.zoneTitle}>Audio</span>
-                <ZoneEyeToggle
-                  zoneLabel="Audio"
-                  visible={zoneVis.audio}
-                  onToggle={() => setZoneVisible("audio")}
-                />
-              </div>
-              {zoneVis.audio ? (
-                <button
-                  type="button"
-                  className={styles.addBusBtn}
-                  aria-label="Dodaj Ścieżkę"
-                  title="Dodaj ścieżkę"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddAudioTrack();
-                  }}
-                >
-                  + Dodaj
-                </button>
-              ) : null}
-            </div>
+            <MixerZoneHeader
+              title="Audio"
+              visible={zoneVis.audio}
+              onToggle={() => setZoneVisible("audio")}
+              addAriaLabel="Dodaj Ścieżkę"
+              addTitle="Dodaj ścieżkę"
+              onAdd={onAddAudioTrack}
+            />
             {zoneVis.audio ? (
               <div className={styles.strips}>
                 {project.audioTracks.map((track) => {
@@ -342,30 +275,14 @@ export function MixerSurface({
               .join(" ")}
             aria-label="Busy"
           >
-            <div className={styles.zoneHead}>
-              <div className={styles.zoneHeadStart}>
-                <span className={styles.zoneTitle}>Busy</span>
-                <ZoneEyeToggle
-                  zoneLabel="Busy"
-                  visible={zoneVis.bus}
-                  onToggle={() => setZoneVisible("bus")}
-                />
-              </div>
-              {zoneVis.bus ? (
-                <button
-                  type="button"
-                  className={styles.addBusBtn}
-                  aria-label="Dodaj Bus"
-                  title="Dodaj bus"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddBus();
-                  }}
-                >
-                  + Dodaj
-                </button>
-              ) : null}
-            </div>
+            <MixerZoneHeader
+              title="Busy"
+              visible={zoneVis.bus}
+              onToggle={() => setZoneVisible("bus")}
+              addAriaLabel="Dodaj Bus"
+              addTitle="Dodaj bus"
+              onAdd={onAddBus}
+            />
             {zoneVis.bus ? (
               <div className={styles.strips}>
                 {busses.map((bus) => {
@@ -392,7 +309,11 @@ export function MixerSurface({
                         hold: reading?.hold,
                         kind: "bus",
                         outputValue: outVal,
-                        outputOptions: busOutputOptionsFor(bus.id),
+                        outputOptions: busOutputOptionsFor(
+                          bus.id,
+                          busses,
+                          hwOptions,
+                        ),
                         outputDisabled:
                           playing &&
                           (outVal.startsWith("hw:") || hwOptions.length > 0),
@@ -423,36 +344,19 @@ export function MixerSurface({
                 .join(" ")}
               aria-label="Wyjścia HW"
             >
-              <div className={styles.zoneHead}>
-                <div className={styles.zoneHeadStart}>
-                  <span className={styles.zoneTitle}>HW Out</span>
-                  <ZoneEyeToggle
-                    zoneLabel="HW Out"
-                    visible={zoneVis.hw}
-                    onToggle={() => setZoneVisible("hw")}
-                  />
-                </div>
-                {zoneVis.hw && onAddHwOut ? (
-                  <button
-                    type="button"
-                    className={styles.addBusBtn}
-                    aria-label="Dodaj wyjście HW"
-                    title={
-                      canAddHw
-                        ? "Dodaj wyjście HW"
-                        : `Brak wolnych kanałów (max ${hwCap.maxChannelCount})`
-                    }
-                    disabled={!canAddHw}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!canAddHw) return;
-                      onAddHwOut();
-                    }}
-                  >
-                    + Dodaj
-                  </button>
-                ) : null}
-              </div>
+              <MixerZoneHeader
+                title="HW Out"
+                visible={zoneVis.hw}
+                onToggle={() => setZoneVisible("hw")}
+                addAriaLabel="Dodaj wyjście HW"
+                addTitle={
+                  canAddHw
+                    ? "Dodaj wyjście HW"
+                    : `Brak wolnych kanałów (max ${hwCap.maxChannelCount})`
+                }
+                onAdd={onAddHwOut}
+                addDisabled={!canAddHw}
+              />
               {zoneVis.hw ? (
                 <div className={styles.strips}>
                   {hwOuts.map((row) => {
@@ -501,16 +405,11 @@ export function MixerSurface({
             .filter(Boolean)
             .join(" ")}
         >
-          <div className={styles.zoneHead}>
-            <div className={styles.zoneHeadStart}>
-              <span className={styles.zoneTitle}>Master</span>
-              <ZoneEyeToggle
-                zoneLabel="Master"
-                visible={zoneVis.master}
-                onToggle={() => setZoneVisible("master")}
-              />
-            </div>
-          </div>
+          <MixerZoneHeader
+            title="Master"
+            visible={zoneVis.master}
+            onToggle={() => setZoneVisible("master")}
+          />
           {zoneVis.master ? (
             <div className={styles.masterRailStrips}>
               <ClickStrip
