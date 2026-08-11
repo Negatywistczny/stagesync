@@ -22,7 +22,7 @@ describe("syncLead", () => {
       defaultMeter: { numerator: 4, denominator: 4 },
       tempoMap: [{ id: "t0", startTicks: 0, bpm: 120 }],
       meterMap: [],
-      ppq: DEFAULT_PPQ,
+      ppq: 960 as const,
     };
     expect(ticksFromSyncLeadAlongMap(200, 0, project)).toBe(
       ticksFromSyncLeadMs(200, 120, DEFAULT_PPQ),

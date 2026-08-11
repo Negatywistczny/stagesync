@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import {
   deleteCueClip,
   pencilCueClick,
@@ -11,7 +11,7 @@ import {
 
 describe("cueEdit", () => {
   it("pencil inserts cue + label/delete", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilCueClick(p, 0, "Lights");
     expect(p.cue.clips).toHaveLength(1);
     expect(p.cue.clips[0]?.label).toBe("Lights");
@@ -26,7 +26,7 @@ describe("cueEdit", () => {
   });
 
   it("sets roles and alert priority", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilCueClick(p, 0, "Go");
     const id = p.cue.clips[0]!.id;
     p = setCueClipRoles(p, id, ["karaoke", "grid"]);
@@ -40,7 +40,7 @@ describe("cueEdit", () => {
   });
 
   it("overwrite creates -r remnant resolved via parent id", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       cue: {
@@ -65,7 +65,7 @@ describe("cueEdit", () => {
   });
 
   it("defaults label when remnant id has no resolvable parent", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       cue: {
@@ -88,13 +88,13 @@ describe("cueEdit", () => {
   });
 
   it("pencil with blank label defaults to Cue", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     p = pencilCueClick(p, 0, "   ");
     expect(p.cue.clips[0]!.label).toBe("Cue");
   });
 
   it("setCueClipSample attaches and clears sample", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       assets: [

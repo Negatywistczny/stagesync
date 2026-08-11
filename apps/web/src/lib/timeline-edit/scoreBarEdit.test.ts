@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed, ticksPerBar } from "@stagesync/shared";
+import { createProjectSeed, ticksPerBar } from "@stagesync/shared";
 import {
   anchorBarWidthTicks,
   canEditKotwice,
@@ -14,7 +14,7 @@ import {
 
 describe("ticksFromLogicBar / logicBarFromTicks meter walk", () => {
   it("round-trips with constant 4/4", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     for (const bar of [1, 2, 5, 17]) {
       const ticks = ticksFromLogicBar(p, bar);
       expect(logicBarFromTicks(p, ticks)).toBe(bar);
@@ -22,14 +22,14 @@ describe("ticksFromLogicBar / logicBarFromTicks meter walk", () => {
   });
 
   it("logicBarFromTicks guards non-finite / non-positive", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     expect(logicBarFromTicks(p, NaN)).toBe(1);
     expect(logicBarFromTicks(p, 0)).toBe(1);
     expect(logicBarFromTicks(p, -10)).toBe(1);
   });
 
   it("accounts for mid-song meter change", () => {
-    const base = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const base = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     const bar4_4 = ticksPerBar(base.defaultMeter, base.ppq);
     const p = {
       ...base,
@@ -57,14 +57,14 @@ describe("ticksFromLogicBar / logicBarFromTicks meter walk", () => {
 
 describe("scoreAnchors / canEditKotwice / CRUD", () => {
   it("scoreAnchors normalizes missing map", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     expect(
       scoreAnchors({ ...p, scoreBarMap: undefined } as unknown as typeof p),
     ).toEqual([]);
   });
 
   it("canEditKotwice requires musicxml or existing anchors", () => {
-    const base = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const base = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     expect(canEditKotwice(base)).toBe(false);
     expect(
       canEditKotwice({
@@ -90,7 +90,7 @@ describe("scoreAnchors / canEditKotwice / CRUD", () => {
   });
 
   it("insertScoreAnchor inserts, skips duplicate bar, no-ops without edit rights", () => {
-    const base = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const base = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     expect(insertScoreAnchor(base, 0, 1)).toBe(base);
 
     const withXml = {
@@ -125,7 +125,7 @@ describe("scoreAnchors / canEditKotwice / CRUD", () => {
   });
 
   it("updateScoreAnchor patches fields and delete removes", () => {
-    const base = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const base = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     const p = {
       ...base,
       scoreBarMap: {
@@ -153,14 +153,14 @@ describe("scoreAnchors / canEditKotwice / CRUD", () => {
   });
 
   it("anchorBarWidthTicks uses meter at bar start", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     expect(anchorBarWidthTicks(p, 1)).toBe(ticksPerBar(p.defaultMeter, p.ppq));
   });
 });
 
 describe("moveScoreAnchor (#477)", () => {
   it("moves an anchor to a free logic bar", () => {
-    const base = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const base = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     const p = {
       ...base,
       scoreBarMap: {
@@ -179,7 +179,7 @@ describe("moveScoreAnchor (#477)", () => {
   });
 
   it("no-ops when missing, same bar, or occupied", () => {
-    const base = createProjectV5Seed("p", "S", "2026-07-22T00:00:00.000Z");
+    const base = createProjectSeed("p", "S", "2026-07-22T00:00:00.000Z");
     const p = {
       ...base,
       scoreBarMap: {

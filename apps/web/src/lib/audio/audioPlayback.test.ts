@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed, projectEndTicks } from "@stagesync/shared";
+import { createProjectSeed, projectEndTicks } from "@stagesync/shared";
 import {
   allowAudioPlayback,
   assetFileUrl,
@@ -90,7 +90,7 @@ function mockAudioContext(
 }
 
 function projectWithClipUnderPlayhead() {
-  const project = createProjectV5Seed("p1", "Test", "2026-07-22T00:00:00.000Z");
+  const project = createProjectSeed("p1", "Test", "2026-07-22T00:00:00.000Z");
   return {
     ...project,
     assets: [
@@ -151,11 +151,7 @@ describe("audioPlayback helpers", () => {
     suppressAudioPlayback();
     expect(getAudioPlaybackDebugState().suppressed).toBe(true);
 
-    const project = createProjectV5Seed(
-      "p1",
-      "Test",
-      "2026-07-22T00:00:00.000Z",
-    );
+    const project = createProjectSeed("p1", "Test", "2026-07-22T00:00:00.000Z");
     syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
 
     expect(getAudioPlaybackDebugState().activeCount).toBe(0);
@@ -307,11 +303,7 @@ describe("audioPlayback helpers", () => {
       }),
     });
 
-    const project = createProjectV5Seed(
-      "p1",
-      "Test",
-      "2026-07-22T00:00:00.000Z",
-    );
+    const project = createProjectSeed("p1", "Test", "2026-07-22T00:00:00.000Z");
     syncAudioPlayback(
       "p1",
       { project, playing: false, displayTicks: 480 },
@@ -1127,7 +1119,7 @@ describe("audioPlayback helpers", () => {
       })),
     );
 
-    let project = createProjectV5Seed("p1", "Cue", "2026-07-25T00:00:00.000Z");
+    let project = createProjectSeed("p1", "Cue", "2026-07-25T00:00:00.000Z");
     project = {
       ...project,
       assets: [
@@ -1268,7 +1260,7 @@ describe("audioPlayback helpers", () => {
         arrayBuffer: async () => new ArrayBuffer(8),
       })),
     );
-    let project = createProjectV5Seed("p1", "HW", "2026-07-25T00:00:00.000Z");
+    let project = createProjectSeed("p1", "HW", "2026-07-25T00:00:00.000Z");
     project = {
       ...project,
       audioHardwareOutputs: [
@@ -1350,7 +1342,7 @@ describe("audioPlayback helpers", () => {
       })),
     );
 
-    let project = createProjectV5Seed("p1", "Cue", "2026-07-25T00:00:00.000Z");
+    let project = createProjectSeed("p1", "Cue", "2026-07-25T00:00:00.000Z");
     project = {
       ...project,
       assets: [

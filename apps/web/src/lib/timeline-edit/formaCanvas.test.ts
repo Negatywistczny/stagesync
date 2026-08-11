@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed, DEFAULT_SNAP_MODE } from "@stagesync/shared";
+import { createProjectSeed, DEFAULT_SNAP_MODE } from "@stagesync/shared";
 import {
   RULER_BEAT_TICKS_MIN_PX,
   addPencilSection,
@@ -23,7 +23,7 @@ import {
 } from "./formaCanvas.js";
 
 describe("formaCanvas", () => {
-  const project = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
+  const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
 
   it("computeFormaViewSpan includes countdown start and trailing padding", () => {
     const span = computeFormaViewSpan(project.forma.clips);

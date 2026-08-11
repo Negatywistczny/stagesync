@@ -1,4 +1,4 @@
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import { describe, expect, it } from "vitest";
 import { catalogSongBadges, songInspectorMeta } from "./songCatalogBadges.js";
 
@@ -42,7 +42,7 @@ describe("catalogSongBadges", () => {
 
 describe("songInspectorMeta", () => {
   it("reads tempo / key / duration from project maps", () => {
-    const project = createProjectV5Seed(
+    const project = createProjectSeed(
       "00000000-0000-4000-8000-000000000001",
       "Song",
       "2026-07-25T00:00:00.000Z",

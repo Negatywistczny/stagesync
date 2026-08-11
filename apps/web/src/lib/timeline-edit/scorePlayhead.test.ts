@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import {
   clampScoreZoom,
   SCORE_ZOOM_DEFAULT,
@@ -16,7 +16,7 @@ const map = {
 
 function projectWithMap() {
   return {
-    ...createProjectV5Seed("p", "Song", "2026-07-22T00:00:00.000Z"),
+    ...createProjectSeed("p", "Song", "2026-07-22T00:00:00.000Z"),
     scoreBarMap: map,
   };
 }

@@ -304,7 +304,7 @@ describe("SystemView APK download aria", () => {
       applyAvailable: false,
       updateMode: "manual",
       error: null,
-    });
+    } as any);
 
     render(
       <MemoryRouter>

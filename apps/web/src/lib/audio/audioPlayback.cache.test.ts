@@ -11,7 +11,7 @@ import {
   isAudioAssetDecodeFailed,
   shouldSoftStopPastSongEnd,
 } from "./audioPlayback.js";
-import { createProjectV5Seed, projectEndTicks } from "@stagesync/shared";
+import { createProjectSeed, projectEndTicks } from "@stagesync/shared";
 
 describe("audioPlayback cache helpers (split)", () => {
   afterEach(() => {
@@ -60,7 +60,7 @@ describe("audioPlayback cache helpers (split)", () => {
   });
 
   it("shouldSoftStopPastSongEnd respects loopEnabled", () => {
-    const project = createProjectV5Seed({ name: "soft-stop" });
+    const project = createProjectSeed({ name: "soft-stop" });
     const end = projectEndTicks(project);
     expect(
       shouldSoftStopPastSongEnd({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import {
   clampBeatForProject,
   clipStartBarBeat,
@@ -10,7 +10,11 @@ import {
 } from "./clipStartEdit.js";
 
 describe("clipStartEdit", () => {
-  const project = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+  const project = createProjectSeed(
+    "p",
+    "S",
+    "2026-07-23T00:00:00.000Z",
+  ) as any;
 
   it("converts ticks ↔ display bar.beat", () => {
     expect(clipStartBarBeat(project, 0)).toEqual({ bar: 1, beat: 1 });

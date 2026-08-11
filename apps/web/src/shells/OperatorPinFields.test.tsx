@@ -13,7 +13,7 @@ import { OperatorPinFields } from "./OperatorPinFields.js";
 
 const fetchRequired = vi.fn(async () => true);
 const getStored = vi.fn(() => null as string | null);
-const unlock = vi.fn(async () => undefined);
+const unlock = vi.fn(async (_pin: string) => undefined);
 const clearStored = vi.fn();
 
 vi.mock("@lib/shell-operator/operatorPin.js", () => ({

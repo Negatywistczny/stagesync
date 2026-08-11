@@ -124,7 +124,7 @@ function renderMixer(
       gainDb: 0,
       pan: 0,
       channelMode: "stereo",
-      output: { type: "master" },
+      output: { kind: "master" },
     },
   ];
   return render(

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import { buildFormaLiveContext } from "./clientForma.js";
 import { buildBarCellsForClip } from "@lib/timeline/clientBarCells.js";
 
 describe("clientForma / bar cells", () => {
-  const project = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
+  const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
 
   it("buildBarCellsForClip marks past/current within Intro", () => {
     // Intro: 0..7680 (2 bars @ 4/4 PPQ 960)

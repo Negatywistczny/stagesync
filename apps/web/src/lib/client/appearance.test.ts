@@ -58,6 +58,17 @@ describe("appearance", () => {
     expect(readAppearance()).toEqual({ profile: "booth" });
   });
 
+  it("ignores legacy localStorage aliases without migrating them", () => {
+    store.set("stagesync-appearance-profile", "dark");
+    expect(readAppearance()).toEqual({ profile: "booth" });
+    store.set("stagesync-appearance-profile", "light-high");
+    expect(readAppearance()).toEqual({ profile: "booth" });
+    expect(store.get("stagesync-appearance-profile")).toBe("light-high");
+
+    setAppearance({ profile: "midnight" });
+    expect(store.get("stagesync-appearance-profile")).toBe("midnight");
+  });
+
   it("setAppearance persists and applies DOM attrs", () => {
     const next = setAppearance({ profile: "daylight" });
     expect(next).toEqual({ profile: "daylight" });

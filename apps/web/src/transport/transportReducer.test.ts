@@ -42,7 +42,7 @@ describe("transportReducer", () => {
       defaultMeter: { numerator: 4, denominator: 4 },
       tempoMap: [{ id: "t0", startTicks: 0, bpm: 100 }],
       meterMap: [],
-      ppq: state.ppq,
+      ppq: 960 as const,
     };
     expect(toTransportAnchor(state, maps).tempoMaps).toBe(maps);
     expect(toTransportAnchor(state, null).tempoMaps).toBeUndefined();

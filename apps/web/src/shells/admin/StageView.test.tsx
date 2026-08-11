@@ -15,7 +15,7 @@ vi.mock("@lib/shell-operator/setlistApi.js", () => ({
     clientEditEnabled: false,
   })),
   fetchStageClients: vi.fn(async () => []),
-  fetchStageMessages: (...args: unknown[]) => fetchStageMessages(...args),
+  fetchStageMessages: () => fetchStageMessages(),
   patchLiveDesk: vi.fn(async () => ({
     transpositionSemitones: 0,
     syncLeadMs: 0,

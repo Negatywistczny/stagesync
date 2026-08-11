@@ -249,6 +249,63 @@ describe("scoreOsmd", () => {
       expect(cursorEl.style.zIndex).toBe("5");
     });
 
+    it("goToScoreBar skips reset when advancing forward from current measure", () => {
+      const nextMeasure = vi.fn();
+      let measureIndex = 1;
+      const reset = vi.fn(() => {
+        measureIndex = 0;
+      });
+      const osmd = makeOsmd();
+      osmd.Sheet = { SourceMeasures: [{}, {}, {}, {}] };
+      const iterator = {
+        get CurrentMeasureIndex() {
+          return measureIndex;
+        },
+        EndReached: false,
+      };
+      osmd.cursors = [
+        {
+          reset,
+          show: vi.fn(),
+          nextMeasure: () => {
+            nextMeasure();
+            measureIndex += 1;
+          },
+          update: vi.fn(),
+          adjustToBackgroundColor: vi.fn(),
+          cursorElement: document.createElement("div"),
+          iterator,
+        },
+      ];
+
+      goToScoreBar(osmd as never, 3);
+      expect(reset).not.toHaveBeenCalled();
+      expect(nextMeasure).toHaveBeenCalledTimes(1);
+      expect(measureIndex).toBe(2);
+    });
+
+    it("goToScoreBar no-ops walk when already on target measure", () => {
+      const nextMeasure = vi.fn();
+      const reset = vi.fn();
+      const osmd = makeOsmd();
+      osmd.Sheet = { SourceMeasures: [{}, {}, {}] };
+      osmd.cursors = [
+        {
+          reset,
+          show: vi.fn(),
+          nextMeasure,
+          update: vi.fn(),
+          adjustToBackgroundColor: vi.fn(),
+          cursorElement: document.createElement("div"),
+          iterator: { CurrentMeasureIndex: 1, EndReached: false },
+        },
+      ];
+
+      goToScoreBar(osmd as never, 2);
+      expect(reset).not.toHaveBeenCalled();
+      expect(nextMeasure).not.toHaveBeenCalled();
+    });
+
     it("goToScoreBar follows CurrentMeasureIndex across repeat jumps (not step count)", () => {
       const nextMeasure = vi.fn();
       // Sheet indices 0..3; musical path jumps back after index 2 (volta-like).

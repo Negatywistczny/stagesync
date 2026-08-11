@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import { applyTapBpm, createTapTempoState, recordTap } from "./tapTempo.js";
 
 describe("tapTempo", () => {
@@ -19,7 +19,7 @@ describe("tapTempo", () => {
   });
 
   it("applyTapBpm updates existing event or inserts sorted", () => {
-    const project = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+    const project = createProjectSeed("p", "S", "2026-07-23T00:00:00.000Z");
     const updated = applyTapBpm(project, 0, 100);
     expect(updated.tempoMap).toHaveLength(1);
     expect(updated.tempoMap[0]!.bpm).toBe(100);
@@ -37,7 +37,7 @@ describe("tapTempo", () => {
   });
 
   it("updates sole tempo event near song start via abs-diff < 1", () => {
-    const project = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+    const project = createProjectSeed("p", "S", "2026-07-23T00:00:00.000Z");
     // seed tempo at 0; tap at fractional near 0 with trunc? atTicks usually int
     // Force single event slightly off: mutate startTicks to 0, tap atTicks 0 already covered.
     // Use startTicks 0 and atTicks that is within <1 after Math — use 0.4 via as any path:

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import {
   canRedo,
   canUndo,
@@ -19,7 +19,7 @@ const sel = (id: string): ClipSelection => ({
 
 describe("draftHistory", () => {
   it("undo/redo and keep stack after save sync", () => {
-    const a = createProjectV5Seed("p", "A", "2026-07-20T12:00:00.000Z");
+    const a = createProjectSeed("p", "A", "2026-07-20T12:00:00.000Z");
     const b = { ...a, name: "B" };
     const c = { ...a, name: "C" };
     let h = createDraftHistory(a, sel("a"));
@@ -37,7 +37,7 @@ describe("draftHistory", () => {
   });
 
   it("redo after undo restores selection", () => {
-    const a = createProjectV5Seed("p", "A", "2026-07-20T12:00:00.000Z");
+    const a = createProjectSeed("p", "A", "2026-07-20T12:00:00.000Z");
     const b = { ...a, name: "B" };
     let h = pushDraftHistory(createDraftHistory(a, sel("a")), b, sel("b"));
     h = undoDraft(h);
@@ -46,7 +46,7 @@ describe("draftHistory", () => {
   });
 
   it("no-ops and trims stacks at maxDepth", () => {
-    const a = createProjectV5Seed("p", "A", "2026-07-20T12:00:00.000Z");
+    const a = createProjectSeed("p", "A", "2026-07-20T12:00:00.000Z");
     let h = createDraftHistory(a);
     expect(pushDraftHistory(h, a)).toBe(h);
     expect(undoDraft(h)).toBe(h);

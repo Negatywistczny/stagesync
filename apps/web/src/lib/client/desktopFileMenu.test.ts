@@ -13,7 +13,7 @@ import {
 } from "./desktopFileMenu.js";
 import * as libraryApi from "@lib/shell-operator/libraryApi.js";
 import * as lastTimeline from "./lastTimelineProject.js";
-import { createProjectV5Seed, createProjectV6Seed } from "@stagesync/shared";
+import { createProjectSeed, createProjectV6Seed } from "@stagesync/shared";
 
 vi.mock("@lib/shell-operator/libraryApi.js");
 vi.mock("./lastTimelineProject.js");
@@ -76,13 +76,9 @@ describe("desktopFileMenu", () => {
   });
 
   it("saveProjectAs clones with optimistic updatedAt and new midiProgramId", async () => {
-    const source = createProjectV5Seed(
-      "src",
-      "Old",
-      "2026-01-01T00:00:00.000Z",
-    );
+    const source = createProjectSeed("src", "Old", "2026-01-01T00:00:00.000Z");
     source.midiProgramId = 7;
-    const shell = createProjectV5Seed("new", "New", "2026-02-01T00:00:00.000Z");
+    const shell = createProjectSeed("new", "New", "2026-02-01T00:00:00.000Z");
     shell.midiProgramId = 9;
 
     vi.mocked(libraryApi.fetchProject).mockResolvedValue(source);
@@ -106,7 +102,7 @@ describe("desktopFileMenu", () => {
 
   it("saveProjectAs rejects empty name", async () => {
     vi.mocked(libraryApi.fetchProject).mockResolvedValue(
-      createProjectV5Seed("src", "Old", "2026-01-01T00:00:00.000Z"),
+      createProjectSeed("src", "Old", "2026-01-01T00:00:00.000Z"),
     );
     await expect(saveProjectAs("src", "   ")).rejects.toThrow(/wymagana/i);
   });

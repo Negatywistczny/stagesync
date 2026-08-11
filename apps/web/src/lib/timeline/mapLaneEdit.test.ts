@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import {
   deleteMapEvent,
   deleteMapEvents,
@@ -17,7 +17,7 @@ import {
 } from "./mapLaneEdit.js";
 
 function seed() {
-  return createProjectV5Seed("p1", "Song", "2026-07-20T12:00:00.000Z");
+  return createProjectSeed("p1", "Song", "2026-07-20T12:00:00.000Z") as any;
 }
 
 describe("mapLaneEdit", () => {

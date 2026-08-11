@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed, type TransportLoop } from "@stagesync/shared";
+import { createProjectSeed, type TransportLoop } from "@stagesync/shared";
 import {
   moveLoopRange,
   snapLoopRange,
@@ -37,11 +37,7 @@ describe("timelineLocator", () => {
   });
 
   it("snapLoopRange snaps to beat grid (v4 quantizeAbsBeat)", () => {
-    const project = createProjectV5Seed(
-      "id",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
     const range = snapLoopRange(project, 500, 5000);
     expect(range.startTicks).toBe(960);
     expect(range.endTicks).toBe(4800);
@@ -55,11 +51,7 @@ describe("timelineLocator", () => {
   });
 
   it("snapMovedLoopRange snaps start and keeps duration", () => {
-    const project = createProjectV5Seed(
-      "id",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
     const range = snapMovedLoopRange(
       project,
       { startTicks: 1920, endTicks: 5760 },
@@ -107,7 +99,7 @@ describe("timelineLocator", () => {
   });
 
   it("snapLoopRange expands collapsed drag and falls back to ppq", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-23T00:00:00.000Z") as any;
     const collapsed = snapLoopRange(p, 0, 0, "bar");
     expect(collapsed.endTicks).toBeGreaterThan(collapsed.startTicks);
     const off = snapLoopRange(p, 100, 100, "off");
@@ -115,7 +107,7 @@ describe("timelineLocator", () => {
   });
 
   it("snapMovedLoopRange off preserves raw move", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-23T00:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-23T00:00:00.000Z") as any;
     const moved = snapMovedLoopRange(
       p,
       { startTicks: 0, endTicks: 960 },

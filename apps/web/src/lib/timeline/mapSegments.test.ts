@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "@stagesync/shared";
+import { createProjectSeed } from "@stagesync/shared";
 import { computeFormaViewSpan } from "@lib/timeline-edit/formaCanvas.js";
 import {
   keyMapSegments,
@@ -10,11 +10,7 @@ import {
 
 describe("mapSegments", () => {
   it("tempoMapSegments covers span with default when map empty at start", () => {
-    const project = createProjectV5Seed(
-      "id",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
     const span = computeFormaViewSpan(project.forma.clips);
     const segments = tempoMapSegments(project, span);
     expect(segments.length).toBeGreaterThan(0);
@@ -23,7 +19,7 @@ describe("mapSegments", () => {
 
   it("tempoMapSegments returns synthetic default when tempoMap empty", () => {
     const project = {
-      ...createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z"),
+      ...(createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z") as any),
       tempoMap: [],
     };
     expect(tempoMapSegments(project, { start: 0, end: 100 })).toEqual([
@@ -40,7 +36,7 @@ describe("mapSegments", () => {
 
   it("tempoMapSegments skips events wholly outside span", () => {
     const project = {
-      ...createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z"),
+      ...(createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z") as any),
       tempoMap: [
         { id: "early", startTicks: -1000, bpm: 90 },
         { id: "late", startTicks: 10_000, bpm: 140 },
@@ -66,11 +62,7 @@ describe("mapSegments", () => {
   });
 
   it("meterMapSegments splits at meter change", () => {
-    const project = createProjectV5Seed(
-      "id",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
     project.meterMap = [
       { id: "m0", startTicks: 0, numerator: 4, denominator: 4 },
       { id: "m1", startTicks: 7680, numerator: 3, denominator: 4 },
@@ -85,7 +77,11 @@ describe("mapSegments", () => {
   });
 
   it("meterMapSegments default fill and leading gap", () => {
-    const base = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
+    const base = createProjectSeed(
+      "id",
+      "Demo",
+      "2026-07-20T00:00:00.000Z",
+    ) as any;
     const empty = { ...base, meterMap: [] };
     expect(meterMapSegments(empty, { start: 0, end: 50 })).toEqual([
       {
@@ -112,11 +108,7 @@ describe("mapSegments", () => {
   });
 
   it("tempoMapSegments fills leading gap before first map event", () => {
-    const project = createProjectV5Seed(
-      "id",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
     project.defaultBpm = 100;
     project.tempoMap = [{ id: "t1", startTicks: 3840, bpm: 140 }];
     const span = { start: 0, end: 7680 };
@@ -137,11 +129,7 @@ describe("mapSegments", () => {
   });
 
   it("keyMapSegments uses formatKey and empty when no keys", () => {
-    const project = createProjectV5Seed(
-      "id",
-      "Demo",
-      "2026-07-20T00:00:00.000Z",
-    );
+    const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
     expect(
       keyMapSegments(
         { ...project, keyMap: undefined } as unknown as typeof project,

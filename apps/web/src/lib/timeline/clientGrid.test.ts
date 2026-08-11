@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  createProjectV5Seed,
+  createProjectSeed,
   DEFAULT_PPQ,
   type Project,
 } from "@stagesync/shared";
@@ -25,7 +25,7 @@ const BAR = 4 * DEFAULT_PPQ; // 3840 in 4/4
 
 describe("clientGrid", () => {
   it("resolves current akord at ticks", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z") as any;
     p = pencilAkordyClick(p, 0, "Dm");
     const ctx = buildGridLiveContext(p, 100);
     expect(ctx.current?.symbol).toBe("Dm");
@@ -33,7 +33,7 @@ describe("clientGrid", () => {
   });
 
   it("shows synthetic CD digits when playhead is in Countdown", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z") as any;
     const ctx = buildGridLiveContext(p, -5000);
     expect(ctx.emptyReason).toBeNull();
     expect(ctx.current?.symbol).toBe("2");
@@ -66,7 +66,11 @@ describe("clientGrid", () => {
   });
 
   it("buildGridLiveContext exposes cycle cells for section chords", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     // Intro is 2 bars (0..7680). Put Am then F.
     p = {
       ...p,
@@ -100,7 +104,11 @@ describe("clientGrid", () => {
   it("scopes cycle to active Forma subsection only", () => {
     // 12-bar Verse with 4-bar subsections @ 4·BAR and 8·BAR.
     const verseLen = 12 * BAR;
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     p = {
       ...p,
       forma: {
@@ -167,7 +175,11 @@ describe("clientGrid", () => {
 
   it("exposes nextCycle for upcoming subsection (2-line carousel)", () => {
     const verseLen = 12 * BAR;
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     p = {
       ...p,
       forma: {
@@ -231,7 +243,11 @@ describe("clientGrid", () => {
   });
 
   it("heroNext points to next step within subsection cycle", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     p = {
       ...p,
       forma: {
@@ -276,7 +292,11 @@ describe("clientGrid", () => {
   });
 
   it("countdownPreview collapses current and previews first section", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     p = {
       ...p,
       akordy: {
@@ -360,7 +380,11 @@ describe("clientGrid", () => {
   });
 
   it("chordStepsForTickRange uses clip onsets (not only bar starts)", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     const half = BAR / 2;
     p = {
       ...p,
@@ -396,14 +420,18 @@ describe("clientGrid", () => {
 
   it("buildGridLiveContext empty project and no chords", () => {
     expect(buildGridLiveContext(null, 0).emptyReason).toMatch(/Oczekiwanie/);
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z") as any;
     expect(
       buildGridLiveContext({ ...p, akordy: { clips: [] } }, 0).emptyReason,
     ).toMatch(/Brak akordów/);
   });
 
   it("resolveNextPhraseBand crosses into next section subsections", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     const intro = p.forma.clips.find((c) => c.name === "Intro")!;
     const verse = {
       id: "forma-verse",
@@ -443,7 +471,11 @@ describe("clientGrid", () => {
   });
 
   it("carouselKey clip fallback without sectionInfo", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     // Only chords, wipe forma sections after countdown so sectionInfo may be null mid-song
     p = {
       ...p,
@@ -466,7 +498,11 @@ describe("clientGrid", () => {
   });
 
   it("resolveNextPhraseBand without countdown uses displayTicks as after", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     const intro = p.forma.clips.find((c) => c.kind === "section")!;
     p = {
       ...p,
@@ -490,7 +526,11 @@ describe("clientGrid", () => {
   });
 
   it("buildGridLiveContext hero dash and empty carouselKey in gaps", () => {
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     p = {
       ...p,
       forma: { clips: p.forma.clips.filter((c) => c.kind === "countdown") },
@@ -508,7 +548,11 @@ describe("clientGrid", () => {
 
   it("chordStepsForTickRange works when bar map cannot walk the range", () => {
     const far = 20_000_000;
-    let p: Project = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p: Project = createProjectSeed(
+      "p",
+      "S",
+      "2026-07-20T12:00:00.000Z",
+    ) as any;
     p = {
       ...p,
       forma: {
@@ -535,11 +579,7 @@ describe("clientGrid", () => {
   });
 
   it("sectionBarChords barIndex past last bar uses fallthrough", () => {
-    const p: Project = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    const p: Project = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     const intro = p.forma.clips.find((c) => c.kind === "section")!;
     // Playhead just inside exclusive end-1 so still in section; last bar index fallthrough
     // when displayTicks equals a bar end inside the subsection range.
@@ -548,7 +588,7 @@ describe("clientGrid", () => {
   });
 
   it("mergeAkordyWithCountdownDigits synth inside CD and strips legacy", () => {
-    const p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    const p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z") as any;
     const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
     const inside = mergeAkordyWithCountdownDigits(p, cd.startTicks);
     expect(
