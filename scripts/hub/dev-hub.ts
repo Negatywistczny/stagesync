@@ -18,7 +18,7 @@ import {
   runFullAudit,
 } from "./gate.js";
 import { runDoctorScan, managePortsAndZombies } from "./doctor.js";
-import { showLANInfo } from "./network.js";
+import { showLANInfo, menuNetwork } from "./network.js";
 import { menuRunAndDev } from "./menus/menu-run.js";
 import { menuTesting } from "./menus/menu-testing.js";
 import { menuRelease } from "./menus/menu-release.js";

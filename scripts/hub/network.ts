@@ -4,7 +4,8 @@
 
 import * as os from "node:os";
 import qrcode from "qrcode-terminal";
-import { clack, pc } from "./utils.js";
+import { clack, pc, clearTerminalScreen, waitReturn } from "./utils.js";
+import { managePortsAndZombies } from "./doctor.js";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -87,3 +88,26 @@ export async function showLANInfo() {
   console.log(`   ${pc.underline(pc.cyan(clientURL))}\n`);
   qrcode.generate(clientURL, { small: true });
 }
+
+export async function menuNetwork() {
+  clearTerminalScreen();
+  const choice = await clack.select({
+    message: "Sieć & Diagnostyka LAN:",
+    options: [
+      { value: "ip", label: "1. 📱  Podgląd LAN IP + Kod QR (z wyborem NIC)" },
+      { value: "ports", label: "2. 🔌  Port Guard & Kill-Zombies" },
+      { value: "back", label: "0. ↩️   Powrót" },
+    ],
+  });
+
+  if (clack.isCancel(choice) || choice === "back") return;
+
+  if (choice === "ip") {
+    await showLANInfo();
+    await waitReturn();
+  } else if (choice === "ports") {
+    await managePortsAndZombies();
+    await waitReturn();
+  }
+}
+
