@@ -28,7 +28,11 @@ export type UseTimelineMapPointerHandlersOptions = {
   selectedMapLane: MapLaneId | null;
   selectedMapIds: string[];
   primaryMapId: string | null;
-  setMapSelection: (lane: MapLaneId, ids: string[], primaryId: string | null) => void;
+  setMapSelection: (
+    lane: MapLaneId,
+    ids: string[],
+    primaryId: string | null,
+  ) => void;
   setPrimaryMapId: (id: string | null) => void;
   clearMapSelection: () => void;
   openMapEdit: (lane: MapLaneId, ticks: number) => void;
@@ -137,7 +141,8 @@ export function useTimelineMapPointerHandlers({
       e.stopPropagation();
 
       if (tool === "eraser") {
-        if (seg.eventId.endsWith("-default") || seg.eventStartTicks === 0) return;
+        if (seg.eventId.endsWith("-default") || seg.eventStartTicks === 0)
+          return;
         const ids =
           selectedMapLane === lane &&
           selectedMapIds.includes(seg.eventId) &&
@@ -201,7 +206,12 @@ export function useTimelineMapPointerHandlers({
         return;
       }
 
-      if (e.shiftKey && !isDefault && selectedMapLane === lane && primaryMapId) {
+      if (
+        e.shiftKey &&
+        !isDefault &&
+        selectedMapLane === lane &&
+        primaryMapId
+      ) {
         const ordered = mapEventIds(draftProject, lane);
         const a = ordered.indexOf(primaryMapId);
         const b = ordered.indexOf(seg.eventId);

@@ -164,6 +164,7 @@ import { useTimelineWandTool } from "./hooks/useTimelineWandTool.js";
 import { useTimelineMarquee } from "./hooks/useTimelineMarquee.js";
 import { useTimelineRulerGestures } from "./hooks/useTimelineRulerGestures.js";
 import { useTimelineMapPointerHandlers } from "./hooks/useTimelineMapPointerHandlers.js";
+import { useTimelineFormaGestures } from "./hooks/useTimelineFormaGestures.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -617,8 +618,6 @@ export function TimelineShell() {
   const ZOOM_H_MIN = PREFS_ZOOM_H_MIN;
   const ZOOM_H_MAX = PREFS_ZOOM_H_MAX;
   const ZOOM_V_STEP = 4;
-  const ZOOM_V_MIN = MIN_LANE_PX;
-  const ZOOM_V_MAX = MAX_LANE_PX;
 
   /** Phone = read/preview surface — no edit chrome / inspector (v4 mobile RO). */
   const isMobilePreview = touchTier === "mobile";
@@ -634,18 +633,6 @@ export function TimelineShell() {
   );
   const [touchAlertOpen, setTouchAlertOpen] = useState(false);
 
-  const loopDragRef = useRef<{
-    pointerId: number;
-    originTicks: number;
-    originClientX: number;
-    /**
-     * Logic-style split ruler: top lane creates/moves cycle; bottom + locator
-     * scrub playhead only.
-     */
-    source: "ruler-loop" | "ruler-beat" | "locator";
-    kind: "seek" | "create" | "move";
-    moveOriginRange?: LoopRange;
-  } | null>(null);
 
 
   const [primaryMapId, setPrimaryMapId] = useState<string | null>(null);
@@ -674,7 +661,6 @@ export function TimelineShell() {
     draftHistory,
     setDraftHistory,
     loading,
-    setLoading,
     savePending,
     setSavePending,
     loadError,
@@ -741,7 +727,6 @@ export function TimelineShell() {
     keyEditOpen,
     setKeyEditOpen,
     mapEditTicks,
-    setMapEditTicks,
     openMapEdit,
   } = useTimelineMapEdits({ draftProject, commitDraft });
 
@@ -760,13 +745,10 @@ export function TimelineShell() {
     setSelectedSubsectionIdx,
     trackSelection,
     setTrackSelection,
-    trackSelectionRef,
     selectedBusId,
     setSelectedBusId,
-    selectedBusIdRef,
     selectedHwOutputId,
     setSelectedHwOutputId,
-    selectedHwOutputIdRef,
     clipboardRef,
     selectAllClips,
     deleteSelectedFormaClip,
@@ -842,22 +824,11 @@ export function TimelineShell() {
     currentX: number;
     currentY: number;
   } | null>(null);
-  /** Touch + Pointer tool: track tap (locator) without starting marquee; drag = native pan. */
-  const touchCanvasNavRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-  } | null>(null);
   const [canvasNotice, setCanvasNotice] = useState<string | null>(null);
   const canvasNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const [gestureSession, setGestureSession] =
-    useState<FormaGestureSession | null>(null);
-  const [gesturePreview, setGesturePreview] =
-    useState<FormaGesturePreview | null>(null);
-  const gestureSessionRef = useRef<FormaGestureSession | null>(null);
-  const gesturePreviewRef = useRef<FormaGesturePreview | null>(null);
+
   /** Last viewSpan.start while CD length gesture keeps tick-0 anchored. */
   const cdSpanStartRef = useRef<number | null>(null);
   /** After CD-length gesture ends → jump viewport to timeline start. */
@@ -870,23 +841,17 @@ export function TimelineShell() {
     zoomH,
     setZoomH,
     zoomV,
-    setZoomV,
     zoomUi,
     setZoomUi,
     uiScale,
     effectiveZoomH,
     effectiveZoomV,
     dockWidthBase,
-    setDockWidthBase,
-    effectiveDockWidth,
     dockWidthResizing,
     laneHeights,
-    setLaneHeights,
     laneResizeTrackId,
     zoomHRef,
     zoomHBaseRef,
-    zoomVBaseRef,
-    uiScaleRef,
     applyAbsoluteZoomH,
     zoomHorizontalBySteps,
     setVerticalZoom,
@@ -1111,20 +1076,10 @@ export function TimelineShell() {
     zoomMax: ZOOM_H_MAX,
   });
 
-  useEffect(() => {
-    gestureSessionRef.current = gestureSession;
-  }, [gestureSession]);
-
-  useEffect(() => {
-    gesturePreviewRef.current = gesturePreview;
-  }, [gesturePreview]);
-
   const toggleInspectorPanel = useCallback(() => {
     if (touchTier === "mobile") return;
     setInspectorVisible((v) => !v);
   }, [touchTier]);
-
-
 
   const bindTrackRowsRef = useCallback((node: HTMLDivElement | null) => {
     trackRowsRoRef.current?.disconnect();
@@ -1212,6 +1167,139 @@ export function TimelineShell() {
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [toolsVisOpen]);
+
+  const rawTicksAtClientX = useCallback(
+    (clientX: number): number | null => {
+      const coordRoot = lanesCoordRef.current;
+      if (!coordRoot || !draftRef.current) return null;
+      return ticksFromPointer(
+        clientX,
+        coordRoot,
+        viewSpanRef.current,
+        barTicksRef.current,
+        zoomHRef.current,
+      );
+    },
+    [draftRef, zoomHRef],
+  );
+
+  const { heldZoom, heldZoomRef } = useTimelineKeyboardEvents({
+    keyHandlersRef,
+    deleteSelectedFormaClip,
+    openPreferences,
+    setHelpOpen,
+    projectId,
+    draftProject,
+  });
+
+  const {
+    loopDraft,
+    setLocatorFromClientX,
+    onLocatorPointerDown,
+    onLocatorPointerMove,
+    onLocatorPointerUp,
+    onLoopToggle,
+    nudgeLocator,
+  } = useTimelineRulerGestures({
+    draftRef,
+    draftProject,
+    state,
+    locatorTicks,
+    seek,
+    setLoop,
+    setLocatorTicks,
+    markerOverlayRef,
+    lanesCoordRef,
+    viewSpanRef,
+    barTicksRef,
+    zoomHRef,
+    rawTicksAtClientX,
+  });
+
+  const { marqueeBox, beginMarquee, beginTouchCanvasNav } = useTimelineMarquee({
+    toolRef,
+    heldZoomRef,
+    lanesCoordRef,
+    canvasScrollRef,
+    zoomHBaseRef,
+    setZoomH,
+    fitZoom,
+    clearClipSelection,
+    clearMapSelection,
+    setSelectedAnchorId,
+    setSongMetaOpen,
+    setSelectedSubsectionIdx,
+    setClipSelection,
+    setLocatorFromClientX,
+  });
+
+  const {
+    gestureSession,
+    gesturePreview,
+    gestureSessionRef,
+    beginContentPencilDraw,
+    onContentClipPointerDown,
+    onAudioClipPointerDown,
+    onFormaLanePointerDown,
+    onFormaLanePointerMove,
+    onFormaLanePointerUp,
+    onFormaClipPointerDown,
+    onFormaClipPointerMove,
+    onFormaClipPointerUp,
+  } = useTimelineFormaGestures({
+    draftRef,
+    draftProject,
+    commitDraft,
+    rawTicksAtClientX,
+    tool,
+    gesturePolicy,
+    setTouchAlertOpen,
+    clipSelection,
+    setClipSelection,
+    clearClipSelection,
+    selectLaneClip,
+    selectedClipId,
+    clearMapSelection,
+    setSelectedAnchorId,
+    setSongMetaOpen,
+    setSelectedSubsectionIdx,
+    deleteSelectedFormaClip,
+    beginMarquee,
+    beginTouchCanvasNav,
+    heldZoomRef,
+    zoomHRef,
+    effectiveZoomH,
+    soloAudioTrackIds,
+    setSoloAudioTrackIds,
+    soloHoldRef,
+    setCanvasNotice,
+    canvasNoticeTimerRef,
+  });
+
+  const {
+    mapDragPreview,
+    onMapLanePointerDown,
+    onMapSegmentPointerDown,
+    onMapSegmentPointerMove,
+    onMapSegmentPointerUp,
+  } = useTimelineMapPointerHandlers({
+    draftRef,
+    draftProject,
+    commitDraft,
+    rawTicksAtClientX,
+    tool,
+    heldZoomRef,
+    gesturePolicy,
+    setTouchAlertOpen,
+    selectedMapLane,
+    selectedMapIds,
+    primaryMapId,
+    setMapSelection,
+    setPrimaryMapId,
+    clearMapSelection,
+    openMapEdit,
+    beginTouchCanvasNav,
+  });
 
   const viewSpan = useMemo(() => {
     const clips = draftProject?.forma.clips ?? [];
@@ -1311,96 +1399,7 @@ export function TimelineShell() {
   );
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
 
-  const rawTicksAtClientX = useCallback((clientX: number): number | null => {
-    const coordRoot = lanesCoordRef.current;
-    if (!coordRoot || !draftRef.current) return null;
-    return ticksFromPointer(
-      clientX,
-      coordRoot,
-      viewSpanRef.current,
-      barTicksRef.current,
-      zoomHRef.current,
-    );
-  }, [draftRef, zoomHRef]);
 
-  const { heldZoom, heldZoomRef } = useTimelineKeyboardEvents({
-    keyHandlersRef,
-    deleteSelectedFormaClip,
-    openPreferences,
-    setHelpOpen,
-    projectId,
-    draftProject,
-  });
-
-  const {
-    loopDraft,
-    setLocatorFromClientX,
-    onLocatorPointerDown,
-    onLocatorPointerMove,
-    onLocatorPointerUp,
-    onLoopToggle,
-    nudgeLocator,
-  } = useTimelineRulerGestures({
-    draftRef,
-    draftProject,
-    state,
-    locatorTicks,
-    seek,
-    setLoop,
-    setLocatorTicks,
-    markerOverlayRef,
-    lanesCoordRef,
-    viewSpanRef,
-    barTicksRef,
-    zoomHRef,
-    rawTicksAtClientX,
-  });
-
-  const {
-    marqueeBox,
-    beginMarquee,
-    beginTouchCanvasNav,
-  } = useTimelineMarquee({
-    toolRef,
-    heldZoomRef,
-    lanesCoordRef,
-    canvasScrollRef,
-    zoomHBaseRef,
-    setZoomH,
-    fitZoom,
-    clearClipSelection,
-    clearMapSelection,
-    setSelectedAnchorId,
-    setSongMetaOpen,
-    setSelectedSubsectionIdx,
-    setClipSelection,
-    setLocatorFromClientX,
-  });
-
-  const {
-    mapDragPreview,
-    onMapLanePointerDown,
-    onMapSegmentPointerDown,
-    onMapSegmentPointerMove,
-    onMapSegmentPointerUp,
-  } = useTimelineMapPointerHandlers({
-    draftRef,
-    draftProject,
-    commitDraft,
-    rawTicksAtClientX,
-    tool,
-    heldZoomRef,
-    gesturePolicy,
-    setTouchAlertOpen,
-    selectedMapLane,
-    selectedMapIds,
-    primaryMapId,
-    setMapSelection,
-    setPrimaryMapId,
-    clearMapSelection,
-    openMapEdit,
-    beginTouchCanvasNav,
-  });
 
   const loopOn = Boolean(state.loop?.enabled);
   const loopRange = loopDraft ?? usableLoopRange(state.loop);
@@ -1689,8 +1688,6 @@ export function TimelineShell() {
     // audioAssetDecodeKey tracks which audio assets still need meta.
   }, [projectId, audioAssetDecodeKey, draftProject]);
 
-
-
   useEffect(() => {
     const canU = Boolean(draftHistory && canUndo(draftHistory));
     const canR = Boolean(draftHistory && canRedo(draftHistory));
@@ -1937,1010 +1934,6 @@ export function TimelineShell() {
     closeImportModals();
     setSongScreenOpen(false);
     setSongMetaOpen(false);
-  }
-
-  function beginFormaGesture(
-    session: FormaGestureSession,
-    preview: FormaGesturePreview,
-  ) {
-    gestureSessionRef.current = session;
-    gesturePreviewRef.current = preview;
-    setGestureSession(session);
-    setGesturePreview(preview);
-  }
-
-  function updateFormaGesturePreview(
-    rawTicks: number,
-    metaKey: boolean,
-    ctrlKey: boolean,
-    clientX?: number,
-    clientY?: number,
-  ) {
-    const session = gestureSessionRef.current;
-    const draft = draftRef.current;
-    if (!session || !draft) return;
-    const lane = session.lane ?? "forma";
-    if (isAudioLaneId(lane)) {
-      let targetAudioLane: AudioLaneId | undefined = undefined;
-      if (typeof window !== "undefined" && clientX != null && clientY != null) {
-        const elem = document.elementFromPoint(clientX, clientY);
-        const laneElem = elem?.closest("[data-audio-lane]");
-        if (laneElem) {
-          const laneId = laneElem.getAttribute("data-audio-lane");
-          if (laneId && isAudioLaneId(laneId)) {
-            targetAudioLane = laneId as AudioLaneId;
-          }
-        }
-      }
-      const preview = previewAudioFromSession(
-        draft,
-        session,
-        rawTicks,
-        metaKey,
-        ctrlKey,
-        clientY,
-        targetAudioLane,
-      );
-      gesturePreviewRef.current = preview;
-      setGesturePreview(preview);
-      return;
-    }
-    if (lane !== "forma") {
-      const preview = previewContentFromSession(
-        draft,
-        session,
-        rawTicks,
-        metaKey,
-        ctrlKey,
-        clientX,
-      );
-      gesturePreviewRef.current = preview;
-      setGesturePreview(preview);
-      return;
-    }
-    const n = draft.forma.clips.filter((c) => c.kind === "section").length + 1;
-    const preview = previewFromSession(
-      draft,
-      session,
-      rawTicks,
-      metaKey,
-      ctrlKey,
-      `Sekcja ${n}`,
-      clientX,
-      zoomHRef.current,
-    );
-    gesturePreviewRef.current = preview;
-    setGesturePreview(preview);
-  }
-
-  function endFormaGesture(metaKey: boolean, ctrlKey: boolean) {
-    const session = gestureSessionRef.current;
-    const preview = gesturePreviewRef.current;
-    const draft = draftRef.current;
-    gestureSessionRef.current = null;
-    gesturePreviewRef.current = null;
-    setGestureSession(null);
-    setGesturePreview(null);
-    if (!session || !preview || !draft) return;
-    const lane = session.lane ?? "forma";
-
-    // Alt/⌥+drag: copy at drop (v4 optionCopy) — originals stay.
-    if (
-      session.optionCopy &&
-      session.kind === "move" &&
-      session.clipId &&
-      preview.startTicks !== session.originClipStart
-    ) {
-      if (isAudioLaneId(lane)) return;
-      const moveIds = session.moveIds?.length
-        ? session.moveIds
-        : [session.clipId];
-      const idSet = new Set(moveIds);
-      const clips =
-        lane === "forma"
-          ? draft.forma.clips.filter(
-              (c) => idSet.has(c.id) && c.kind === "section",
-            )
-          : lane === "tekst"
-            ? draft.tekst.clips.filter((c) => idSet.has(c.id))
-            : lane === "akordy"
-              ? draft.akordy.clips.filter((c) => idSet.has(c.id))
-              : draft.cue.clips.filter((c) => idSet.has(c.id));
-      const board = buildClipboardFromClips(lane, clips);
-      if (!board) return;
-      const delta = preview.startTicks - session.originClipStart;
-      const result = pasteClipboardWithDelta(draft, board, delta);
-      if (!result) return;
-      commitDraft(result.project);
-      if (result.newIds.length) {
-        setClipSelection(
-          setSelection(
-            result.newIds.map((id) => ({ id, lane })),
-            result.newIds[0]!,
-          ),
-        );
-      }
-      return;
-    }
-
-    if (isAudioLaneId(lane)) {
-      const destLane = (
-        preview.targetLane && isAudioLaneId(preview.targetLane)
-          ? preview.targetLane
-          : lane
-      ) as AudioLaneId;
-      const next = commitAudioGesture(
-        draft,
-        lane as AudioLaneId,
-        session,
-        preview,
-        metaKey,
-        ctrlKey,
-        destLane,
-      );
-      commitDraft(next);
-      if (session.kind === "move" && session.moveIds?.length) {
-        setClipSelection((prev) =>
-          setSelection(
-            [
-              ...prev.items.filter(
-                (i) => i.lane !== lane && i.lane !== destLane,
-              ),
-              ...session.moveIds!.map((id) => ({ id, lane: destLane })),
-            ],
-            session.clipId,
-          ),
-        );
-        return;
-      }
-      if (session.clipId) selectLaneClip(destLane, session.clipId);
-      return;
-    }
-
-    if (lane !== "forma") {
-      const next = commitContentGesture(
-        draft,
-        lane,
-        session,
-        preview,
-        metaKey,
-        ctrlKey,
-      );
-      commitDraft(next);
-      if (session.kind === "pencil-draw") {
-        const clips =
-          lane === "tekst"
-            ? next.tekst.clips
-            : lane === "akordy"
-              ? next.akordy.clips
-              : next.cue.clips;
-        const created = clips.find(
-          (c) =>
-            c.startTicks === preview.startTicks &&
-            c.lengthTicks === preview.lengthTicks,
-        );
-        if (created?.id) selectLaneClip(lane, created.id);
-        else clearClipSelection();
-        return;
-      }
-      if (session.kind === "move" && session.moveIds?.length) {
-        setClipSelection((prev) =>
-          setSelection(
-            [
-              ...prev.items.filter((i) => i.lane !== lane),
-              ...session.moveIds!.map((id) => ({ id, lane })),
-            ],
-            session.clipId,
-          ),
-        );
-        return;
-      }
-      if (session.clipId) {
-        selectLaneClip(lane, session.clipId);
-      }
-      return;
-    }
-    const next = commitGesture(draft, session, preview, metaKey, ctrlKey);
-    commitDraft(next);
-    if (session.kind === "pencil-draw") {
-      const created = next.forma.clips.find(
-        (c) =>
-          c.kind === "section" &&
-          c.startTicks === preview.startTicks &&
-          c.lengthTicks === preview.lengthTicks,
-      );
-      if (created) {
-        selectLaneClip("forma", created.id);
-      }
-    } else if (session.kind === "subsection-boundary" && session.clipId) {
-      selectLaneClip("forma", session.clipId);
-      const clip = next.forma.clips.find((c) => c.id === session.clipId);
-      const ranges = subsectionRanges(
-        clip?.subsections,
-        clip?.lengthTicks ?? 1,
-      );
-      const maxIdx = Math.max(0, ranges.length - 1);
-      const countBefore =
-        session.originBoundaryRel != null
-          ? subsectionRanges(
-              draft.forma.clips.find((c) => c.id === session.clipId)
-                ?.subsections,
-              session.originClipLength,
-            ).length
-          : ranges.length;
-      if (ranges.length < countBefore && session.boundarySubIdx != null) {
-        setSelectedSubsectionIdx(
-          Math.max(0, Math.min(session.boundarySubIdx - 1, maxIdx)),
-        );
-      } else if (session.boundarySubIdx != null) {
-        setSelectedSubsectionIdx(
-          Math.max(0, Math.min(session.boundarySubIdx, maxIdx)),
-        );
-      }
-    } else if (session.kind === "move" && session.clipId) {
-      // TE-24 cascade: moveIds may include later sections for the commit, but
-      // selection stays on the primary unless the user had explicit multi-select.
-      const selectIds = selectionIdsAfterFormaMove(
-        session.clipId,
-        session.moveIds ?? [session.clipId],
-        Boolean(session.explicitMulti),
-      );
-      setClipSelection((prev) =>
-        setSelection(
-          [
-            ...prev.items.filter((i) => i.lane !== "forma"),
-            ...selectIds.map((id) => ({ id, lane: "forma" as const })),
-          ],
-          session.clipId,
-        ),
-      );
-    } else if (session.clipId) {
-      selectLaneClip("forma", session.clipId);
-    }
-  }
-
-  // Window-level move/up — survives clip reflow under the pointer (v4 pattern).
-  useEffect(() => {
-    if (!gestureSession) return;
-    const pointerId = gestureSession.pointerId;
-
-    function onMove(e: PointerEvent) {
-      if (e.pointerId !== pointerId) return;
-      if (!gestureSessionRef.current) return;
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      updateFormaGesturePreview(
-        raw,
-        e.metaKey,
-        e.ctrlKey,
-        e.clientX,
-        e.clientY,
-      );
-    }
-
-    function onUp(e: PointerEvent) {
-      if (e.pointerId !== pointerId) return;
-      endFormaGesture(e.metaKey, e.ctrlKey);
-    }
-
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- session id gates; handlers use refs
-  }, [
-    gestureSession?.pointerId,
-    gestureSession?.kind,
-    gestureSession?.clipId,
-    gesturePreview,
-  ]);
-
-  function beginContentPencilDraw(
-    e: React.PointerEvent<HTMLElement>,
-    lane: ContentLaneId,
-  ) {
-    if (!gesturePolicy.pencilDraw) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    if (!draftProject) return;
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    e.preventDefault();
-    e.stopPropagation();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    const session: FormaGestureSession = {
-      kind: "pencil-draw",
-      clipId: null,
-      pointerId: e.pointerId,
-      originTicks: raw,
-      originClipStart: 0,
-      originClipLength: 0,
-      lane,
-      originClientX: e.clientX,
-    };
-    const preview = previewContentFromSession(
-      draftProject,
-      session,
-      raw,
-      e.metaKey,
-      e.ctrlKey,
-      e.clientX,
-    );
-    beginFormaGesture(session, preview);
-  }
-
-  function onContentClipPointerDown(
-    e: React.PointerEvent<HTMLButtonElement>,
-    lane: ContentLaneId,
-    clip: { id: string; startTicks: number; lengthTicks: number },
-  ) {
-    if (e.button !== 0 || !draftProject) return;
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (tool === "eraser") {
-      if (lane === "tekst") {
-        commitDraft(deleteTekstClip(draftProject, clip.id));
-      } else if (lane === "akordy") {
-        commitDraft(deleteAkordyClip(draftProject, clip.id));
-      } else {
-        commitDraft(deleteCueClip(draftProject, clip.id));
-      }
-      setClipSelection((prev) =>
-        isClipSelected(prev, clip.id, lane)
-          ? toggleSelected(prev, clip.id, lane)
-          : prev,
-      );
-      return;
-    }
-
-    if (tool === "scissors") {
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      const next = splitContentClipAt(draftProject, lane, clip.id, raw);
-      if (next !== draftProject) commitDraft(next);
-      return;
-    }
-
-    if (tool === "join") {
-      const next = joinAdjacentContentClips(draftProject, lane, clip.id);
-      if (next !== draftProject) commitDraft(next);
-      return;
-    }
-
-    if (toolIsPencilDraw(tool)) {
-      beginContentPencilDraw(e, lane);
-      return;
-    }
-
-    if (!toolAllowsClipHitZones(tool)) return;
-    // Multi-select modifiers (v4 Cmd toggle / Shift range)
-    if (isMultiSelectClick(e)) {
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      setClipSelection((prev) => toggleSelected(prev, clip.id, lane));
-      setSelectedSubsectionIdx(null);
-      return;
-    }
-    if (e.shiftKey) {
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      const laneClips =
-        lane === "tekst"
-          ? draftProject.tekst.clips
-          : lane === "akordy"
-            ? draftProject.akordy.clips
-            : draftProject.cue.clips;
-      setClipSelection((prev) => selectRangeTo(prev, clip.id, lane, laneClips));
-      setSelectedSubsectionIdx(null);
-      return;
-    }
-
-    if (!gesturePolicy.clipDragResize) {
-      // Tablet/mobile: select only (v4 — drag via nudge on tablet).
-      clearMapSelection();
-      selectLaneClip(lane, clip.id);
-      return;
-    }
-
-    const onLaneIds = idsOnLane(clipSelection, lane);
-    const inMulti =
-      isClipSelected(clipSelection, clip.id, lane) && onLaneIds.length > 1;
-    if (!inMulti) {
-      clearMapSelection();
-      selectLaneClip(lane, clip.id);
-    } else {
-      setClipSelection((prev) => setSelection(prev.items, clip.id));
-      setSelectedSubsectionIdx(null);
-    }
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const zone = hitTestClipZone(e.clientX - rect.left, rect.width, true);
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-
-    const kind =
-      zone === "start"
-        ? "resize-start"
-        : zone === "end"
-          ? "resize-end"
-          : "move";
-    const moveIds =
-      kind === "move"
-        ? inMulti
-          ? resolveMoveIds(clipSelection, clip.id, lane)
-          : [clip.id]
-        : [clip.id];
-    const session: FormaGestureSession = {
-      kind,
-      clipId: clip.id,
-      pointerId: e.pointerId,
-      originTicks: raw,
-      originClipStart: clip.startTicks,
-      originClipLength: clip.lengthTicks,
-      lane,
-      originClientX: e.clientX,
-      moveIds: kind === "move" ? moveIds : undefined,
-      optionCopy: kind === "move" ? Boolean(e.altKey) : undefined,
-    };
-    const preview = previewContentFromSession(
-      draftProject,
-      session,
-      raw,
-      e.metaKey,
-      e.ctrlKey,
-      e.clientX,
-    );
-    beginFormaGesture(session, preview);
-  }
-
-  function onAudioClipPointerDown(
-    e: React.PointerEvent<HTMLButtonElement>,
-    lane: AudioLaneId,
-    clip: { id: string; startTicks: number; lengthTicks: number },
-  ) {
-    if (e.button !== 0 || !draftProject) return;
-    e.preventDefault();
-    e.stopPropagation();
-    if (tool === "eraser") {
-      commitDraft(deleteClipsOnLane(draftProject, lane, [clip.id]));
-      setClipSelection((prev) =>
-        isClipSelected(prev, clip.id, lane)
-          ? toggleSelected(prev, clip.id, lane)
-          : prev,
-      );
-      return;
-    }
-    if (tool === "scissors") {
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      const next = splitAudioClipAt(draftProject, clip.id, raw);
-      if (next !== draftProject) commitDraft(next);
-      return;
-    }
-    if (tool === "join") {
-      const next = joinAdjacentAudioClips(draftProject, clip.id);
-      if (next !== draftProject) commitDraft(next);
-      return;
-    }
-    if (tool === "mute") {
-      commitDraft(toggleAudioClipMute(draftProject, clip.id));
-      return;
-    }
-    if (tool === "solo") {
-      const trackId = audioTrackIdFromLane(lane);
-      soloHoldRef.current = soloAudioTrackIds;
-      setSoloAudioTrackIds([trackId]);
-      const release = () => {
-        if (soloHoldRef.current) {
-          setSoloAudioTrackIds(soloHoldRef.current);
-          soloHoldRef.current = null;
-        }
-        window.removeEventListener("pointerup", release);
-        window.removeEventListener("blur", release);
-      };
-      window.addEventListener("pointerup", release);
-      window.addEventListener("blur", release);
-      return;
-    }
-    if (tool === "fade") {
-      if (!gesturePolicy.clipDragResize) {
-        selectLaneClip(lane, clip.id);
-        return;
-      }
-      const rect = e.currentTarget.getBoundingClientRect();
-      const zone = hitTestAudioClipZone(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
-        rect.width,
-        rect.height,
-        true,
-        true,
-      );
-      const fadeKind =
-        zone === "fade-out" || zone === "end" ? "fade-out" : "fade-in";
-      const full = draftProject.audioClips.find((c) => c.id === clip.id);
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null || !full) return;
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      const session: FormaGestureSession = {
-        kind: fadeKind,
-        clipId: clip.id,
-        pointerId: e.pointerId,
-        originTicks: raw,
-        originClipStart: clip.startTicks,
-        originClipLength: clip.lengthTicks,
-        lane,
-        originClientX: e.clientX,
-        originFadeMs:
-          fadeKind === "fade-in" ? (full.fadeInMs ?? 0) : (full.fadeOutMs ?? 0),
-      };
-      beginFormaGesture(
-        session,
-        previewAudioFromSession(
-          draftProject,
-          session,
-          raw,
-          e.metaKey,
-          e.ctrlKey,
-        ),
-      );
-      return;
-    }
-    if (tool === "gain") {
-      if (!gesturePolicy.clipDragResize) {
-        selectLaneClip(lane, clip.id);
-        return;
-      }
-      const full = draftProject.audioClips.find((c) => c.id === clip.id);
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null || !full) return;
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      const session: FormaGestureSession = {
-        kind: "gain",
-        clipId: clip.id,
-        pointerId: e.pointerId,
-        originTicks: raw,
-        originClipStart: clip.startTicks,
-        originClipLength: clip.lengthTicks,
-        lane,
-        originClientX: e.clientX,
-        originClientY: e.clientY,
-        originGainDb: full.gainDb ?? 0,
-      };
-      beginFormaGesture(
-        session,
-        previewAudioFromSession(
-          draftProject,
-          session,
-          raw,
-          e.metaKey,
-          e.ctrlKey,
-          e.clientY,
-        ),
-      );
-      return;
-    }
-    if (toolIsPencilDraw(tool) || tool === "marquee" || tool === "zoom") {
-      return;
-    }
-    if (!toolAllowsClipHitZones(tool)) return;
-    if (isMultiSelectClick(e)) {
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      setClipSelection((prev) => toggleSelected(prev, clip.id, lane));
-      return;
-    }
-    if (e.shiftKey) {
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      const trackId = audioTrackIdFromLane(lane);
-      const laneClips = draftProject.audioClips.filter(
-        (c) => c.trackId === trackId,
-      );
-      setClipSelection((prev) => selectRangeTo(prev, clip.id, lane, laneClips));
-      return;
-    }
-    if (!gesturePolicy.clipDragResize) {
-      clearMapSelection();
-      selectLaneClip(lane, clip.id);
-      return;
-    }
-    const onLaneIds = idsOnLane(clipSelection, lane);
-    const inMulti =
-      isClipSelected(clipSelection, clip.id, lane) && onLaneIds.length > 1;
-    if (!inMulti) {
-      clearMapSelection();
-      selectLaneClip(lane, clip.id);
-    } else {
-      setClipSelection((prev) => setSelection(prev.items, clip.id));
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const zone = hitTestClipZone(e.clientX - rect.left, rect.width, true);
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    const kind =
-      zone === "start"
-        ? "resize-start"
-        : zone === "end"
-          ? "resize-end"
-          : "move";
-    const moveIds =
-      kind === "move"
-        ? inMulti
-          ? resolveMoveIds(clipSelection, clip.id, lane)
-          : [clip.id]
-        : [clip.id];
-    const session: FormaGestureSession = {
-      kind,
-      clipId: clip.id,
-      pointerId: e.pointerId,
-      originTicks: raw,
-      originClipStart: clip.startTicks,
-      originClipLength: clip.lengthTicks,
-      lane,
-      originClientX: e.clientX,
-      moveIds: kind === "move" ? moveIds : undefined,
-    };
-    beginFormaGesture(
-      session,
-      previewAudioFromSession(draftProject, session, raw, e.metaKey, e.ctrlKey),
-    );
-  }
-
-  function onFormaLanePointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.button !== 0 || !draftProject) return;
-    if (tool === "eraser") {
-      e.preventDefault();
-      deleteSelectedFormaClip();
-      return;
-    }
-    if (tool === "scissors") {
-      e.preventDefault();
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      const hit =
-        formaSectionCoveringTicks(draftProject, raw) ??
-        (selectedClipId
-          ? draftProject.forma.clips.find(
-              (c) => c.id === selectedClipId && c.kind === "section",
-            )
-          : null);
-      if (!hit) return;
-      clearMapSelection();
-      selectLaneClip("forma", hit.id);
-      const next = splitFormaClipAt(draftProject, hit.id, raw);
-      if (next !== draftProject) commitDraft(next);
-      return;
-    }
-    if (!toolIsPencilDraw(tool)) {
-      if (toolUsesMarqueeGesture(tool, e.pointerType)) {
-        beginMarquee(e);
-      } else if (
-        isTouchPointerType(e.pointerType) &&
-        tool === "pointer" &&
-        !heldZoomRef.current
-      ) {
-        beginTouchCanvasNav(e);
-      }
-      return;
-    }
-    if (!gesturePolicy.pencilDraw) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    e.preventDefault();
-    e.stopPropagation();
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    const n =
-      draftProject.forma.clips.filter((c) => c.kind === "section").length + 1;
-    const session: FormaGestureSession = {
-      kind: "pencil-draw",
-      clipId: null,
-      pointerId: e.pointerId,
-      originTicks: raw,
-      originClipStart: 0,
-      originClipLength: 0,
-      originClientX: e.clientX,
-    };
-    const preview = previewFromSession(
-      draftProject,
-      session,
-      raw,
-      e.metaKey,
-      e.ctrlKey,
-      `Sekcja ${n}`,
-      e.clientX,
-    );
-    beginFormaGesture(session, preview);
-  }
-
-  function onFormaLanePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!gestureSessionRef.current) return;
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX);
-  }
-
-  function onFormaLanePointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    if (!gestureSessionRef.current) return;
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    endFormaGesture(e.metaKey, e.ctrlKey);
-  }
-
-  function onFormaClipPointerDown(
-    e: React.PointerEvent<HTMLButtonElement>,
-    clip: FormaClip,
-  ) {
-    if (e.button !== 0 || !draftProject) return;
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (tool === "eraser") {
-      if (clip.kind === "countdown") return;
-      commitDraft(deleteFormaClip(draftProject, clip.id));
-      setClipSelection((prev) =>
-        isClipSelected(prev, clip.id, "forma")
-          ? toggleSelected(prev, clip.id, "forma")
-          : prev,
-      );
-      return;
-    }
-
-    if (tool === "scissors") {
-      if (clip.kind === "countdown") return;
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      clearMapSelection();
-      selectLaneClip("forma", clip.id);
-      const next = splitFormaClipAt(draftProject, clip.id, raw);
-      if (next !== draftProject) commitDraft(next);
-      return;
-    }
-
-    if (tool === "join") {
-      if (clip.kind === "countdown") return;
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      const next = joinFormaAtClick(draftProject, clip.id, raw);
-      if (next !== draftProject) commitDraft(next);
-      return;
-    }
-
-    if (toolIsPencilDraw(tool)) {
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      const n =
-        draftProject.forma.clips.filter((c) => c.kind === "section").length + 1;
-      const session: FormaGestureSession = {
-        kind: "pencil-draw",
-        clipId: null,
-        pointerId: e.pointerId,
-        originTicks: raw,
-        originClipStart: 0,
-        originClipLength: 0,
-        originClientX: e.clientX,
-      };
-      const preview = previewFromSession(
-        draftProject,
-        session,
-        raw,
-        e.metaKey,
-        e.ctrlKey,
-        `Sekcja ${n}`,
-        e.clientX,
-      );
-      beginFormaGesture(session, preview);
-      return;
-    }
-
-    if (!toolAllowsClipHitZones(tool)) return;
-
-    // Multi-select modifiers (v4)
-    if (clip.kind !== "countdown" && isMultiSelectClick(e)) {
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      setClipSelection((prev) => toggleSelected(prev, clip.id, "forma"));
-      setSelectedSubsectionIdx(null);
-      return;
-    }
-    if (clip.kind !== "countdown" && e.shiftKey) {
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      const laneClips = draftProject.forma.clips
-        .filter((c) => c.kind === "section" || c.kind === "countdown")
-        .map((c) => ({ id: c.id, startTicks: c.startTicks }));
-      setClipSelection((prev) =>
-        selectRangeTo(prev, clip.id, "forma", laneClips),
-      );
-      setSelectedSubsectionIdx(null);
-      return;
-    }
-
-    const onLaneIds = idsOnLane(clipSelection, "forma");
-    const inMulti =
-      clip.kind !== "countdown" &&
-      isClipSelected(clipSelection, clip.id, "forma") &&
-      onLaneIds.length > 1;
-
-    if (!inMulti) {
-      clearMapSelection();
-      selectLaneClip("forma", clip.id);
-    } else {
-      setClipSelection((prev) => setSelection(prev.items, clip.id));
-    }
-    setSongMetaOpen(false);
-    if (clip.kind === "countdown") {
-      setSelectedSubsectionIdx(null);
-      if (!gesturePolicy.clipDragResize) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const localX = e.clientX - rect.left;
-      const zone = hitTestClipZone(localX, rect.width, true);
-      if (zone === "start") {
-        if (canvasNoticeTimerRef.current) {
-          clearTimeout(canvasNoticeTimerRef.current);
-        }
-        setCanvasNotice(
-          "Countdown: tylko prawa krawędź lub przeciągnięcie (długość)",
-        );
-        canvasNoticeTimerRef.current = setTimeout(() => {
-          setCanvasNotice(null);
-          canvasNoticeTimerRef.current = null;
-        }, 2800);
-        return;
-      }
-      const raw = rawTicksAtClientX(e.clientX);
-      if (raw == null) return;
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      const session: FormaGestureSession = {
-        kind: "countdown-length",
-        clipId: clip.id,
-        pointerId: e.pointerId,
-        originTicks: raw,
-        originClipStart: clip.startTicks,
-        originClipLength: clip.lengthTicks,
-        originClientX: e.clientX,
-      };
-      const preview = previewFromSession(
-        draftProject,
-        session,
-        raw,
-        e.metaKey,
-        e.ctrlKey,
-        undefined,
-        e.clientX,
-        effectiveZoomH,
-      );
-      beginFormaGesture(session, preview);
-      return;
-    }
-
-    if (!gesturePolicy.clipDragResize) {
-      setSelectedSubsectionIdx(null);
-      return;
-    }
-
-    const boundaryEl = (e.target as HTMLElement | null)?.closest?.(
-      "[data-sub-boundary]",
-    ) as HTMLElement | null;
-    if (boundaryEl) {
-      const boundarySubIdx = Number(boundaryEl.dataset.subBoundary);
-      if (Number.isFinite(boundarySubIdx) && boundarySubIdx >= 1) {
-        const ranges = subsectionRanges(clip.subsections, clip.lengthTicks);
-        if (boundarySubIdx >= ranges.length) return;
-        setSelectedSubsectionIdx(boundarySubIdx);
-        const raw = rawTicksAtClientX(e.clientX);
-        if (raw == null) return;
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-        const originBoundaryRel = ranges[boundarySubIdx]!.startRel;
-        const session: FormaGestureSession = {
-          kind: "subsection-boundary",
-          clipId: clip.id,
-          pointerId: e.pointerId,
-          originTicks: raw,
-          originClipStart: clip.startTicks,
-          originClipLength: clip.lengthTicks,
-          boundarySubIdx,
-          originBoundaryRel,
-        };
-        const preview = previewFromSession(
-          draftProject,
-          session,
-          raw,
-          e.metaKey,
-          e.ctrlKey,
-        );
-        beginFormaGesture(session, preview);
-        return;
-      }
-    }
-
-    const subEl = (e.target as HTMLElement | null)?.closest?.(
-      "[data-sub-idx]",
-    ) as HTMLElement | null;
-    const subsectionIdx =
-      subEl && subEl.dataset.subIdx != null
-        ? Number(subEl.dataset.subIdx)
-        : null;
-    setSelectedSubsectionIdx(
-      subsectionIdx != null && Number.isFinite(subsectionIdx)
-        ? subsectionIdx
-        : null,
-    );
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const localX = e.clientX - rect.left;
-    const zone = hitTestClipZone(localX, rect.width, true);
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-
-    const kind =
-      zone === "start"
-        ? "resize-start"
-        : zone === "end"
-          ? "resize-end"
-          : "move";
-    const moveIds =
-      kind === "move"
-        ? inMulti
-          ? resolveMoveIds(clipSelection, clip.id, "forma")
-          : cascadeFormaMoveIds(draftProject.forma.clips, clip.id)
-        : [clip.id];
-    const session: FormaGestureSession = {
-      kind,
-      clipId: clip.id,
-      pointerId: e.pointerId,
-      originTicks: raw,
-      originClipStart: clip.startTicks,
-      originClipLength: clip.lengthTicks,
-      moveIds: kind === "move" ? moveIds : undefined,
-      explicitMulti: kind === "move" ? inMulti : undefined,
-      optionCopy: kind === "move" ? Boolean(e.altKey) : undefined,
-    };
-    const preview = previewFromSession(
-      draftProject,
-      session,
-      raw,
-      e.metaKey,
-      e.ctrlKey,
-    );
-    beginFormaGesture(session, preview);
-  }
-
-  function onFormaClipPointerMove(e: React.PointerEvent<HTMLButtonElement>) {
-    if (!gestureSessionRef.current) return;
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    const raw = rawTicksAtClientX(e.clientX);
-    if (raw == null) return;
-    updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX, e.clientY);
-  }
-
-  function onFormaClipPointerUp(e: React.PointerEvent<HTMLButtonElement>) {
-    if (!gestureSessionRef.current) return;
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    endFormaGesture(e.metaKey, e.ctrlKey);
   }
 
 
@@ -3500,8 +2493,6 @@ export function TimelineShell() {
       </div>
     );
   }
-
-
 
   function onTool(id: ToolId) {
     if (isMobilePreview) {

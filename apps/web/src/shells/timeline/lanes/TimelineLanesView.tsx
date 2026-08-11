@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, max-lines */
 import React, { type RefObject } from "react";
 import type { Project } from "@stagesync/shared";
 import {
