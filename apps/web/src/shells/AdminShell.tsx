@@ -1,68 +1,35 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
-import { Button, Select } from "@stagesync/ui";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 import {
-  looksLikeZipBytes,
   resolveFormaClipAt,
   resolveMeterAt,
-  ZIP_IMPORT_UNSUPPORTED_PL,
-  type Library,
   type Project,
 } from "@stagesync/shared";
-import {
-  createProject,
-  deleteProject,
-  exportLibraryPack,
-  fetchLibrary,
-  fetchProject,
-  importLibraryPack,
-  putProject,
-  updateProject,
-} from "@lib/shell-operator/libraryApi.js";
+import { fetchProject } from "@lib/shell-operator/libraryApi.js";
 import {
   postSystemRestart,
   postSystemShutdown,
 } from "@lib/shell-operator/setlistApi.js";
 import {
-  canReturnToLauncher,
   prepareHostRestart,
   syncNavRecentProjects,
   syncNavTimelineProjectId,
-  toggleAppFullscreen,
 } from "@lib/client/desktopBridge.js";
 import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { useMqTablet } from "@lib/client/useMqTablet.js";
 import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
-import { APP_VERSION } from "@lib/client/appVersion.js";
 import {
   CLOCK_DISPLAY_CHANGED_EVENT,
   formatClockDisplay,
   getStoredClockDisplayFormat,
   type ClockDisplayFormat,
 } from "@lib/client/clockDisplayPrefs.js";
-import { openPreferences } from "@lib/client/preferencesEvents.js";
 import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
 import {
-  getVisibleAdminSections,
   isAdminSectionId,
   type AdminSectionId,
 } from "@lib/shell-operator/operatorNavRoutes.js";
-import {
-  shouldShowFullscreenControl,
-  shouldShowOperatorNav,
-} from "@lib/shell-operator/operatorSurface.js";
-import { OperatorNav } from "./components/OperatorNav.js";
-import { useTransport } from "../transport/useTransport.js";
-import {
-  IconFullscreen,
-  IconPower,
-  IconRestart,
-  IconSettings,
-} from "./icons.js";
-import { connectionStatusLabel } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
-import { ShellIconButton } from "./ShellIconButton.js";
-import { ShellWordmark } from "./ShellWordmark.js";
 import {
   ShellConfirmDialog,
   ShellPromptDialog,
@@ -79,25 +46,14 @@ import { SongsView } from "./admin/views/SongsView.js";
 import { useDoubleConfirm } from "./admin/useDoubleConfirm.js";
 import { AdminFooter } from "./admin/AdminFooter.js";
 import { useAdminImportHandlers } from "./admin/useAdminImportHandlers.js";
+import { AdminShellChrome } from "./admin/AdminShellChrome.js";
+import {
+  ADMIN_LAST_SECTION_KEY,
+  readStoredAdminSection,
+} from "./admin/adminSectionStorage.js";
+import { useAdminLibraryActions } from "./admin/useAdminLibraryActions.js";
+import { useTransport } from "../transport/useTransport.js";
 import styles from "./AdminShell.module.css";
-
-function errMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return "Operacja nie powiodła się";
-}
-
-const ADMIN_LAST_SECTION_KEY = "stagesync:admin:last-section-v1";
-
-function readStoredAdminSection(): AdminSectionId {
-  if (typeof window === "undefined") return "songs";
-  try {
-    const raw = window.localStorage.getItem(ADMIN_LAST_SECTION_KEY);
-    if (raw && isAdminSectionId(raw)) return raw;
-  } catch {
-    /* storage unavailable (private mode etc.) */
-  }
-  return "songs";
-}
 
 export function AdminShell() {
   const navigate = useNavigate();
@@ -105,9 +61,6 @@ export function AdminShell() {
   const isCompactMobile = useMqMobileCompact();
   const isTablet = useMqTablet();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [library, setLibrary] = useState<Library | null>(null);
-  const [libraryError, setLibraryError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [section, setSection] = useState<AdminSectionId>(() =>
     readStoredAdminSection(),
   );
@@ -115,14 +68,39 @@ export function AdminShell() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [xmlModalOpen, setXmlModalOpen] = useState(false);
   const [batchPcOpen, setBatchPcOpen] = useState(false);
-  const [commandPending, setCommandPending] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [actionNotice, setActionNotice] = useState<string | null>(null);
-  const [draftName, setDraftName] = useState("");
   const [hostStatusMsg, setHostStatusMsg] = useState<string | null>(null);
-  const [createPromptOpen, setCreatePromptOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [templatesOpen, setTemplatesOpen] = useState(false);
+
+  const {
+    library,
+    setLibrary,
+    libraryError,
+    selectedId,
+    setSelectedId,
+    selected,
+    draftName,
+    setDraftName,
+    commandPending,
+    setCommandPending,
+    actionError,
+    actionNotice,
+    setActionNotice,
+    createPromptOpen,
+    setCreatePromptOpen,
+    deleteConfirmOpen,
+    setDeleteConfirmOpen,
+    templatesOpen,
+    setTemplatesOpen,
+    refreshLibrary,
+    onCreate,
+    onDelete,
+    confirmCreate,
+    confirmDelete,
+    onRename,
+    onCreateTemplate,
+    onCreateFromTemplate,
+    onExportLibrary,
+    onImportFile,
+  } = useAdminLibraryActions();
 
   const restart = useDoubleConfirm(async () => {
     setHostStatusMsg("Restart serwera…");
@@ -163,7 +141,6 @@ export function AdminShell() {
     ppq: state.ppq,
     format: clockFormat,
   });
-  const selected = library?.projects.find((p) => p.id === selectedId) ?? null;
   const [activeProject, setActiveProject] = useState<Project | null>(null);
 
   const sectionProjectId = state.activeProjectId ?? selectedId;
@@ -217,7 +194,6 @@ export function AdminShell() {
       setSearchParams(next, { replace: true });
     };
 
-    // Native menu: StageSync → Sprawdź aktualizacje… (ADR 0010 Phase A)
     if (action === "check-update") {
       setSection("host");
       setMenuCheckUpdate(true);
@@ -244,11 +220,10 @@ export function AdminShell() {
       return;
     }
     if (action === "export") {
-      // Consume query; export runs via DesktopMenuBridge / SongsView button.
       setSection("songs");
       clearAction("songs");
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, setActionNotice, setCreatePromptOpen, setTemplatesOpen]);
 
   useEffect(() => {
     if (!sectionProjectId) {
@@ -269,64 +244,6 @@ export function AdminShell() {
     };
   }, [sectionProjectId, state.activeProjectId, displayTicks]);
 
-  const refreshLibrary = useCallback(async (preferId?: string | null) => {
-    const data = await fetchLibrary();
-    setLibrary(data);
-    setLibraryError(null);
-    setSelectedId((prev) => {
-      const next =
-        preferId !== undefined
-          ? preferId
-          : prev && data.projects.some((p) => p.id === prev)
-            ? prev
-            : (data.projects[0]?.id ?? null);
-      return next && data.projects.some((p) => p.id === next)
-        ? next
-        : (data.projects[0]?.id ?? null);
-    });
-    return data;
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const data = await fetchLibrary();
-        if (cancelled) return;
-        setLibrary(data);
-        setSelectedId(data.projects[0]?.id ?? null);
-      } catch (err) {
-        if (!cancelled) {
-          setLibraryError(errMessage(err));
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    setDraftName(selected?.name ?? "");
-  }, [selected?.id, selected?.name]);
-
-  const runMutation = useCallback(
-    async (op: () => Promise<void>) => {
-      if (commandPending) return;
-      setCommandPending(true);
-      setActionError(null);
-      setActionNotice(null);
-      try {
-        await op();
-      } catch (err) {
-        setActionError(errMessage(err));
-      } finally {
-        setCommandPending(false);
-      }
-    },
-    [commandPending],
-  );
-
   const { onApplyUg, onApplyUltrastar, onApplyUsUg } = useAdminImportHandlers({
     selectedId,
     setCommandPending,
@@ -335,47 +252,7 @@ export function AdminShell() {
     refreshLibrary,
   });
 
-  const onCreate = useCallback(
-    () => setCreatePromptOpen(true),
-    [setCreatePromptOpen],
-  );
-
-  const onDelete = () => {
-    if (!selectedId || !selected) return;
-    setDeleteConfirmOpen(true);
-  };
-
-  const confirmCreate = (raw: string) => {
-    setCreatePromptOpen(false);
-    void runMutation(async () => {
-      const created = await createProject(raw);
-      await refreshLibrary(created.id);
-    });
-  };
-
-  const confirmDelete = () => {
-    if (!selectedId) return;
-    setDeleteConfirmOpen(false);
-    void runMutation(async () => {
-      await deleteProject(selectedId);
-      const data = await fetchLibrary();
-      setLibrary(data);
-      setLibraryError(null);
-      const nextId = data.projects[0]?.id ?? null;
-      setSelectedId(nextId);
-    });
-  };
-
-  const onRename = () => {
-    if (!selectedId) return;
-    void runMutation(async () => {
-      await updateProject(selectedId, { name: draftName });
-      await refreshLibrary(selectedId);
-    });
-  };
-
   const timelineProjectId = selectedId ?? state.activeProjectId ?? null;
-  const showOperatorNav = isCompactMobile && shouldShowOperatorNav(pathname);
 
   useEffect(() => {
     if (!timelineProjectId) return;
@@ -387,144 +264,20 @@ export function AdminShell() {
     void syncNavRecentProjects(recent);
   }, [timelineProjectId, library]);
 
-  const fullscreenButton = shouldShowFullscreenControl() ? (
-    <ShellIconButton
-      label="Pełny ekran"
-      onClick={() => void toggleAppFullscreen()}
-    >
-      <IconFullscreen />
-    </ShellIconButton>
-  ) : null;
-
   return (
     <div className={styles.shell}>
       <ConnectionLostBanner status={wsStatus} />
-      <div className={styles.chromeWrap}>
-        <header
-          className={[
-            styles.chrome,
-            isCompactMobile ? styles.chromeCompact : "",
-            showOperatorNav ? styles.chromeOperatorNav : styles.chromeLegacy,
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {!isCompactMobile ? (
-            <div className={styles.chromeBrand}>
-              <ShellWordmark
-                suffix="Admin"
-                version={APP_VERSION}
-                iconOnly={isTablet}
-                onClick={() => navigate("/")}
-                title={
-                  canReturnToLauncher()
-                    ? "Wróć do wyboru hosta"
-                    : "Strona główna"
-                }
-              />
-            </div>
-          ) : null}
-
-          {showOperatorNav ? (
-            <OperatorNav
-              activeApp="admin"
-              section={section}
-              onSectionChange={setSection}
-              className={styles.operatorNavEmbed}
-              trailing={fullscreenButton}
-            />
-          ) : (
-            <>
-              {isCompactMobile ? (
-                <div className={styles.sectionSelect}>
-                  <Select
-                    className={styles.sectionSelectInput}
-                    value={section}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (isAdminSectionId(v)) {
-                        setSection(v);
-                      }
-                    }}
-                    aria-label="Sekcja Admin"
-                  >
-                    {getVisibleAdminSections().map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-              ) : (
-                <nav className={styles.sections} aria-label="Sekcje">
-                  {getVisibleAdminSections().map((item) => (
-                    <Button
-                      key={item.id}
-                      variant="ghost"
-                      selected={section === item.id}
-                      onClick={() => setSection(item.id)}
-                    >
-                      {item.label}
-                    </Button>
-                  ))}
-                </nav>
-              )}
-
-              <nav
-                className={[
-                  styles.appJump,
-                  isCompactMobile ? styles.appJumpCompact : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                aria-label="Aplikacje"
-              >
-                {timelineProjectId ? (
-                  <Link to={`/timeline/${timelineProjectId}`}>Timeline</Link>
-                ) : (
-                  <span className={styles.appJumpMuted} aria-disabled>
-                    Timeline
-                  </span>
-                )}
-                <Link to="/client" onClick={() => markOperatorSession()}>
-                  Klient
-                </Link>
-              </nav>
-
-              <div className={styles.chromeAside}>
-                <ShellIconButton
-                  label="Ustawienia"
-                  onClick={() => openPreferences("general")}
-                >
-                  <IconSettings />
-                </ShellIconButton>
-                {!isCompactMobile ? (
-                  <>
-                    <ShellIconButton
-                      ref={restart.buttonRef}
-                      label={restart.label}
-                      confirming={restart.pending}
-                      onClick={restart.arm}
-                    >
-                      <IconRestart />
-                    </ShellIconButton>
-                    <ShellIconButton
-                      ref={shutdown.buttonRef}
-                      label={shutdown.label}
-                      confirming={shutdown.pending}
-                      danger
-                      onClick={shutdown.arm}
-                    >
-                      <IconPower />
-                    </ShellIconButton>
-                  </>
-                ) : null}
-                {fullscreenButton}
-              </div>
-            </>
-          )}
-        </header>
-      </div>
+      <AdminShellChrome
+        pathname={pathname}
+        isCompactMobile={isCompactMobile}
+        isTablet={isTablet}
+        section={section}
+        onSectionChange={setSection}
+        timelineProjectId={timelineProjectId}
+        onNavigateHome={() => navigate("/")}
+        restart={restart}
+        shutdown={shutdown}
+      />
 
       <main className={styles.workspace}>
         {section === "songs" ? (
@@ -546,80 +299,10 @@ export function AdminShell() {
             onXml={() => setXmlModalOpen(true)}
             onBatchPc={() => setBatchPcOpen(true)}
             onCreate={onCreate}
-            onCreateTemplate={() =>
-              void runMutation(async () => {
-                const p = await createProject(
-                  `Wzór ${new Date().toLocaleTimeString("pl")}`,
-                  {
-                    isTemplate: true,
-                  },
-                );
-                await refreshLibrary(p.id);
-              })
-            }
-            onCreateFromTemplate={(templateId) =>
-              void runMutation(async () => {
-                const p = await createProject(
-                  `Utwór ${new Date().toLocaleTimeString("pl")}`,
-                  {
-                    fromTemplateId: templateId,
-                  },
-                );
-                await refreshLibrary(p.id);
-              })
-            }
-            onExportLibrary={() =>
-              void runMutation(async () => {
-                const blob = await exportLibraryPack();
-                const url = URL.createObjectURL(blob);
-                try {
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `stagesync-export-${Date.now()}.stagesync.json`;
-                  a.rel = "noopener";
-                  a.style.display = "none";
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-                } finally {
-                  URL.revokeObjectURL(url);
-                }
-                setActionNotice("Wyeksportowano bibliotekę");
-              })
-            }
-            onImportFile={(file) =>
-              void runMutation(async () => {
-                setActionNotice("Wczytywanie pliku…");
-                const buf = await file.arrayBuffer();
-                if (buf.byteLength > 16 * 1024 * 1024) {
-                  throw new Error("Plik importu jest za duży (max 16 MB).");
-                }
-                if (looksLikeZipBytes(buf)) {
-                  throw new Error(ZIP_IMPORT_UNSUPPORTED_PL);
-                }
-                let pack: unknown;
-                try {
-                  pack = JSON.parse(new TextDecoder().decode(buf)) as unknown;
-                } catch {
-                  throw new Error(
-                    "Nie udało się odczytać JSON. Użyj pakietu v5 (.stagesync.json).",
-                  );
-                }
-                setActionNotice("Importowanie…");
-                const result = await importLibraryPack(pack);
-                setLibrary(result.library);
-                const n = result.created.length;
-                const noun =
-                  n === 1
-                    ? "utwór"
-                    : n % 10 >= 2 &&
-                        n % 10 <= 4 &&
-                        (n % 100 < 10 || n % 100 >= 20)
-                      ? "utwory"
-                      : "utworów";
-                setActionNotice(`Zaimportowano ${n} ${noun} z pakietu v5.`);
-              })
-            }
+            onCreateTemplate={onCreateTemplate}
+            onCreateFromTemplate={onCreateFromTemplate}
+            onExportLibrary={onExportLibrary}
+            onImportFile={onImportFile}
             onDelete={onDelete}
             onRename={onRename}
             onPlay={(id) => void play({ projectId: id })}
