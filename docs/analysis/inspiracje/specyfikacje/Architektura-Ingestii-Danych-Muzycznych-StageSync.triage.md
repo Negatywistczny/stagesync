@@ -5,7 +5,7 @@
 **Obszar:** Import offline — UltraStar · ChordPro/UG · MusicXML/MIDI jako siatka · mapowanie do Timeline (Forma / Tekst / Akordy / Cue / melodia)  
 **Data triage:** 2026-07-31  
 **Kąt:** spec wprowadzenia feature **5.2+ / później** — nie SSOT; nie claim Done  
-**Companion:** [Analiza-Importu-ChordProUG.triage.md](../testy-pokrycie/Analiza-Importu-ChordProUG.triage.md) · [ADR 0002](../../../adr/0002-timebase-ssot.md) · `packages/shared` [`ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts) / [`schema.ts`](../../../../packages/shared/src/project/schema.ts)
+**Companion:** [ADR 0002](../../../adr/0002-timebase-ssot.md) · `packages/shared` [`ug-import.ts`](../../../../packages/shared/src/import/ug/ug-import.ts) / [`schema.ts`](../../../../packages/shared/src/project/schema.ts)
 
 ## Werdykt przydatności
 

@@ -2,19 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createProjectSeed, projectEndTicks } from "@stagesync/shared";
 import {
   allowAudioPlayback,
-  assetFileUrl,
-  busSoloMutesBus,
   clearAudioBufferCache,
   ensureAudioBuffered,
-  fireCueSampleGo,
-  getAudioBufferCacheStats,
   getAudioPlaybackDebugState,
-  getFailedAudioAssetIds,
-  isAudioAssetDecodeFailed,
   loadAudioBuffer,
-  panicCueSamples,
-  readHwOutMeterDb,
-  readTrackMeterDb,
   restartAudioPlayback,
   resumeAndSyncAudioPlayback,
   shouldSoftStopPastSongEnd,
@@ -23,122 +14,17 @@ import {
   syncAudioPlayback,
 } from "./audioPlayback.js";
 import * as metronome from "./metronome.js";
+import {
+  cleanupAudioPlayback,
+  mockAudioContext,
+  mockAudioParam,
+  mockConnectable,
+  projectWithClipUnderPlayhead,
+} from "./audioPlayback.test-helpers.js";
 
-function fakeAudioBuffer(approxBytes: number, channels = 2): AudioBuffer {
-  const length = Math.max(1, Math.ceil(approxBytes / (channels * 4)));
-  return {
-    duration: length / 48_000,
-    numberOfChannels: channels,
-    length,
-  } as AudioBuffer;
-}
-
-function mockAudioParam(value = 1) {
-  const param = {
-    value,
-    cancelScheduledValues: vi.fn(),
-    setValueAtTime: vi.fn((v: number) => {
-      param.value = v;
-    }),
-    linearRampToValueAtTime: vi.fn((v: number) => {
-      // Snap for tests — real AudioContext interpolates over GAIN_DEZIPPER_SEC.
-      param.value = v;
-    }),
-    setTargetAtTime: vi.fn((v: number) => {
-      param.value = v;
-    }),
-  };
-  return param;
-}
-
-function mockConnectable() {
-  return { connect: vi.fn(), disconnect: vi.fn() };
-}
-
-/** Minimal WebAudio graph stubs for sync / bus wiring. */
-function mockAudioContext(
-  overrides: Record<string, unknown> = {},
-): AudioContext {
-  const emptyBuf = { duration: 0, numberOfChannels: 1 } as AudioBuffer;
-  return {
-    state: "running",
-    currentTime: 0,
-    sampleRate: 44100,
-    destination: {},
-    createBuffer: vi.fn(() => emptyBuf),
-    createBufferSource: vi.fn(),
-    createGain: vi.fn(() => ({
-      ...mockConnectable(),
-      gain: mockAudioParam(1),
-    })),
-    createStereoPanner: vi.fn(() => ({
-      ...mockConnectable(),
-      pan: mockAudioParam(0),
-    })),
-    createAnalyser: vi.fn(() => ({
-      ...mockConnectable(),
-      fftSize: 256,
-      smoothingTimeConstant: 0.35,
-      getFloatTimeDomainData: vi.fn((buf: Float32Array) => {
-        buf.fill(0);
-      }),
-    })),
-    createChannelSplitter: vi.fn(() => mockConnectable()),
-    createChannelMerger: vi.fn(() => mockConnectable()),
-    ...overrides,
-  } as unknown as AudioContext;
-}
-
-function projectWithClipUnderPlayhead() {
-  const project = createProjectSeed("p1", "Test", "2026-07-22T00:00:00.000Z");
-  return {
-    ...project,
-    assets: [
-      {
-        id: "asset-1",
-        storageName: "kick.wav",
-        originalName: "kick.wav",
-        kind: "audio" as const,
-        mimeType: "audio/wav",
-        sizeBytes: 100,
-        durationMs: 1000,
-      },
-    ],
-    audioTracks: [
-      {
-        id: "tr-1",
-        name: "A1",
-        muted: false,
-        gainDb: 0,
-      },
-    ],
-    audioClips: [
-      {
-        id: "clip-1",
-        trackId: "tr-1",
-        assetId: "asset-1",
-        startTicks: 0,
-        lengthTicks: 480,
-        muted: false,
-        gainDb: 0,
-      },
-    ],
-  };
-}
-
-describe("audioPlayback helpers", () => {
+describe("audioPlayback — sync engine", () => {
   afterEach(() => {
-    allowAudioPlayback();
-    stopAudioPlayback();
-    clearAudioBufferCache();
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-  });
-
-  it("builds asset file URL", () => {
-    expect(assetFileUrl("proj/1", "a b")).toBe(
-      "/api/projects/proj%2F1/assets/a%20b/file",
-    );
+    cleanupAudioPlayback();
   });
 
   it("suppress blocks re-schedule while playing flag still true (#352)", () => {
@@ -228,16 +114,15 @@ describe("audioPlayback helpers", () => {
     const emptyBuf = { duration: 0, numberOfChannels: 1 } as AudioBuffer;
     const source = {
       buffer: null as AudioBuffer | null,
-      context: null as AudioContext | null,
       connect: vi.fn(),
       disconnect: vi.fn(),
       start: vi.fn(),
       stop: vi.fn(),
       onended: null as (() => void) | null,
+      context: null as AudioContext | null,
     };
     const ctx = mockAudioContext({
       decodeAudioData: vi.fn(async () => fakeBuf),
-      createBuffer: vi.fn(() => emptyBuf),
       createBufferSource: vi.fn(() => {
         source.context = ctx;
         return source;
@@ -255,10 +140,11 @@ describe("audioPlayback helpers", () => {
     await ensureAudioBuffered("p1", project, 0, ctx);
     syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
     expect(source.buffer).toBe(fakeBuf);
+
     stopAudioPlayback();
     expect(source.stop).toHaveBeenCalled();
-    expect(source.buffer).toBe(emptyBuf);
-    expect(ctx.createBuffer).toHaveBeenCalled();
+    expect(source.buffer).not.toBe(fakeBuf);
+    expect(source.buffer).toEqual(emptyBuf);
   });
 
   it("BUG-05: song-end soft-stop respects loopEnabled", () => {
@@ -311,70 +197,6 @@ describe("audioPlayback helpers", () => {
     );
     expect(ctx.createBufferSource).not.toHaveBeenCalled();
     expect(getAudioPlaybackDebugState().activeCount).toBe(0);
-  });
-
-  it("ensureAudioBuffered decodes clips under playhead (#365)", async () => {
-    const fakeBuf = { duration: 1 } as AudioBuffer;
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-    });
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    const project = projectWithClipUnderPlayhead();
-    const result = await ensureAudioBuffered("p1", project, 0, ctx);
-    expect(result.ready).toBe(true);
-    expect(result.failedAssetIds).toEqual([]);
-    expect(ctx.decodeAudioData).toHaveBeenCalledOnce();
-  });
-
-  it("ensureAudioBuffered marks decode failures (#365)", async () => {
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => {
-        throw new Error("bad wav");
-      }),
-    });
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    const project = projectWithClipUnderPlayhead();
-    const result = await ensureAudioBuffered("p1", project, 0, ctx);
-    expect(result.ready).toBe(false);
-    expect(result.failedAssetIds).toEqual(["asset-1"]);
-    expect(isAudioAssetDecodeFailed("p1", "asset-1")).toBe(true);
-    expect(getFailedAudioAssetIds("p1")).toEqual(["asset-1"]);
-  });
-
-  it("clearAudioBufferCache drops failed markers for project", async () => {
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => {
-        throw new Error("bad");
-      }),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: false,
-        arrayBuffer: async () => new ArrayBuffer(0),
-      })),
-    );
-    const project = projectWithClipUnderPlayhead();
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    expect(getFailedAudioAssetIds("p1")).toEqual(["asset-1"]);
-    clearAudioBufferCache("p1");
-    expect(getFailedAudioAssetIds("p1")).toEqual([]);
   });
 
   it("schedules fade ramps and loop window on BufferSource", async () => {
@@ -552,97 +374,6 @@ describe("audioPlayback helpers", () => {
     expect(source.start).toHaveBeenCalled();
   });
 
-  it("late decode after clearAudioBufferCache does not re-pollute cache", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
-    let finishDecode: (buf: AudioBuffer) => void = () => {};
-    const decodePromise = new Promise<AudioBuffer>((resolve) => {
-      finishDecode = resolve;
-    });
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(() => decodePromise),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    const loadPromise = loadAudioBuffer("p1", "asset-1", ctx);
-    clearAudioBufferCache("p1");
-    finishDecode(fakeBuf);
-    await expect(loadPromise).resolves.toBeNull();
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({ ok: false })),
-    );
-    clearAudioBufferCache("p1");
-    await expect(loadAudioBuffer("p1", "asset-1", ctx)).resolves.toBeNull();
-  });
-
-  it("buffer cache evicts by entry count and byte budget", async () => {
-    const decoded = new Map<string, AudioBuffer>();
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async (raw: ArrayBuffer) => {
-        const id = new TextDecoder().decode(new Uint8Array(raw));
-        return decoded.get(id)!;
-      }),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (url: string) => {
-        const assetId = String(url).split("/").at(-2)!;
-        return {
-          ok: true,
-          arrayBuffer: async () => new TextEncoder().encode(assetId).buffer,
-        };
-      }),
-    );
-
-    // 9 tiny entries → cap 8
-    for (let i = 0; i < 9; i++) {
-      const id = `small-${i}`;
-      decoded.set(id, fakeAudioBuffer(1024));
-      await loadAudioBuffer("p1", id, ctx);
-    }
-    expect(getAudioBufferCacheStats().entries).toBe(8);
-
-    clearAudioBufferCache("p1");
-
-    // Two ~200 MiB buffers exceed 384 MiB budget → only newest retained
-    const big = 200 * 1024 * 1024;
-    decoded.set("big-a", fakeAudioBuffer(big));
-    decoded.set("big-b", fakeAudioBuffer(big));
-    await loadAudioBuffer("p1", "big-a", ctx);
-    await loadAudioBuffer("p1", "big-b", ctx);
-    const stats = getAudioBufferCacheStats();
-    expect(stats.entries).toBe(1);
-    expect(stats.approxBytes).toBeLessThanOrEqual(stats.maxBytes);
-  });
-
-  it("loadAudioBuffer cache:false does not pin decoded PCM", async () => {
-    const fakeBuf = fakeAudioBuffer(64 * 1024 * 1024);
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    const buf = await loadAudioBuffer("p1", "wave-only", ctx, { cache: false });
-    expect(buf).toBe(fakeBuf);
-    expect(getAudioBufferCacheStats().entries).toBe(0);
-
-    await loadAudioBuffer("p1", "wave-only", ctx);
-    expect(getAudioBufferCacheStats().entries).toBe(1);
-  });
-
   it("resumeAndSync skips start when suppressed during AudioContext resume", async () => {
     const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
     const source = {
@@ -719,48 +450,6 @@ describe("audioPlayback helpers", () => {
       ctx,
     );
     expect(source.start).not.toHaveBeenCalled();
-  });
-
-  it("stereo bus gain forces explicit 2-ch upmix for mono files", async () => {
-    const fakeMono = { duration: 1, numberOfChannels: 1 } as AudioBuffer;
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeMono),
-      createBufferSource: vi.fn(() => ({
-        buffer: null,
-        connect: vi.fn(),
-        disconnect: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn(),
-        onended: null,
-      })),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-    const project = {
-      ...projectWithClipUnderPlayhead(),
-      audioTracks: [
-        {
-          id: "tr-1",
-          name: "Stereo",
-          muted: false,
-          gainDb: 0,
-          channelMode: "stereo" as const,
-        },
-      ],
-    };
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-    const gains = (ctx.createGain as ReturnType<typeof vi.fn>).mock.results.map(
-      (r) => r.value as { channelCount?: number; channelCountMode?: string },
-    );
-    // Master gain is [0]; stereo track input gain is [1].
-    expect(gains[1]?.channelCount).toBe(2);
-    expect(gains[1]?.channelCountMode).toBe("explicit");
   });
 
   it("clip gainDb change updates level live without stopping source", async () => {
@@ -919,82 +608,6 @@ describe("audioPlayback helpers", () => {
     expect(initial).toBeGreaterThanOrEqual(0);
   });
 
-  it("DEF-BUG-04: track solo wins — bus solo does not mute destination bus", async () => {
-    expect(busSoloMutesBus("bus-b", undefined, ["bus-a"])).toBe(true);
-    expect(busSoloMutesBus("bus-a", undefined, ["bus-a"])).toBe(false);
-    expect(busSoloMutesBus("bus-b", ["tr-1"], ["bus-a"])).toBe(false);
-    expect(busSoloMutesBus("bus-b", [], ["bus-a"])).toBe(true);
-
-    const fakeBuf = { duration: 10, numberOfChannels: 2 } as AudioBuffer;
-    const source = {
-      buffer: null as AudioBuffer | null,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-    };
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    const base = projectWithClipUnderPlayhead();
-    const project = {
-      ...base,
-      audioBusses: [
-        { id: "bus-a", name: "Bus A", gainDb: 0 },
-        { id: "bus-b", name: "Bus B", gainDb: 0 },
-      ],
-      audioTracks: [
-        {
-          ...base.audioTracks[0]!,
-          output: { kind: "bus" as const, busId: "bus-b" },
-        },
-      ],
-    };
-
-    await ensureAudioBuffered("p1", project, 0, ctx);
-
-    // Bus-only solo on bus-a: destination bus-b is muted.
-    syncAudioPlayback(
-      "p1",
-      {
-        project,
-        playing: true,
-        displayTicks: 0,
-        soloBusIds: ["bus-a"],
-      },
-      ctx,
-    );
-    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-b"]).toBe(0);
-    expect(getAudioPlaybackDebugState().activeCount).toBe(0);
-
-    // Cross-solo: track on bus-b + bus-a solo — track wins, bus-b stays audible.
-    syncAudioPlayback(
-      "p1",
-      {
-        project,
-        playing: true,
-        displayTicks: 0,
-        soloTrackIds: ["tr-1"],
-        soloBusIds: ["bus-a"],
-      },
-      ctx,
-    );
-    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-b"]).toBe(1);
-    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-a"]).toBe(1);
-    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-    expect(source.start).toHaveBeenCalled();
-  });
-
   it("fader apply dezippers GainNode (no instant .value while graph live)", async () => {
     const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
     const source = {
@@ -1051,523 +664,34 @@ describe("audioPlayback helpers", () => {
     );
   });
 
-  it("track output rewire skips disconnect when destination unchanged", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
-    const source = {
-      buffer: null as AudioBuffer | null,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-    };
-    const routeDisconnects: ReturnType<typeof vi.fn>[] = [];
-    let gainCount = 0;
+  it("dezipper skips re-ramp when the same target is already scheduled", () => {
+    const gains: ReturnType<typeof mockAudioParam>[] = [];
     const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
       createGain: vi.fn(() => {
-        gainCount += 1;
-        const node = { ...mockConnectable(), gain: mockAudioParam(1) };
-        // Mono: gain(2), route(3) after master(1)
-        if (gainCount === 3) routeDisconnects.push(node.disconnect);
-        return node;
+        const g = mockAudioParam(1);
+        gains.push(g);
+        return { ...mockConnectable(), gain: g };
       }),
     });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-    const project = projectWithClipUnderPlayhead();
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-    const routeDisconnect = routeDisconnects[0]!;
-    routeDisconnect.mockClear();
-
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 10 }, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 20 }, ctx);
-    expect(routeDisconnect).not.toHaveBeenCalled();
-  });
-
-  it("cue sample GO starts one-shot; panic clears; playPostStop survives stop", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 1, sampleRate: 48000 };
-    const makeSource = () => ({
-      buffer: null as unknown,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-    });
-    const sources: ReturnType<typeof makeSource>[] = [];
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => {
-        const s = makeSource();
-        sources.push(s);
-        return s;
-      }),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    let project = createProjectSeed("p1", "Cue", "2026-07-25T00:00:00.000Z");
-    project = {
-      ...project,
-      assets: [
-        {
-          id: "hit",
-          storageName: "hit.wav",
-          originalName: "hit.wav",
-          kind: "audio",
-          mimeType: "audio/wav",
-          sizeBytes: 8,
-        },
-      ],
-      cue: {
-        clips: [
-          {
-            id: "cue-1",
-            startTicks: 0,
-            lengthTicks: 960,
-            label: "Hit",
-            sample: {
-              assetId: "hit",
-              mode: "one-shot",
-              quantization: "immediate",
-              playPostStop: true,
-            },
-          },
-        ],
-      },
-    };
-
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    expect(fireCueSampleGo("p1", project, "cue-1", 0, ctx)).toBe(true);
-    expect(getAudioPlaybackDebugState().activeCueCount).toBe(1);
-    expect(sources[0]?.start).toHaveBeenCalled();
-
-    stopAudioPlayback();
-    expect(getAudioPlaybackDebugState().activeCueCount).toBe(1);
-
-    panicCueSamples();
-    expect(getAudioPlaybackDebugState().activeCueCount).toBe(0);
-    expect(sources[0]?.stop).toHaveBeenCalled();
-  });
-
-  it("readTrackMeterDb returns floor without bus; live peaks after sync", async () => {
-    expect(readTrackMeterDb("ghost").l).toBeLessThanOrEqual(-59.9);
-    expect(readHwOutMeterDb("missing-hw").l).toBeLessThanOrEqual(-59.9);
-
-    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
-    const source = {
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-      buffer: null as AudioBuffer | null,
-    };
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-    const project = projectWithClipUnderPlayhead();
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-    expect(Number.isFinite(readTrackMeterDb("tr-1").l)).toBe(true);
-  });
-
-  it("advancing playhead past clip end releases active source", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
-    const source = {
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-      buffer: null as AudioBuffer | null,
-    };
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-    const project = projectWithClipUnderPlayhead();
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-    const clip = project.audioClips[0]!;
-    const past = clip.startTicks + clip.lengthTicks + 5000;
-    syncAudioPlayback(
-      "p1",
-      { project, playing: true, displayTicks: past },
-      ctx,
-    );
-    expect(getAudioPlaybackDebugState().activeCount).toBe(0);
-    expect(source.stop).toHaveBeenCalled();
-  });
-
-  it("routes track output to hardware out bus (ensureHwOutBus)", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
-    const hwConnects: Array<{ node: unknown; args: unknown[] }> = [];
-    const source = {
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-      buffer: null as AudioBuffer | null,
-    };
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
-      createChannelMerger: vi.fn(() => {
-        const node = {
-          connect: vi.fn((...args: unknown[]) => {
-            hwConnects.push({ node, args });
-          }),
-          disconnect: vi.fn(),
-        };
-        return node;
-      }),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-    let project = createProjectSeed("p1", "HW", "2026-07-25T00:00:00.000Z");
-    project = {
-      ...project,
-      audioHardwareOutputs: [
-        {
-          id: "hw-1",
-          name: "Out 1",
-          channelMode: "stereo",
-          channelOffset: 0,
-        },
-      ],
-      assets: [
-        {
-          id: "asset-1",
-          storageName: "kick.wav",
-          originalName: "kick.wav",
-          kind: "audio",
-          mimeType: "audio/wav",
-          sizeBytes: 100,
-          durationMs: 1000,
-        },
-      ],
-      audioTracks: [
-        {
-          id: "tr-1",
-          name: "Track",
-          output: { kind: "hw_out", hwOutputId: "hw-1" },
-        },
-      ],
-      audioClips: [
-        {
-          id: "clip-1",
-          trackId: "tr-1",
-          assetId: "asset-1",
-          startTicks: 0,
-          lengthTicks: 3840,
-          muted: false,
-          gainDb: 0,
-        },
-      ],
-    };
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-    expect(readHwOutMeterDb("hw-1").l).toBeLessThanOrEqual(0);
-    expect(hwConnects.length).toBeGreaterThan(0);
-  });
-
-  it("cue GO next-beat defers start; choke stops prior one-shot", async () => {
-    vi.useFakeTimers();
-    const timeouts: Array<{ fn: () => void; ms: number }> = [];
-    vi.stubGlobal("window", {
-      setTimeout: (fn: () => void, ms: number) => {
-        timeouts.push({ fn, ms });
-        return 0;
-      },
-    });
-    const fakeBuf = { duration: 1, numberOfChannels: 1, sampleRate: 48000 };
-    const makeSource = () => ({
-      buffer: null as unknown,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-    });
-    const sources: ReturnType<typeof makeSource>[] = [];
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => {
-        const s = makeSource();
-        sources.push(s);
-        return s;
-      }),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    let project = createProjectSeed("p1", "Cue", "2026-07-25T00:00:00.000Z");
-    project = {
-      ...project,
-      assets: [
-        {
-          id: "hit",
-          storageName: "hit.wav",
-          originalName: "hit.wav",
-          kind: "audio",
-          mimeType: "audio/wav",
-          sizeBytes: 8,
-        },
-      ],
-      cue: {
-        clips: [
-          {
-            id: "cue-beat",
-            startTicks: 0,
-            lengthTicks: 960,
-            label: "Hit",
-            sample: {
-              assetId: "hit",
-              mode: "one-shot",
-              quantization: "next-beat",
-            },
-          },
-          {
-            id: "cue-choke",
-            startTicks: 0,
-            lengthTicks: 960,
-            label: "Choke",
-            sample: {
-              assetId: "hit",
-              mode: "one-shot",
-              quantization: "immediate",
-              polyphony: "choke",
-            },
-          },
-        ],
-      },
-    };
-    await ensureAudioBuffered("p1", project, 0, ctx);
-
-    expect(fireCueSampleGo("p1", project, "cue-beat", 100, ctx)).toBe(true);
-    expect(sources).toHaveLength(0);
-    expect(timeouts.length).toBeGreaterThan(0);
-    timeouts[0]!.fn();
-    expect(sources[0]?.start).toHaveBeenCalled();
-
-    expect(fireCueSampleGo("p1", project, "cue-choke", 0, ctx)).toBe(true);
-    expect(fireCueSampleGo("p1", project, "cue-choke", 0, ctx)).toBe(true);
-    expect(sources[1]?.stop).toHaveBeenCalled();
-    vi.unstubAllGlobals();
-    vi.useRealTimers();
-  });
-
-  it("adding empty buses does not restart voices or raise track gain", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
-    const source = {
-      buffer: null as AudioBuffer | null,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-    };
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    let project = projectWithClipUnderPlayhead();
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-
-    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-    expect(getAudioPlaybackDebugState().trackGainLinear["tr-1"]).toBe(1);
-    const startsBefore = (ctx.createBufferSource as ReturnType<typeof vi.fn>)
-      .mock.calls.length;
-    source.stop.mockClear();
-
-    for (let i = 0; i < 3; i++) {
-      project = {
-        ...project,
-        audioBusses: [
-          ...(project.audioBusses ?? []),
-          { id: `bus-${i}`, name: `Bus ${i + 1}`, gainDb: 0 },
-        ],
-      };
-      syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-    }
-
-    // Empty buses must not rebuild the clip graph (no stop / re-start).
-    expect(source.stop).not.toHaveBeenCalled();
-    expect(
-      (ctx.createBufferSource as ReturnType<typeof vi.fn>).mock.calls.length,
-    ).toBe(startsBefore);
-    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-    expect(getAudioPlaybackDebugState().trackGainLinear["tr-1"]).toBe(1);
-    // Group buses exist at unity but carry no track sends.
-    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-0"]).toBe(1);
-    expect(getAudioPlaybackDebugState().groupBusGainLinear["bus-2"]).toBe(1);
-  });
-
-  it("releaseActiveSource still detaches levelGain if source.disconnect throws", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 1 } as AudioBuffer;
-    const gainDisconnects: ReturnType<typeof vi.fn>[] = [];
-    const source = {
-      buffer: null as AudioBuffer | null,
-      context: { sampleRate: 44100 } as BaseAudioContext,
-      connect: vi.fn(),
-      disconnect: vi.fn(() => {
-        throw new DOMException("already disconnected", "InvalidAccessError");
-      }),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-    };
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
-      createGain: vi.fn(() => {
-        const disconnect = vi.fn();
-        gainDisconnects.push(disconnect);
-        return { connect: vi.fn(), disconnect, gain: mockAudioParam(1) };
-      }),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
 
     const project = {
       ...projectWithClipUnderPlayhead(),
-      audioTracks: [
-        {
-          id: "tr-1",
-          name: "A1",
-          muted: false,
-          gainDb: 0,
-          channelMode: "mono" as const,
-        },
-      ],
+      masterGainDb: -6,
     };
-    await ensureAudioBuffered("p1", project, 0, ctx);
-    syncAudioPlayback("p1", { project, playing: true, displayTicks: 0 }, ctx);
-    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-    const before = gainDisconnects.reduce((n, d) => n + d.mock.calls.length, 0);
+    syncAudioPlayback("p1", { project, playing: false, displayTicks: 0 }, ctx);
+    expect(gains.length).toBeGreaterThan(0);
+    // Master is the first GainNode in ensureMasterBus.
+    const masterParam = gains[0]!;
+    const cancelsAfterFirst =
+      masterParam.cancelScheduledValues.mock.calls.length;
+    expect(cancelsAfterFirst).toBeGreaterThan(0);
 
-    // Mute track → graphKey change → stopAll → releaseActiveSource.
-    const muted = {
-      ...project,
-      audioTracks: [{ ...project.audioTracks[0]!, muted: true }],
-    };
-    syncAudioPlayback(
-      "p1",
-      { project: muted, playing: true, displayTicks: 0 },
-      ctx,
+    // Same master gain on later ticks must not cancel/re-ramp.
+    syncAudioPlayback("p1", { project, playing: false, displayTicks: 0 }, ctx);
+    syncAudioPlayback("p1", { project, playing: false, displayTicks: 0 }, ctx);
+    expect(masterParam.cancelScheduledValues.mock.calls.length).toBe(
+      cancelsAfterFirst,
     );
-
-    const after = gainDisconnects.reduce((n, d) => n + d.mock.calls.length, 0);
-    // fadeGain + levelGain (at least) must disconnect even though source threw.
-    expect(after).toBeGreaterThan(before);
-    expect(getAudioPlaybackDebugState().activeCount).toBe(0);
-  });
-
-  it("removing empty buses keeps track gain at unity", async () => {
-    const fakeBuf = { duration: 1, numberOfChannels: 2 } as AudioBuffer;
-    const source = {
-      buffer: null as AudioBuffer | null,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-      onended: null as (() => void) | null,
-    };
-    const ctx = mockAudioContext({
-      decodeAudioData: vi.fn(async () => fakeBuf),
-      createBufferSource: vi.fn(() => source),
-    });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        arrayBuffer: async () => new ArrayBuffer(8),
-      })),
-    );
-
-    const base = projectWithClipUnderPlayhead();
-    const withBuses = {
-      ...base,
-      audioBusses: [
-        { id: "bus-a", name: "Bus A", gainDb: 0 },
-        { id: "bus-b", name: "Bus B", gainDb: 0 },
-      ],
-    };
-    await ensureAudioBuffered("p1", withBuses, 0, ctx);
-    syncAudioPlayback(
-      "p1",
-      { project: withBuses, playing: true, displayTicks: 0 },
-      ctx,
-    );
-    expect(getAudioPlaybackDebugState().trackGainLinear["tr-1"]).toBe(1);
-
-    syncAudioPlayback(
-      "p1",
-      {
-        project: { ...withBuses, audioBusses: [] },
-        playing: true,
-        displayTicks: 0,
-      },
-      ctx,
-    );
-    expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-    expect(getAudioPlaybackDebugState().trackGainLinear["tr-1"]).toBe(1);
-    expect(getAudioPlaybackDebugState().groupBusGainLinear).toEqual({});
   });
 
   it("stale BufferSource ended does not drop a replacement voice for the same clip", async () => {
@@ -1747,36 +871,6 @@ describe("audioPlayback helpers", () => {
     );
     expect(sources).toHaveLength(n);
     expect(getAudioPlaybackDebugState().activeCount).toBe(1);
-  });
-
-  it("dezipper skips re-ramp when the same target is already scheduled", () => {
-    const gains: ReturnType<typeof mockAudioParam>[] = [];
-    const ctx = mockAudioContext({
-      createGain: vi.fn(() => {
-        const g = mockAudioParam(1);
-        gains.push(g);
-        return { ...mockConnectable(), gain: g };
-      }),
-    });
-
-    const project = {
-      ...projectWithClipUnderPlayhead(),
-      masterGainDb: -6,
-    };
-    syncAudioPlayback("p1", { project, playing: false, displayTicks: 0 }, ctx);
-    expect(gains.length).toBeGreaterThan(0);
-    // Master is the first GainNode in ensureMasterBus.
-    const masterParam = gains[0]!;
-    const cancelsAfterFirst =
-      masterParam.cancelScheduledValues.mock.calls.length;
-    expect(cancelsAfterFirst).toBeGreaterThan(0);
-
-    // Same master gain on later ticks must not cancel/re-ramp.
-    syncAudioPlayback("p1", { project, playing: false, displayTicks: 0 }, ctx);
-    syncAudioPlayback("p1", { project, playing: false, displayTicks: 0 }, ctx);
-    expect(masterParam.cancelScheduledValues.mock.calls.length).toBe(
-      cancelsAfterFirst,
-    );
   });
 
   it("deleting clip while playing mutes gains and releases voice", async () => {

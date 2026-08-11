@@ -6,16 +6,16 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1491
-* **Liczba katalogów:** 250
-* **Data aktualizacji:** 2026-08-11T14:37:04.975Z
+* **Liczba wszystkich plików:** 1485
+* **Liczba katalogów:** 249
+* **Data aktualizacji:** 2026-08-11T20:59:45.154Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1059 |
-| Docs | 162 |
+| Kod | 1068 |
+| Docs | 147 |
 | Config | 119 |
 | Assety | 120 |
 | Inne | 31 |
@@ -24,9 +24,9 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 654 |
+| `.ts` | 663 |
 | `.tsx` | 226 |
-| `.md` | 140 |
+| `.md` | 125 |
 | `.png` | 94 |
 | `.kt` | 71 |
 | `.css` | 52 |
@@ -40,21 +40,21 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1085) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1092) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (101) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (174) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (612) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+  - **web/** (619) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
       - **brand/** (5) — Materiały brandingowe i logotypy StageSync
     - **scripts/** (10) — Skrypty pomocnicze builda i benchmarków webowych
       - **benchmark/** (8) — Skrypty benchmarków wydajnościowych UI/Audio
-    - **src/** (570) — Kod źródłowy UI i logiki klienta
+    - **src/** (577) — Kod źródłowy UI i logiki klienta
       - **dev/** (18) — Narzędzia i panele deweloperskie wewnątrz aplikacji
-      - **lib/** (232) — Biblioteki klienta (5 kategorii — bez plików w lib root)
-        - **audio/** (55) — DSP, AudioContext, tempo, waveform
+      - **lib/** (239) — Biblioteki klienta (5 kategorii — bez plików w lib root)
+        - **audio/** (62) — DSP, AudioContext, tempo, waveform
         - **client/** (66) — Preferencje, mostek desktop, i18n shell, utilities UI
         - **shell-operator/** (29) — Operatory CRUD API / aktywny projekt
         - **timeline/** (50) — Silnik renderowania timeline (bez mutacji treści)
@@ -71,21 +71,21 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (105) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+- **docs/** (90) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
   - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
-  - **analysis/** (62) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
-    - **inspiracje/** (55) — Dumpy zewnętrzne + triage (nie SSOT produktu)
+  - **analysis/** (47) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
+    - **inspiracje/** (40) — Dumpy zewnętrzne + triage (nie SSOT produktu)
     - **reports/** (4) — Raporty kanoniczne (current / milestones / hygiene)
     - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
   - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
   - **examples/** (2) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
   - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
-- **packages/** (202) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (204) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (159) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (161) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (5) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (26) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (27) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -528,7 +528,7 @@ stagesync/
 │   │   │   │   ├── devSurfaceState.ts
 │   │   │   │   └── devSurfaceTypes.ts
 │   │   │   ├── lib/
-│   │   │   │   ├── audio/  … (55 plików, 2 podkatalogi; 36 plików bezpośrednio)
+│   │   │   │   ├── audio/  … (62 pliki, 2 podkatalogi; 43 pliki bezpośrednio)
 │   │   │   │   ├── client/  … (66 plików, 2 podkatalogi; 60 plików bezpośrednio)
 │   │   │   │   ├── shell-operator/  … (29 plików, 1 podkatalog; 23 pliki bezpośrednio)
 │   │   │   │   ├── timeline/  … (50 plików, 1 podkatalog; 46 plików bezpośrednio)
@@ -652,7 +652,6 @@ stagesync/
 │   │   │   ├── audyty-silnik/  … (5 plików: .md ×5)
 │   │   │   ├── referencje-daw/  … (9 plików: .md ×9)
 │   │   │   ├── specyfikacje/  … (25 plików: .md ×25)
-│   │   │   ├── testy-pokrycie/  … (15 plików: .md ×15)
 │   │   │   └── README.md
 │   │   ├── reports/
 │   │   │   ├── current/
@@ -800,8 +799,10 @@ stagesync/
 │   │   │   │   ├── pristine-grid.test.ts
 │   │   │   │   ├── pristine-grid.ts
 │   │   │   │   ├── text-anchor-bridge-pure.test.ts
-│   │   │   │   ├── text-anchor-bridge.test.ts
+│   │   │   │   ├── text-anchor-bridge.api.test.ts
+│   │   │   │   ├── text-anchor-bridge.golden.test.ts
 │   │   │   │   ├── text-anchor-bridge.ts
+│   │   │   │   ├── text-anchor-bridge.unit.test.ts
 │   │   │   │   ├── tokenize.ts
 │   │   │   │   ├── types.ts
 │   │   │   │   ├── ug-parse.ts

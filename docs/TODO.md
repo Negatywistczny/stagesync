@@ -18,6 +18,31 @@ Otwarte zadania. Plan etapów: [ROADMAP.md](./ROADMAP.md). Historia: [CHANGELOG.
 
 - [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — lokalne alerty + tokeny + kanały; FCM = opt-in `google-services.json` (ADR 0016)
 
+### Dekompozycja dużych plików
+
+#### Skrypty DX i Narzędzia (`scripts/`)
+
+- [ ] `scripts/hub/dev-hub.ts` (2 766 LOC) &rarr; podział na `dev-hub/tasks/`, `dev-hub/ui/`, `dev-hub/env.ts`
+- [ ] `apps/desktop/scripts/build-desktop-sidecar.mjs` (914 LOC) &rarr; wydzielenie helperów budowania
+
+#### Ostatnie Pliki Produkcyjne TS/JS (`packages/` & `apps/`)
+
+- [ ] `packages/shared/src/project/schema.ts` (1 169 LOC) &rarr; podział na `schema/project.ts`, `schema/clip.ts`, `schema/mixer.ts`
+- [ ] `apps/desktop/launcher/app.js` (938 LOC) &rarr; podział na `window.js`, `updater.js`, `menu.js`
+- [ ] `packages/shared/src/text-anchor-bridge/bridge-orchestrator.ts` (526 LOC)
+
+#### Szlif UI Timeline (`apps/web`)
+
+- [ ] `TimelineShell.tsx` (5 197 LOC) &rarr; dalsze wyciąganie pod-dialogów
+- [ ] `TimelineLanesRenderer.tsx` (881 LOC)
+- [ ] `useTimelineMixerState.ts` (741 LOC)
+- [ ] `TimelineLanesView.tsx` (685 LOC)
+
+#### Kod Natywny (Rust & Kotlin)
+
+- [ ] **Rust (Tauri):** `launcher.rs` (1 448 LOC), `lib.rs` (1 439 LOC), `tray.rs` (666 LOC)
+- [ ] **Kotlin (Android):** `LauncherActivity.kt` (797 LOC), `LocalHostService.kt` (615 LOC)
+
 ## Later
 
 Kolejność i kryteria Done: [ROADMAP.md](./ROADMAP.md).

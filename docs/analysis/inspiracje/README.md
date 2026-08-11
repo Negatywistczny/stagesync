@@ -30,7 +30,6 @@ Jedno pole w triage: `**Status:** \`…\`` — **wyłącznie** token z tabeli (b
 | [`audyty-silnik/`](./audyty-silnik/README.md)   | Audyty kodu (DEFER / partial)          |
 | [`referencje-daw/`](./referencje-daw/README.md) | Spec zachowań DAW / show-tools (DEFER) |
 | [`specyfikacje/`](./specyfikacje/README.md)     | Hipotezy feature (aktywne)             |
-| [`testy-pokrycie/`](./testy-pokrycie/README.md) | Plany Vitest (DEFER / partial)         |
 
 ## Zasady
 
@@ -41,4 +40,4 @@ Jedno pole w triage: `**Status:** \`…\`` — **wyłącznie** token z tabeli (b
 
 ## Indeks (aktywne + DEFER)
 
-Szczegóły w README kategorii. Aktywne spece: Smart Tempo / Ingestia / FOH+mixer / roadmap / Safety-Net / Mobile / companiony strategii. Odłożone: Lifecycle + Race, referencje-daw, partial testy-pokrycie.
+Szczegóły w README kategorii. Aktywne spece: Smart Tempo / Ingestia / FOH+mixer / roadmap / Safety-Net / Mobile / companiony strategii. Odłożone: Lifecycle + Race, referencje-daw.

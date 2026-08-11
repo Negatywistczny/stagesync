@@ -45,7 +45,6 @@ const COLLAPSE_PATH_PREFIXES = [
     'docs/analysis/inspiracje/audyty-silnik',
     'docs/analysis/inspiracje/referencje-daw',
     'docs/analysis/inspiracje/specyfikacje',
-    'docs/analysis/inspiracje/testy-pokrycie',
     'docs/analysis/inspiracje/www',
     'docs/analysis/reports/milestones',
     'docs/analysis/reports/hygiene'
