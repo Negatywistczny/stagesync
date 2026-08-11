@@ -165,6 +165,7 @@ import { useTimelineMarquee } from "./hooks/useTimelineMarquee.js";
 import { useTimelineRulerGestures } from "./hooks/useTimelineRulerGestures.js";
 import { useTimelineMapPointerHandlers } from "./hooks/useTimelineMapPointerHandlers.js";
 import { useTimelineFormaGestures } from "./hooks/useTimelineFormaGestures.js";
+import { useTimelineDockCallbacks } from "./hooks/useTimelineDockCallbacks.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -456,32 +457,11 @@ import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
 import { ShellAlertDialog } from "../components/ShellBlockingDialog.js";
 import { loadTransport } from "../../transport/api.js";
 import { useTransport } from "../../transport/useTransport.js";
-import {
-  IconChecked,
-  IconClose,
-  IconEraser,
-  IconEye,
-  IconFade,
-  IconFullscreen,
-  IconGain,
-  IconJoin,
-  IconMarquee,
-  IconMute,
-  IconPencil,
-  IconPointer,
-  IconScissors,
-  IconSolo,
-  IconTap,
-  IconUnchecked,
-  IconWand,
-  IconZoomIn,
-} from "../components/icons.js";
-import { ConnectionIndicator } from "../client/ConnectionIndicator.js";
+import { IconFullscreen } from "../components/icons.js";
 import { ConnectionLostBanner } from "../client/ConnectionLostBanner.js";
 import { ShellIconButton } from "../components/ShellIconButton.js";
 import { AppHeader, AppHeaderActions } from "../components/AppHeader.js";
 import { OperatorNav } from "../components/OperatorNav.js";
-import { SongImportWizard } from "../import/SongImportWizard.js";
 import type { UsUgApplyPayload } from "../import/CombinedUsUgImportForm.js";
 import {
   SONG_IMPORT_EVENT,
@@ -491,7 +471,7 @@ import { TimelineToolbar } from "./TimelineToolbar.js";
 import { MixerDock } from "./MixerDock.js";
 import styles from "./TimelineShell.module.css";
 
-import { TOOLS, TOOL_BY_KEY, type ToolId } from "./timelineToolsData.js";
+import { TOOLS, type ToolId } from "./timelineToolsData.js";
 
 export function TimelineShell() {
   useAnnounceDevicePresence(["timeline"]);
@@ -559,7 +539,6 @@ export function TimelineShell() {
   }, []);
 
   const [fullscreenError, setFullscreenError] = useState<string | null>(null);
-  const inspAudioFileRef = useRef<HTMLInputElement>(null);
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
@@ -601,9 +580,7 @@ export function TimelineShell() {
     songScreenOpen,
     setSongScreenOpen,
     songImportOpen,
-    setSongImportOpen,
     importAsNewSong,
-    setImportAsNewSong,
     importApplying,
     setImportApplying,
     openSongImportWizard,
@@ -613,11 +590,8 @@ export function TimelineShell() {
   const [touchTier, setTouchTier] = useState<TimelineTouchTier>(() =>
     typeof window !== "undefined" ? detectTimelineTier() : "desktop",
   );
-  /** Match v4 `ZOOM_H_STEP` / slider bounds on status zoom H. */
-  const ZOOM_H_STEP = 4;
   const ZOOM_H_MIN = PREFS_ZOOM_H_MIN;
   const ZOOM_H_MAX = PREFS_ZOOM_H_MAX;
-  const ZOOM_V_STEP = 4;
 
   /** Phone = read/preview surface — no edit chrome / inspector (v4 mobile RO). */
   const isMobilePreview = touchTier === "mobile";
@@ -699,7 +673,7 @@ export function TimelineShell() {
     },
   });
 
-  const { audioUploadPending, audioUploadPendingRef, onUploadAudioToTrack } =
+  const { audioUploadPending, onUploadAudioToTrack } =
     useTimelineAudioUpload({
       projectId,
       draftProject,
@@ -788,10 +762,6 @@ export function TimelineShell() {
     trackId: string;
     name: string;
   } | null>(null);
-  const [busRename, setBusRename] = useState<{
-    busId: string;
-    name: string;
-  } | null>(null);
   const [audioLaneDropId, setAudioLaneDropId] = useState<string | null>(null);
   const laneImportTrackIdRef = useRef<string | null>(null);
   /** Pencil @ empty audio: place imported clip at these ticks (Logic-like). */
@@ -817,13 +787,6 @@ export function TimelineShell() {
   const selectedAudioClipId = isAudioSelectionLane(selectionLane)
     ? primaryId
     : null;
-  const marqueeRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    currentX: number;
-    currentY: number;
-  } | null>(null);
   const [canvasNotice, setCanvasNotice] = useState<string | null>(null);
   const canvasNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -2128,321 +2091,39 @@ export function TimelineShell() {
     commitDraft(setAudioTracksMuted(draftProject, trackIds, muted));
   }
 
-  function buildChannelStripCallbacks(trackId: string): ChannelStripCallbacks {
-    return {
-      onSelect: (e) => onAudioTrackHeaderClick(e, trackId),
-      onContextMenu: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openAudioTrackContextMenu(trackId, e.clientX, e.clientY);
-      },
-      onSoloClick: (e) => onAudioTrackSoloClick(e, trackId),
-      onMuteClick: (e) => onAudioTrackMuteClick(e, trackId),
-      onGainChange: (v) => {
-        if (!draftProject) return;
-        commitDraft(setAudioTrackGainDb(draftProject, trackId, v));
-      },
-      onGainReset: () => {
-        if (!draftProject) return;
-        commitDraft(setAudioTrackGainDb(draftProject, trackId, 0));
-      },
-      onPanChange: (v) => {
-        if (!draftProject) return;
-        commitDraft(setAudioTrackPan(draftProject, trackId, v));
-      },
-      onPanReset: () => {
-        if (!draftProject) return;
-        commitDraft(setAudioTrackPan(draftProject, trackId, 0));
-      },
-      onChannelModeChange: (mode) => {
-        if (!draftProject) return;
-        commitDraft(setAudioTrackChannelMode(draftProject, trackId, mode));
-      },
-      onColorChange: (color) => {
-        if (!draftProject) return;
-        commitDraft(setAudioTrackColor(draftProject, trackId, color));
-      },
-      onIconChange: (icon) => {
-        if (!draftProject) return;
-        commitDraft(setAudioTrackIcon(draftProject, trackId, icon));
-      },
-      onOutputChange: (output) => {
-        if (!draftProject) return;
-        const prev = draftProject.audioTracks.find(
-          (t) => t.id === trackId,
-        )?.output;
-        if (isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)) {
-          return;
-        }
-        commitDraft(setAudioTrackOutput(draftProject, trackId, output));
-      },
-      onNameDoubleClick: () => openTrackRename(trackId),
-      onRenameChange: (name) => {
-        setTrackRename((prev) =>
-          prev && prev.trackId === trackId ? { ...prev, name } : prev,
-        );
-      },
-      onRenameCommit: commitTrackRename,
-      onRenameCancel: cancelTrackRename,
-    };
-  }
-
-  function buildMasterStripCallbacks(): MasterStripCallbacks {
-    return {
-      onGainChange: (v) => {
-        if (!draftProject) return;
-        commitDraft(setMasterGainDb(draftProject, v));
-      },
-      onGainReset: () => {
-        if (!draftProject) return;
-        commitDraft(setMasterGainDb(draftProject, 0));
-      },
-      onOutputChange: (value) => {
-        if (!draftProject || state.playing) return;
-        const m = /^ch:(\d+)$/.exec(value);
-        if (!m) return;
-        const channelOffset = Number(m[1]);
-        try {
-          commitDraft(setMasterOutputRouting(draftProject, { channelOffset }));
-        } catch (err) {
-          setLoadError(
-            err instanceof Error
-              ? err.message
-              : "Nie udało się zmienić wyjścia Master",
-          );
-        }
-      },
-    };
-  }
-
-  function openBusRename(busId: string) {
-    const name =
-      draftProject?.audioBusses?.find((b) => b.id === busId)?.name ?? "";
-    setBusRename({ busId, name });
-  }
-
-  function commitBusRename() {
-    if (!draftProject || !busRename) return;
-    const next = setAudioBusName(draftProject, busRename.busId, busRename.name);
-    if (next !== draftProject) commitDraft(next);
-    setBusRename(null);
-  }
-
-  function openBusContextMenu(busId: string, clientX: number, clientY: number) {
-    setClipSelection(clearSelection());
-    setTrackSelection(clearTrackSelection());
-    setSelectedHwOutputId(null);
-    setSelectedBusId(busId);
-    openContextMenu({
-      x: clientX,
-      y: clientY,
-      label: "Menu busa",
-      items: [
-        {
-          id: "rename",
-          label: "Zmień nazwę",
-          onSelect: () => openBusRename(busId),
-        },
-        {
-          id: "remove",
-          label: "Usuń bus",
-          danger: true,
-          onSelect: () => {
-            if (!draftProject) return;
-            commitDraft(removeAudioBus(draftProject, busId));
-            setSoloBusIds((prev) => prev.filter((id) => id !== busId));
-            setSelectedBusId((prev) => (prev === busId ? null : prev));
-          },
-        },
-      ],
-    });
-  }
-
-  function openHwContextMenu(
-    hwOutputId: string,
-    clientX: number,
-    clientY: number,
-  ) {
-    setClipSelection(clearSelection());
-    setTrackSelection(clearTrackSelection());
-    setSelectedBusId(null);
-    setSelectedHwOutputId(hwOutputId);
-    openContextMenu({
-      x: clientX,
-      y: clientY,
-      label: "Menu HW Out",
-      items: [
-        {
-          id: "remove",
-          label: "Usuń wyjście HW",
-          danger: true,
-          onSelect: () => {
-            if (!draftProject) return;
-            commitDraft(removeAudioHardwareOutput(draftProject, hwOutputId));
-            setSelectedHwOutputId((prev) =>
-              prev === hwOutputId ? null : prev,
-            );
-          },
-        },
-      ],
-    });
-  }
-
-  function onAddBus() {
-    if (!draftProject) return;
-    try {
-      const { project } = addAudioBus(draftProject);
-      commitDraft(project);
-    } catch (err) {
-      setLoadError(
-        err instanceof Error ? err.message : "Nie udało się dodać busa",
-      );
-    }
-  }
-
-  function onAddHwOut() {
-    if (!draftProject) return;
-    const maxChannelCount = getAudioHwCapability().maxChannelCount;
-    const rows = draftProject.audioHardwareOutputs ?? [];
-    if (
-      !canAddHardwareOutput(
-        rows,
-        maxChannelCount,
-        "stereo",
-        draftProject.masterOutput,
-      )
-    ) {
-      return;
-    }
-    try {
-      const { project } = addAudioHardwareOutput(draftProject, undefined, {
-        maxChannelCount,
-      });
-      commitDraft(project);
-    } catch (err) {
-      setLoadError(
-        err instanceof Error ? err.message : "Nie udało się dodać HW Out",
-      );
-    }
-  }
-
-  function onHwGainChange(hwOutputId: string, gainDb: number) {
-    if (!draftProject) return;
-    commitDraft(
-      updateAudioHardwareOutput(draftProject, hwOutputId, { gainDb }),
-    );
-  }
-
-  function onHwMuteToggle(hwOutputId: string) {
-    if (!draftProject) return;
-    const row = draftProject.audioHardwareOutputs?.find(
-      (h) => h.id === hwOutputId,
-    );
-    commitDraft(
-      updateAudioHardwareOutput(draftProject, hwOutputId, {
-        muted: !row?.muted,
-      }),
-    );
-  }
-
-  function onHwChannelModeChange(hwOutputId: string, mode: "mono" | "stereo") {
-    if (!draftProject) return;
-    commitDraft(
-      updateAudioHardwareOutput(draftProject, hwOutputId, {
-        channelMode: mode,
-      }),
-    );
-  }
-
-  function onHwSelect(hwOutputId: string, e: React.MouseEvent) {
-    if ((e.target as HTMLElement).closest("button, label, input")) {
-      return;
-    }
-    setClipSelection(clearSelection());
-    setTrackSelection(clearTrackSelection());
-    setSelectedBusId(null);
-    setSelectedHwOutputId(hwOutputId);
-  }
-
-  function onHwContextMenu(hwOutputId: string, e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    openHwContextMenu(hwOutputId, e.clientX, e.clientY);
-  }
-
-  function buildBusCallbacks(busId: string): ChannelStripCallbacks {
-    return {
-      onSelect: () => {
-        setClipSelection(clearSelection());
-        setTrackSelection(clearTrackSelection());
-        setSelectedHwOutputId(null);
-        setSelectedBusId(busId);
-      },
-      onContextMenu: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openBusContextMenu(busId, e.clientX, e.clientY);
-      },
-      onSoloClick: (e) => {
-        e.stopPropagation();
-        const allIds = (draftProject?.audioBusses ?? []).map((b) => b.id);
-        setSoloBusIds((prev) => {
-          const on = prev.includes(busId);
-          if (e.altKey) return on && prev.length === 1 ? [] : [busId];
-          if (on) return prev.filter((id) => id !== busId);
-          return [...prev, busId].filter((id) => allIds.includes(id));
-        });
-        // Bus solo clears track solo (exclusive lanes).
-        setSoloAudioTrackIds([]);
-      },
-      onMuteClick: (e) => {
-        e.stopPropagation();
-        if (!draftProject) return;
-        const bus = draftProject.audioBusses?.find((b) => b.id === busId);
-        commitDraft(setAudioBusMuted(draftProject, busId, !bus?.muted));
-      },
-      onGainChange: (v) => {
-        if (!draftProject) return;
-        commitDraft(setAudioBusGainDb(draftProject, busId, v));
-      },
-      onGainReset: () => {
-        if (!draftProject) return;
-        commitDraft(setAudioBusGainDb(draftProject, busId, 0));
-      },
-      onPanChange: (v) => {
-        if (!draftProject) return;
-        commitDraft(setAudioBusPan(draftProject, busId, v));
-      },
-      onPanReset: () => {
-        if (!draftProject) return;
-        commitDraft(setAudioBusPan(draftProject, busId, 0));
-      },
-      onChannelModeChange: (mode) => {
-        if (!draftProject) return;
-        commitDraft(setAudioBusChannelMode(draftProject, busId, mode));
-      },
-      onOutputChange: (output) => {
-        if (!draftProject) return;
-        const bus = draftProject.audioBusses?.find((b) => b.id === busId);
-        const prev =
-          bus?.output?.kind === "hw_out" || bus?.output?.kind === "bus"
-            ? bus.output
-            : ({ kind: "master" } as const);
-        if (isHwOutRepatchBlockedWhilePlaying(state.playing, prev, output)) {
-          return;
-        }
-        commitDraft(setAudioBusOutput(draftProject, busId, output));
-      },
-      onNameDoubleClick: () => openBusRename(busId),
-      onRenameChange: (name) => {
-        setBusRename((prev) =>
-          prev && prev.busId === busId ? { ...prev, name } : prev,
-        );
-      },
-      onRenameCommit: commitBusRename,
-      onRenameCancel: () => setBusRename(null),
-    };
-  }
+  const {
+    busRename,
+    buildChannelStripCallbacks,
+    buildMasterStripCallbacks,
+    onAddBus,
+    onAddHwOut,
+    onHwGainChange,
+    onHwMuteToggle,
+    onHwChannelModeChange,
+    onHwSelect,
+    onHwContextMenu,
+    buildBusCallbacks,
+  } = useTimelineDockCallbacks({
+    draftProject,
+    commitDraft,
+    state,
+    setLoadError,
+    onAudioTrackHeaderClick,
+    openAudioTrackContextMenu,
+    onAudioTrackSoloClick,
+    onAudioTrackMuteClick,
+    openTrackRename,
+    setTrackRename,
+    commitTrackRename,
+    cancelTrackRename,
+    setClipSelection,
+    setTrackSelection,
+    setSelectedBusId,
+    setSelectedHwOutputId,
+    setSoloBusIds,
+    setSoloAudioTrackIds,
+    openContextMenu,
+  });
 
   function onClipRename(name: string) {
     if (!draftProject || !selectedClip) return;
