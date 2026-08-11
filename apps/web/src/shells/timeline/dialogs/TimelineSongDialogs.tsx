@@ -45,9 +45,11 @@ export type TimelineSongDialogsProps = {
   songImportOpen: boolean;
   importAsNewSong: boolean;
   importApplying: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   importPreviewOptions: any;
   openSongImportWizard: (asNew: boolean) => void;
   closeImportModals: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onImportUsUgBridge: (res: any) => void;
   onImportUltrastar: (res: UltrastarImportOk) => void;
   onImportUg: (
