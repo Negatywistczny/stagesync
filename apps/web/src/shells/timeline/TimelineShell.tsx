@@ -158,6 +158,7 @@ import { TimelineMapDialogs } from "./dialogs/TimelineMapDialogs.js";
 import { useTimelineMixerState } from "./hooks/useTimelineMixerState.js";
 import { useTimelineAudioUpload } from "./hooks/useTimelineAudioUpload.js";
 import { useTimelineContextMenus } from "./hooks/useTimelineContextMenus.js";
+import { useTimelineKeyboardEvents } from "./hooks/useTimelineKeyboardEvents.js";
 import { useTimelineMapEdits } from "./hooks/useTimelineMapEdits.js";
 import { useTimelineWandTool } from "./hooks/useTimelineWandTool.js";
 import { useTimelineMarquee } from "./hooks/useTimelineMarquee.js";
@@ -572,10 +573,6 @@ export function TimelineShell() {
   const effectiveLocatorTicksRef = useRef(0);
   const [tapLineIndex, setTapLineIndex] = useState(0);
   const tapLineIndexRef = useRef(0);
-  tapLineIndexRef.current = tapLineIndex;
-  const [heldZoom, setHeldZoom] = useState(false);
-  const heldZoomRef = useRef(false);
-  heldZoomRef.current = heldZoom;
   const [snapMode, setSnapMode] = useState<SnapMode>(() =>
     loadSessionSnapModeFromStorage(),
   );
@@ -1143,53 +1140,7 @@ export function TimelineShell() {
     setInspectorVisible((v) => !v);
   }, [touchTier]);
 
-  useEffect(() => {
-    const scrollEl = document.querySelector(
-      "[data-canvas-scroll]",
-    ) as HTMLElement | null;
-    if (!scrollEl) return;
 
-    function onWheel(e: WheelEvent) {
-      if (isEditableKeyboardTarget(document.activeElement)) {
-        return;
-      }
-      const h = keyHandlersRef.current;
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        const steps = e.deltaY < 0 ? 1 : e.deltaY > 0 ? -1 : 0;
-        const rect = scrollEl!.getBoundingClientRect();
-        h.zoomHorizontalBySteps(steps, e.clientX - rect.left);
-        return;
-      }
-      if (e.altKey) {
-        e.preventDefault();
-        const useHorizontal =
-          e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY);
-        if (useHorizontal) {
-          const delta =
-            Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-          const steps = delta < 0 ? 1 : delta > 0 ? -1 : 0;
-          const rect = scrollEl!.getBoundingClientRect();
-          h.zoomHorizontalBySteps(steps, e.clientX - rect.left);
-        } else {
-          const steps = e.deltaY < 0 ? 1 : e.deltaY > 0 ? -1 : 0;
-          h.zoomVerticalBySteps(steps);
-        }
-        return;
-      }
-      if (
-        e.shiftKey &&
-        Math.abs(e.deltaY) > Math.abs(e.deltaX) &&
-        e.deltaY !== 0
-      ) {
-        e.preventDefault();
-        scrollEl!.scrollLeft += e.deltaY;
-      }
-    }
-
-    scrollEl.addEventListener("wheel", onWheel, { passive: false });
-    return () => scrollEl.removeEventListener("wheel", onWheel);
-  }, [projectId, draftProject]);
 
   const bindTrackRowsRef = useCallback((node: HTMLDivElement | null) => {
     trackRowsRoRef.current?.disconnect();
@@ -1388,6 +1339,15 @@ export function TimelineShell() {
     );
   }, []);
 
+  const { heldZoom, heldZoomRef } = useTimelineKeyboardEvents({
+    keyHandlersRef,
+    deleteSelectedFormaClip,
+    openPreferences,
+    setHelpOpen,
+    projectId,
+    draftProject,
+  });
+
   const {
     loopDraft,
     placeLocatorAtTicks,
@@ -1418,7 +1378,6 @@ export function TimelineShell() {
     touchCanvasNavActive,
     beginMarquee,
     beginTouchCanvasNav,
-    finishTouchCanvasNav,
   } = useTimelineMarquee({
     toolRef,
     heldZoomRef,
@@ -1725,80 +1684,7 @@ export function TimelineShell() {
     // audioAssetDecodeKey tracks which audio assets still need meta.
   }, [projectId, audioAssetDecodeKey, draftProject]);
 
-  useEffect(() => {
-    function onMenu(ev: Event) {
-      const detail = parseDesktopMenuDetail(ev);
-      if (!detail) return;
-      const h = keyHandlersRef.current;
-      switch (detail.action) {
-        case "save":
-        case "file-save":
-          if (h.dirty && !h.savePending) void h.onSave();
-          break;
-        case "edit-undo":
-          h.onUndo();
-          break;
-        case "edit-redo":
-          h.onRedo();
-          break;
-        case "edit-cut":
-          if (hasNonCollapsedDomTextSelection()) {
-            try {
-              document.execCommand("cut");
-            } catch {
-              /* best-effort native text */
-            }
-            break;
-          }
-          h.onClipCut();
-          break;
-        case "edit-copy":
-          if (hasNonCollapsedDomTextSelection()) {
-            try {
-              document.execCommand("copy");
-            } catch {
-              /* best-effort native text */
-            }
-            break;
-          }
-          h.onClipCopy();
-          break;
-        case "edit-paste":
-          if (isEditableKeyboardTarget(document.activeElement)) {
-            try {
-              document.execCommand("paste");
-            } catch {
-              /* best-effort native text */
-            }
-            break;
-          }
-          h.onClipPaste();
-          break;
-        case "edit-delete":
-          deleteSelectedFormaClip();
-          break;
-        case "view-zoom-in":
-          h.zoomHorizontalBySteps(1);
-          break;
-        case "view-zoom-out":
-          h.zoomHorizontalBySteps(-1);
-          break;
-        case "view-zoom-reset":
-          h.fitZoom();
-          break;
-        case "appearance":
-          openPreferences("general");
-          break;
-        case "help-shortcuts":
-          setHelpOpen(true);
-          break;
-        default:
-          break;
-      }
-    }
-    window.addEventListener(DESKTOP_MENU_EVENT, onMenu);
-    return () => window.removeEventListener(DESKTOP_MENU_EVENT, onMenu);
-  }, [deleteSelectedFormaClip]);
+
 
   useEffect(() => {
     const canU = Boolean(draftHistory && canUndo(draftHistory));
@@ -3052,32 +2938,7 @@ export function TimelineShell() {
     endFormaGesture(e.metaKey, e.ctrlKey);
   }
 
-  useEffect(() => {
-    function onPointerMove(e: PointerEvent) {
-      lastPointerRef.current = { x: e.clientX, y: e.clientY };
-      const nextHeld = e.ctrlKey && e.altKey;
-      if (nextHeld !== heldZoomRef.current) {
-        heldZoomRef.current = nextHeld;
-        setHeldZoom(nextHeld);
-      }
-    }
-    function onKeyChange(e: KeyboardEvent) {
-      if (e.key !== "Control" && e.key !== "Alt" && e.key !== "Meta") return;
-      const nextHeld = e.ctrlKey && e.altKey;
-      if (nextHeld !== heldZoomRef.current) {
-        heldZoomRef.current = nextHeld;
-        setHeldZoom(nextHeld);
-      }
-    }
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("keydown", onKeyChange);
-    window.addEventListener("keyup", onKeyChange);
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("keydown", onKeyChange);
-      window.removeEventListener("keyup", onKeyChange);
-    };
-  }, []);
+
 
   useEffect(() => {
     if (!toolMenu) return;
