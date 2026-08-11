@@ -9,6 +9,10 @@ minimumReleaseAge: 0
 forceLegacyDeploy: true
 # Avoid TTY prompt when install switches away from deploy --prod state.
 confirmModulesPurge: false
+# GHSA-2v37-7h3g-55p8: vite pins postcss@8.5.25 → nanoid@3.3.16;
+# 8.5.26 bumps nanoid to ^3.3.17 (vite already allows ^8.5.25).
+overrides:
+  postcss: ">=8.5.26"
 allowBuilds:
   "@julusian/midi": true
   esbuild: true

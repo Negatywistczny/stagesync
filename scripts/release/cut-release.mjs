@@ -338,6 +338,7 @@ function assertNoOwnerTypo() {
     ":!.cursor/**",
     ":!scripts/release/cut-release.mjs",
     ":!scripts/release/cut-release.test.mjs",
+    ":!scripts/dev-hub.ts",
   ]);
   // exit 0 = matches · 1 = none · other = error
   if (grepped.status === 0 && grepped.stdout.trim()) {

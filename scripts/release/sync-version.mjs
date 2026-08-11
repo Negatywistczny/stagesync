@@ -3,11 +3,12 @@
  * sync-version.mjs — propagate a single version string to all version-bearing files.
  *
  * Usage:
- *   node scripts/sync-version.mjs [--version <semver>] [--dry-run]
+ *   node scripts/sync-version.mjs [--version <semver>] [--dry-run] [--check]
  *
  * If --version is omitted, the version is read from root package.json.
  * In CI release workflow, pass the tag-derived version via --version.
  * In workflow_dispatch (test), pass --version without committing to main.
+ * `--dry-run` previews writes without failing. `--check` = dry-run + exit 1 on drift.
  *
  * Files updated:
  *   - apps/web/src/lib/client/appVersion.ts
@@ -32,7 +33,8 @@ function arg(flag) {
   return idx !== -1 ? process.argv[idx + 1] : undefined;
 }
 
-const dryRun = process.argv.includes("--dry-run");
+const check = process.argv.includes("--check");
+const dryRun = check || process.argv.includes("--dry-run");
 const wixCompat = process.argv.includes("--wix-compat");
 const root_pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
 const version = arg("--version") ?? root_pkg.version;
@@ -42,7 +44,8 @@ if (!version || !/^\d+\.\d+\.\d+/.test(version)) {
   process.exit(1);
 }
 
-console.log(`sync-version: ${version}${dryRun ? " (dry-run)" : ""}`);
+const modeLabel = check ? " (check)" : dryRun ? " (dry-run)" : "";
+console.log(`sync-version: ${version}${modeLabel}`);
 
 /** MSI/WiX requires numeric major.minor.patch[.build]; map SemVer pre-release to 4th field. */
 function toWixVersion(semver) {
@@ -162,6 +165,7 @@ function applyAndroidVersion(content, nextVersion) {
     .replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${nextVersion}"`);
 }
 
+const drifted = [];
 for (const { path, transform } of updates) {
   const abs = resolve(ROOT, path);
   const original = readFileSync(abs, "utf8");
@@ -170,8 +174,26 @@ for (const { path, transform } of updates) {
     console.log(`  (unchanged) ${path}`);
     continue;
   }
+  drifted.push(path);
   console.log(`  updated     ${path}`);
   if (!dryRun) writeFileSync(abs, updated, "utf8");
 }
 
-if (dryRun) console.log("dry-run — no files written");
+if (dryRun) {
+  if (drifted.length === 0) {
+    console.log(
+      `${check ? "check" : "dry-run"} — no files written · in sync`,
+    );
+  } else {
+    console.log(
+      `${check ? "check" : "dry-run"} — no files written · drift=${drifted.length}`,
+    );
+  }
+}
+
+if (check && drifted.length > 0) {
+  console.error(
+    `sync-version: version drift in ${drifted.length} file(s): ${drifted.join(", ")}`,
+  );
+  process.exit(1);
+}

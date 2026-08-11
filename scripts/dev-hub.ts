@@ -370,6 +370,82 @@ function parseDocsLinksDetail(output: string, ok: boolean): string {
   return ok ? `${m[1]} checked` : `${m[2]} broken / ${m[1]} checked`;
 }
 
+/** Human `pnpm audit` summary for gate detail. */
+function parsePnpmAuditDetail(output: string, ok: boolean): string {
+  const plain = stripAnsi(output);
+  if (/No known vulnerabilities found/i.test(plain)) {
+    return "0 vulnerabilities";
+  }
+  const found = plain.match(/(\d+)\s+vulnerabilit(?:y|ies)\s+found/i);
+  const severity = plain.match(/Severity:\s*(.+)/i);
+  if (found && severity) {
+    return `${found[1]} found (${severity[1].trim()})`;
+  }
+  if (found) return `${found[1]} found`;
+  return ok ? "OK" : (firstFailureHint(output) ?? "błąd");
+}
+
+/** `sync-version --check` / dry-run summary. */
+function parseSyncVersionDetail(output: string, ok: boolean): string {
+  const plain = stripAnsi(output);
+  if (/in sync/i.test(plain)) return "in sync";
+  const drift = plain.match(/drift=(\d+)/i);
+  if (drift) {
+    const files = plain.match(/version drift in \d+ file\(s\):\s*(.+)/i)?.[1];
+    return files ? `drift ${drift[1]}: ${files.trim()}` : `drift ${drift[1]}`;
+  }
+  return ok ? "OK" : (firstFailureHint(output) ?? "błąd");
+}
+
+const GITHUB_OWNER = "Negatywistczny";
+const OWNER_TYPO = "Negatywistyczny";
+
+/** Fail if the known GitHub owner typo appears outside intentional script/test mentions. */
+function runOwnerTypoGate(): GateStep {
+  const grepped = spawnSync(
+    "git",
+    [
+      "grep",
+      "-n",
+      "-I",
+      OWNER_TYPO,
+      "--",
+      ".",
+      ":!.cursor/**",
+      ":!scripts/release/cut-release.mjs",
+      ":!scripts/release/cut-release.test.mjs",
+      ":!scripts/dev-hub.ts",
+    ],
+    { cwd: rootDir, encoding: "utf8" },
+  );
+  // exit 0 = matches · 1 = none · other = error
+  if (grepped.status === 0 && (grepped.stdout ?? "").trim()) {
+    const hits = (grepped.stdout ?? "").trim().split(/\r?\n/).filter(Boolean);
+    const preview = hits.slice(0, 3).join("; ");
+    const more = hits.length > 3 ? ` (+${hits.length - 3})` : "";
+    return {
+      id: "owner-typo",
+      label: "owner typo",
+      ok: false,
+      detail: `${hits.length}× ${OWNER_TYPO} → ${GITHUB_OWNER}: ${preview}${more}`,
+    };
+  }
+  if (grepped.status !== 0 && grepped.status !== 1) {
+    return {
+      id: "owner-typo",
+      label: "owner typo",
+      ok: false,
+      detail: firstFailureHint(grepped.stderr ?? "") ?? "git grep failed",
+    };
+  }
+  return {
+    id: "owner-typo",
+    label: "owner typo",
+    ok: true,
+    detail: `brak „${OWNER_TYPO}”`,
+  };
+}
+
 /** Load unset STAGESYNC_* keys from root `.env` (mirrors server dotenv for hub). */
 function hydrateStagesyncEnvFromDotenv() {
   const envPath = path.join(rootDir, ".env");
@@ -855,9 +931,10 @@ function runWebE2eWithBrowserBootstrap(): GateStep {
 }
 
 /**
- * Kompletny audyt: Codzienny gate + unlinked + map + coverage + e2e + build.
+ * Kompletny audyt: Codzienny gate + unlinked + map + coverage + e2e + build +
+ * launcher sync/test + version drift + owner typo + pnpm audit.
  * Auto-fix: unlinked links; Playwright browser install+retry on missing binary.
- * Skips interactive Sync Launcher UI and Smart Tempo benchmark.
+ * Skips interactive Tauri build/installers and Smart Tempo benchmark.
  */
 function runFullAudit(): boolean {
   warnSideEffects([
@@ -865,10 +942,11 @@ function runFullAudit(): boolean {
     "unlinked: może auto-naprawić linki w Markdown (mutacja docs)",
     "e2e: może zabić procesy na :3000/:4000 i doinstalować Playwright / pnpm install",
     "generate:map zapisuje docs/REPO_MAP.md tylko przy zmianie struktury; coverage → coverage/",
+    "sync:launcher-ui może nadpisać apps/desktop/launcher/vendor/*.css",
     "Długi przebieg (często wiele minut)",
   ]);
   clack.note(
-    "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build…",
+    "Kompletny audyt: format → CI → links → unlinked → knip → map → coverage → e2e → build → launcher → version → owner → pnpm audit…",
   );
   const steps: GateStep[] = [
     gateStepMutatingPnpm("format", "format (Prettier)", ["format"]),
@@ -909,6 +987,29 @@ function runFullAudit(): boolean {
     })(),
     runWebE2eWithBrowserBootstrap(),
     gateStepFromCaptured("build", "build", "pnpm", ["build"]),
+    gateStepMutatingPnpm("launcher-sync", "sync:launcher-ui", [
+      "sync:launcher-ui",
+    ]),
+    gateStepFromCaptured("desktop-test", "desktop launcher tests", "pnpm", [
+      "--filter",
+      "@stagesync/desktop",
+      "test",
+    ]),
+    gateStepFromCaptured(
+      "version-sync",
+      "sync-version --check",
+      "node",
+      ["scripts/release/sync-version.mjs", "--check"],
+      {
+        ok: (output) => parseSyncVersionDetail(output, true),
+        fail: (output) => parseSyncVersionDetail(output, false),
+      },
+    ),
+    runOwnerTypoGate(),
+    gateStepFromCaptured("audit", "pnpm audit", "pnpm", ["audit"], {
+      ok: (output) => parsePnpmAuditDetail(output, true),
+      fail: (output) => parsePnpmAuditDetail(output, false),
+    }),
   ];
   return summarizeGate("Kompletny audyt", steps);
 }
@@ -1498,7 +1599,8 @@ async function menuTestingVerify() {
       },
       {
         value: "full-audit",
-        label: "3. 🧨  Kompletny audyt (+ unlinked, map, coverage, e2e, build)",
+        label:
+          "3. 🧨  Kompletny audyt (+ unlinked, map, coverage, e2e, build, launcher, version, audit)",
       },
       { value: "back", label: "0. ↩️   Powrót" },
     ],
@@ -2093,7 +2195,7 @@ async function main() {
       runCommand("pnpm", ["up", "-i", "-r", "--latest"]);
       return;
     }
-    if (flag === "audit") {
+    if (flag === "security" || flag === "pnpm-audit") {
       clack.note(
         "Uruchamianie audytu bezpieczeństwa zależności (pnpm audit)...",
       );

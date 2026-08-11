@@ -98,7 +98,7 @@ W TUI opcje z **submenu** kończą się znakiem `›` (np. `Testy & Jakość ›
 >
 > 1. **Lustrzane CI**: tylko `check-types` → `lint:ss-css` → `lint` → `test` (bez formatu / mutacji).
 > 2. **Codzienny gate**: j.w. + `format` + docs links + knip (domyślny check przed pushem).
-> 3. **Kompletny audyt**: j.w. + unlinked (gate, **auto-fix** linków) → map → coverage → e2e (**env auto-fix**: shared build, wolne :3000/:4000, świeże webServery, Playwright install / `pnpm install` przy typowych brakach + 1 retry) → build. Bez Sync Launcher UI i Smart Tempo.
+> 3. **Kompletny audyt**: j.w. + unlinked (gate, **auto-fix** linków) → map → coverage → e2e (**env auto-fix**: shared build, wolne :3000/:4000, świeże webServery, Playwright install / `pnpm install` przy typowych brakach + 1 retry) → build → `sync:launcher-ui` + testy launchera desktop → `sync-version --check` → gate literówki ownera → `pnpm audit`. Bez instalatorów Tauri i Smart Tempo.
 >
 > Podsumowanie każdego Verify wypisuje krótkie `detail` per krok (liczby testów / links; auto-fix / instalacja e2e **tylko gdy faktycznie zaszły**) oraz linię **Zmienione pliki** gdy krok zapisał pliki (`format`, `unlinked`, `generate:map`).
 >
@@ -166,28 +166,28 @@ Możesz uruchamiać moduły bezpośrednio z terminala z pominięciem interaktywn
 
 > `[cmd]` oznacza polecenie uruchomienia np. `dev`, `.\dev` lub `./dev`
 
-| Skrót CLI        | Aliasy                        | Opis i Działanie                                                                           |
-| ---------------- | ----------------------------- | ------------------------------------------------------------------------------------------ |
-| `[cmd] doctor`   | —                             | **Preflight Scan**: Skan środowiska (Node, pnpm, Rust, `gh`, porty, data dir, `.env`).     |
-| `[cmd] ports`    | —                             | **Safe Port Guard**: Wykrywanie i zamykanie procesów LISTEN (:3000 / :4000).               |
-| `[cmd] clean`    | —                             | **Cache Cleaner**: Głębokie czyszczenie pamięci podręcznej i artefaktów buildów.           |
-| `[cmd] network`  | `ip`                          | **LAN Info & QR**: Podgląd IP w sieci lokalnej i kod QR dla urządzeń mobilnych.            |
-| `[cmd] web`      | `dev`                         | **Dev Profile**: Web UI (:3000) + API Server (:4000).                                      |
-| `[cmd] desktop`  | —                             | **Dev Profile**: Powłoka Tauri w trybie deweloperskim.                                     |
-| `[cmd] types`    | —                             | **TypeScript Check**: Weryfikacja typów w całym monorepo.                                  |
-| `[cmd] verify`   | `ci`                          | **Lustrzane CI**: `check-types` → `lint:ss-css` → `lint` → `test` (bez format; exit code). |
-| `[cmd] pr`       | `before-pr`, `daily`, `gate`  | **Codzienny gate**: Lustrzane CI + `format` + docs links + knip (exit code).               |
-| `[cmd] all`      | `full`, `everything`, `audit` | **Kompletny audyt**: + unlinked (auto-fix) + map + coverage + e2e (env auto-fix) + build.  |
-| `[cmd] knip`     | —                             | **Dead Code Detector**: Wykrywanie nieużywanego kodu i zależności.                         |
-| `[cmd] ss-css`   | `css`                         | **CSS Token Guard**: Walidacja zmiennych CSS (`--ss-*`).                                   |
-| `[cmd] links`    | —                             | **Docs Link Checker**: Weryfikacja odnośników w dokumentacji Markdown.                     |
-| `[cmd] map`      | —                             | **Repo Map Generator**: Aktualizacja pliku [`docs/REPO_MAP.md`](../REPO_MAP.md).           |
-| `[cmd] test`     | —                             | **Testing Suite**: Sub-menu Verify / Docs / Unit / Build.                                  |
-| `[cmd] release`  | —                             | **Release Hub**: Interaktywne zarządzanie wydaniami i tagami SemVer.                       |
-| `[cmd] deps`     | `dependencies`, `pnpm`        | **Pakiety & Zależności**: Przejście do sub-menu zarządzania pakietami.                     |
-| `[cmd] outdated` | —                             | **Outdated Check**: Sprawdzanie nieaktualnych pakietów w monorepo.                         |
-| `[cmd] up`       | `update`                      | **Interactive Update**: Interaktywna aktualizacja pakietów (`pnpm up`).                    |
-| `[cmd] audit`    | —                             | **Security Audit**: Audyt bezpieczeństwa zależności (`pnpm audit`).                        |
+| Skrót CLI        | Aliasy                        | Opis i Działanie                                                                                                                                           |
+| ---------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `[cmd] doctor`   | —                             | **Preflight Scan**: Skan środowiska (Node, pnpm, Rust, `gh`, porty, data dir, `.env`).                                                                     |
+| `[cmd] ports`    | —                             | **Safe Port Guard**: Wykrywanie i zamykanie procesów LISTEN (:3000 / :4000).                                                                               |
+| `[cmd] clean`    | —                             | **Cache Cleaner**: Głębokie czyszczenie pamięci podręcznej i artefaktów buildów.                                                                           |
+| `[cmd] network`  | `ip`                          | **LAN Info & QR**: Podgląd IP w sieci lokalnej i kod QR dla urządzeń mobilnych.                                                                            |
+| `[cmd] web`      | `dev`                         | **Dev Profile**: Web UI (:3000) + API Server (:4000).                                                                                                      |
+| `[cmd] desktop`  | —                             | **Dev Profile**: Powłoka Tauri w trybie deweloperskim.                                                                                                     |
+| `[cmd] types`    | —                             | **TypeScript Check**: Weryfikacja typów w całym monorepo.                                                                                                  |
+| `[cmd] verify`   | `ci`                          | **Lustrzane CI**: `check-types` → `lint:ss-css` → `lint` → `test` (bez format; exit code).                                                                 |
+| `[cmd] pr`       | `before-pr`, `daily`, `gate`  | **Codzienny gate**: Lustrzane CI + `format` + docs links + knip (exit code).                                                                               |
+| `[cmd] all`      | `full`, `everything`, `audit` | **Kompletny audyt**: + unlinked (auto-fix) + map + coverage + e2e (env auto-fix) + build + launcher sync/test + version check + owner typo + `pnpm audit`. |
+| `[cmd] knip`     | —                             | **Dead Code Detector**: Wykrywanie nieużywanego kodu i zależności.                                                                                         |
+| `[cmd] ss-css`   | `css`                         | **CSS Token Guard**: Walidacja zmiennych CSS (`--ss-*`).                                                                                                   |
+| `[cmd] links`    | —                             | **Docs Link Checker**: Weryfikacja odnośników w dokumentacji Markdown.                                                                                     |
+| `[cmd] map`      | —                             | **Repo Map Generator**: Aktualizacja pliku [`docs/REPO_MAP.md`](../REPO_MAP.md).                                                                           |
+| `[cmd] test`     | —                             | **Testing Suite**: Sub-menu Verify / Docs / Unit / Build.                                                                                                  |
+| `[cmd] release`  | —                             | **Release Hub**: Interaktywne zarządzanie wydaniami i tagami SemVer.                                                                                       |
+| `[cmd] deps`     | `dependencies`, `pnpm`        | **Pakiety & Zależności**: Przejście do sub-menu zarządzania pakietami.                                                                                     |
+| `[cmd] outdated` | —                             | **Outdated Check**: Sprawdzanie nieaktualnych pakietów w monorepo.                                                                                         |
+| `[cmd] up`       | `update`                      | **Interactive Update**: Interaktywna aktualizacja pakietów (`pnpm up`).                                                                                    |
+| `[cmd] security` | `pnpm-audit`                  | **Security Audit**: Audyt bezpieczeństwa zależności (`pnpm audit`).                                                                                        |
 
 ---
 
