@@ -14,18 +14,6 @@ import {
   type TempoNode,
   type TextAnchorBridgeOk,
 } from "@stagesync/shared";
-import {
-  auditionBeatIndex,
-  beatPeriodMsFromBpm,
-  parseAuditionBpm,
-  stopBeatMapperAudition,
-  type BeatMapperAuditionVoice,
-} from "@lib/audio/beatMapperAudition.js";
-import {
-  getMetronomeAudioContext,
-  resumeMetronomeAudio,
-  scheduleMetronomeClickAt,
-} from "@lib/audio/metronome.js";
 import { defaultBeatMapperZoom } from "@lib/audio/beatMapperView.js";
 import { AudioDropzone } from "./AudioDropzone.js";
 import styles from "./BeatMapperPane.module.css";
@@ -37,6 +25,8 @@ import {
   ZOOM_MAX,
   ZOOM_MIN,
 } from "./beatMapper/waveMath.js";
+import { useBeatMapperAudition } from "./beatMapper/useBeatMapperAudition.js";
+import { useBeatMapperInteractions } from "./beatMapper/useBeatMapperInteractions.js";
 
 export type BeatMapperPaneProps = {
   bridge: TextAnchorBridgeOk;
@@ -71,31 +61,14 @@ export function BeatMapperPane({
   onRegisterPlayToggle,
   disabled = false,
 }: BeatMapperPaneProps) {
-  const [playing, setPlaying] = useState(false);
-  const [cursorMs, setCursorMs] = useState(0);
-  const [displayNodes, setDisplayNodes] = useState(tempoNodes);
-  const [dragNodeIdx, setDragNodeIdx] = useState<number | null>(null);
-  const [dragBeat1, setDragBeat1] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [viewStartMs, setViewStartMs] = useState(0);
   const [frameWidth, setFrameWidth] = useState(800);
 
-  const playRef = useRef<BeatMapperAuditionVoice | null>(null);
-  const playingRef = useRef(false);
-  const auditionEpochRef = useRef(0);
   const frameRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorMsRef = useRef(0);
-  const dragNodesRef = useRef(tempoNodes);
-  const dragIdxRef = useRef<number | null>(null);
-  const dragBeat1Ref = useRef(false);
-  const togglePlayRef = useRef<() => void>(() => undefined);
   const viewRef = useRef({ start: 0, duration: 1, total: 1 });
-
-  useEffect(() => {
-    dragNodesRef.current = tempoNodes;
-    setDisplayNodes(tempoNodes);
-  }, [tempoNodes]);
 
   const hasAudio = audio != null && audio.durationMs > 0;
 
@@ -175,14 +148,14 @@ export function BeatMapperPane({
   );
 
   const beatMarkerMs = useMemo(() => {
-    return displayNodes.map((n) => {
+    return tempoNodes.map((n) => {
       try {
         return ticksToMsAlongTempoMap(0, n.targetTick, tempoProject);
       } catch {
         return n.wallMs;
       }
     });
-  }, [displayNodes, tempoProject]);
+  }, [tempoNodes, tempoProject]);
 
   const beat1AnchorMs = Math.max(0, audioStartOffsetMs);
 
@@ -227,206 +200,45 @@ export function BeatMapperPane({
     el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
   }, []);
 
+  const { playing, cursorMs, setCursorMs, stopPlayback, togglePlay } =
+    useBeatMapperAudition({
+      localAudioBuffer,
+      gridBpmDisplay,
+      seedBpm: bridge.seedBpm,
+      audioStartOffsetMs,
+      meterNumerator: meter.numerator,
+      updateCursorDom,
+      onRegisterPlayToggle,
+    });
+
   useEffect(() => {
     updateCursorDom(cursorMs);
   }, [cursorMs, viewStartMs, viewDurationMs, updateCursorDom]);
 
-  const stopPlayback = useCallback(() => {
-    auditionEpochRef.current += 1;
-    const voice = playRef.current;
-    if (voice) {
-      const elapsedMs =
-        voice.startMs +
-        (getMetronomeAudioContext().currentTime - voice.startCtx) * 1000;
-      setCursorMs(Math.max(0, elapsedMs));
-      updateCursorDom(Math.max(0, elapsedMs));
-    }
-    stopBeatMapperAudition(playRef.current, playingRef);
-    playRef.current = null;
-    setPlaying(false);
-  }, [updateCursorDom]);
-
-  useEffect(() => () => stopPlayback(), [stopPlayback]);
-
-  const togglePlay = useCallback(async () => {
-    if (playingRef.current) {
-      stopPlayback();
-      return;
-    }
-    const buf = localAudioBuffer;
-    if (!buf) return;
-    const ctx = getMetronomeAudioContext();
-    await resumeMetronomeAudio(ctx);
-    if (playingRef.current) return;
-
-    auditionEpochRef.current += 1;
-    const epoch = auditionEpochRef.current;
-    const beatPeriodMs = beatPeriodMsFromBpm(
-      parseAuditionBpm(gridBpmDisplay, bridge.seedBpm),
-    );
-    const meterNumerator = meter.numerator;
-
-    const source = ctx.createBufferSource();
-    source.buffer = buf;
-    source.connect(ctx.destination);
-    const startCtx = ctx.currentTime + 0.05;
-    const startMs = 0;
-    playingRef.current = true;
-    playRef.current = {
-      source,
-      raf: 0,
-      startCtx,
-      startMs,
-      beatIdx: -1,
-      epoch,
-    };
-    setPlaying(true);
-    setCursorMs(0);
-    updateCursorDom(0);
-
-    source.onended = () => {
-      if (playRef.current?.epoch === epoch) stopPlayback();
-    };
-
-    try {
-      source.start(startCtx, 0);
-    } catch {
-      stopPlayback();
-      return;
-    }
-
-    let lastCursorPaint = 0;
-    const tick = (now: number) => {
-      if (!playingRef.current || playRef.current?.epoch !== epoch) return;
-      const st = playRef.current;
-      if (!st) return;
-      const elapsedMs = st.startMs + (ctx.currentTime - st.startCtx) * 1000;
-      if (now - lastCursorPaint >= 32) {
-        lastCursorPaint = now;
-        setCursorMs(elapsedMs);
-        updateCursorDom(elapsedMs);
-      }
-      const beatFromStart = auditionBeatIndex(
-        elapsedMs,
-        audioStartOffsetMs,
-        beatPeriodMs,
-      );
-      if (beatFromStart >= 0 && beatFromStart > st.beatIdx) {
-        st.beatIdx = beatFromStart;
-        scheduleMetronomeClickAt(
-          ctx.currentTime,
-          beatFromStart % meterNumerator === 0,
-        );
-      }
-      st.raf = requestAnimationFrame(tick);
-    };
-    playRef.current.raf = requestAnimationFrame(tick);
-  }, [
-    localAudioBuffer,
+  const {
+    dragNodeIdx,
+    dragBeat1,
+    onWavePointerDown,
+    onWavePointerMove,
+    onWavePointerUp,
+    setBeat1AtCursor,
+  } = useBeatMapperInteractions({
+    disabled,
+    durationMs,
+    tempoNodes,
+    onTempoNodesChange,
+    beat1AnchorMs,
+    beatMarkerMs,
     audioStartOffsetMs,
+    onAudioStartOffsetChange,
+    frameWidth,
+    clientXToMs,
+    msToPct,
     stopPlayback,
-    gridBpmDisplay,
-    bridge.seedBpm,
+    setCursorMs,
     updateCursorDom,
-    meter.numerator,
-  ]);
-
-  togglePlayRef.current = () => {
-    void togglePlay();
-  };
-
-  useEffect(() => {
-    onRegisterPlayToggle?.(() => {
-      togglePlayRef.current();
-    });
-    return () => onRegisterPlayToggle?.(null);
-  }, [onRegisterPlayToggle]);
-
-  function updateDraggedNode(idx: number, ms: number) {
-    const wallMs = Math.max(0, ms);
-    const next = dragNodesRef.current.map((n, i) =>
-      i === idx ? { ...n, wallMs } : n,
-    );
-    dragNodesRef.current = next;
-    setDisplayNodes(next);
-  }
-
-  function commitDraggedNodes() {
-    onTempoNodesChange([...dragNodesRef.current]);
-  }
-
-  function onWavePointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    if (disabled || durationMs <= 0) return;
-    e.preventDefault();
-    e.currentTarget.setPointerCapture(e.pointerId);
-    const ms = clientXToMs(e.clientX);
-    if (e.shiftKey) {
-      setCursorMs(ms);
-      updateCursorDom(ms);
-      return;
-    }
-    const xPct = msToPct(ms);
-    const beat1Dist =
-      Math.abs(msToPct(beat1AnchorMs) - xPct) * (frameWidth / 100);
-    if (beat1Dist < 14) {
-      stopPlayback();
-      dragBeat1Ref.current = true;
-      setDragBeat1(true);
-      dragIdxRef.current = null;
-      setDragNodeIdx(null);
-      onAudioStartOffsetChange(Math.max(0, Math.round(ms)));
-      return;
-    }
-    const hitIdx = beatMarkerMs.findIndex((bm) => {
-      const pct = msToPct(bm);
-      return Math.abs(pct - xPct) * (frameWidth / 100) < 14;
-    });
-    if (hitIdx >= 0) {
-      stopPlayback();
-      dragBeat1Ref.current = false;
-      setDragBeat1(false);
-      dragIdxRef.current = hitIdx;
-      setDragNodeIdx(hitIdx);
-      updateDraggedNode(hitIdx, ms);
-    } else {
-      dragBeat1Ref.current = false;
-      setDragBeat1(false);
-      dragIdxRef.current = null;
-      setDragNodeIdx(null);
-      setCursorMs(ms);
-      updateCursorDom(ms);
-    }
-  }
-
-  function onWavePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (dragBeat1Ref.current) {
-      e.preventDefault();
-      onAudioStartOffsetChange(Math.max(0, Math.round(clientXToMs(e.clientX))));
-      return;
-    }
-    const idx = dragIdxRef.current;
-    if (idx == null || disabled) return;
-    e.preventDefault();
-    updateDraggedNode(idx, clientXToMs(e.clientX));
-  }
-
-  function onWavePointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-    if (dragIdxRef.current != null) {
-      commitDraggedNodes();
-    }
-    dragBeat1Ref.current = false;
-    setDragBeat1(false);
-    dragIdxRef.current = null;
-    setDragNodeIdx(null);
-  }
-
-  function setBeat1AtCursor() {
-    const wallAtCursor = Math.max(0, Math.round(cursorMsRef.current));
-    onAudioStartOffsetChange(wallAtCursor);
-  }
+    cursorMsRef,
+  });
 
   const title = songTitle?.trim() || "Beat Mapper";
 

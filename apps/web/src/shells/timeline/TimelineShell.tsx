@@ -142,6 +142,22 @@ import {
 } from "@lib/timeline/mapSegments.js";
 import { FormaClipPreview } from "./FormaClipPreview.js";
 import { TimelineHelp } from "./TimelineHelp.js";
+import { TimelineInspector } from "./TimelineInspector.js";
+import { useTimelineModals } from "./hooks/useTimelineModals.js";
+import { useTimelineDraft } from "./hooks/useTimelineDraft.js";
+import { useTimelineZoomPan } from "./hooks/useTimelineZoomPan.js";
+import { useTimelineShortcuts } from "./hooks/useTimelineShortcuts.js";
+import { useTimelinePlayback } from "./hooks/useTimelinePlayback.js";
+import { useTimelineSelectionState } from "./hooks/useTimelineSelectionState.js";
+import { TimelineLanesView } from "./lanes/TimelineLanesView.js";
+import { TimelineStatusFooter } from "./components/TimelineStatusFooter.js";
+import { TouchNudgeBar } from "./components/TouchNudgeBar.js";
+import { TimelineSongDialogs } from "./dialogs/TimelineSongDialogs.js";
+import { TimelinePortals } from "./menus/TimelinePortals.js";
+import { TimelineMapDialogs } from "./dialogs/TimelineMapDialogs.js";
+import { useTimelineMixerState } from "./hooks/useTimelineMixerState.js";
+import { useTimelineAudioUpload } from "./hooks/useTimelineAudioUpload.js";
+import { useTimelineContextMenus } from "./hooks/useTimelineContextMenus.js";
 import {
   addFormaSubsection,
   countdownBars,
@@ -468,100 +484,7 @@ import { TimelineToolbar } from "./TimelineToolbar.js";
 import { MixerDock } from "./MixerDock.js";
 import styles from "./TimelineShell.module.css";
 
-type ToolId = FormaToolId;
-
-const TOOLS: {
-  id: ToolId;
-  label: string;
-  title: string;
-  /** Second key after T opens the tools menu (Logic-style chord). */
-  key: string | null;
-  Icon: typeof IconPointer;
-  /** Shown in toolbar + T menu (wand = Forma dock; Tap = Tekst dock). */
-  inMenu?: boolean;
-}[] = [
-  {
-    id: "pointer",
-    label: "Wskaźnik",
-    title: "Wskaźnik — zaznacz, przesuń, zmień długość",
-    key: "t",
-    Icon: IconPointer,
-  },
-  {
-    id: "pencil",
-    label: "Ołówek",
-    title: "Ołówek — klik: 1 takt / marker; przeciągnij: zakres",
-    key: "p",
-    Icon: IconPencil,
-  },
-  {
-    id: "eraser",
-    label: "Gumka",
-    title: "Gumka — usuń kliknięty element",
-    key: "e",
-    Icon: IconEraser,
-  },
-  {
-    id: "scissors",
-    label: "Nożyczki",
-    title: "Nożyczki — podział klipu / podsekcja Formy / zmiana mapy",
-    key: "i",
-    Icon: IconScissors,
-  },
-  {
-    id: "join",
-    label: "Połącz",
-    title: "Połącz — scal sąsiednie klipy / usuń granicę podsekcji",
-    key: "j",
-    Icon: IconJoin,
-  },
-  {
-    id: "mute",
-    label: "Mute",
-    title: "Mute — przełącz wyciszenie klikniętego klipu audio",
-    key: "m",
-    Icon: IconMute,
-  },
-  {
-    id: "solo",
-    label: "Solo",
-    title: "Solo — chwilowe solo ścieżki klipu audio przytrzymaniem LMB",
-    key: "s",
-    Icon: IconSolo,
-  },
-  {
-    id: "fade",
-    label: "Fade",
-    title: "Fade — przeciągnij na krawędzi klipu audio: fade in/out",
-    key: "a",
-    Icon: IconFade,
-  },
-  {
-    id: "gain",
-    label: "Gain",
-    title: "Gain — przeciągnij w pionie na klipie audio: poziom dB",
-    key: "g",
-    Icon: IconGain,
-  },
-  {
-    id: "marquee",
-    label: "Zaznaczanie",
-    title: "Zaznaczanie — prostokąt na siatce",
-    key: "r",
-    Icon: IconMarquee,
-  },
-  {
-    id: "zoom",
-    label: "Zoom",
-    title: "Zoom — przeciągnij prostokąt; klik tła = Fit",
-    key: "y",
-    Icon: IconZoomIn,
-  },
-];
-
-const TOOL_BY_KEY = Object.fromEntries(
-  TOOLS.filter((t) => t.key).map((t) => [t.key!, t]),
-);
+import { TOOLS, TOOL_BY_KEY, type ToolId } from "./timelineToolsData.js";
 
 export function TimelineShell() {
   useAnnounceDevicePresence(["timeline"]);
@@ -607,10 +530,6 @@ export function TimelineShell() {
     setlistSnapshot,
   } = useTransport();
   const { openAt: openContextMenu, close: closeContextMenu } = useContextMenu();
-  const wasPlayingRef = useRef(state.playing);
-  const [latencyCompMs, setLatencyCompMs] = useState(() =>
-    getStoredLatencyCompensationMs(),
-  );
   const [clockFormat, setClockFormat] = useState<ClockDisplayFormat>(() =>
     getStoredClockDisplayFormat(),
   );
@@ -623,16 +542,6 @@ export function TimelineShell() {
   });
 
   useEffect(() => {
-    const onLatency = () => {
-      setLatencyCompMs(getStoredLatencyCompensationMs());
-    };
-    window.addEventListener(AUDIO_LATENCY_CHANGED_EVENT, onLatency);
-    return () => {
-      window.removeEventListener(AUDIO_LATENCY_CHANGED_EVENT, onLatency);
-    };
-  }, []);
-
-  useEffect(() => {
     const onClock = () => {
       setClockFormat(getStoredClockDisplayFormat());
     };
@@ -642,18 +551,10 @@ export function TimelineShell() {
     };
   }, []);
 
-  const [savedProject, setSavedProject] = useState<Project | null>(null);
-  const [draftProject, setDraftProject] = useState<Project | null>(null);
-  const [draftHistory, setDraftHistory] = useState<DraftHistory | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [fullscreenError, setFullscreenError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [savePending, setSavePending] = useState(false);
   const [audioUploadPending, setAudioUploadPending] = useState(false);
   const audioUploadPendingRef = useRef(false);
   const inspAudioFileRef = useRef<HTMLInputElement>(null);
-  const [audioBuffering, setAudioBuffering] = useState(false);
-  const [failedAudioAssetIds, setFailedAudioAssetIds] = useState<string[]>([]);
   const [libraryNames, setLibraryNames] = useState<
     { id: string; name: string }[]
   >([]);
@@ -693,59 +594,24 @@ export function TimelineShell() {
   const toolMenuRef = useRef<HTMLDivElement>(null);
   const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [songScreenOpen, setSongScreenOpen] = useState(false);
-  const [songImportOpen, setSongImportOpen] = useState(false);
-  /** Song picker → new library song; Metadane (ⓘ) → overwrite current draft. */
-  const [importAsNewSong, setImportAsNewSong] = useState(false);
-  const [importApplying, setImportApplying] = useState(false);
-  const [metronomeOn, setMetronomeOn] = useState(() => getMetronomeOn());
-  const [followPlayhead, setFollowPlayhead] = useState(() => {
-    try {
-      return localStorage.getItem("stagesync-timeline-follow-playhead") === "1";
-    } catch {
-      return false;
-    }
-  });
-  const [showMidiPlayhead, setShowMidiPlayhead] = useState(() => {
-    try {
-      const v = localStorage.getItem("stagesync-timeline-midi-playhead");
-      if (v === null) return true;
-      return v === "1";
-    } catch {
-      return true;
-    }
-  });
-  const [zoomH, setZoomH] = useState(() => loadZoomPrefs().zoomH);
-  const [zoomV, setZoomV] = useState(() => loadZoomPrefs().zoomV);
-  const [zoomUi, setZoomUi] = useState(() => loadZoomPrefs().zoomUi);
-  const [laneHeights, setLaneHeights] = useState<LaneHeightsMap>(() =>
-    loadLaneHeights(),
+  const {
+    helpOpen,
+    setHelpOpen,
+    songScreenOpen,
+    setSongScreenOpen,
+    songImportOpen,
+    setSongImportOpen,
+    importAsNewSong,
+    setImportAsNewSong,
+    importApplying,
+    setImportApplying,
+    openSongImportWizard,
+    closeSongImportWizard: closeImportModals,
+  } = useTimelineModals();
+
+  const [touchTier, setTouchTier] = useState<TimelineTouchTier>(() =>
+    typeof window !== "undefined" ? detectTimelineTier() : "desktop",
   );
-  const [laneResizeTrackId, setLaneResizeTrackId] = useState<string | null>(
-    null,
-  );
-  const laneResizeRef = useRef<{
-    trackId: string;
-    startY: number;
-    startHeightBase: number;
-    pointerId: number;
-  } | null>(null);
-  const laneHeightsRef = useRef(laneHeights);
-  laneHeightsRef.current = laneHeights;
-  const [dockWidthBase, setDockWidthBase] = useState(() => loadDockWidth());
-  const [dockWidthResizing, setDockWidthResizing] = useState(false);
-  const dockWidthResizeRef = useRef<{
-    startX: number;
-    startWidthBase: number;
-    pointerId: number;
-  } | null>(null);
-  const dockWidthBaseRef = useRef(dockWidthBase);
-  dockWidthBaseRef.current = dockWidthBase;
-  const uiScale = zoomUi / 100;
-  /** v4 effectivePxPerBar / lane × UI scale. */
-  const effectiveZoomH = zoomH * uiScale;
-  const effectiveZoomV = Math.max(1, Math.round(zoomV * uiScale));
   /** Match v4 `ZOOM_H_STEP` / slider bounds on status zoom H. */
   const ZOOM_H_STEP = 4;
   const ZOOM_H_MIN = PREFS_ZOOM_H_MIN;
@@ -753,9 +619,7 @@ export function TimelineShell() {
   const ZOOM_V_STEP = 4;
   const ZOOM_V_MIN = MIN_LANE_PX;
   const ZOOM_V_MAX = MAX_LANE_PX;
-  const [touchTier, setTouchTier] = useState<TimelineTouchTier>(() =>
-    typeof window !== "undefined" ? detectTimelineTier() : "desktop",
-  );
+
   /** Phone = read/preview surface — no edit chrome / inspector (v4 mobile RO). */
   const isMobilePreview = touchTier === "mobile";
   const canvasScrollRef = useRef<HTMLDivElement | null>(null);
@@ -779,7 +643,7 @@ export function TimelineShell() {
       "mobile",
   );
   const [touchAlertOpen, setTouchAlertOpen] = useState(false);
-  const metroBeatRef = useRef(0);
+
   const loopDragRef = useRef<{
     pointerId: number;
     originTicks: number;
@@ -809,11 +673,7 @@ export function TimelineShell() {
     moveIds: string[];
     deltaTicks: number;
   } | null>(null);
-  /** Map lane multi-select (v4 Cmd/Shift on tempo/meter/key clips). */
-  const [selectedMapIds, setSelectedMapIds] = useState<string[]>([]);
-  const [selectedMapLane, setSelectedMapLane] = useState<MapLaneId | null>(
-    null,
-  );
+
   const [primaryMapId, setPrimaryMapId] = useState<string | null>(null);
   const [loopDraft, setLoopDraft] = useState<{
     startTicks: number;
@@ -821,10 +681,11 @@ export function TimelineShell() {
   } | null>(null);
   const loopDraftRef = useRef(loopDraft);
   loopDraftRef.current = loopDraft;
-  const [selectedAnchorId, setSelectedAnchorId] = useState<string | null>(null);
   const [trackVisibility, setTrackVisibility] = useState<TrackVisibilityMap>(
     () => defaultTrackVisibility(),
   );
+  const [soloAudioTrackIds, setSoloAudioTrackIds] = useState<string[]>([]);
+  const [soloBusIds, setSoloBusIds] = useState<string[]>([]);
   const [eyeOpen, setEyeOpen] = useState(false);
   const [toolbarVisibleTools, setToolbarVisibleTools] = useState<
     ToolbarToolId[]
@@ -835,18 +696,100 @@ export function TimelineShell() {
     [toolbarVisibleTools],
   );
   const [locatorTicks, setLocatorTicks] = useState(0);
-  /** Forma/content multi-select (v4 selectedIds + primaryId). */
-  const [clipSelection, setClipSelection] =
-    useState<ClipSelection>(EMPTY_CLIP_SELECTION);
-  const [trackSelection, setTrackSelection] = useState<TrackSelection>(
-    EMPTY_TRACK_SELECTION,
-  );
-  const [soloAudioTrackIds, setSoloAudioTrackIds] = useState<string[]>([]);
-  const [soloBusIds, setSoloBusIds] = useState<string[]>([]);
-  const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
-  const [selectedHwOutputId, setSelectedHwOutputId] = useState<string | null>(
-    null,
-  );
+  const clipSelectionRef = useRef<ClipSelection>(EMPTY_CLIP_SELECTION);
+
+  const {
+    savedProject,
+    setSavedProject,
+    draftProject,
+    setDraftProject,
+    draftHistory,
+    setDraftHistory,
+    loading,
+    setLoading,
+    savePending,
+    setSavePending,
+    loadError,
+    setLoadError,
+    draftRef,
+    dirty,
+    blocker,
+    reloadProject,
+    commitDraft,
+    onSave,
+    onUndo,
+    onRedo,
+  } = useTimelineDraft({
+    projectId,
+    clipSelectionRef,
+    onEnsureAudioTracks: (tracks) => {
+      setTrackVisibility((prev) => ensureAudioTrackVisibility(prev, tracks));
+    },
+    onProjectLoaded: async (project) => {
+      if (projectId) {
+        await loadTransport(projectId);
+        setFailedAudioAssetIds(getFailedAudioAssetIds(projectId));
+      }
+      setTrackVisibility(
+        ensureAudioTrackVisibility(
+          defaultTrackVisibility(project.audioTracks),
+          project.audioTracks,
+        ),
+      );
+      const first = project.forma.clips[0]?.id ?? null;
+      setClipSelection(first ? selectSingle(first, "forma") : clearSelection());
+      setSelectedSubsectionIdx(null);
+    },
+    onRestoreClipSelection: (sel) => {
+      setClipSelection(sel);
+    },
+  });
+
+  const {
+    clipSelection,
+    setClipSelection,
+    clearClipSelection,
+    selectedMapLane,
+    setSelectedMapLane,
+    selectedMapIds,
+    setSelectedMapIds,
+    clearMapSelection,
+    selectedAnchorId,
+    setSelectedAnchorId,
+    selectedSubsectionIdx,
+    setSelectedSubsectionIdx,
+    trackSelection,
+    setTrackSelection,
+    trackSelectionRef,
+    selectedBusId,
+    setSelectedBusId,
+    selectedBusIdRef,
+    selectedHwOutputId,
+    setSelectedHwOutputId,
+    selectedHwOutputIdRef,
+    clipboardRef,
+    selectAllClips,
+    deleteSelectedFormaClip,
+    copyClipSelection,
+    cutClipSelection,
+    pasteClipClipboard,
+    duplicateClipSelection,
+    splitSelectionAtPlayhead,
+    joinSelectionAdjacent,
+    setCycleFromSelectedAudioClip,
+    nudgeSelectedClip,
+  } = useTimelineSelectionState({
+    draftRef,
+    commitDraft,
+    setSongMetaOpen,
+    setLocatorTicks,
+    setLoop,
+    snapMode,
+    displayTicks,
+    setSoloBusIds,
+    setSoloAudioTrackIds,
+    setTrackVisibility,
+  });
   const [timelineSurface, setTimelineSurface] =
     useState<TimelineSurface>("timeline");
   const [trackRename, setTrackRename] = useState<{
@@ -862,12 +805,7 @@ export function TimelineShell() {
   /** Pencil @ empty audio: place imported clip at these ticks (Logic-like). */
   const laneImportStartTicksRef = useRef<number | null>(null);
   const laneAudioFileRef = useRef<HTMLInputElement>(null);
-  const trackSelectionRef = useRef(trackSelection);
-  trackSelectionRef.current = trackSelection;
-  const selectedBusIdRef = useRef(selectedBusId);
-  selectedBusIdRef.current = selectedBusId;
-  const selectedHwOutputIdRef = useRef(selectedHwOutputId);
-  selectedHwOutputIdRef.current = selectedHwOutputId;
+
   const primaryId = clipSelection.primaryId;
   const selectionLane = primaryLane(clipSelection);
 
@@ -887,11 +825,6 @@ export function TimelineShell() {
   const selectedAudioClipId = isAudioSelectionLane(selectionLane)
     ? primaryId
     : null;
-  /** Forma subsection band index when a section clip is selected (v4 selectedSubsectionIdx). */
-  const [selectedSubsectionIdx, setSelectedSubsectionIdx] = useState<
-    number | null
-  >(null);
-  const clipboardRef = useRef<TimelineClipboard | null>(null);
   const marqueeRef = useRef<{
     pointerId: number;
     startX: number;
@@ -927,15 +860,51 @@ export function TimelineShell() {
   const cdSpanStartRef = useRef<number | null>(null);
   /** After CD-length gesture ends → jump viewport to timeline start. */
   const cdScrollToStartPendingRef = useRef(false);
-  const draftRef = useRef<Project | null>(null);
-  const clipSelectionRef = useRef(clipSelection);
-  clipSelectionRef.current = clipSelection;
+
   const viewSpanRef = useRef({ start: 0, end: 0 });
   const barTicksRef = useRef(3840);
-  const zoomHRef = useRef(DEFAULT_PX_PER_BAR);
-  const zoomHBaseRef = useRef(DEFAULT_PX_PER_BAR);
-  const zoomVBaseRef = useRef(DEFAULT_LANE_PX);
-  const uiScaleRef = useRef(1);
+
+  const {
+    zoomH,
+    setZoomH,
+    zoomV,
+    setZoomV,
+    zoomUi,
+    setZoomUi,
+    uiScale,
+    effectiveZoomH,
+    effectiveZoomV,
+    dockWidthBase,
+    setDockWidthBase,
+    effectiveDockWidth,
+    dockWidthResizing,
+    laneHeights,
+    setLaneHeights,
+    laneResizeTrackId,
+    zoomHRef,
+    zoomHBaseRef,
+    zoomVBaseRef,
+    uiScaleRef,
+    dockWidthBaseRef,
+    applyAbsoluteZoomH,
+    zoomHorizontalBySteps,
+    setVerticalZoom,
+    zoomVerticalBySteps,
+    fitZoom,
+    rowHeightStyle,
+    beginLaneResize,
+    onLaneResizePointerMove,
+    endLaneResize,
+    onLaneResizeDblClick,
+    beginDockWidthResize,
+    onDockWidthResizePointerMove,
+    endDockWidthResize,
+  } = useTimelineZoomPan({
+    canvasScrollRef,
+    viewSpanRef,
+    barTicksRef,
+    touchTier,
+  });
   const keyHandlersRef = useRef({
     onSave: async () => {},
     onDiscard: () => {},
@@ -977,53 +946,6 @@ export function TimelineShell() {
     nextSetlistId: null as string | null,
   });
 
-  const reloadProject = useCallback(async (id: string) => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      const project = await fetchProject(id);
-      await loadTransport(id);
-      setSavedProject(project);
-      setDraftProject(project);
-      setDraftHistory(createDraftHistory(project));
-      setTrackVisibility(
-        ensureAudioTrackVisibility(
-          defaultTrackVisibility(project.audioTracks),
-          project.audioTracks,
-        ),
-      );
-      setFailedAudioAssetIds(getFailedAudioAssetIds(id));
-      const first = project.forma.clips[0]?.id ?? null;
-      setClipSelection(first ? selectSingle(first, "forma") : clearSelection());
-      setSelectedSubsectionIdx(null);
-    } catch (err) {
-      setLoadError(
-        err instanceof Error ? err.message : "Nie udało się wczytać",
-      );
-      setSavedProject(null);
-      setDraftProject(null);
-      setDraftHistory(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const commitDraft = useCallback((next: Project) => {
-    const sel = clipSelectionRef.current;
-    setDraftProject(next);
-    setTrackVisibility((prev) =>
-      ensureAudioTrackVisibility(prev, next.audioTracks),
-    );
-    setDraftHistory((h) =>
-      h ? pushDraftHistory(h, next, sel) : createDraftHistory(next, sel),
-    );
-  }, []);
-
-  const clearClipSelection = useCallback(() => {
-    setClipSelection(clearSelection());
-    setSelectedSubsectionIdx(null);
-  }, []);
-
   const selectLaneClip = useCallback((lane: ClipSelectionLane, id: string) => {
     setClipSelection(selectSingle(id, lane));
     if (lane !== "forma") setSelectedSubsectionIdx(null);
@@ -1032,11 +954,6 @@ export function TimelineShell() {
     setInspectorVisible(true);
   }, []);
 
-  const clearMapSelection = useCallback(() => {
-    setSelectedMapIds([]);
-    setSelectedMapLane(null);
-    setPrimaryMapId(null);
-  }, []);
 
   /** Desktop dblclick → focus Właściwości (v4); tablet canvas double-tap stays Fit Zoom. */
   const focusInspectorPanel = useCallback(() => {
@@ -1153,29 +1070,6 @@ export function TimelineShell() {
       ? setlistIds[setlistIndex + 1]
       : null;
 
-  const dirty =
-    savedProject !== null &&
-    draftProject !== null &&
-    !projectContentEqual(savedProject, draftProject);
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      dirty && currentLocation.pathname !== nextLocation.pathname,
-  );
-
-  useEffect(() => {
-    if (!dirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [dirty]);
-
-  useEffect(() => {
-    draftRef.current = draftProject;
-  }, [draftProject]);
-
   useEffect(() => {
     const syncTier = () => setTouchTier(detectTimelineTier());
     syncTier();
@@ -1225,606 +1119,14 @@ export function TimelineShell() {
     gesturePreviewRef.current = gesturePreview;
   }, [gesturePreview]);
 
-  const deleteSelectedFormaClip = useCallback(() => {
-    const draft = draftRef.current;
-    if (!draft) return;
-    if (selectedMapLane && selectedMapIds.length > 0) {
-      const next = deleteMapEvents(draft, selectedMapLane, selectedMapIds);
-      if (next !== draft) {
-        commitDraft(next);
-        clearMapSelection();
-      }
-      return;
-    }
-    if (selectedAnchorId) {
-      const next = deleteScoreAnchor(draft, selectedAnchorId);
-      if (next !== draft) commitDraft(next);
-      setSelectedAnchorId(null);
-      return;
-    }
-    if (!clipSelection.items.length) {
-      const hwId = selectedHwOutputIdRef.current;
-      if (hwId) {
-        const next = removeAudioHardwareOutput(draft, hwId);
-        if (next !== draft) commitDraft(next);
-        setSelectedHwOutputId(null);
-        return;
-      }
-      const busId = selectedBusIdRef.current;
-      if (busId) {
-        const next = removeAudioBus(draft, busId);
-        if (next !== draft) commitDraft(next);
-        setSelectedBusId(null);
-        setSoloBusIds((prev) => prev.filter((id) => id !== busId));
-        return;
-      }
-      const ids = trackSelectionRef.current.ids;
-      if (!ids.length) return;
-      let next = draft;
-      for (const trackId of ids) {
-        next = removeAudioTrack(next, trackId);
-      }
-      if (next === draft) return;
-      commitDraft(next);
-      setTrackSelection(clearTrackSelection());
-      setSoloAudioTrackIds((prev) => prev.filter((id) => !ids.includes(id)));
-      setTrackVisibility((prev) =>
-        ensureAudioTrackVisibility(prev, next.audioTracks),
-      );
-      return;
-    }
-    let next = draft;
-    const lanes = [
-      ...new Set(clipSelection.items.map((i) => i.lane)),
-    ] as ClipSelectionLane[];
-    for (const lane of lanes) {
-      const ids = idsOnLane(clipSelection, lane);
-      if (!ids.length) continue;
-      if (lane === "forma") {
-        const hasCountdown = ids.some((id) => {
-          const c = next.forma.clips.find((x) => x.id === id);
-          return c?.kind === "countdown";
-        });
-        if (
-          hasCountdown &&
-          ids.length === 1 &&
-          clipSelection.items.length === 1
-        ) {
-          return;
-        }
-        const filtered = ids.filter((id) => {
-          const c = next.forma.clips.find((x) => x.id === id);
-          return c && c.kind !== "countdown";
-        });
-        if (!filtered.length) continue;
-        next = deleteClipsOnLane(next, "forma", filtered);
-      } else {
-        next = deleteClipsOnLane(next, lane, ids);
-      }
-    }
-    if (next !== draft) commitDraft(next);
-    clearClipSelection();
-  }, [
-    clearClipSelection,
-    clearMapSelection,
-    clipSelection,
-    commitDraft,
-    selectedAnchorId,
-    selectedMapIds,
-    selectedMapLane,
-  ]);
 
-  const copyClipSelection = useCallback((): boolean => {
-    const draft = draftRef.current;
-    if (!draft || !clipSelection.items.length) return false;
-    // Clipboard is single-lane (v4 paste same kind) — copy primary lane subset.
-    const lane = primaryLane(clipSelection);
-    if (!lane) return false;
-    const idSet = new Set(idsOnLane(clipSelection, lane));
-    let clips: Parameters<typeof buildClipboardFromClips>[1];
-    if (lane === "forma") {
-      clips = draft.forma.clips.filter(
-        (c) => idSet.has(c.id) && c.kind === "section",
-      );
-    } else if (lane === "tekst") {
-      clips = draft.tekst.clips.filter((c) => idSet.has(c.id));
-    } else if (lane === "akordy") {
-      clips = draft.akordy.clips.filter((c) => idSet.has(c.id));
-    } else if (lane === "cue") {
-      clips = draft.cue.clips.filter((c) => idSet.has(c.id));
-    } else if (isAudioSelectionLane(lane)) {
-      clips = draft.audioClips.filter((c) => idSet.has(c.id));
-    } else {
-      return false;
-    }
-    const board = buildClipboardFromClips(lane, clips);
-    if (!board) return false;
-    clipboardRef.current = board;
-    return true;
-  }, [clipSelection]);
 
-  const pasteClipClipboard = useCallback(
-    (anchorTicks: number): boolean => {
-      const draft = draftRef.current;
-      const board = clipboardRef.current;
-      if (!draft || !board) return false;
-      const result = pasteClipboardAt(draft, board, anchorTicks);
-      if (!result) return false;
-      commitDraft(result.project);
-      setClipSelection(
-        setSelection(
-          result.newIds.map((id) => ({ id, lane: board.lane })),
-          result.newIds[result.newIds.length - 1]!,
-        ),
-      );
-      setSelectedSubsectionIdx(null);
-      clearMapSelection();
-      setSelectedAnchorId(null);
-      const maxEnd = selectionMaxEndTicks(
-        board.items.map((it, i) => ({
-          id: result.newIds[i] ?? `n${i}`,
-          startTicks:
-            anchorTicks + (it.startTicks - board.items[0]!.startTicks),
-          lengthTicks: it.lengthTicks,
-        })),
-      );
-      setLocatorTicks(Math.max(0, maxEnd));
-      return true;
-    },
-    [clearMapSelection, commitDraft],
-  );
-
-  const duplicateClipSelection = useCallback((): boolean => {
-    const draft = draftRef.current;
-    const lane = primaryLane(clipSelection);
-    if (!draft || !lane || !clipSelection.items.length) return false;
-    if (!copyClipSelection()) return false;
-    const idSet = new Set(idsOnLane(clipSelection, lane));
-    const clips = isAudioSelectionLane(lane)
-      ? draft.audioClips.filter((c) => idSet.has(c.id))
-      : lane === "forma"
-        ? draft.forma.clips.filter(
-            (c) => idSet.has(c.id) && c.kind === "section",
-          )
-        : lane === "tekst"
-          ? draft.tekst.clips.filter((c) => idSet.has(c.id))
-          : lane === "akordy"
-            ? draft.akordy.clips.filter((c) => idSet.has(c.id))
-            : draft.cue.clips.filter((c) => idSet.has(c.id));
-    return pasteClipClipboard(selectionMaxEndTicks(clips));
-  }, [clipSelection, copyClipSelection, pasteClipClipboard]);
-
-  const cutClipSelection = useCallback((): boolean => {
-    if (!copyClipSelection()) return false;
-    deleteSelectedFormaClip();
-    return true;
-  }, [copyClipSelection, deleteSelectedFormaClip]);
-
-  const splitSelectionAtPlayhead = useCallback((): boolean => {
-    const draft = draftRef.current;
-    const lane = primaryLane(clipSelection);
-    const id = clipSelection.primaryId;
-    if (!draft || !lane || !id) return false;
-    const at = displayTicks;
-    let next: typeof draft;
-    if (lane === "forma") {
-      next = splitFormaClipAt(draft, id, at);
-    } else if (lane === "tekst" || lane === "akordy" || lane === "cue") {
-      next = splitContentClipAt(draft, lane, id, at);
-    } else if (isAudioSelectionLane(lane)) {
-      next = splitAudioClipAt(draft, id, at);
-    } else {
-      return false;
-    }
-    if (next === draft) return false;
-    commitDraft(next);
-    return true;
-  }, [clipSelection, commitDraft, displayTicks]);
-
-  const joinSelectionAdjacent = useCallback((): boolean => {
-    const draft = draftRef.current;
-    const lane = primaryLane(clipSelection);
-    const id = clipSelection.primaryId;
-    if (!draft || !lane || !id) return false;
-    let next: typeof draft;
-    if (lane === "forma") {
-      next = joinFormaAtClick(draft, id, displayTicks);
-    } else if (lane === "tekst" || lane === "akordy" || lane === "cue") {
-      next = joinAdjacentContentClips(draft, lane, id);
-    } else if (isAudioSelectionLane(lane)) {
-      next = joinAdjacentAudioClips(draft, id);
-    } else {
-      return false;
-    }
-    if (next === draft) return false;
-    commitDraft(next);
-    return true;
-  }, [clipSelection, commitDraft, displayTicks]);
-
-  const setCycleFromSelectedAudioClip = useCallback((): boolean => {
-    const draft = draftRef.current;
-    const lane = primaryLane(clipSelection);
-    const id = clipSelection.primaryId;
-    if (!draft || !id || !isAudioSelectionLane(lane)) return false;
-    const clip = draft.audioClips.find((c) => c.id === id);
-    if (!clip || clip.lengthTicks < 1) return false;
-    void setLoop({
-      enabled: true,
-      startTicks: clip.startTicks,
-      endTicks: clip.startTicks + clip.lengthTicks,
-    });
-    return true;
-  }, [clipSelection, setLoop]);
-
-  const nudgeSelectedClip = useCallback(
-    (dir: -1 | 1) => {
-      const draft = draftRef.current;
-      const lane = primaryLane(clipSelection);
-      const id = clipSelection.primaryId;
-      if (!draft || !lane || !id) return;
-      const next = applyTimelineNudge(
-        draft,
-        lane,
-        id,
-        dir < 0 ? "move-left" : "move-right",
-        snapMode,
-      );
-      if (next !== draft) commitDraft(next);
-    },
-    [clipSelection, commitDraft, snapMode],
-  );
-
-  const playFromSelectionOrLocator = useCallback(async () => {
-    if (audioBuffering) return;
-    const draft = draftRef.current;
-    const lane = primaryLane(clipSelectionRef.current);
-    const id = clipSelectionRef.current.primaryId;
-    let startTicks = locatorTicks;
-    if (draft && lane && id) {
-      if (lane === "forma") {
-        const c = draft.forma.clips.find((x) => x.id === id);
-        if (c) startTicks = c.startTicks;
-      } else if (lane === "tekst") {
-        const c = draft.tekst.clips.find((x) => x.id === id);
-        if (c) startTicks = c.startTicks;
-      } else if (lane === "akordy") {
-        const c = draft.akordy.clips.find((x) => x.id === id);
-        if (c) startTicks = c.startTicks;
-      } else if (lane === "cue") {
-        const c = draft.cue.clips.find((x) => x.id === id);
-        if (c) startTicks = c.startTicks;
-      } else if (isAudioSelectionLane(lane)) {
-        const c = draft.audioClips.find((x) => x.id === id);
-        if (c) startTicks = c.startTicks;
-      }
-    }
-    setLocatorTicks(startTicks);
-    allowAudioPlayback();
-    await resumeMetronomeAudio(getMetronomeAudioContext());
-    if (getAudioPlaybackDebugState().suppressed) return;
-    if (projectId && draft) {
-      setAudioBuffering(true);
-      try {
-        const buffered = await ensureAudioBuffered(
-          projectId,
-          draft,
-          startTicks,
-        );
-        setFailedAudioAssetIds(
-          buffered.failedAssetIds.length
-            ? buffered.failedAssetIds
-            : getFailedAudioAssetIds(projectId),
-        );
-      } finally {
-        setAudioBuffering(false);
-      }
-      if (getAudioPlaybackDebugState().suppressed) return;
-      restartAudioPlayback(projectId, {
-        project: draft,
-        playing: true,
-        displayTicks:
-          startTicks +
-          ticksFromSyncLeadAlongMap(latencyCompMs, startTicks, draft),
-        soloTrackIds: soloAudioTrackIds,
-        soloBusIds,
-      });
-    }
-    metroBeatRef.current = metronomeBeatIndex(
-      startTicks,
-      state.timeSignature,
-      state.ppq,
-    );
-    if (getAudioPlaybackDebugState().suppressed) return;
-    if (startTicks !== state.positionTicks) {
-      await seek(startTicks);
-    }
-    if (getAudioPlaybackDebugState().suppressed) return;
-    await play({ projectId });
-  }, [
-    audioBuffering,
-    latencyCompMs,
-    locatorTicks,
-    play,
-    projectId,
-    seek,
-    soloAudioTrackIds,
-    soloBusIds,
-    state.positionTicks,
-    state.ppq,
-    state.timeSignature,
-  ]);
-
-  /** Bare I — show/hide Właściwości only (never Metadane / songMetaOpen). */
   const toggleInspectorPanel = useCallback(() => {
     if (touchTier === "mobile") return;
     setInspectorVisible((v) => !v);
   }, [touchTier]);
 
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (isEditableKeyboardTarget(e.target)) {
-        return;
-      }
-      // Import overlays own Space & shortcuts — don't drive Timeline transport.
-      if (songImportOpen) {
-        return;
-      }
-      const h = keyHandlersRef.current;
-      const action = resolveTimelineShortcut({
-        key: e.key,
-        code: e.code,
-        mod: e.metaKey || e.ctrlKey,
-        alt: e.altKey,
-        shift: e.shiftKey,
-        toolMenuOpen: Boolean(toolMenu),
-        wandMenuOpen: wandMenuOpenRef.current,
-        helpOpen,
-        tapToolActive: toolRef.current === "tap",
-      });
-      if (!action) return;
 
-      if (typeof action === "object" && action.type === "tool-letter") {
-        const pick = TOOL_BY_KEY[action.letter];
-        if (pick) {
-          e.preventDefault();
-          h.onTool(pick.id);
-        }
-        return;
-      }
-
-      // DOM text selection → system clipboard (not in-app clip clipboard).
-      if (
-        (action === "copy" || action === "cut") &&
-        hasNonCollapsedDomTextSelection()
-      ) {
-        return;
-      }
-
-      e.preventDefault();
-
-      switch (action) {
-        case "help-open":
-          setHelpOpen(true);
-          return;
-        case "help-close":
-          setHelpOpen(false);
-          return;
-        case "escape": {
-          if (toolMenu) {
-            setToolMenu(null);
-            return;
-          }
-          if (wandMenuOpenRef.current) {
-            setWandMenu(null);
-            setTool("pointer");
-            return;
-          }
-          if (eyeMenuPos) {
-            setEyeMenuPos(null);
-            setEyeOpen(false);
-            return;
-          }
-          if (toolsVisOpen) {
-            setToolsVisOpen(false);
-            return;
-          }
-          closeContextMenu();
-          if (toolRef.current === "tap") {
-            setTool("pointer");
-            return;
-          }
-          if (toolRef.current !== "pointer") {
-            setTool("pointer");
-          }
-          closeMobileInspector();
-          return;
-        }
-        case "save":
-          if (h.dirty && !h.savePending) void h.onSave();
-          return;
-        case "undo":
-          h.onUndo();
-          return;
-        case "redo":
-          h.onRedo();
-          return;
-        case "copy":
-          copyClipSelection();
-          return;
-        case "cut":
-          cutClipSelection();
-          return;
-        case "paste":
-          pasteClipClipboard(locatorTicks);
-          return;
-        case "duplicate":
-          duplicateClipSelection();
-          return;
-        case "select-all": {
-          const draft = draftRef.current;
-          if (!draft) return;
-          setClipSelection(selectAllProjectClips(draft));
-          setSongMetaOpen(false);
-          clearMapSelection();
-          setSelectedAnchorId(null);
-          setTrackSelection(clearTrackSelection());
-          setSelectedBusId(null);
-          setSelectedHwOutputId(null);
-          return;
-        }
-        case "split-at-playhead":
-          splitSelectionAtPlayhead();
-          return;
-        case "join-adjacent":
-          joinSelectionAdjacent();
-          return;
-        case "zoom-h-out":
-          h.zoomHorizontalBySteps(-1);
-          return;
-        case "zoom-h-in":
-          h.zoomHorizontalBySteps(1);
-          return;
-        case "zoom-v-in":
-          h.zoomVerticalBySteps(1);
-          return;
-        case "zoom-v-out":
-          h.zoomVerticalBySteps(-1);
-          return;
-        case "fit-zoom":
-          h.fitZoom();
-          return;
-        case "play-pause": {
-          if (toolRef.current === "tap") {
-            const draft = draftRef.current;
-            if (!draft) return;
-            const queue = vocalTapQueue(draft);
-            const clip = queue[tapLineIndexRef.current];
-            if (!clip) return;
-            const next = applyVocalTap(
-              draft,
-              clip.id,
-              effectiveLocatorTicksRef.current,
-            );
-            commitDraft(next);
-            setTapLineIndex((i) =>
-              Math.min(i + 1, Math.max(0, queue.length - 1)),
-            );
-            return;
-          }
-          h.onPlayOrPause();
-          return;
-        }
-        case "play-from-selection":
-          void playFromSelectionOrLocator();
-          return;
-        case "stop-home":
-          void h.onStop();
-          return;
-        case "cycle-toggle":
-          h.onLoopToggle();
-          return;
-        case "metronome-toggle":
-          void h.onMetronomeToggle();
-          return;
-        case "cycle-from-clip":
-          setCycleFromSelectedAudioClip();
-          return;
-        case "toggle-mixer":
-          setTimelineSurface((s) => (s === "mixer" ? "timeline" : "mixer"));
-          return;
-        case "toggle-inspector":
-          toggleInspectorPanel();
-          return;
-        case "wand-tool":
-          h.onTool("wand");
-          return;
-        case "tool-menu-toggle": {
-          if (toolMenu) {
-            setToolMenu(null);
-            return;
-          }
-          const pt = lastPointerRef.current;
-          openToolMenuAt(
-            pt.x || window.innerWidth / 2,
-            pt.y || window.innerHeight / 2,
-          );
-          return;
-        }
-        case "locator-left":
-          h.nudgeLocator(-1);
-          return;
-        case "locator-right":
-          h.nudgeLocator(1);
-          return;
-        case "nudge-clip-left":
-          nudgeSelectedClip(-1);
-          return;
-        case "nudge-clip-right":
-          nudgeSelectedClip(1);
-          return;
-        case "setlist-prev": {
-          const id = h.prevSetlistId;
-          if (id) navigate(`/timeline/${id}`);
-          return;
-        }
-        case "setlist-next": {
-          const id = h.nextSetlistId;
-          if (id) navigate(`/timeline/${id}`);
-          return;
-        }
-        case "delete-selection":
-          deleteSelectedFormaClip();
-          return;
-        case "tap-line-prev": {
-          setTapLineIndex((i) => Math.max(0, i - 1));
-          return;
-        }
-        case "tap-line-next": {
-          const draft = draftRef.current;
-          const queue = draft ? vocalTapQueue(draft) : [];
-          const max = Math.max(0, queue.length - 1);
-          setTapLineIndex((i) => Math.min(max, i + 1));
-          return;
-        }
-        case "wand-tekst":
-          h.applyWand("tekst");
-          return;
-        case "wand-akordy":
-          h.applyWand("akordy");
-          return;
-        case "wand-both":
-          h.applyWand("both");
-          return;
-        default:
-          return;
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [
-    clearMapSelection,
-    closeContextMenu,
-    closeMobileInspector,
-    songImportOpen,
-    commitDraft,
-    copyClipSelection,
-    cutClipSelection,
-    deleteSelectedFormaClip,
-    duplicateClipSelection,
-    eyeMenuPos,
-    helpOpen,
-    joinSelectionAdjacent,
-    locatorTicks,
-    navigate,
-    nudgeSelectedClip,
-    pasteClipClipboard,
-    playFromSelectionOrLocator,
-    setCycleFromSelectedAudioClip,
-    splitSelectionAtPlayhead,
-    toggleInspectorPanel,
-    toolMenu,
-    toolsVisOpen,
-  ]);
 
   useEffect(() => {
     const scrollEl = document.querySelector(
@@ -1894,9 +1196,7 @@ export function TimelineShell() {
     };
   }, []);
 
-  useEffect(() => {
-    saveZoomPrefs({ zoomH, zoomV, zoomUi });
-  }, [zoomH, zoomV, zoomUi]);
+
 
   useLayoutEffect(() => {
     if (!eyeOpen) {
@@ -1989,10 +1289,6 @@ export function TimelineShell() {
 
   viewSpanRef.current = viewSpan;
   barTicksRef.current = barTicks;
-  zoomHRef.current = effectiveZoomH;
-  zoomHBaseRef.current = zoomH;
-  zoomVBaseRef.current = zoomV;
-  uiScaleRef.current = uiScale;
 
   // Countdown length drag: scroll to timeline start so new CD bars stay visible.
   // Length delta uses clientX→ticks (not abs tick under cursor) so drag stays stable.
@@ -2068,28 +1364,9 @@ export function TimelineShell() {
   const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
 
   // Follow playhead: continuous center (v4 scrollFollowToX) while playing — not edge-only.
-  useEffect(() => {
-    if (!followPlayhead || !state.playing) return;
-    const scrollEl = document.querySelector<HTMLElement>(
-      "[data-canvas-scroll]",
-    );
-    if (!scrollEl) return;
-    const viewW = scrollEl.clientWidth;
-    if (viewW <= 0) return;
-    const maxScroll = Math.max(0, scrollEl.scrollWidth - viewW);
-    scrollEl.scrollLeft = Math.max(
-      0,
-      Math.min(maxScroll, playheadPx - viewW / 2),
-    );
-  }, [followPlayhead, playheadPx, state.playing]);
 
-  // After pause/stop: yellow locator stays at last transport position (v4).
-  useEffect(() => {
-    if (wasPlayingRef.current && !state.playing) {
-      setLocatorTicks(state.positionTicks);
-    }
-    wasPlayingRef.current = state.playing;
-  }, [state.playing, state.positionTicks]);
+
+
 
   const loopOn = Boolean(state.loop?.enabled);
   const loopRange = loopDraft ?? usableLoopRange(state.loop);
@@ -2177,42 +1454,85 @@ export function TimelineShell() {
     ? resolveTempoAt(draftProject, displayTicks)
     : state.bpm;
 
-  useEffect(() => {
-    if (!metronomeOn || !state.playing) {
-      cancelScheduledMetronomeClicks();
-      metroBeatRef.current =
-        metronomeBeatIndex(displayTicks, meterAtPlayhead, state.ppq) - 1;
-      return;
-    }
-    metroBeatRef.current = advanceMetronomeClicks(
-      {
-        enabled: metronomeOn,
-        playing: state.playing,
-        displayTicks,
-        bpm: tempoAtPlayhead,
-        timeSignature: meterAtPlayhead,
-        ppq: state.ppq,
-        tempoMaps: draftProject
-          ? {
-              defaultBpm: draftProject.defaultBpm,
-              defaultMeter: draftProject.defaultMeter,
-              tempoMap: draftProject.tempoMap,
-              meterMap: draftProject.meterMap,
-              ppq: draftProject.ppq,
-            }
-          : null,
-      },
-      metroBeatRef.current,
-    );
-  }, [
-    displayTicks,
-    draftProject,
+  const {
     metronomeOn,
+    setMetronomeOn,
+    latencyCompMs,
+    setLatencyCompMs,
+    audioBuffering,
+    failedAudioAssetIds,
+    setFailedAudioAssetIds,
+    followPlayhead,
+    setFollowPlayhead,
+    showMidiPlayhead,
+    setShowMidiPlayhead,
+    onPlayClick,
+    onPauseClick,
+    onStopClick,
+    onMetronomeToggle,
+    playFromSelectionOrLocator,
+  } = useTimelinePlayback({
+    projectId,
+    draftProject,
+    draftRef,
+    locatorTicks,
+    setLocatorTicks,
+    displayTicks,
+    clipSelection,
+    state,
+    seek,
+    play,
+    pause,
+    stop,
+    soloAudioTrackIds,
+    soloBusIds,
+    canvasScrollRef,
+    playheadPx,
     meterAtPlayhead,
-    state.playing,
-    state.ppq,
     tempoAtPlayhead,
-  ]);
+  });
+
+  useTimelineShortcuts({
+    keyHandlersRef,
+    songImportOpen,
+    helpOpen,
+    setHelpOpen,
+    toolRef,
+    toolMenu,
+    setToolMenu,
+    wandMenuOpenRef,
+    setWandMenu,
+    setTool,
+    eyeMenuPos,
+    setEyeMenuPos,
+    setEyeOpen,
+    toolsVisOpen,
+    setToolsVisOpen,
+    closeContextMenu,
+    closeMobileInspector,
+    copyClipSelection,
+    cutClipSelection,
+    pasteClipClipboard,
+    duplicateClipSelection,
+    selectAllClips,
+    splitSelectionAtPlayhead,
+    joinSelectionAdjacent,
+    deleteSelectedFormaClip,
+    nudgeSelectedClip,
+    setCycleFromSelectedAudioClip,
+    playFromSelectionOrLocator,
+    toggleInspectorPanel,
+    setTimelineSurface,
+    lastPointerRef,
+    openToolMenuAt,
+    locatorTicks,
+    effectiveLocatorTicksRef,
+    tapLineIndexRef,
+    setTapLineIndex,
+    draftRef,
+    commitDraft,
+    navigate,
+  });
 
   // Soft-clock AlongMap — same TempoMap math as server engine / audio (P3).
   useEffect(() => {
@@ -2337,24 +1657,6 @@ export function TimelineShell() {
     // audioAssetDecodeKey tracks which audio assets still need meta.
   }, [projectId, audioAssetDecodeKey, draftProject]);
 
-  async function onSave() {
-    if (!projectId || !draftProject) return;
-    setSavePending(true);
-    try {
-      const next = await putProject(projectId, draftProject);
-      setSavedProject(next);
-      setDraftProject(next);
-      setDraftHistory((h) =>
-        h ? syncPresentAfterSave(h, next) : createDraftHistory(next),
-      );
-    } catch (err) {
-      setLoadError(
-        err instanceof Error ? err.message : "Zapis nie powiódł się",
-      );
-    } finally {
-      setSavePending(false);
-    }
-  }
 
   useEffect(() => {
     function onMenu(ev: Event) {
@@ -2453,116 +1755,7 @@ export function TimelineShell() {
     clearClipSelection();
   }
 
-  function onUndo() {
-    setDraftHistory((h) => {
-      if (!h || !canUndo(h)) return h;
-      const next = undoDraft(h);
-      setDraftProject(next.present.project);
-      setClipSelection(next.present.clipSelection);
-      return next;
-    });
-  }
 
-  function onRedo() {
-    setDraftHistory((h) => {
-      if (!h || !canRedo(h)) return h;
-      const next = redoDraft(h);
-      setDraftProject(next.present.project);
-      setClipSelection(next.present.clipSelection);
-      return next;
-    });
-  }
-
-  async function onPlayClick() {
-    allowAudioPlayback();
-    await resumeMetronomeAudio(getMetronomeAudioContext());
-    if (getAudioPlaybackDebugState().suppressed) return;
-    if (projectId && draftProject) {
-      setAudioBuffering(true);
-      try {
-        const buffered = await ensureAudioBuffered(
-          projectId,
-          draftProject,
-          locatorTicks,
-        );
-        setFailedAudioAssetIds(
-          buffered.failedAssetIds.length
-            ? buffered.failedAssetIds
-            : getFailedAudioAssetIds(projectId),
-        );
-      } finally {
-        setAudioBuffering(false);
-      }
-      if (getAudioPlaybackDebugState().suppressed) return;
-      restartAudioPlayback(projectId, {
-        project: draftProject,
-        playing: true,
-        displayTicks: locatorTicks,
-        soloTrackIds: soloAudioTrackIds,
-        soloBusIds,
-      });
-    }
-    const startTicks = locatorTicks;
-    metroBeatRef.current = metronomeBeatIndex(
-      startTicks,
-      state.timeSignature,
-      state.ppq,
-    );
-    // v4: play from locator bar/beat — seek SSOT then play.
-    if (getAudioPlaybackDebugState().suppressed) return;
-    if (startTicks !== state.positionTicks) {
-      await seek(startTicks);
-    }
-    if (getAudioPlaybackDebugState().suppressed) return;
-    await play({ projectId });
-  }
-
-  async function onPauseClick() {
-    // Halt WebAudio immediately — do not wait for pause RTT (#352).
-    suppressAudioPlayback();
-    await pause();
-  }
-
-  async function onStopClick() {
-    suppressAudioPlayback();
-    await stop();
-    // Match server home (Countdown start / pre-roll), not tick 0 past CD (#41).
-    setLocatorTicks(transportHomeTicks(draftRef.current));
-    // Scroll canvas to CD / song start (same feel as after Countdown length change).
-    requestAnimationFrame(() => {
-      scrollCanvasToStart(
-        canvasScrollRef.current ??
-          (document.querySelector(
-            "[data-canvas-scroll]",
-          ) as HTMLElement | null),
-      );
-    });
-  }
-
-  async function onMetronomeToggle() {
-    const next = !metronomeOn;
-    if (next) {
-      await resumeMetronomeAudio(getMetronomeAudioContext());
-      metroBeatRef.current = metronomeBeatIndex(
-        displayTicks,
-        state.timeSignature,
-        state.ppq,
-      );
-    }
-    persistMetronomeOn(next);
-    setMetronomeOn(next);
-  }
-
-  function closeImportModals() {
-    setSongImportOpen(false);
-    setImportAsNewSong(false);
-    setImportApplying(false);
-  }
-
-  function openSongImportWizard(asNew: boolean) {
-    setImportAsNewSong(asNew);
-    setSongImportOpen(true);
-  }
 
   useEffect(() => {
     function onSongImport(ev: Event) {
@@ -4225,189 +3418,6 @@ export function TimelineShell() {
     void setLoop({ enabled: true, startTicks: 0, endTicks: end });
   }
 
-  function applyAbsoluteZoomH(nextBaseRaw: number, anchorViewportX?: number) {
-    const scroll =
-      canvasScrollRef.current ??
-      (document.querySelector("[data-canvas-scroll]") as HTMLElement | null);
-    const oldEff = zoomHRef.current;
-    const nextBase = Math.min(
-      ZOOM_H_MAX,
-      Math.max(ZOOM_H_MIN, Math.round(nextBaseRaw)),
-    );
-    const newEff = nextBase * uiScaleRef.current;
-    if (nextBase === zoomHBaseRef.current || !(oldEff > 0) || !(newEff > 0)) {
-      return;
-    }
-    const ax =
-      anchorViewportX != null
-        ? anchorViewportX
-        : (scroll?.clientWidth ?? 0) / 2;
-    const prevScroll = scroll?.scrollLeft ?? 0;
-    const newScroll = ((prevScroll + ax) * newEff) / oldEff - ax;
-    setZoomH(nextBase);
-    if (scroll) {
-      requestAnimationFrame(() => {
-        scroll.scrollLeft = Math.max(0, newScroll);
-      });
-    }
-  }
-
-  function zoomHorizontalBySteps(steps: number, anchorViewportX?: number) {
-    if (!steps) return;
-    applyAbsoluteZoomH(
-      zoomHBaseRef.current + steps * ZOOM_H_STEP,
-      anchorViewportX,
-    );
-  }
-
-  function setVerticalZoom(nextLanePx: number) {
-    const oldBase = zoomVBaseRef.current;
-    const next = Math.min(
-      ZOOM_V_MAX,
-      Math.max(ZOOM_V_MIN, Math.round(nextLanePx)),
-    );
-    if (next === oldBase) return;
-    setZoomV(next);
-    // Keep relative proportions of per-track overrides (v4 setVerticalZoom).
-    const current = laneHeightsRef.current;
-    if (oldBase > 0 && Object.keys(current).length) {
-      const scaled = scaleLaneHeights(current, oldBase, next);
-      setLaneHeights(scaled);
-      saveLaneHeights(scaled);
-    }
-  }
-
-  function zoomVerticalBySteps(steps: number) {
-    if (!steps) return;
-    setVerticalZoom(zoomVBaseRef.current + steps * ZOOM_V_STEP);
-  }
-
-  function rowHeightStyle(trackId: string): React.CSSProperties {
-    const base = laneHeightBase(trackId, laneHeights, zoomV);
-    const eff = laneHeightEffective(base, uiScale);
-    return { ["--tl-row-h" as string]: `${eff}px` };
-  }
-
-  function beginLaneResize(
-    e: React.PointerEvent<HTMLButtonElement>,
-    trackId: string,
-  ) {
-    if (e.button !== 0 || touchTier === "mobile") return;
-    e.preventDefault();
-    e.stopPropagation();
-    const startHeightBase = laneHeightBase(trackId, laneHeights, zoomV);
-    laneResizeRef.current = {
-      trackId,
-      startY: e.clientY,
-      startHeightBase,
-      pointerId: e.pointerId,
-    };
-    setLaneResizeTrackId(trackId);
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function onLaneResizePointerMove(e: React.PointerEvent<HTMLButtonElement>) {
-    const drag = laneResizeRef.current;
-    if (!drag || e.pointerId !== drag.pointerId) return;
-    const scale = uiScaleRef.current || 1;
-    const dy = e.clientY - drag.startY;
-    const nextBase = drag.startHeightBase + dy / scale;
-    const next = setLaneHeightOverride(
-      laneHeightsRef.current,
-      drag.trackId,
-      nextBase,
-    );
-    setLaneHeights(next);
-  }
-
-  function endLaneResize(e: React.PointerEvent<HTMLButtonElement>) {
-    const drag = laneResizeRef.current;
-    if (!drag || e.pointerId !== drag.pointerId) return;
-    laneResizeRef.current = null;
-    setLaneResizeTrackId(null);
-    saveLaneHeights(laneHeightsRef.current);
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function onLaneResizeDblClick(
-    e: React.MouseEvent<HTMLButtonElement>,
-    trackId: string,
-  ) {
-    if (touchTier === "mobile") return;
-    e.preventDefault();
-    e.stopPropagation();
-    const next = clearLaneHeightOverride(laneHeightsRef.current, trackId);
-    setLaneHeights(next);
-    saveLaneHeights(next);
-  }
-
-  function beginDockWidthResize(e: React.PointerEvent<HTMLButtonElement>) {
-    if (e.button !== 0 || touchTier === "mobile") return;
-    e.preventDefault();
-    e.stopPropagation();
-    dockWidthResizeRef.current = {
-      startX: e.clientX,
-      startWidthBase: dockWidthBaseRef.current,
-      pointerId: e.pointerId,
-    };
-    setDockWidthResizing(true);
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function onDockWidthResizePointerMove(
-    e: React.PointerEvent<HTMLButtonElement>,
-  ) {
-    const drag = dockWidthResizeRef.current;
-    if (!drag || e.pointerId !== drag.pointerId) return;
-    const scale = uiScaleRef.current || 1;
-    const dx = e.clientX - drag.startX;
-    const nextBase = clampDockWidth(drag.startWidthBase + dx / scale);
-    dockWidthBaseRef.current = nextBase;
-    setDockWidthBase(nextBase);
-  }
-
-  function endDockWidthResize(e: React.PointerEvent<HTMLButtonElement>) {
-    const drag = dockWidthResizeRef.current;
-    if (!drag || e.pointerId !== drag.pointerId) return;
-    dockWidthResizeRef.current = null;
-    setDockWidthResizing(false);
-    saveDockWidth(dockWidthBaseRef.current);
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function fitZoom() {
-    const scroll = document.querySelector(
-      "[data-canvas-scroll]",
-    ) as HTMLElement | null;
-    if (!scroll) return;
-    const usable = Math.max(80, scroll.clientWidth - 48);
-    const bars = Math.max(
-      1,
-      viewSpanRef.current.end / Math.max(1, barTicksRef.current),
-    );
-    const next = Math.round(usable / bars / Math.max(0.01, uiScaleRef.current));
-    setZoomH(Math.min(ZOOM_H_MAX, Math.max(ZOOM_H_MIN, next)));
-    requestAnimationFrame(() => {
-      scroll.scrollLeft = 0;
-    });
-  }
-
   function nudgeLocator(dir: -1 | 1) {
     const draft = draftRef.current;
     if (!draft) return;
@@ -5709,747 +4719,48 @@ export function TimelineShell() {
     });
   }
 
-  function renderLaneContent(trackId: string) {
-    if (!draftProject) return null;
-    if (isAudioLaneId(trackId)) {
-      const lane = trackId;
-      const trackUuid = audioTrackIdFromLane(lane);
-      const clips = draftProject.audioClips.filter(
-        (c) => c.trackId === trackUuid,
-      );
-      const assetById = new Map(draftProject.assets.map((a) => [a.id, a]));
-      const trackColor = resolveTrackColor(
-        draftProject.audioTracks.find((t) => t.id === trackUuid)?.color,
-      );
-
-      const isAudioMoving =
-        gestureSession?.kind === "move" &&
-        isAudioLaneId(gestureSession.lane ?? "");
-      const sourceAudioLane = isAudioMoving
-        ? (gestureSession!.lane as AudioLaneId)
-        : null;
-      const targetAudioLane = isAudioMoving
-        ? ((gesturePreview?.targetLane as AudioLaneId | undefined) ??
-          sourceAudioLane)
-        : null;
-      const moveIds = isAudioMoving
-        ? gestureSession!.moveIds?.length
-          ? gestureSession!.moveIds
-          : gestureSession!.clipId
-            ? [gestureSession!.clipId]
-            : []
-        : [];
-      const moveDelta =
-        gesturePreview && isAudioMoving
-          ? gesturePreview.startTicks - gestureSession!.originClipStart
-          : 0;
-
-      const isTargetLane =
-        isAudioMoving &&
-        targetAudioLane === lane &&
-        targetAudioLane !== sourceAudioLane;
-      const ghostClips = isTargetLane
-        ? moveIds
-            .map((id) => draftProject.audioClips.find((c) => c.id === id))
-            .filter(Boolean)
-        : [];
-
-      return (
-        <>
-          {clips.map((clip) => {
-            const asset = assetById.get(clip.assetId);
-            const isBeingMoved = isAudioMoving && moveIds.includes(clip.id);
-            const isSourceLane = isAudioMoving && sourceAudioLane === lane;
-
-            const previewing =
-              Boolean(gesturePreview) &&
-              ((isSourceLane && isBeingMoved) ||
-                (gestureSession?.lane === lane &&
-                  gesturePreview!.clipId === clip.id &&
-                  gesturePreview!.kind !== "move"));
-
-            const styleClip: FormaClip = {
-              id: clip.id,
-              name: asset?.originalName ?? "Audio",
-              kind: "section",
-              startTicks:
-                previewing && isSourceLane && isBeingMoved
-                  ? targetAudioLane === sourceAudioLane
-                    ? clip.startTicks + moveDelta
-                    : clip.startTicks
-                  : previewing
-                    ? gesturePreview!.startTicks
-                    : clip.startTicks,
-              lengthTicks: previewing
-                ? gestureSession?.kind === "move"
-                  ? clip.lengthTicks
-                  : gesturePreview!.lengthTicks
-                : clip.lengthTicks,
-            };
-            const style = clipStylePx(
-              styleClip,
-              viewSpan,
-              barTicks,
-              effectiveZoomH,
-            );
-            const widthPx = Number.parseFloat(String(style.width)) || 0;
-            const peaks = asset?.waveformPeaks;
-            const poly =
-              peaks && peaks.length
-                ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
-                : "";
-            const decodeFailed =
-              Boolean(projectId) &&
-              (failedAudioAssetIds.includes(clip.assetId) ||
-                isAudioAssetDecodeFailed(projectId!, clip.assetId));
-            return (
-              <button
-                key={clip.id}
-                type="button"
-                data-clip-id={clip.id}
-                data-clip-lane={lane}
-                className={[
-                  styles.clip,
-                  styles.audioClip,
-                  isClipSelected(clipSelection, clip.id, lane)
-                    ? styles.clipSelected
-                    : "",
-                  clip.muted ? styles.audioClipMuted : "",
-                  decodeFailed ? styles.audioClipDecodeFailed : "",
-                  previewing ? styles.formaClipDim : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                style={{
-                  ...style,
-                  ["--tl-track-color" as string]: trackColor,
-                }}
-                title={
-                  decodeFailed
-                    ? `${asset?.originalName ?? "Audio"} — błąd wczytania / dekodowania`
-                    : `${asset?.originalName ?? "Audio"} — move/trim`
-                }
-                onPointerDown={(e) => onAudioClipPointerDown(e, lane, clip)}
-                onPointerMove={onFormaClipPointerMove}
-                onPointerUp={onFormaClipPointerUp}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  openClipContextMenu({
-                    clientX: e.clientX,
-                    clientY: e.clientY,
-                    lane: "audio",
-                    clipId: clip.id,
-                    clipMuted: Boolean(clip.muted),
-                    canSplit: true,
-                    selectionLane: lane,
-                  });
-                }}
-              >
-                {(clip.fadeInMs ?? 0) > 0 ? (
-                  <span
-                    className={styles.audioFadeIn}
-                    style={{
-                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
-                    }}
-                  />
-                ) : null}
-                {(clip.fadeOutMs ?? 0) > 0 ? (
-                  <span
-                    className={styles.audioFadeOut}
-                    style={{
-                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
-                    }}
-                  />
-                ) : null}
-                {poly ? (
-                  <svg
-                    className={styles.audioWaveform}
-                    viewBox={`0 0 ${Math.max(8, widthPx)} 28`}
-                    preserveAspectRatio="none"
-                    aria-hidden
-                  >
-                    <polygon points={poly} />
-                  </svg>
-                ) : null}
-                <span className={styles.audioClipLabel}>
-                  {asset?.originalName ?? "Audio"}
-                </span>
-              </button>
-            );
-          })}
-
-          {ghostClips.map((ghostClip) => {
-            if (!ghostClip) return null;
-            const asset = assetById.get(ghostClip.assetId);
-            const styleClip: FormaClip = {
-              id: `ghost-${ghostClip.id}`,
-              name: asset?.originalName ?? "Audio",
-              kind: "section",
-              startTicks: ghostClip.startTicks + moveDelta,
-              lengthTicks: ghostClip.lengthTicks,
-            };
-            const style = clipStylePx(
-              styleClip,
-              viewSpan,
-              barTicks,
-              effectiveZoomH,
-            );
-            const widthPx = Number.parseFloat(String(style.width)) || 0;
-            const peaks = asset?.waveformPeaks;
-            const poly =
-              peaks && peaks.length
-                ? peaksToPolylinePoints(peaks, Math.max(8, widthPx), 28)
-                : "";
-            return (
-              <button
-                key={`ghost-${ghostClip.id}`}
-                type="button"
-                className={[
-                  styles.clip,
-                  styles.audioClip,
-                  styles.formaClipDim,
-                ].join(" ")}
-                style={{
-                  ...style,
-                  ["--tl-track-color" as string]: trackColor,
-                }}
-                disabled
-              >
-                {(ghostClip.fadeInMs ?? 0) > 0 ? (
-                  <span
-                    className={styles.audioFadeIn}
-                    style={{
-                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
-                    }}
-                  />
-                ) : null}
-                {(ghostClip.fadeOutMs ?? 0) > 0 ? (
-                  <span
-                    className={styles.audioFadeOut}
-                    style={{
-                      width: `${Math.min(widthPx * 0.45, Math.max(4, widthPx * 0.12))}px`,
-                    }}
-                  />
-                ) : null}
-                {poly ? (
-                  <svg
-                    className={styles.audioWaveform}
-                    viewBox={`0 0 ${Math.max(8, widthPx)} 28`}
-                    preserveAspectRatio="none"
-                    aria-hidden
-                  >
-                    <polygon points={poly} />
-                  </svg>
-                ) : null}
-                <span className={styles.audioClipLabel}>
-                  {asset?.originalName ?? "Audio"}
-                </span>
-              </button>
-            );
-          })}
-        </>
-      );
-    }
-    const mapSelectedClass = (eventId: string, lane: MapLaneId) =>
-      selectedMapLane === lane && selectedMapIds.includes(eventId)
-        ? styles.mapSegmentSelected
-        : "";
-    const mapDraggingClass = (eventId: string) =>
-      mapDragPreview?.moveIds.includes(eventId)
-        ? styles.mapSegmentDragging
-        : "";
-    const mapSegmentSelected = (eventId: string, lane: MapLaneId) =>
-      selectedMapLane === lane && selectedMapIds.includes(eventId);
-    const mapSegmentAriaLabel = (
-      seg: { label: string; eventId: string },
-      lane: MapLaneId,
-    ) =>
-      mapSegmentSelectionAriaLabel(seg.label, {
-        selected: mapSegmentSelected(seg.eventId, lane),
-        groupSize:
-          mapSegmentSelected(seg.eventId, lane) &&
-          selectedMapLane === lane &&
-          selectedMapIds.length > 1
-            ? selectedMapIds.length
-            : undefined,
-      });
-
-    switch (trackId) {
-      case "tempo":
-        return tempoSegments.map((seg, i) => (
-          <button
-            key={`tempo-${seg.eventId}-${i}`}
-            type="button"
-            className={[
-              styles.mapSegment,
-              mapSelectedClass(seg.eventId, "tempo"),
-              mapDraggingClass(seg.eventId),
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
-            title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={mapSegmentAriaLabel(seg, "tempo")}
-            onPointerDown={(e) => onMapSegmentPointerDown(e, "tempo", seg)}
-            onPointerMove={onMapSegmentPointerMove}
-            onPointerUp={onMapSegmentPointerUp}
-            onPointerCancel={onMapSegmentPointerUp}
-            onDoubleClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setSongMetaOpen(false);
-              if (!seg.eventId.endsWith("-default")) {
-                setMapSelection("tempo", [seg.eventId], seg.eventId);
-              }
-              openMapEdit("tempo", seg.eventStartTicks);
-            }}
-          >
-            {seg.label}
-          </button>
-        ));
-      case "metrum":
-        return meterSegments.map((seg, i) => (
-          <button
-            key={`meter-${seg.eventId}-${i}`}
-            type="button"
-            className={[
-              styles.mapSegment,
-              mapSelectedClass(seg.eventId, "metrum"),
-              mapDraggingClass(seg.eventId),
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
-            title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={mapSegmentAriaLabel(seg, "metrum")}
-            onPointerDown={(e) => onMapSegmentPointerDown(e, "metrum", seg)}
-            onPointerMove={onMapSegmentPointerMove}
-            onPointerUp={onMapSegmentPointerUp}
-            onPointerCancel={onMapSegmentPointerUp}
-            onDoubleClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setSongMetaOpen(false);
-              if (!seg.eventId.endsWith("-default")) {
-                setMapSelection("metrum", [seg.eventId], seg.eventId);
-              }
-              openMapEdit("metrum", seg.eventStartTicks);
-            }}
-          >
-            {seg.label}
-          </button>
-        ));
-      case "tonacja":
-        return (keySegments.length > 0 ? keySegments : []).map((seg, i) => (
-          <button
-            key={`key-${seg.eventId}-${i}`}
-            type="button"
-            className={[
-              styles.mapSegment,
-              mapSelectedClass(seg.eventId, "tonacja"),
-              mapDraggingClass(seg.eventId),
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={segmentStylePx(seg, viewSpan, barTicks, effectiveZoomH)}
-            title={`${seg.label} — ⌘/⇧ multi · przeciągnij lub kliknij`}
-            aria-label={mapSegmentAriaLabel(seg, "tonacja")}
-            onPointerDown={(e) => onMapSegmentPointerDown(e, "tonacja", seg)}
-            onPointerMove={onMapSegmentPointerMove}
-            onPointerUp={onMapSegmentPointerUp}
-            onPointerCancel={onMapSegmentPointerUp}
-            onDoubleClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setSongMetaOpen(false);
-              if (!seg.eventId.endsWith("-default")) {
-                setMapSelection("tonacja", [seg.eventId], seg.eventId);
-              }
-              openMapEdit("tonacja", seg.eventStartTicks);
-            }}
-          >
-            {seg.label}
-          </button>
-        ));
-      case "kotwice": {
-        const anchors = scoreAnchors(draftProject);
-        if (anchors.length === 0 && !canEditKotwice(draftProject)) {
-          return (
-            <span className={styles.muted}>
-              Kotwice — dodaj MusicXML (Admin) lub kotwicę Ołówkiem
-            </span>
-          );
-        }
-        return anchors.map((anchor) => {
-          const start = ticksFromLogicBar(draftProject, anchor.logicBar);
-          const width = anchorBarWidthTicks(draftProject, anchor.logicBar);
-          return (
-            <button
-              key={anchor.id}
-              type="button"
-              className={[
-                styles.clip,
-                styles.kotwiceClip,
-                selectedAnchorId === anchor.id ? styles.clipSelected : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              style={{
-                left: `${tickToPx(start, viewSpan, barTicks, effectiveZoomH)}px`,
-                width: `${
-                  tickToPx(start + width, viewSpan, barTicks, effectiveZoomH) -
-                  tickToPx(start, viewSpan, barTicks, effectiveZoomH)
-                }px`,
-              }}
-              onPointerDown={(e) => {
-                if (e.button !== 0) return;
-                e.preventDefault();
-                e.stopPropagation();
-                clearClipSelection();
-                clearMapSelection();
-                setSelectedAnchorId(anchor.id);
-                setInspectorVisible(true);
-                if (tool === "eraser") {
-                  commitDraft(deleteScoreAnchor(draftProject, anchor.id));
-                  setSelectedAnchorId(null);
-                  return;
-                }
-                if (!toolAllowsClipHitZones(tool) && tool !== "pointer") {
-                  return;
-                }
-                (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-              }}
-              onPointerUp={(e) => {
-                if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-                e.currentTarget.releasePointerCapture(e.pointerId);
-                const raw = rawTicksAtClientX(e.clientX);
-                if (raw == null) return;
-                commitDraft(moveScoreAnchor(draftProject, anchor.id, raw));
-              }}
-            >
-              {anchor.logicBar} → {anchor.scoreBar}
-            </button>
-          );
-        });
-      }
-      case "forma":
-        return (
-          <>
-            {draftProject.forma.clips.map((clip) => {
-              const moveIds =
-                gestureSession?.kind === "move" &&
-                (gestureSession.lane ?? "forma") === "forma"
-                  ? gestureSession.moveIds?.length
-                    ? gestureSession.moveIds
-                    : gestureSession.clipId
-                      ? [gestureSession.clipId]
-                      : []
-                  : [];
-              const moveDelta =
-                gesturePreview &&
-                gestureSession?.kind === "move" &&
-                moveIds.includes(clip.id)
-                  ? gesturePreview.startTicks - gestureSession.originClipStart
-                  : 0;
-              const optionCopyGhost =
-                Boolean(gestureSession?.optionCopy) && moveDelta !== 0;
-              const previewing =
-                !optionCopyGhost &&
-                gesturePreview &&
-                ((gestureSession?.kind === "move" &&
-                  moveIds.includes(clip.id)) ||
-                  (gesturePreview.clipId === clip.id &&
-                    gesturePreview.kind !== "pencil-draw" &&
-                    gesturePreview.kind !== "move"));
-              const styleClip = previewing
-                ? {
-                    ...clip,
-                    startTicks:
-                      gestureSession?.kind === "move"
-                        ? clip.startTicks + moveDelta
-                        : gesturePreview!.startTicks,
-                    lengthTicks:
-                      gestureSession?.kind === "move"
-                        ? clip.lengthTicks
-                        : gesturePreview!.lengthTicks,
-                    subsections:
-                      gesturePreview!.kind === "subsection-boundary" &&
-                      gesturePreview!.subsections !== undefined
-                        ? gesturePreview!.subsections
-                        : clip.subsections,
-                  }
-                : clip;
-              return (
-                <FormaClipButton
-                  key={clip.id}
-                  clip={styleClip}
-                  dataClipLane="forma"
-                  selected={isClipSelected(clipSelection, clip.id, "forma")}
-                  selectedSubsectionIdx={
-                    primaryId === clip.id ? selectedSubsectionIdx : null
-                  }
-                  style={clipStylePx(
-                    styleClip,
-                    viewSpan,
-                    barTicks,
-                    effectiveZoomH,
-                  )}
-                  pencilActive={toolIsPencilDraw(tool)}
-                  allowHitZones={toolAllowsClipHitZones(tool)}
-                  dimmed={Boolean(previewing)}
-                  onPointerDown={(e) => onFormaClipPointerDown(e, clip)}
-                  onPointerMove={onFormaClipPointerMove}
-                  onPointerUp={onFormaClipPointerUp}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openClipContextMenu({
-                      clientX: e.clientX,
-                      clientY: e.clientY,
-                      lane: "forma",
-                      clipId: clip.id,
-                      canSplit: clip.kind === "section",
-                      canDelete: clip.kind !== "countdown",
-                      selectionLane: "forma",
-                    });
-                  }}
-                  onDoubleClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    clearMapSelection();
-                    selectLaneClip("forma", clip.id);
-                    focusInspectorPanel();
-                  }}
-                />
-              );
-            })}
-            {gestureSession?.optionCopy &&
-            gestureSession.kind === "move" &&
-            gesturePreview &&
-            (gestureSession.lane ?? "forma") === "forma"
-              ? (gestureSession.moveIds?.length
-                  ? gestureSession.moveIds
-                  : gestureSession.clipId
-                    ? [gestureSession.clipId]
-                    : []
-                ).map((id) => {
-                  const clip = draftProject.forma.clips.find(
-                    (c) => c.id === id,
-                  );
-                  if (!clip) return null;
-                  const delta =
-                    gesturePreview.startTicks - gestureSession.originClipStart;
-                  if (delta === 0) return null;
-                  const ghost = {
-                    ...clip,
-                    id: `ghost-${clip.id}`,
-                    startTicks: clip.startTicks + delta,
-                  };
-                  return (
-                    <FormaClipPreview
-                      key={ghost.id}
-                      label={clip.name}
-                      style={clipStylePx(
-                        ghost,
-                        viewSpan,
-                        barTicks,
-                        effectiveZoomH,
-                      )}
-                    />
-                  );
-                })
-              : null}
-            {gesturePreview?.kind === "pencil-draw" &&
-            (gestureSession?.lane ?? "forma") === "forma" ? (
-              <FormaClipPreview
-                label={gesturePreview.name ?? "Sekcja"}
-                style={clipStylePx(
-                  {
-                    id: "preview",
-                    name: gesturePreview.name ?? "Sekcja",
-                    kind: "section",
-                    startTicks: gesturePreview.startTicks,
-                    lengthTicks: gesturePreview.lengthTicks,
-                  },
-                  viewSpan,
-                  barTicks,
-                  effectiveZoomH,
-                )}
-              />
-            ) : null}
-          </>
-        );
-      case "tekst":
-      case "akordy":
-      case "cue": {
-        const lane = trackId as ContentLaneId;
-        const clips =
-          lane === "tekst"
-            ? (draftProject.tekst?.clips ?? [])
-            : lane === "akordy"
-              ? (draftProject.akordy?.clips ?? [])
-              : (draftProject.cue?.clips ?? []);
-        return (
-          <>
-            {clips.map((clip) => {
-              const label =
-                lane === "tekst"
-                  ? (clip as { text: string }).text || "…"
-                  : lane === "akordy"
-                    ? (clip as { symbol: string }).symbol
-                    : (clip as { label: string }).label;
-              const moveIds =
-                gestureSession?.kind === "move" && gestureSession.lane === lane
-                  ? gestureSession.moveIds?.length
-                    ? gestureSession.moveIds
-                    : gestureSession.clipId
-                      ? [gestureSession.clipId]
-                      : []
-                  : [];
-              const moveDelta =
-                gesturePreview &&
-                gestureSession?.kind === "move" &&
-                moveIds.includes(clip.id)
-                  ? gesturePreview.startTicks - gestureSession.originClipStart
-                  : 0;
-              const optionCopyGhost =
-                Boolean(gestureSession?.optionCopy) && moveDelta !== 0;
-              const previewing =
-                !optionCopyGhost &&
-                gesturePreview &&
-                gestureSession?.lane === lane &&
-                ((gestureSession.kind === "move" &&
-                  moveIds.includes(clip.id)) ||
-                  (gesturePreview.clipId === clip.id &&
-                    gesturePreview.kind !== "pencil-draw" &&
-                    gesturePreview.kind !== "move"));
-              const styleClip: FormaClip = {
-                id: clip.id,
-                name: label,
-                kind: "section",
-                startTicks: previewing
-                  ? gestureSession?.kind === "move"
-                    ? clip.startTicks + moveDelta
-                    : gesturePreview!.startTicks
-                  : clip.startTicks,
-                lengthTicks: previewing
-                  ? gestureSession?.kind === "move"
-                    ? clip.lengthTicks
-                    : gesturePreview!.lengthTicks
-                  : clip.lengthTicks,
-              };
-              const tapTarget = lane === "tekst" && tapActiveClipId === clip.id;
-              return (
-                <FormaClipButton
-                  key={clip.id}
-                  clip={styleClip}
-                  dataClipLane={lane}
-                  selected={
-                    isClipSelected(clipSelection, clip.id, lane) || tapTarget
-                  }
-                  selectedSubsectionIdx={null}
-                  style={clipStylePx(
-                    styleClip,
-                    viewSpan,
-                    barTicks,
-                    effectiveZoomH,
-                  )}
-                  pencilActive={toolIsPencilDraw(tool)}
-                  allowHitZones={toolAllowsClipHitZones(tool)}
-                  dimmed={Boolean(previewing)}
-                  onPointerDown={(e) => onContentClipPointerDown(e, lane, clip)}
-                  onPointerMove={onFormaClipPointerMove}
-                  onPointerUp={onFormaClipPointerUp}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openClipContextMenu({
-                      clientX: e.clientX,
-                      clientY: e.clientY,
-                      lane,
-                      clipId: clip.id,
-                      canSplit: true,
-                      selectionLane: lane,
-                    });
-                  }}
-                  onDoubleClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    clearMapSelection();
-                    selectLaneClip(lane, clip.id);
-                    focusInspectorPanel();
-                  }}
-                />
-              );
-            })}
-            {gestureSession?.optionCopy &&
-            gestureSession.kind === "move" &&
-            gesturePreview &&
-            gestureSession.lane === lane
-              ? (gestureSession.moveIds?.length
-                  ? gestureSession.moveIds
-                  : gestureSession.clipId
-                    ? [gestureSession.clipId]
-                    : []
-                ).map((id) => {
-                  const clip = clips.find((c) => c.id === id);
-                  if (!clip) return null;
-                  const delta =
-                    gesturePreview.startTicks - gestureSession.originClipStart;
-                  if (delta === 0) return null;
-                  const label =
-                    lane === "tekst"
-                      ? (clip as { text: string }).text || "…"
-                      : lane === "akordy"
-                        ? (clip as { symbol: string }).symbol
-                        : (clip as { label: string }).label;
-                  const ghost: FormaClip = {
-                    id: `ghost-${clip.id}`,
-                    name: label,
-                    kind: "section",
-                    startTicks: clip.startTicks + delta,
-                    lengthTicks: clip.lengthTicks,
-                  };
-                  return (
-                    <FormaClipPreview
-                      key={ghost.id}
-                      label={label}
-                      style={clipStylePx(
-                        ghost,
-                        viewSpan,
-                        barTicks,
-                        effectiveZoomH,
-                      )}
-                    />
-                  );
-                })
-              : null}
-            {gesturePreview?.kind === "pencil-draw" &&
-            gestureSession?.lane === lane ? (
-              <FormaClipPreview
-                label={gesturePreview.name ?? defaultPencilLabel(lane)}
-                style={clipStylePx(
-                  {
-                    id: "preview",
-                    name: gesturePreview.name ?? defaultPencilLabel(lane),
-                    kind: "section",
-                    startTicks: gesturePreview.startTicks,
-                    lengthTicks: gesturePreview.lengthTicks,
-                  },
-                  viewSpan,
-                  barTicks,
-                  effectiveZoomH,
-                )}
-              />
-            ) : null}
-          </>
-        );
-      }
-      default:
-        return null;
-    }
-  }
+  const lanesRendererProps = {
+    draftProject,
+    projectId,
+    failedAudioAssetIds,
+    gestureSession,
+    gesturePreview,
+    clipSelection,
+    primaryId,
+    selectedSubsectionIdx,
+    selectedAnchorId,
+    selectedMapLane,
+    selectedMapIds,
+    mapDragPreview,
+    tempoSegments,
+    meterSegments,
+    keySegments,
+    viewSpan,
+    barTicks,
+    effectiveZoomH,
+    tool,
+    tapActiveClipId,
+    commitDraft,
+    clearClipSelection,
+    clearMapSelection,
+    setSelectedAnchorId,
+    setInspectorVisible,
+    setSongMetaOpen,
+    setMapSelection,
+    openMapEdit,
+    openClipContextMenu,
+    selectLaneClip,
+    focusInspectorPanel,
+    rawTicksAtClientX,
+    onAudioClipPointerDown,
+    onFormaClipPointerDown,
+    onContentClipPointerDown,
+    onFormaClipPointerMove,
+    onFormaClipPointerUp,
+    onMapSegmentPointerDown,
+    onMapSegmentPointerMove,
+    onMapSegmentPointerUp,
+  };
 
   const operatorNavCompact = isCompactMobile && showOperatorNav;
   const headerHistory = isMobilePreview
@@ -6623,7 +4934,6 @@ export function TimelineShell() {
           .filter(Boolean)
           .join(" ")}
         style={{
-          /* Unitless scale like v4 `--tl-ui-scale` (not `%` — avoids calc % of parent). */
           ["--tl-zoom-ui" as string]: String(uiScale),
           ["--tl-row-h" as string]: `${effectiveZoomV}px`,
         }}
@@ -6655,1959 +4965,130 @@ export function TimelineShell() {
               onHwChannelModeChange={onHwChannelModeChange}
             />
           ) : (
-            <div
-              ref={canvasScrollRef}
-              className={styles.canvasScroll}
-              data-canvas-scroll
-            >
-              <div
-                className={styles.canvasInner}
-                style={{
-                  width: canvasInnerWidth,
-                  /* Base px × --tl-zoom-ui — keeps grid / sticky / overlays in sync. */
-                  ["--tl-dock-w" as string]: `calc(${dockWidthBase}px * var(--tl-zoom-ui))`,
-                }}
-              >
-                <div className={styles.canvasBody}>
-                  <div ref={markerOverlayRef} className={styles.markerOverlay}>
-                    {showMidiPlayhead ? (
-                      <div
-                        className={styles.playheadMidi}
-                        style={{ left: `${playheadPx}px` }}
-                        aria-hidden
-                      />
-                    ) : null}
-                    <div
-                      className={styles.locator}
-                      style={{ left: `${locatorPx}px` }}
-                      role="slider"
-                      aria-label="Locator wklejania"
-                      aria-valuemin={viewSpan.start}
-                      aria-valuemax={viewSpan.end}
-                      aria-valuenow={effectiveLocatorTicks}
-                      aria-valuetext={locatorLabel}
-                      tabIndex={-1}
-                      onPointerDown={(e) => {
-                        e.stopPropagation();
-                        onLocatorPointerDown(e, "locator");
-                      }}
-                      onPointerMove={onLocatorPointerMove}
-                      onPointerUp={onLocatorPointerUp}
-                    >
-                      <span className={styles.locatorLabel}>
-                        {locatorLabel}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.rulerRow}>
-                    <div className={styles.rulerDock}>
-                      <ShellIconButton
-                        ref={eyeBtnRef}
-                        label="Widoczność ścieżek"
-                        pressed={eyeOpen}
-                        aria-expanded={eyeOpen}
-                        aria-haspopup="menu"
-                        aria-controls={eyeOpen ? eyeMenuId : undefined}
-                        onClick={() => setEyeOpen((v) => !v)}
-                      >
-                        <IconEye />
-                      </ShellIconButton>
-                      {touchTier !== "mobile" ? (
-                        <button
-                          type="button"
-                          className={styles.dockWidthResizeEdge}
-                          title="Przeciągnij — szerokość kolumny docku"
-                          aria-label="Zmień szerokość kolumny docku"
-                          onPointerDown={beginDockWidthResize}
-                          onPointerMove={onDockWidthResizePointerMove}
-                          onPointerUp={endDockWidthResize}
-                          onPointerCancel={endDockWidthResize}
-                        />
-                      ) : null}
-                    </div>
-                    <div className={styles.ruler}>
-                      <div
-                        className={styles.rulerLoopLane}
-                        onPointerDown={(e) =>
-                          onLocatorPointerDown(e, "ruler-loop")
-                        }
-                        onPointerMove={onLocatorPointerMove}
-                        onPointerUp={onLocatorPointerUp}
-                      >
-                        {loopRange ? (
-                          <div
-                            className={[
-                              styles.loopRegion,
-                              loopOn ? "" : styles.loopRegionOff,
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                            style={{
-                              left: `${tickToPx(loopRange.startTicks, viewSpan, barTicks, effectiveZoomH)}px`,
-                              width: `${Math.max(
-                                tickToPx(
-                                  loopRange.endTicks,
-                                  viewSpan,
-                                  barTicks,
-                                  effectiveZoomH,
-                                ) -
-                                  tickToPx(
-                                    loopRange.startTicks,
-                                    viewSpan,
-                                    barTicks,
-                                    effectiveZoomH,
-                                  ),
-                                2,
-                              )}px`,
-                            }}
-                            aria-hidden
-                          />
-                        ) : null}
-                        {barMarks.map((mark) => (
-                          <span
-                            key={`bar-${mark.ticks}`}
-                            className={styles.rulerMark}
-                            style={{
-                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                            }}
-                          >
-                            {mark.label}
-                          </span>
-                        ))}
-                      </div>
-                      <div
-                        className={styles.rulerBeatLane}
-                        onPointerDown={(e) =>
-                          onLocatorPointerDown(e, "ruler-beat")
-                        }
-                        onPointerMove={onLocatorPointerMove}
-                        onPointerUp={onLocatorPointerUp}
-                      >
-                        {barMarks.map((mark) => (
-                          <span
-                            key={`bar-tick-${mark.ticks}`}
-                            className={styles.rulerBarTick}
-                            style={{
-                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                            }}
-                            aria-hidden
-                          />
-                        ))}
-                        {rulerBeatMarks.map((mark) => (
-                          <span
-                            key={`beat-${mark.ticks}`}
-                            className={styles.rulerBeatTick}
-                            style={{
-                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                            }}
-                            aria-hidden
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.trackRows} ref={bindTrackRowsRef}>
-                    {/* Continuous sticky dock paint (v4 `.timeline-dock`) — seals row seams. */}
-                    <div className={styles.dockColumnRail} aria-hidden />
-                    {touchTier !== "mobile" ? (
-                      <button
-                        type="button"
-                        className={styles.dockWidthResize}
-                        title="Przeciągnij — szerokość kolumny docku"
-                        aria-label="Zmień szerokość kolumny docku"
-                        onPointerDown={beginDockWidthResize}
-                        onPointerMove={onDockWidthResizePointerMove}
-                        onPointerUp={endDockWidthResize}
-                        onPointerCancel={endDockWidthResize}
-                      />
-                    ) : null}
-                    <div
-                      className={styles.laneOverlay}
-                      ref={lanesCoordRef}
-                      aria-hidden
-                    >
-                      <div className={styles.barGrid}>
-                        {barMarks.map((mark) => (
-                          <span
-                            key={`grid-${mark.ticks}`}
-                            className={styles.barLine}
-                            style={{
-                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                            }}
-                          />
-                        ))}
-                        {rulerBeatMarks.map((mark) => (
-                          <span
-                            key={`grid-beat-${mark.ticks}`}
-                            className={styles.beatLine}
-                            style={{
-                              left: `${tickToPx(mark.ticks, viewSpan, barTicks, effectiveZoomH)}px`,
-                            }}
-                          />
-                        ))}
-                      </div>
-                      {marqueeBox ? (
-                        <div
-                          className={styles.marquee}
-                          style={{
-                            left: marqueeBox.left,
-                            top: marqueeBox.top,
-                            width: marqueeBox.width,
-                            height: marqueeBox.height,
-                          }}
-                        />
-                      ) : null}
-                    </div>
-
-                    {buildTrackList(draftProject?.audioTracks ?? [])
-                      .filter((t) => isTrackVisible(trackVisibility, t))
-                      .map((track) => (
-                        <div
-                          key={track.id}
-                          className={styles.trackRow}
-                          style={rowHeightStyle(track.id)}
-                          data-track={track.id}
-                        >
-                          <div
-                            className={[
-                              styles.dockCell,
-                              track.group === "audio"
-                                ? styles.dockCellAudio
-                                : "",
-                              track.group === "special" ? styles.dockMuted : "",
-                              track.group === "audio" &&
-                              track.audioTrackId &&
-                              isAudioTrackSelected(
-                                trackSelection,
-                                track.audioTrackId,
-                              )
-                                ? styles.dockSelected
-                                : "",
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                            onClick={(e) => {
-                              if (
-                                track.group !== "audio" ||
-                                !track.audioTrackId
-                              )
-                                return;
-                              onAudioTrackHeaderClick(e, track.audioTrackId);
-                            }}
-                            onContextMenu={(e) => {
-                              // Always block native Look Up / Inspect on dock text;
-                              // ChannelStrip name handler may already have opened the menu.
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (
-                                track.group !== "audio" ||
-                                !track.audioTrackId
-                              )
-                                return;
-                              openAudioTrackContextMenu(
-                                track.audioTrackId,
-                                e.clientX,
-                                e.clientY,
-                              );
-                            }}
-                          >
-                            {track.group === "audio" && track.audioTrackId ? (
-                              <>
-                                <ChannelStripControls
-                                  layout="dock"
-                                  compact={
-                                    laneHeightEffective(
-                                      laneHeightBase(
-                                        track.id,
-                                        laneHeights,
-                                        zoomV,
-                                      ),
-                                      uiScale,
-                                    ) <= DOCK_COMPACT_MAX_PX
-                                  }
-                                  strip={{
-                                    trackId: track.audioTrackId,
-                                    name: track.label,
-                                    muted: Boolean(
-                                      draftProject?.audioTracks.find(
-                                        (a) => a.id === track.audioTrackId,
-                                      )?.muted,
-                                    ),
-                                    gainDb:
-                                      draftProject?.audioTracks.find(
-                                        (a) => a.id === track.audioTrackId,
-                                      )?.gainDb ?? 0,
-                                    pan:
-                                      draftProject?.audioTracks.find(
-                                        (a) => a.id === track.audioTrackId,
-                                      )?.pan ?? 0,
-                                    color: draftProject?.audioTracks.find(
-                                      (a) => a.id === track.audioTrackId,
-                                    )?.color,
-                                    icon: draftProject?.audioTracks.find(
-                                      (a) => a.id === track.audioTrackId,
-                                    )?.icon,
-                                    soloed: soloAudioTrackIds.includes(
-                                      track.audioTrackId,
-                                    ),
-                                    selected: isAudioTrackSelected(
-                                      trackSelection,
-                                      track.audioTrackId,
-                                    ),
-                                  }}
-                                  callbacks={buildChannelStripCallbacks(
-                                    track.audioTrackId,
-                                  )}
-                                  renaming={
-                                    trackRename?.trackId === track.audioTrackId
-                                  }
-                                  renameValue={
-                                    trackRename?.trackId === track.audioTrackId
-                                      ? trackRename.name
-                                      : track.label
-                                  }
-                                  soloActiveClassName={styles.tapBtnSolo}
-                                  muteActiveClassName={styles.tapBtnMute}
-                                  labelClassName={styles.dockLabel}
-                                  faderClassName={styles.dockFader}
-                                  renameInputClassName={styles.dockRenameInput}
-                                />
-                              </>
-                            ) : (
-                              <span className={styles.dockLabel}>
-                                {track.label}
-                              </span>
-                            )}
-                            {track.id === "forma" && !isMobilePreview ? (
-                              <Button
-                                variant="ghost"
-                                iconOnly
-                                selected={tool === "wand"}
-                                className={
-                                  tool === "wand"
-                                    ? styles.tapBtnSelected
-                                    : undefined
-                                }
-                                title="Różdżka — rozmieszcza Tekst/Akordy wg Formy (W)"
-                                aria-label="Różdżka — rozmieszcza Tekst/Akordy wg Formy"
-                                onClick={() => onTool("wand")}
-                              >
-                                <IconWand />
-                              </Button>
-                            ) : null}
-                            {track.id === "tekst" && !isMobilePreview ? (
-                              <Button
-                                variant="ghost"
-                                iconOnly
-                                selected={tool === "tap"}
-                                className={
-                                  tool === "tap"
-                                    ? styles.tapBtnSelected
-                                    : undefined
-                                }
-                                title="Tap — kolejka linii Tekstu; Spacja = start przy playheadzie"
-                                aria-label="Tap — kolejka linii Tekstu"
-                                onClick={() => onTool("tap")}
-                              >
-                                <IconTap />
-                              </Button>
-                            ) : null}
-                            {touchTier !== "mobile" ? (
-                              <button
-                                type="button"
-                                className={[
-                                  styles.laneResize,
-                                  laneResizeTrackId === track.id
-                                    ? styles.laneResizeActive
-                                    : "",
-                                ]
-                                  .filter(Boolean)
-                                  .join(" ")}
-                                title="Przeciągnij — wysokość ścieżki (dwuklik = domyślna)"
-                                aria-label={`Zmień wysokość ścieżki ${track.label}`}
-                                onPointerDown={(e) =>
-                                  beginLaneResize(e, track.id)
-                                }
-                                onPointerMove={onLaneResizePointerMove}
-                                onPointerUp={endLaneResize}
-                                onPointerCancel={endLaneResize}
-                                onDoubleClick={(e) =>
-                                  onLaneResizeDblClick(e, track.id)
-                                }
-                              />
-                            ) : null}
-                          </div>
-                          <div
-                            data-audio-lane={
-                              isAudioLaneId(track.id) ? track.id : undefined
-                            }
-                            onPointerDown={
-                              track.id === "forma"
-                                ? onFormaLanePointerDown
-                                : track.id === "kotwice"
-                                  ? (e) => {
-                                      if (e.button !== 0 || !draftProject)
-                                        return;
-                                      if (!toolIsPencilDraw(tool)) return;
-                                      if (!canEditKotwice(draftProject)) return;
-                                      const raw = rawTicksAtClientX(e.clientX);
-                                      if (raw == null) return;
-                                      const next = insertScoreAnchor(
-                                        draftProject,
-                                        raw,
-                                        1,
-                                      );
-                                      if (next !== draftProject)
-                                        commitDraft(next);
-                                    }
-                                  : isMapLaneId(track.id)
-                                    ? (e) =>
-                                        onMapLanePointerDown(
-                                          e,
-                                          track.id as MapLaneId,
-                                        )
-                                    : track.id === "tekst" ||
-                                        track.id === "akordy" ||
-                                        track.id === "cue"
-                                      ? (e) => {
-                                          if (e.button !== 0 || !draftProject)
-                                            return;
-                                          if (tool === "scissors") {
-                                            e.preventDefault();
-                                            const raw = rawTicksAtClientX(
-                                              e.clientX,
-                                            );
-                                            if (raw == null) return;
-                                            const lane =
-                                              track.id as ContentLaneId;
-                                            const hit =
-                                              contentClipCoveringTicks(
-                                                draftProject,
-                                                lane,
-                                                raw,
-                                              );
-                                            if (!hit) return;
-                                            clearMapSelection();
-                                            selectLaneClip(lane, hit.id);
-                                            const next = splitContentClipAt(
-                                              draftProject,
-                                              lane,
-                                              hit.id,
-                                              raw,
-                                            );
-                                            if (next !== draftProject)
-                                              commitDraft(next);
-                                            return;
-                                          }
-                                          if (!toolIsPencilDraw(tool)) {
-                                            if (
-                                              toolUsesMarqueeGesture(
-                                                tool,
-                                                e.pointerType,
-                                              )
-                                            ) {
-                                              beginMarquee(e);
-                                            } else if (
-                                              isTouchPointerType(
-                                                e.pointerType,
-                                              ) &&
-                                              tool === "pointer" &&
-                                              !heldZoomRef.current
-                                            ) {
-                                              beginTouchCanvasNav(e);
-                                            }
-                                            return;
-                                          }
-                                          beginContentPencilDraw(
-                                            e,
-                                            track.id as ContentLaneId,
-                                          );
-                                        }
-                                      : isAudioLaneId(track.id)
-                                        ? (e) => {
-                                            if (e.button !== 0) return;
-                                            if (toolIsPencilDraw(tool)) {
-                                              const raw = rawTicksAtClientX(
-                                                e.clientX,
-                                              );
-                                              if (
-                                                raw == null ||
-                                                !track.audioTrackId
-                                              ) {
-                                                return;
-                                              }
-                                              const draft = draftRef.current;
-                                              if (!draft) return;
-                                              const mode =
-                                                contentSnapModeFromModifiers(
-                                                  e.metaKey,
-                                                  e.ctrlKey,
-                                                );
-                                              const snapped = snapEditTicks(
-                                                draft,
-                                                raw,
-                                                mode,
-                                              );
-                                              laneImportTrackIdRef.current =
-                                                track.audioTrackId;
-                                              laneImportStartTicksRef.current =
-                                                snapped;
-                                              laneAudioFileRef.current?.click();
-                                              return;
-                                            }
-                                            if (
-                                              toolUsesMarqueeGesture(
-                                                tool,
-                                                e.pointerType,
-                                              )
-                                            ) {
-                                              beginMarquee(e);
-                                            } else if (
-                                              isTouchPointerType(
-                                                e.pointerType,
-                                              ) &&
-                                              tool === "pointer" &&
-                                              !heldZoomRef.current
-                                            ) {
-                                              beginTouchCanvasNav(e);
-                                            }
-                                          }
-                                        : undefined
-                            }
-                            onPointerMove={
-                              track.id === "forma" ||
-                              track.id === "tekst" ||
-                              track.id === "akordy" ||
-                              track.id === "cue"
-                                ? onFormaLanePointerMove
-                                : undefined
-                            }
-                            onPointerUp={
-                              track.id === "forma" ||
-                              track.id === "tekst" ||
-                              track.id === "akordy" ||
-                              track.id === "cue"
-                                ? onFormaLanePointerUp
-                                : undefined
-                            }
-                            role={
-                              track.id === "forma" ||
-                              track.id === "tekst" ||
-                              track.id === "akordy" ||
-                              track.id === "cue"
-                                ? "presentation"
-                                : undefined
-                            }
-                            className={[
-                              styles.laneCell,
-                              track.group === "special"
-                                ? styles.laneCellMuted
-                                : "",
-                              track.id === "forma" ? styles.formaLaneCell : "",
-                              track.id === "forma" && toolIsPencilDraw(tool)
-                                ? styles.formaLanePencil
-                                : "",
-                              (track.id === "tekst" ||
-                                track.id === "akordy" ||
-                                track.id === "cue") &&
-                              toolIsPencilDraw(tool)
-                                ? styles.formaLanePencil
-                                : "",
-                              isMapLaneId(track.id) &&
-                              (toolIsPencilDraw(tool) || tool === "scissors")
-                                ? styles.formaLanePencil
-                                : "",
-                              isMapLaneId(track.id) || track.id === "kotwice"
-                                ? styles.mapLaneCell
-                                : "",
-                              isAudioLaneId(track.id) && toolIsPencilDraw(tool)
-                                ? styles.formaLanePencil
-                                : "",
-                              isAudioLaneId(track.id) &&
-                              audioLaneDropId === track.audioTrackId
-                                ? styles.laneCellDropActive
-                                : "",
-                            ]
-                              .filter(Boolean)
-                              .join(" ")}
-                            style={{
-                              cursor: cursorForTimelineTool(
-                                heldZoom ? "zoom" : tool,
-                              ),
-                            }}
-                            data-track={track.id}
-                            onContextMenu={(e) => {
-                              // Clips stopPropagation; this handles empty lane area.
-                              if (
-                                (e.target as HTMLElement).closest(
-                                  "button[data-clip-id]",
-                                )
-                              ) {
-                                return;
-                              }
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (
-                                track.group === "audio" &&
-                                track.audioTrackId
-                              ) {
-                                openEmptyLaneContextMenu({
-                                  clientX: e.clientX,
-                                  clientY: e.clientY,
-                                  laneKind: "audio",
-                                  audioTrackId: track.audioTrackId,
-                                });
-                                return;
-                              }
-                              if (
-                                track.id === "forma" ||
-                                track.id === "tekst" ||
-                                track.id === "akordy" ||
-                                track.id === "cue"
-                              ) {
-                                openEmptyLaneContextMenu({
-                                  clientX: e.clientX,
-                                  clientY: e.clientY,
-                                  laneKind: track.id,
-                                });
-                              }
-                            }}
-                            onDragOver={
-                              track.group === "audio" && track.audioTrackId
-                                ? (e) => {
-                                    e.preventDefault();
-                                    e.dataTransfer.dropEffect = "copy";
-                                    setAudioLaneDropId(track.audioTrackId!);
-                                  }
-                                : undefined
-                            }
-                            onDragLeave={
-                              track.group === "audio" && track.audioTrackId
-                                ? (e) => {
-                                    if (
-                                      e.currentTarget.contains(
-                                        e.relatedTarget as Node,
-                                      )
-                                    ) {
-                                      return;
-                                    }
-                                    setAudioLaneDropId((id) =>
-                                      id === track.audioTrackId ? null : id,
-                                    );
-                                  }
-                                : undefined
-                            }
-                            onDrop={
-                              track.group === "audio" && track.audioTrackId
-                                ? (e) => {
-                                    e.preventDefault();
-                                    setAudioLaneDropId(null);
-                                    const file = e.dataTransfer.files?.[0];
-                                    if (file && track.audioTrackId) {
-                                      void onUploadAudioToTrack(
-                                        track.audioTrackId,
-                                        file,
-                                      );
-                                    }
-                                  }
-                                : undefined
-                            }
-                          >
-                            {renderLaneContent(track.id)}
-                          </div>
-                        </div>
-                      ))}
-                    <div className={styles.rowsFill}>
-                      {isMobilePreview ? (
-                        <div className={styles.dockColumnFill} aria-hidden />
-                      ) : (
-                        <div
-                          className={styles.dockColumnFill}
-                          onDoubleClick={(e) => {
-                            if ((e.target as HTMLElement).closest("button"))
-                              return;
-                            onAddAudioTrack();
-                          }}
-                        >
-                          <button
-                            type="button"
-                            className={styles.dockAddTrack}
-                            disabled={
-                              !draftProject ||
-                              draftProject.audioTracks.length >=
-                                MAX_AUDIO_TRACKS
-                            }
-                            title={
-                              !draftProject
-                                ? undefined
-                                : draftProject.audioTracks.length >=
-                                    MAX_AUDIO_TRACKS
-                                  ? `Limit ${MAX_AUDIO_TRACKS} ścieżek audio`
-                                  : "Dodaj pustą ścieżkę audio"
-                            }
-                            onClick={onAddAudioTrack}
-                          >
-                            + Dodaj Ścieżkę
-                          </button>
-                          <div
-                            className={styles.dockFillHit}
-                            title="Dwuklik — dodaj pustą ścieżkę"
-                          />
-                        </div>
-                      )}
-                      <div
-                        className={styles.laneFillHit}
-                        onPointerDown={(e) => {
-                          if (e.button !== 0) return;
-                          if (toolUsesMarqueeGesture(tool, e.pointerType)) {
-                            beginMarquee(e);
-                            return;
-                          }
-                          if (
-                            isTouchPointerType(e.pointerType) &&
-                            tool === "pointer" &&
-                            !heldZoomRef.current
-                          ) {
-                            beginTouchCanvasNav(e);
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TimelineLanesView
+              canvasScrollRef={canvasScrollRef}
+              canvasInnerWidth={canvasInnerWidth}
+              dockWidthBase={dockWidthBase}
+              markerOverlayRef={markerOverlayRef}
+              showMidiPlayhead={showMidiPlayhead}
+              playheadPx={playheadPx}
+              locatorPx={locatorPx}
+              viewSpan={viewSpan}
+              barTicks={barTicks}
+              effectiveLocatorTicks={effectiveLocatorTicks}
+              locatorLabel={locatorLabel}
+              onLocatorPointerDown={onLocatorPointerDown}
+              onLocatorPointerMove={onLocatorPointerMove}
+              onLocatorPointerUp={onLocatorPointerUp}
+              eyeBtnRef={eyeBtnRef}
+              eyeOpen={eyeOpen}
+              eyeMenuId={eyeMenuId}
+              setEyeOpen={setEyeOpen}
+              touchTier={touchTier}
+              beginDockWidthResize={beginDockWidthResize}
+              onDockWidthResizePointerMove={onDockWidthResizePointerMove}
+              endDockWidthResize={endDockWidthResize}
+              effectiveZoomH={effectiveZoomH}
+              loopRange={loopRange}
+              loopOn={loopOn}
+              barMarks={barMarks}
+              rulerBeatMarks={rulerBeatMarks}
+              bindTrackRowsRef={bindTrackRowsRef}
+              lanesCoordRef={lanesCoordRef}
+              marqueeBox={marqueeBox}
+              draftProject={draftProject}
+              trackVisibility={trackVisibility}
+              rowHeightStyle={rowHeightStyle}
+              trackSelection={trackSelection}
+              soloAudioTrackIds={soloAudioTrackIds}
+              trackRename={trackRename}
+              buildChannelStripCallbacks={buildChannelStripCallbacks}
+              laneHeights={laneHeights}
+              zoomV={zoomV}
+              uiScale={uiScale}
+              tool={tool}
+              onTool={onTool}
+              isMobilePreview={isMobilePreview}
+              laneResizeTrackId={laneResizeTrackId}
+              beginLaneResize={beginLaneResize}
+              onLaneResizePointerMove={onLaneResizePointerMove}
+              endLaneResize={endLaneResize}
+              onLaneResizeDblClick={onLaneResizeDblClick}
+              onAudioTrackHeaderClick={onAudioTrackHeaderClick}
+              openAudioTrackContextMenu={openAudioTrackContextMenu}
+              heldZoom={heldZoom}
+              audioLaneDropId={audioLaneDropId}
+              setAudioLaneDropId={setAudioLaneDropId}
+              onUploadAudioToTrack={onUploadAudioToTrack}
+              openEmptyLaneContextMenu={openEmptyLaneContextMenu}
+              beginMarquee={beginMarquee}
+              beginTouchCanvasNav={beginTouchCanvasNav}
+              heldZoomRef={heldZoomRef}
+              onAddAudioTrack={onAddAudioTrack}
+              onFormaLanePointerDown={onFormaLanePointerDown}
+              onMapLanePointerDown={onMapLanePointerDown}
+              onFormaLanePointerMove={onFormaLanePointerMove}
+              onFormaLanePointerUp={onFormaLanePointerUp}
+              beginContentPencilDraw={beginContentPencilDraw}
+              rawTicksAtClientX={rawTicksAtClientX}
+              commitDraft={commitDraft}
+              clearMapSelection={clearMapSelection}
+              selectLaneClip={selectLaneClip}
+              laneImportTrackIdRef={laneImportTrackIdRef}
+              laneImportStartTicksRef={laneImportStartTicksRef}
+              laneAudioFileRef={laneAudioFileRef}
+              draftRef={draftRef}
+              lanesRendererProps={lanesRendererProps}
+            />
           )}
         </div>
 
         {!isMobilePreview ? (
-          <aside
-            className={[
-              styles.inspector,
-              inspectorOpen ? styles.inspectorOpen : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            aria-label="Właściwości"
-            aria-hidden={!inspectorOpen ? true : undefined}
-          >
-            <div className={styles.inspHead}>
-              <h2 className={styles.inspTitle}>Właściwości</h2>
-              <span className={styles.inspClose}>
-                <ShellIconButton
-                  label="Zamknij właściwości"
-                  onClick={closeInspectorPanel}
-                >
-                  <IconClose />
-                </ShellIconButton>
-              </span>
-            </div>
-            {clipSelection.items.length > 1 ? (
-              <p className={styles.inspMulti} role="status" aria-live="polite">
-                Zaznaczono {clipSelection.items.length} klipów
-                {selectionLane
-                  ? ` · ${
-                      selectionLane === "forma"
-                        ? "Forma"
-                        : selectionLane === "tekst"
-                          ? "Tekst"
-                          : selectionLane === "akordy"
-                            ? "Akordy"
-                            : selectionLane === "cue"
-                              ? "Cue"
-                              : "Audio"
-                    }`
-                  : ""}
-              </p>
-            ) : null}
-            {songMetaOpen && draftProject ? (
-              <div className={styles.inspBody}>
-                <label className={styles.inspField}>
-                  Tytuł
-                  <input
-                    className={styles.nameInput}
-                    value={draftProject.name}
-                    aria-label="Tytuł utworu"
-                    onChange={(e) => {
-                      commitDraft({
-                        ...draftProject,
-                        name: e.target.value || draftProject.name,
-                      });
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Tempo domyślne (BPM)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={20}
-                    max={400}
-                    step={1}
-                    value={draftProject.defaultBpm}
-                    aria-label="Tempo domyślne"
-                    onChange={(e) => {
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n) || n <= 0) return;
-                      commitDraft({ ...draftProject, defaultBpm: n });
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Metrum domyślne
-                  <input
-                    className={styles.lengthInput}
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="4/4"
-                    defaultValue={`${draftProject.defaultMeter.numerator}/${draftProject.defaultMeter.denominator}`}
-                    key={`meter-${draftProject.defaultMeter.numerator}-${draftProject.defaultMeter.denominator}`}
-                    aria-label="Metrum domyślne"
-                    onBlur={(e) => {
-                      const parsed = parseMeterString(
-                        e.target.value,
-                        draftProject.defaultMeter,
-                      );
-                      if (
-                        parsed.numerator ===
-                          draftProject.defaultMeter.numerator &&
-                        parsed.denominator ===
-                          draftProject.defaultMeter.denominator
-                      ) {
-                        e.target.value = `${parsed.numerator}/${parsed.denominator}`;
-                        return;
-                      }
-                      commitDraft(
-                        upsertMeterAt(
-                          draftProject,
-                          0,
-                          parsed.numerator,
-                          parsed.denominator,
-                        ),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  PC (MIDI)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={0}
-                    max={127}
-                    value={draftProject.midiProgramId ?? ""}
-                    disabled={draftProject.isTemplate === true}
-                    aria-label="Program Change"
-                    onChange={(e) => {
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n)) return;
-                      commitDraft({
-                        ...draftProject,
-                        midiProgramId: Math.max(
-                          0,
-                          Math.min(127, Math.round(n)),
-                        ),
-                      });
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Artysta
-                  <input
-                    className={styles.nameInput}
-                    value={draftProject.artist ?? ""}
-                    onChange={(e) =>
-                      commitDraft({
-                        ...draftProject,
-                        artist: e.target.value || undefined,
-                      })
-                    }
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Gatunek
-                  <input
-                    className={styles.nameInput}
-                    value={draftProject.genre ?? ""}
-                    onChange={(e) =>
-                      commitDraft({
-                        ...draftProject,
-                        genre: e.target.value || undefined,
-                      })
-                    }
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Okładka (URL)
-                  <input
-                    className={styles.nameInput}
-                    value={draftProject.coverUrl ?? ""}
-                    placeholder="https://…"
-                    aria-label="URL okładki"
-                    onChange={(e) =>
-                      commitDraft({
-                        ...draftProject,
-                        coverUrl: e.target.value.trim() || undefined,
-                      })
-                    }
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Rok wydania
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={1900}
-                    max={2100}
-                    placeholder="1978"
-                    value={draftProject.year ?? ""}
-                    aria-label="Rok wydania"
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      if (raw === "") {
-                        commitDraft({ ...draftProject, year: undefined });
-                        return;
-                      }
-                      const n = Number(raw);
-                      if (!Number.isFinite(n)) return;
-                      commitDraft({
-                        ...draftProject,
-                        year: Math.round(n),
-                      });
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Tonacja (start)
-                  <span className={styles.metaKeyRow}>
-                    <select
-                      className={styles.nameInput}
-                      aria-label="Tonika (start)"
-                      value={resolveKeyAt(draftProject, 0)?.tonic ?? "C"}
-                      onChange={(e) => {
-                        const mode =
-                          resolveKeyAt(draftProject, 0)?.mode ?? "major";
-                        commitDraft(
-                          upsertKeyAt(draftProject, 0, {
-                            tonic: normalizeKeyTonic(e.target.value, "C"),
-                            mode,
-                          }),
-                        );
-                      }}
-                    >
-                      {[
-                        "C",
-                        "C#",
-                        "Db",
-                        "D",
-                        "Eb",
-                        "E",
-                        "F",
-                        "F#",
-                        "Gb",
-                        "G",
-                        "Ab",
-                        "A",
-                        "Bb",
-                        "B",
-                      ].map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className={styles.nameInput}
-                      aria-label="Tryb (start)"
-                      value={resolveKeyAt(draftProject, 0)?.mode ?? "major"}
-                      onChange={(e) => {
-                        const tonic =
-                          resolveKeyAt(draftProject, 0)?.tonic ?? "C";
-                        const mode =
-                          e.target.value === "minor" ? "minor" : "major";
-                        commitDraft(
-                          upsertKeyAt(draftProject, 0, { tonic, mode }),
-                        );
-                      }}
-                    >
-                      <option value="major">Dur</option>
-                      <option value="minor">Moll</option>
-                    </select>
-                  </span>
-                </label>
-                <div className={styles.inspField}>
-                  Import (nadpisuje bieżący utwór)
-                  <div className={styles.metaKeyRow}>
-                    <Button
-                      type="button"
-                      variant="primary"
-                      onClick={() => openSongImportWizard(false)}
-                    >
-                      Importuj…
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ) : selectedMapLane && selectedMapIds.length > 0 ? (
-              <div className={styles.inspBody}>
-                <p
-                  className={styles.inspMulti}
-                  role="status"
-                  aria-live="polite"
-                >
-                  Zaznaczono {selectedMapIds.length} ·{" "}
-                  {selectedMapLane === "tempo"
-                    ? "Tempo"
-                    : selectedMapLane === "metrum"
-                      ? "Metrum"
-                      : "Tonacja"}
-                  {selectedMapIds.length > 1
-                    ? " · edycja: klik bez multi / Delete"
-                    : " · klik = edycja wartości"}
-                </p>
-                {primaryMapId ? (
-                  <p>
-                    Aktywny event:{" "}
-                    <span className={styles.metaRead}>{primaryMapId}</span>
-                  </p>
-                ) : null}
-              </div>
-            ) : selectedTekstClip ? (
-              <div className={styles.inspBody}>
-                <label className={styles.inspField}>
-                  Tekst linii
-                  <textarea
-                    className={styles.nameInput}
-                    value={selectedTekstClip.text}
-                    aria-label="Tekst linii"
-                    rows={3}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setTekstClipText(
-                          draftProject,
-                          selectedTekstClip.id,
-                          e.target.value,
-                        ),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Start (takt.beat)
-                  <input
-                    className={styles.nameInput}
-                    defaultValue={formatStartBarBeat(
-                      draftProject!,
-                      selectedTekstClip.startTicks,
-                    )}
-                    key={`tekst-start-${selectedTekstClip.id}-${selectedTekstClip.startTicks}`}
-                    aria-label="Start tekstu (takt.beat)"
-                    onBlur={(e) => {
-                      if (!draftProject) return;
-                      const parsed = parseStartBarBeat(e.target.value);
-                      if (!parsed) return;
-                      const beat = clampBeatForProject(
-                        draftProject,
-                        parsed.bar,
-                        parsed.beat,
-                      );
-                      const startTicks = ticksFromDisplayBarBeat(
-                        draftProject,
-                        parsed.bar,
-                        beat,
-                      );
-                      commitDraft(
-                        setTekstClipStart(
-                          draftProject,
-                          selectedTekstClip.id,
-                          startTicks,
-                        ),
-                      );
-                    }}
-                  />
-                </label>
-                <p>
-                  start {selectedTekstClip.startTicks}, długość{" "}
-                  {selectedTekstClip.lengthTicks} ticks
-                </p>
-              </div>
-            ) : selectedAkordClip ? (
-              <div className={styles.inspBody}>
-                <label className={styles.inspField}>
-                  Symbol akordu
-                  <input
-                    className={styles.nameInput}
-                    value={selectedAkordClip.symbol}
-                    aria-label="Symbol akordu"
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAkordyClipSymbol(
-                          draftProject,
-                          selectedAkordClip.id,
-                          e.target.value,
-                        ),
-                      );
-                    }}
-                    onBlur={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        commitAkordyClipSymbol(
-                          draftProject,
-                          selectedAkordClip.id,
-                          e.target.value,
-                        ),
-                      );
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key !== "Enter") return;
-                      e.preventDefault();
-                      (e.currentTarget as HTMLInputElement).blur();
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Start (takt.beat)
-                  <input
-                    className={styles.nameInput}
-                    defaultValue={formatStartBarBeat(
-                      draftProject!,
-                      selectedAkordClip.startTicks,
-                    )}
-                    key={`akord-start-${selectedAkordClip.id}-${selectedAkordClip.startTicks}`}
-                    aria-label="Start akordu (takt.beat)"
-                    onBlur={(e) => {
-                      if (!draftProject) return;
-                      const parsed = parseStartBarBeat(e.target.value);
-                      if (!parsed) return;
-                      const beat = clampBeatForProject(
-                        draftProject,
-                        parsed.bar,
-                        parsed.beat,
-                      );
-                      commitDraft({
-                        ...draftProject,
-                        akordy: {
-                          clips: moveClipStartKeepLength(
-                            draftProject,
-                            draftProject.akordy.clips,
-                            selectedAkordClip.id,
-                            parsed.bar,
-                            beat,
-                          ),
-                        },
-                      });
-                    }}
-                  />
-                </label>
-                <p>
-                  start {selectedAkordClip.startTicks}, długość{" "}
-                  {selectedAkordClip.lengthTicks} ticks
-                </p>
-              </div>
-            ) : selectedCueClip ? (
-              <div className={styles.inspBody}>
-                <label className={styles.inspField}>
-                  Etykieta cue
-                  <input
-                    className={styles.nameInput}
-                    value={selectedCueClip.label}
-                    aria-label="Etykieta cue"
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setCueClipLabel(
-                          draftProject,
-                          selectedCueClip.id,
-                          e.target.value,
-                        ),
-                      );
-                    }}
-                  />
-                </label>
-                <fieldset className={styles.inspFieldset}>
-                  <legend>Role (puste = wszyscy)</legend>
-                  <div className={styles.inspChecks}>
-                    {CUE_ROLES.map((role) => {
-                      const on = (selectedCueClip.roles ?? []).includes(role);
-                      return (
-                        <label key={role} className={styles.inspCheck}>
-                          <input
-                            type="checkbox"
-                            checked={on}
-                            onChange={() => {
-                              if (!draftProject) return;
-                              const cur = selectedCueClip.roles ?? [];
-                              const next = on
-                                ? cur.filter((r) => r !== role)
-                                : [...cur, role];
-                              commitDraft(
-                                setCueClipRoles(
-                                  draftProject,
-                                  selectedCueClip.id,
-                                  next,
-                                ),
-                              );
-                            }}
-                          />
-                          {role}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </fieldset>
-                <label className={styles.inspField}>
-                  Priorytet
-                  <select
-                    className={styles.nameInput}
-                    value={selectedCueClip.priority ?? "normal"}
-                    aria-label="Priorytet cue"
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      const v = e.target.value === "alert" ? "alert" : "normal";
-                      commitDraft(
-                        setCueClipPriority(draftProject, selectedCueClip.id, v),
-                      );
-                    }}
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="alert">Alert</option>
-                  </select>
-                </label>
-                <fieldset className={styles.inspFieldset}>
-                  <legend>Sampler</legend>
-                  <label className={styles.inspField}>
-                    Asset audio
-                    <select
-                      className={styles.nameInput}
-                      aria-label="Cue sample asset"
-                      value={selectedCueClip.sample?.assetId ?? ""}
-                      onChange={(e) => {
-                        if (!draftProject) return;
-                        const assetId = e.target.value;
-                        if (!assetId) {
-                          commitDraft(
-                            setCueClipSample(
-                              draftProject,
-                              selectedCueClip.id,
-                              null,
-                            ),
-                          );
-                          return;
-                        }
-                        commitDraft(
-                          setCueClipSample(draftProject, selectedCueClip.id, {
-                            ...(selectedCueClip.sample ?? {}),
-                            assetId,
-                          }),
-                        );
-                      }}
-                    >
-                      <option value="">— brak —</option>
-                      {draftProject!.assets
-                        .filter((a) => a.kind === "audio")
-                        .map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.originalName}
-                          </option>
-                        ))}
-                    </select>
-                  </label>
-                  {selectedCueClip.sample ? (
-                    <>
-                      <label className={styles.inspField}>
-                        Tryb
-                        <select
-                          className={styles.nameInput}
-                          aria-label="Cue sample mode"
-                          value={selectedCueClip.sample.mode ?? "one-shot"}
-                          onChange={(e) => {
-                            if (!draftProject || !selectedCueClip.sample)
-                              return;
-                            const mode =
-                              e.target.value === "gated" ? "gated" : "one-shot";
-                            commitDraft(
-                              setCueClipSample(
-                                draftProject,
-                                selectedCueClip.id,
-                                { ...selectedCueClip.sample, mode },
-                              ),
-                            );
-                          }}
-                        >
-                          <option value="one-shot">One-shot</option>
-                          <option value="gated">Gated</option>
-                        </select>
-                      </label>
-                      <label className={styles.inspField}>
-                        Out
-                        <select
-                          className={styles.nameInput}
-                          aria-label="Cue sample output"
-                          value={
-                            selectedCueClip.sample.output?.kind === "bus"
-                              ? `bus:${selectedCueClip.sample.output.busId}`
-                              : selectedCueClip.sample.output?.kind === "hw_out"
-                                ? `hw:${selectedCueClip.sample.output.hwOutputId}`
-                                : "master"
-                          }
-                          onChange={(e) => {
-                            if (!draftProject || !selectedCueClip.sample)
-                              return;
-                            const v = e.target.value;
-                            const output =
-                              v.startsWith("hw:") && v.length > 3
-                                ? {
-                                    kind: "hw_out" as const,
-                                    hwOutputId: v.slice(3),
-                                  }
-                                : v.startsWith("bus:") && v.length > 4
-                                  ? {
-                                      kind: "bus" as const,
-                                      busId: v.slice(4),
-                                    }
-                                  : { kind: "master" as const };
-                            commitDraft(
-                              setCueClipSample(
-                                draftProject,
-                                selectedCueClip.id,
-                                { ...selectedCueClip.sample, output },
-                              ),
-                            );
-                          }}
-                        >
-                          <option value="master">Master</option>
-                          {(draftProject!.audioBusses ?? []).map((b) => (
-                            <option key={b.id} value={`bus:${b.id}`}>
-                              {b.name}
-                            </option>
-                          ))}
-                          {(draftProject!.audioHardwareOutputs ?? []).map(
-                            (h) => (
-                              <option key={h.id} value={`hw:${h.id}`}>
-                                {h.name}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </label>
-                      <label className={styles.inspCheck}>
-                        <input
-                          type="checkbox"
-                          checked={Boolean(selectedCueClip.sample.playPostStop)}
-                          onChange={(e) => {
-                            if (!draftProject || !selectedCueClip.sample)
-                              return;
-                            commitDraft(
-                              setCueClipSample(
-                                draftProject,
-                                selectedCueClip.id,
-                                {
-                                  ...selectedCueClip.sample,
-                                  playPostStop: e.target.checked || undefined,
-                                },
-                              ),
-                            );
-                          }}
-                        />
-                        Graj po Stop
-                      </label>
-                      <button
-                        type="button"
-                        className={styles.nameInput}
-                        onClick={() => {
-                          if (!draftProject || !projectId) return;
-                          void fireCueSampleGo(
-                            projectId,
-                            draftProject,
-                            selectedCueClip.id,
-                            displayTicks,
-                          );
-                        }}
-                      >
-                        GO
-                      </button>
-                    </>
-                  ) : null}
-                </fieldset>
-                <label className={styles.inspField}>
-                  Start (takt.beat)
-                  <input
-                    className={styles.nameInput}
-                    defaultValue={formatStartBarBeat(
-                      draftProject!,
-                      selectedCueClip.startTicks,
-                    )}
-                    key={`cue-start-${selectedCueClip.id}-${selectedCueClip.startTicks}`}
-                    aria-label="Start cue (takt.beat)"
-                    onBlur={(e) => {
-                      if (!draftProject) return;
-                      const parsed = parseStartBarBeat(e.target.value);
-                      if (!parsed) return;
-                      const beat = clampBeatForProject(
-                        draftProject,
-                        parsed.bar,
-                        parsed.beat,
-                      );
-                      commitDraft({
-                        ...draftProject,
-                        cue: {
-                          clips: moveClipStartKeepLength(
-                            draftProject,
-                            draftProject.cue.clips,
-                            selectedCueClip.id,
-                            parsed.bar,
-                            beat,
-                          ),
-                        },
-                      });
-                    }}
-                  />
-                </label>
-                <p>
-                  start {selectedCueClip.startTicks}, długość{" "}
-                  {selectedCueClip.lengthTicks} ticks
-                </p>
-              </div>
-            ) : selectedAnchor ? (
-              <div className={styles.inspBody}>
-                <p>
-                  Kotwica {selectedAnchor.logicBar} → {selectedAnchor.scoreBar}
-                </p>
-                <label className={styles.inspField}>
-                  Takt utworu (logicBar)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={1}
-                    value={selectedAnchor.logicBar}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      const n = Number.parseInt(e.target.value, 10);
-                      if (!Number.isFinite(n)) return;
-                      commitDraft(
-                        updateScoreAnchor(draftProject, selectedAnchor.id, {
-                          logicBar: n,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Takt partytury (scoreBar)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={1}
-                    value={selectedAnchor.scoreBar}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      const n = Number.parseInt(e.target.value, 10);
-                      if (!Number.isFinite(n)) return;
-                      commitDraft(
-                        updateScoreAnchor(draftProject, selectedAnchor.id, {
-                          scoreBar: n,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-              </div>
-            ) : selectedAudioClip ? (
-              <div className={styles.inspBody}>
-                <p className={styles.muted}>Klip audio</p>
-                <p className={styles.muted}>
-                  {draftProject?.assets.find(
-                    (a) => a.id === selectedAudioClip.assetId,
-                  )?.originalName ?? "Audio"}
-                </p>
-                <label className={styles.inspField}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(selectedAudioClip.muted)}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioClipMuted(
-                          draftProject,
-                          selectedAudioClip.id,
-                          e.target.checked,
-                        ),
-                      );
-                    }}
-                  />{" "}
-                  Wycisz klip
-                </label>
-                <label className={styles.inspField}>
-                  Trim początku (ms)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={selectedAudioClip.trimInMs ?? 0}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n) || n < 0) return;
-                      commitDraft(
-                        setAudioClipTrimMs(draftProject, selectedAudioClip.id, {
-                          trimInMs: n,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Trim końca (ms)
-                  <input
-                    className={styles.lengthInput}
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={selectedAudioClip.trimOutMs ?? 0}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      const n = Number(e.target.value);
-                      if (!Number.isFinite(n) || n < 0) return;
-                      commitDraft(
-                        setAudioClipTrimMs(draftProject, selectedAudioClip.id, {
-                          trimOutMs: n,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Gain klipu (dB)
-                  <Slider
-                    aria-label="Gain klipu"
-                    min={-24}
-                    max={12}
-                    step={0.5}
-                    value={selectedAudioClip.gainDb ?? 0}
-                    onValueChange={(v) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioClipGainDb(
-                          draftProject,
-                          selectedAudioClip.id,
-                          v,
-                        ),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Fade In (ms)
-                  <Slider
-                    aria-label="Fade In"
-                    min={0}
-                    max={2000}
-                    step={10}
-                    value={selectedAudioClip.fadeInMs ?? 0}
-                    onValueChange={(v) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
-                          fadeInMs: v,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Fade Out (ms)
-                  <Slider
-                    aria-label="Fade Out"
-                    min={0}
-                    max={2000}
-                    step={10}
-                    value={selectedAudioClip.fadeOutMs ?? 0}
-                    onValueChange={(v) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioClipFadeMs(draftProject, selectedAudioClip.id, {
-                          fadeOutMs: v,
-                        }),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(selectedAudioClip.loop)}
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioClipLoop(
-                          draftProject,
-                          selectedAudioClip.id,
-                          e.target.checked,
-                        ),
-                      );
-                    }}
-                  />{" "}
-                  Pętla
-                </label>
-              </div>
-            ) : selectedDockAudioTrack ? (
-              <div className={styles.inspBody}>
-                <p className={styles.muted}>Ścieżka audio</p>
-                <label className={styles.inspField}>
-                  Nazwa
-                  <input
-                    className={styles.nameInput}
-                    value={selectedDockAudioTrack.name}
-                    aria-label="Nazwa ścieżki"
-                    onChange={(e) => {
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioTrackName(
-                          draftProject,
-                          selectedDockAudioTrack.id,
-                          e.target.value,
-                        ),
-                      );
-                    }}
-                  />
-                </label>
-                <label className={styles.inspField}>
-                  Fader (dB)
-                  <div
-                    onDoubleClick={(e) => {
-                      e.preventDefault();
-                      if (!draftProject) return;
-                      commitDraft(
-                        setAudioTrackGainDb(
-                          draftProject,
-                          selectedDockAudioTrack.id,
-                          0,
-                        ),
-                      );
-                    }}
-                    title="Dwuklik — 0.0 dB"
-                  >
-                    <TaperGainSlider
-                      aria-label="Fader ścieżki"
-                      gainDb={selectedDockAudioTrack.gainDb ?? 0}
-                      onGainChange={(v) => {
-                        if (!draftProject) return;
-                        commitDraft(
-                          setAudioTrackGainDb(
-                            draftProject,
-                            selectedDockAudioTrack.id,
-                            v,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-                </label>
-                <div className={styles.inspField}>
-                  <input
-                    ref={inspAudioFileRef}
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.aiff,.aif,.m4a,.flac,.ogg"
-                    hidden
-                    disabled={audioUploadPending}
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      e.target.value = "";
-                      if (f) {
-                        void onUploadAudioToTrack(selectedDockAudioTrack.id, f);
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={audioUploadPending}
-                    onClick={() => inspAudioFileRef.current?.click()}
-                  >
-                    {audioUploadPending ? "Przesyłanie…" : "Importuj plik"}
-                  </Button>
-                </div>
-              </div>
-            ) : selectedClip ? (
-              <div className={styles.inspBody}>
-                {selectedClip.kind === "section" ? (
-                  <label className={styles.inspField}>
-                    Nazwa sekcji
-                    <input
-                      className={styles.nameInput}
-                      value={selectedClip.name}
-                      aria-label="Nazwa sekcji"
-                      onChange={(e) => onClipRename(e.target.value)}
-                    />
-                  </label>
-                ) : (
-                  <p>
-                    <strong>{selectedClip.name}</strong> — zablokowany Countdown
-                  </p>
-                )}
-                {selectedClip.kind === "section" ? (
-                  <label className={styles.inspField}>
-                    Notatka (Client Forma)
-                    <textarea
-                      className={styles.nameInput}
-                      rows={2}
-                      value={selectedClip.note ?? ""}
-                      aria-label="Notatka sekcji"
-                      onChange={(e) => {
-                        if (!draftProject || !selectedClip) return;
-                        const note = e.target.value;
-                        commitDraft({
-                          ...draftProject,
-                          forma: {
-                            clips: draftProject.forma.clips.map((c) =>
-                              c.id === selectedClip.id
-                                ? {
-                                    ...c,
-                                    note: note.length > 0 ? note : undefined,
-                                  }
-                                : c,
-                            ),
-                          },
-                        });
-                      }}
-                    />
-                  </label>
-                ) : null}
-                {selectedClip.kind === "section" ? (
-                  <div className={styles.inspField}>
-                    <span>Podsekcje</span>
-                    <span className={styles.metaRead}>
-                      {selectedSubsectionRows.length}
-                    </span>
-                    <div
-                      className={styles.subEditor}
-                      aria-label="Podsekcje sekcji"
-                    >
-                      {selectedSubsectionRows.length === 0 ? (
-                        <div className={styles.metaRead}>Brak podsekcji</div>
-                      ) : (
-                        selectedSubsectionRows.map((row) => {
-                          const canDelete = selectedSubsectionRows.length >= 2;
-                          const selected = selectedSubsectionIdx === row.index;
-                          return (
-                            <div
-                              key={`sub-${row.index}`}
-                              className={[
-                                styles.subEditorRow,
-                                selected ? styles.subEditorRowSelected : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" ")}
-                              onClick={() =>
-                                setSelectedSubsectionIdx(row.index)
-                              }
-                            >
-                              <span
-                                className={styles.subEditorIdx}
-                                aria-hidden="true"
-                              >
-                                #{row.index + 1}
-                              </span>
-                              <input
-                                type="number"
-                                min={1}
-                                step={1}
-                                className={styles.subEditorBar}
-                                value={row.startDisplayBar}
-                                disabled={row.index === 0}
-                                title={
-                                  row.index === 0
-                                    ? "Start sekcji (zablokowany)"
-                                    : "Takt początkowy podsekcji"
-                                }
-                                aria-label={`Takt początkowy podsekcji ${row.index + 1}`}
-                                onFocus={() =>
-                                  setSelectedSubsectionIdx(row.index)
-                                }
-                                onChange={(e) => {
-                                  if (!draftProject || !selectedClip) return;
-                                  if (row.index === 0) return;
-                                  const next = setFormaSubsectionStartBar(
-                                    draftProject,
-                                    selectedClip.id,
-                                    row.index,
-                                    Number(e.target.value),
-                                  );
-                                  if (next !== draftProject) commitDraft(next);
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <button
-                                type="button"
-                                className={styles.subEditorDel}
-                                disabled={!canDelete}
-                                title="Usuń podsekcję"
-                                aria-label={`Usuń podsekcję ${row.index + 1}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!draftProject || !selectedClip) return;
-                                  const result = deleteFormaSubsection(
-                                    draftProject,
-                                    selectedClip.id,
-                                    row.index,
-                                  );
-                                  if (!result) return;
-                                  commitDraft(result.project);
-                                  setSelectedSubsectionIdx(result.selectIdx);
-                                }}
-                              >
-                                ×
-                              </button>
-                            </div>
-                          );
-                        })
-                      )}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className={styles.subEditorAdd}
-                        onClick={() => {
-                          if (!draftProject || !selectedClip) return;
-                          const result = addFormaSubsection(
-                            draftProject,
-                            selectedClip.id,
-                          );
-                          if (!result) return;
-                          commitDraft(result.project);
-                          setSelectedSubsectionIdx(result.selectIdx);
-                        }}
-                      >
-                        +
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
-                {selectedClip.kind === "countdown" ? (
-                  <label className={styles.inspField}>
-                    Długość (takty)
-                    <input
-                      className={styles.lengthInput}
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={countdownBars(draftProject!, selectedClip)}
-                      aria-label="Długość Countdown w taktach"
-                      onChange={(e) => onCountdownBarsChange(e.target.value)}
-                    />
-                  </label>
-                ) : (
-                  <p>
-                    start {selectedClip.startTicks}, długość{" "}
-                    {selectedClip.lengthTicks} ticks
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className={styles.inspBody}>
-                Zaznacz clip Forma / Tekst / Akordy / Cue / Kotwice lub event
-                mapy (Tempo / Metrum / Tonacja).
-              </p>
-            )}
-          </aside>
+          <TimelineInspector
+            inspectorOpen={inspectorOpen}
+            closeInspectorPanel={closeInspectorPanel}
+            clipSelectionItemsLength={clipSelection.items.length}
+            selectionLane={selectionLane}
+            songMetaOpen={songMetaOpen}
+            draftProject={draftProject}
+            commitDraft={commitDraft}
+            openSongImportWizard={openSongImportWizard}
+            selectedMapLane={selectedMapLane}
+            selectedMapIds={selectedMapIds}
+            primaryMapId={primaryMapId}
+            selectedTekstClip={selectedTekstClip}
+            selectedAkordClip={selectedAkordClip}
+            selectedCueClip={selectedCueClip}
+            selectedAnchor={selectedAnchor}
+            selectedAudioClip={selectedAudioClip}
+            selectedDockAudioTrack={selectedDockAudioTrack}
+            selectedClip={selectedClip}
+            selectedSubsectionRows={selectedSubsectionRows}
+            selectedSubsectionIdx={selectedSubsectionIdx}
+            setSelectedSubsectionIdx={setSelectedSubsectionIdx}
+            onClipRename={onClipRename}
+            onCountdownBarsChange={onCountdownBarsChange}
+            audioUploadPending={audioUploadPending}
+            onUploadAudioToTrack={onUploadAudioToTrack}
+            displayTicks={displayTicks}
+            projectId={projectId}
+          />
         ) : null}
       </div>
 
-      <footer className={styles.status} aria-label="Status osi czasu">
-        <div className={styles.statusLeft}>
-          <ConnectionIndicator status={wsStatus} variant="dot" />
-          <span className={styles.statusConnLab}>
-            {wsStatus === "connected"
-              ? "Połączony"
-              : wsStatus === "connecting"
-                ? "Łączenie…"
-                : "Rozłączony"}
-          </span>
-        </div>
-        <div className={styles.zooms} role="group" aria-label="Zoom i snap">
-          {!isMobilePreview ? (
-            <label className={styles.snapPicker}>
-              <span className={styles.snapPickerLab}>Snap</span>
-              <Select
-                className={styles.snapPickerSelect}
-                aria-label="Tryb snap"
-                value={snapModeToStorageKey(snapMode)}
-                onChange={(e) => {
-                  const next = snapModeFromStorageKey(e.target.value);
-                  if (next) setSnapMode(next);
-                }}
-              >
-                <option value="off">Wyłącz</option>
-                <option value="bar">Takt</option>
-                <option value="beat">Beat</option>
-                <option value="subdivision:2">1/2</option>
-                <option value="subdivision:4">1/4</option>
-                <option value="subdivision:8">1/8</option>
-                <option value="subdivision:16">1/16</option>
-              </Select>
-            </label>
-          ) : null}
-          {!isMobilePreview ? (
-            <label className={styles.zoomLab}>
-              UI
-              <input
-                className={styles.zoomRange}
-                type="range"
-                min={ZOOM_UI_MIN}
-                max={ZOOM_UI_MAX}
-                value={zoomUi}
-                onChange={(e) => setZoomUi(clampZoomUi(Number(e.target.value)))}
-                title="Zoom UI — gęstość chrome Timeline / Mixer (85–125%)"
-                aria-label="Zoom UI"
-              />
-            </label>
-          ) : null}
-          <label
-            className={styles.zoomLab}
-            title={
-              timelineSurface === "mixer"
-                ? "Zoom poziomy dotyczy osi czasu (niedostępny w Mixerze)"
-                : "Zoom poziomy (oś czasu)"
-            }
-          >
-            H
-            <input
-              className={styles.zoomRange}
-              type="range"
-              min={ZOOM_H_MIN}
-              max={ZOOM_H_MAX}
-              value={zoomH}
-              disabled={timelineSurface === "mixer"}
-              onChange={(e) => setZoomH(Number(e.target.value))}
-              aria-label="Zoom poziomy"
-            />
-          </label>
-          <label
-            className={styles.zoomLab}
-            title={
-              timelineSurface === "mixer"
-                ? "Zoom pionowy dotyczy wysokości ścieżek (niedostępny w Mixerze)"
-                : "Zoom pionowy (wysokość ścieżek)"
-            }
-          >
-            V
-            <input
-              className={styles.zoomRange}
-              type="range"
-              min={ZOOM_V_MIN}
-              max={ZOOM_V_MAX}
-              value={zoomV}
-              disabled={timelineSurface === "mixer"}
-              onChange={(e) => setVerticalZoom(Number(e.target.value))}
-              aria-label="Zoom pionowy"
-            />
-          </label>
-        </div>
-      </footer>
+      <TimelineStatusFooter
+        wsStatus={wsStatus}
+        isMobilePreview={isMobilePreview}
+        snapMode={snapMode}
+        setSnapMode={setSnapMode}
+        zoomUi={zoomUi}
+        setZoomUi={setZoomUi}
+        zoomH={zoomH}
+        setZoomH={setZoomH}
+        zoomV={zoomV}
+        setVerticalZoom={setVerticalZoom}
+        timelineSurface={timelineSurface}
+      />
 
       {shouldShowTouchNudge(
         touchTier,
@@ -8651,858 +5132,79 @@ export function TimelineShell() {
         </p>
       ) : null}
 
-      {blocker.state === "blocked" ? (
-        <div
-          className={styles.overlay}
-          role="alertdialog"
-          aria-modal
-          aria-labelledby="dirty-guard-title"
-        >
-          <div className={styles.overlayPanel}>
-            <h2 id="dirty-guard-title">Niezapisane zmiany</h2>
-            <p className={styles.overlayBody}>
-              Masz niezapisane zmiany. Opuścić Timeline bez zapisu?
-            </p>
-            <div className={styles.overlayActions}>
-              <Button variant="ghost" onClick={() => blocker.reset?.()}>
-                Anuluj
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  onDiscard();
-                  blocker.proceed?.();
-                }}
-              >
-                Odrzuć i wyjdź
-              </Button>
-              <Button
-                variant="primary"
-                loading={savePending}
-                onClick={() => {
-                  void (async () => {
-                    if (!projectId || !draftProject) return;
-                    setSavePending(true);
-                    try {
-                      const next = await putProject(projectId, draftProject);
-                      setSavedProject(next);
-                      setDraftProject(next);
-                      setDraftHistory((h) =>
-                        h
-                          ? syncPresentAfterSave(h, next)
-                          : createDraftHistory(next),
-                      );
-                      blocker.proceed?.();
-                    } catch (err) {
-                      setLoadError(
-                        err instanceof Error
-                          ? err.message
-                          : "Zapis nie powiódł się",
-                      );
-                    } finally {
-                      setSavePending(false);
-                    }
-                  })();
-                }}
-              >
-                Zapisz i wyjdź
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {helpOpen ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="tl-help-title"
-        >
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="Zamknij"
-            onClick={() => setHelpOpen(false)}
-          />
-          <div
-            className={[styles.overlayPanel, styles.helpOverlayPanel]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            <TimelineHelp onClose={() => setHelpOpen(false)} />
-          </div>
-        </div>
-      ) : null}
-
-      {songScreenOpen ? (
-        <div
-          id={songScreenId}
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="song-screen-title"
-        >
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="Zamknij"
-            onClick={() => setSongScreenOpen(false)}
-          />
-          <div className={styles.overlayPanel}>
-            <div className={styles.overlayHead}>
-              <h2 id="song-screen-title">Wybierz utwór</h2>
-              <ShellIconButton
-                label="Zamknij"
-                onClick={() => setSongScreenOpen(false)}
-              >
-                <IconClose />
-              </ShellIconButton>
-            </div>
-            <div className={styles.overlayBody}>
-              <ul className={styles.songList}>
-                {libraryNames.map((p) => (
-                  <li key={p.id}>
-                    <Link
-                      to={`/timeline/${p.id}`}
-                      onClick={() => setSongScreenOpen(false)}
-                    >
-                      {p.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              {libraryNames.length === 0 ? (
-                <p className={styles.muted}>Brak utworów w bibliotece.</p>
-              ) : null}
-              <div className={styles.overlayActions}>
-                <Button
-                  variant="primary"
-                  onClick={() => openSongImportWizard(true)}
-                >
-                  Importuj…
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {songImportOpen && (importAsNewSong || draftProject) ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby="song-import-title"
-        >
-          <button
-            type="button"
-            className={styles.backdrop}
-            aria-label="Zamknij"
-            onClick={closeImportModals}
-          />
-          <div
-            className={[styles.overlayPanel, styles.usUgOverlayPanel]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            <div className={styles.usUgOverlayHead}>
-              <h2 id="song-import-title">
-                {importAsNewSong ? "Importuj utwór — nowy" : "Importuj utwór"}
-              </h2>
-              <ShellIconButton label="Zamknij" onClick={closeImportModals}>
-                <IconClose />
-              </ShellIconButton>
-            </div>
-            <div className={styles.usUgOverlayBody}>
-              <SongImportWizard
-                applyLabel={
-                  importAsNewSong ? "Utwórz nowy utwór" : "Importuj do projektu"
-                }
-                applying={importApplying}
-                projectId={
-                  importAsNewSong ? undefined : (projectId ?? undefined)
-                }
-                importOptions={importPreviewOptions}
-                initialTitle={importAsNewSong ? undefined : draftProject?.name}
-                initialArtist={
-                  importAsNewSong ? undefined : draftProject?.artist
-                }
-                onCancel={closeImportModals}
-                onApplyUsUg={onImportUsUgBridge}
-                onApplyUltrastar={onImportUltrastar}
-                onApplyUg={({ result, runWand, metadata }) =>
-                  onImportUg(result, runWand, metadata)
-                }
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {eyeOpen && eyeMenuPos
-        ? createPortal(
-            <div
-              ref={eyeMenuRef}
-              id={eyeMenuId}
-              className={[styles.eyeMenu, styles.eyeMenuFixed]
-                .filter(Boolean)
-                .join(" ")}
-              style={{ top: eyeMenuPos.top, left: eyeMenuPos.left }}
-              role="menu"
-            >
-              {TRACKS.map((track) => (
-                <button
-                  key={track.id}
-                  type="button"
-                  role="menuitemcheckbox"
-                  aria-checked={isTrackVisible(trackVisibility, track)}
-                  className={[
-                    styles.eyeItem,
-                    track.locked ? styles.eyeItemLocked : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  disabled={track.locked}
-                  onClick={() => toggleTrack(track.id)}
-                >
-                  <span aria-hidden>
-                    {isTrackVisible(trackVisibility, track) ? (
-                      <IconChecked />
-                    ) : (
-                      <IconUnchecked />
-                    )}
-                  </span>
-                  {track.label}
-                  {track.locked ? " (zawsze)" : ""}
-                </button>
-              ))}
-            </div>,
-            document.body,
-          )
-        : null}
-
-      {toolsVisOpen && toolsVisMenuPos
-        ? createPortal(
-            <div
-              ref={toolsVisMenuRef}
-              id={toolsVisMenuId}
-              className={[styles.eyeMenu, styles.eyeMenuFixed]
-                .filter(Boolean)
-                .join(" ")}
-              style={{ top: toolsVisMenuPos.top, left: toolsVisMenuPos.left }}
-              role="menu"
-              aria-label="Widoczne narzędzia na pasku"
-            >
-              {TOOLS.map(({ id, label }) => {
-                if (!isToolbarToolId(id)) return null;
-                const locked = TOOLBAR_ALWAYS_VISIBLE.has(id);
-                const checked = toolbarVisibleSet.has(id);
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    role="menuitemcheckbox"
-                    aria-checked={checked}
-                    className={[
-                      styles.eyeItem,
-                      locked ? styles.eyeItemLocked : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    disabled={locked}
-                    onClick={() => {
-                      if (locked) return;
-                      setToolbarVisibleTools((prev) => {
-                        const next = toggleToolbarVisibleTool(prev, id);
-                        saveToolbarVisibleTools(next);
-                        return next;
-                      });
-                    }}
-                  >
-                    <span aria-hidden>
-                      {checked ? <IconChecked /> : <IconUnchecked />}
-                    </span>
-                    {label}
-                    {locked ? " (zawsze)" : ""}
-                  </button>
-                );
-              })}
-            </div>,
-            document.body,
-          )
-        : null}
-
-      {toolMenu
-        ? createPortal(
-            <div
-              ref={toolMenuRef}
-              className={styles.toolMenu}
-              style={{ top: toolMenu.top, left: toolMenu.left }}
-              role="menu"
-              aria-label="Wybór narzędzia"
-            >
-              {TOOLS.map(({ id, label, key, Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="menuitem"
-                  className={[
-                    styles.toolMenuItem,
-                    tool === id ? styles.toolMenuItemActive : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => onTool(id)}
-                >
-                  <Icon />
-                  <span>{label}</span>
-                  <span className={styles.toolMenuKey}>
-                    {key ? key.toUpperCase() : "—"}
-                  </span>
-                </button>
-              ))}
-            </div>,
-            document.body,
-          )
-        : null}
-
-      {wandMenu
-        ? createPortal(
-            <div
-              ref={wandMenuRef}
-              className={styles.toolMenu}
-              style={{ top: wandMenu.top, left: wandMenu.left }}
-              role="menu"
-              aria-label="Różdżka — wybór źródła"
-            >
-              {(
-                [
-                  ["tekst", "Tekst → Forma", "1"],
-                  ["akordy", "Akordy → Forma", "2"],
-                  ["both", "Tekst + Akordy → Forma", "3"],
-                ] as const
-              ).map(([mode, label, keyHint]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  role="menuitem"
-                  className={styles.toolMenuItem}
-                  onClick={() => applyWand(mode)}
-                >
-                  <span>{label}</span>
-                  <span className={styles.toolMenuKey}>{keyHint}</span>
-                </button>
-              ))}
-            </div>,
-            document.body,
-          )
-        : null}
-
-      {tempoEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby={tempoEditTitleId}
-        >
-          <div className={styles.overlayPanel}>
-            <h2 id={tempoEditTitleId}>
-              Tempo @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}
-            </h2>
-            <label className={styles.inspField}>
-              BPM
-              <input
-                className={styles.lengthInput}
-                type="number"
-                min={20}
-                max={400}
-                value={tempoDraft}
-                onChange={(e) => setTempoDraft(e.target.value)}
-              />
-            </label>
-            <div className={styles.overlayActions}>
-              <Button variant="ghost" onClick={() => setTempoEditOpen(false)}>
-                Anuluj
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  const bpm = Number(tempoDraft);
-                  if (!Number.isFinite(bpm) || bpm <= 0) return;
-                  commitDraft(upsertTempoAt(draftProject, mapEditTicks, bpm));
-                  setTempoEditOpen(false);
-                }}
-              >
-                Zapisz
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {meterEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby={meterEditTitleId}
-        >
-          <div className={styles.overlayPanel}>
-            <h2 id={meterEditTitleId}>
-              Metrum @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}
-            </h2>
-            <div
-              className={styles.meterEditRow}
-              role="group"
-              aria-label="Metrum"
-            >
-              <input
-                className={styles.lengthInput}
-                type="number"
-                min={1}
-                max={32}
-                value={meterNumDraft}
-                aria-label="Metrum — górna liczba"
-                onChange={(e) => setMeterNumDraft(e.target.value)}
-              />
-              <span className={styles.meterEditSlash} aria-hidden>
-                /
-              </span>
-              <select
-                className={styles.nameInput}
-                value={meterDenDraft}
-                aria-label="Metrum — dolna liczba"
-                onChange={(e) => setMeterDenDraft(e.target.value)}
-              >
-                {[1, 2, 4, 8, 16].map((d) => (
-                  <option key={d} value={String(d)}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className={styles.overlayActions}>
-              <Button variant="ghost" onClick={() => setMeterEditOpen(false)}>
-                Anuluj
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  const numerator = Number(meterNumDraft);
-                  const denominator = Number(meterDenDraft);
-                  if (
-                    !Number.isFinite(numerator) ||
-                    !Number.isFinite(denominator) ||
-                    numerator < 1 ||
-                    denominator < 1
-                  ) {
-                    return;
-                  }
-                  commitDraft(
-                    upsertMeterAt(
-                      draftProject,
-                      mapEditTicks,
-                      numerator,
-                      denominator,
-                    ),
-                  );
-                  setMeterEditOpen(false);
-                }}
-              >
-                Zapisz
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {keyEditOpen && draftProject ? (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal
-          aria-labelledby={keyEditTitleId}
-        >
-          <div className={styles.overlayPanel}>
-            <h2 id={keyEditTitleId}>
-              Tonacja @ {mapEditTicks === displayTicks ? "playhead" : "ścieżka"}
-            </h2>
-            <div
-              className={styles.keyEditRow}
-              role="group"
-              aria-label="Tonacja"
-            >
-              <select
-                className={styles.nameInput}
-                id="key-tonic"
-                aria-label="Tonika"
-                defaultValue={
-                  resolveKeyAt(draftProject, mapEditTicks)?.tonic ?? "C"
-                }
-              >
-                {[
-                  "C",
-                  "C#",
-                  "Db",
-                  "D",
-                  "Eb",
-                  "E",
-                  "F",
-                  "F#",
-                  "Gb",
-                  "G",
-                  "Ab",
-                  "A",
-                  "Bb",
-                  "B",
-                ].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-              <select
-                className={styles.nameInput}
-                id="key-mode"
-                aria-label="Tryb"
-                defaultValue={
-                  resolveKeyAt(draftProject, mapEditTicks)?.mode ?? "major"
-                }
-              >
-                <option value="major">Dur</option>
-                <option value="minor">Moll</option>
-              </select>
-            </div>
-            <div className={styles.overlayActions}>
-              <Button variant="ghost" onClick={() => setKeyEditOpen(false)}>
-                Anuluj
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  const tonicEl = document.getElementById(
-                    "key-tonic",
-                  ) as HTMLSelectElement | null;
-                  const modeEl = document.getElementById(
-                    "key-mode",
-                  ) as HTMLSelectElement | null;
-                  const tonic = normalizeKeyTonic(tonicEl?.value, "C");
-                  const mode =
-                    modeEl?.value === "minor"
-                      ? ("minor" as const)
-                      : ("major" as const);
-                  commitDraft(
-                    upsertKeyAt(draftProject, mapEditTicks, { tonic, mode }),
-                  );
-                  setKeyEditOpen(false);
-                }}
-              >
-                Zapisz
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <ShellAlertDialog
-        open={touchAlertOpen}
-        title="Edycja na tym urządzeniu"
-        message={TOUCH_FULL_EDIT_MSG}
-        onClose={() => setTouchAlertOpen(false)}
+      <TimelineSongDialogs
+        blocker={blocker}
+        projectId={projectId}
+        draftProject={draftProject}
+        savePending={savePending}
+        setSavePending={setSavePending}
+        setSavedProject={setSavedProject}
+        setDraftProject={setDraftProject}
+        setDraftHistory={setDraftHistory}
+        setLoadError={setLoadError}
+        onDiscard={onDiscard}
+        helpOpen={helpOpen}
+        setHelpOpen={setHelpOpen}
+        songScreenOpen={songScreenOpen}
+        setSongScreenOpen={setSongScreenOpen}
+        songScreenId={songScreenId}
+        libraryNames={libraryNames}
+        songImportOpen={songImportOpen}
+        importAsNewSong={importAsNewSong}
+        importApplying={importApplying}
+        importPreviewOptions={importPreviewOptions}
+        openSongImportWizard={openSongImportWizard}
+        closeImportModals={closeImportModals}
+        onImportUsUgBridge={onImportUsUgBridge}
+        onImportUltrastar={onImportUltrastar}
+        onImportUg={onImportUg}
       />
-    </div>
-  );
-}
 
-function FormaClipButton({
-  clip,
-  selected,
-  selectedSubsectionIdx,
-  style,
-  pencilActive,
-  allowHitZones,
-  dimmed,
-  dataClipLane,
-  onPointerDown,
-  onPointerMove,
-  onPointerUp,
-  onDoubleClick,
-  onContextMenu,
-}: {
-  clip: FormaClip;
-  selected: boolean;
-  selectedSubsectionIdx: number | null;
-  style: { left: string; width: string };
-  pencilActive: boolean;
-  allowHitZones: boolean;
-  dimmed?: boolean;
-  dataClipLane?: ClipSelectionLane;
-  onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => void;
-  onPointerMove: (e: React.PointerEvent<HTMLButtonElement>) => void;
-  onPointerUp: (e: React.PointerEvent<HTMLButtonElement>) => void;
-  onDoubleClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  onContextMenu?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-}) {
-  const [hoverZone, setHoverZone] = useState<ClipHitZone>("body");
-  const countdown = clip.kind === "countdown";
-  const cursor = pencilActive
-    ? "crosshair"
-    : allowHitZones
-      ? countdown
-        ? hoverZone === "start"
-          ? "not-allowed"
-          : "ew-resize"
-        : cursorForHitZone(hoverZone, true)
-      : "pointer";
+      <TimelinePortals
+        eyeOpen={eyeOpen}
+        eyeMenuPos={eyeMenuPos}
+        eyeMenuRef={eyeMenuRef}
+        eyeMenuId={eyeMenuId}
+        trackVisibility={trackVisibility}
+        toggleTrack={toggleTrack}
+        toolsVisOpen={toolsVisOpen}
+        toolsVisMenuPos={toolsVisMenuPos}
+        toolsVisMenuRef={toolsVisMenuRef}
+        toolsVisMenuId={toolsVisMenuId}
+        toolbarVisibleSet={toolbarVisibleSet}
+        setToolbarVisibleTools={setToolbarVisibleTools}
+        toolMenu={toolMenu}
+        toolMenuRef={toolMenuRef}
+        tool={tool}
+        onTool={onTool}
+        wandMenu={wandMenu}
+        wandMenuRef={wandMenuRef}
+        applyWand={applyWand}
+      />
 
-  const ranges =
-    clip.kind === "section" && clip.subsections && clip.subsections.length > 0
-      ? subsectionRanges(clip.subsections, clip.lengthTicks)
-      : [];
-
-  return (
-    <button
-      type="button"
-      data-clip-id={clip.id}
-      data-clip-lane={dataClipLane}
-      className={[
-        styles.clip,
-        styles.formaClip,
-        selected ? styles.clipOn : "",
-        countdown ? styles.clipLocked : "",
-        pencilActive ? styles.formaClipPencil : "",
-        dimmed ? styles.formaClipDim : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      style={{ ...style, cursor }}
-      onPointerDown={onPointerDown}
-      onPointerMove={(e) => {
-        if (allowHitZones) {
-          const rect = e.currentTarget.getBoundingClientRect();
-          setHoverZone(
-            hitTestClipZone(e.clientX - rect.left, rect.width, true),
-          );
-        }
-        onPointerMove(e);
-      }}
-      onPointerUp={onPointerUp}
-      onDoubleClick={onDoubleClick}
-      onContextMenu={onContextMenu}
-      onPointerLeave={() => setHoverZone("body")}
-    >
-      {ranges.length > 1 ? (
-        <span className={styles.formaSubs}>
-          {ranges.map((sub) => (
-            <span
-              key={`band-${sub.index}`}
-              className={[
-                styles.formaSubBand,
-                sub.index % 2 === 1 ? styles.formaSubBandAlt : "",
-                selected && selectedSubsectionIdx === sub.index
-                  ? styles.formaSubBandSelected
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              data-sub-idx={sub.index}
-              style={{
-                left: `${(sub.startRel / clip.lengthTicks) * 100}%`,
-                width: `${(sub.lengthRel / clip.lengthTicks) * 100}%`,
-              }}
-              title={`Podsekcja ${sub.index + 1}`}
-            />
-          ))}
-          {ranges.slice(1).map((sub) => (
-            <span
-              key={`bound-${sub.index}`}
-              className={styles.formaSubBoundary}
-              data-sub-boundary={sub.index}
-              style={{ left: `${(sub.startRel / clip.lengthTicks) * 100}%` }}
-              title={`Przeciągnij granicę podsekcji ${sub.index}`}
-              aria-label={`Granica podsekcji ${sub.index + 1}`}
-            />
-          ))}
-        </span>
-      ) : null}
-      <span className={styles.formaClipLabel}>
-        {clip.kind === "countdown" ? `${clip.name} (CD)` : clip.name}
-      </span>
-    </button>
-  );
-}
-
-function TouchNudgeBar({
-  clipId,
-  lane,
-  showLeftEdge,
-  onAction,
-}: {
-  clipId: string;
-  lane: string;
-  showLeftEdge: boolean;
-  onAction: (action: NudgeAction) => void;
-}) {
-  const leftRef = useRef<HTMLDivElement | null>(null);
-  const rightRef = useRef<HTMLDivElement | null>(null);
-
-  const reposition = useCallback(() => {
-    const leftEdge = leftRef.current;
-    const rightEdge = rightRef.current;
-    if (!rightEdge && !leftEdge) return;
-
-    const clipEl =
-      document.querySelector<HTMLElement>(
-        `[data-clip-id="${CSS.escape(clipId)}"][data-clip-lane="${CSS.escape(lane)}"]`,
-      ) ??
-      document.querySelector<HTMLElement>(
-        `[data-clip-id="${CSS.escape(clipId)}"]`,
-      );
-    const scrollEl = document.querySelector<HTMLElement>(
-      "[data-canvas-scroll]",
-    );
-    const pad = 4;
-
-    if (!clipEl) {
-      if (leftEdge) leftEdge.style.visibility = "hidden";
-      if (rightEdge) rightEdge.style.visibility = "hidden";
-      return;
-    }
-
-    const clipRect = clipEl.getBoundingClientRect();
-    const scrollRect = scrollEl?.getBoundingClientRect() ?? null;
-    const top = scrollRect
-      ? Math.max(
-          scrollRect.top + pad,
-          Math.min(clipRect.top, scrollRect.bottom - pad),
-        )
-      : Math.max(pad, clipRect.top);
-    const viewLeft = scrollRect ? scrollRect.left : 0;
-    const viewRight = scrollRect ? scrollRect.right : window.innerWidth;
-
-    if (leftEdge) {
-      if (!showLeftEdge) {
-        leftEdge.style.visibility = "hidden";
-      } else {
-        leftEdge.style.visibility = "visible";
-        const leftW = leftEdge.offsetWidth || 52;
-        let leftX = clipRect.left;
-        let leftTx = "translate(-100%, 0)";
-        if (leftX - leftW < viewLeft + pad) {
-          leftX = Math.min(clipRect.left + 2, viewRight - leftW - pad);
-          leftTx = "translate(0, 0)";
-        }
-        leftEdge.style.top = `${top}px`;
-        leftEdge.style.left = `${leftX}px`;
-        leftEdge.style.transform = leftTx;
-      }
-    }
-
-    if (rightEdge) {
-      rightEdge.style.visibility = "visible";
-      const rightW = rightEdge.offsetWidth || 52;
-      let rightX = clipRect.right;
-      let rightTx = "translate(0, 0)";
-      if (rightX + rightW > viewRight - pad) {
-        rightX = Math.max(clipRect.right - 2, viewLeft + rightW + pad);
-        rightTx = "translate(-100%, 0)";
-      }
-      rightEdge.style.top = `${top}px`;
-      rightEdge.style.left = `${rightX}px`;
-      rightEdge.style.transform = rightTx;
-    }
-  }, [clipId, lane, showLeftEdge]);
-
-  useLayoutEffect(() => {
-    reposition();
-    const scrollEl = document.querySelector("[data-canvas-scroll]");
-    scrollEl?.addEventListener("scroll", reposition, { passive: true });
-    window.addEventListener("resize", reposition, { passive: true });
-    return () => {
-      scrollEl?.removeEventListener("scroll", reposition);
-      window.removeEventListener("resize", reposition);
-    };
-  }, [reposition]);
-
-  return (
-    <div
-      className={styles.touchNudge}
-      role="toolbar"
-      aria-label="Przesuń i rozciągnij klip"
-    >
-      {showLeftEdge ? (
-        <div
-          ref={leftRef}
-          className={styles.touchNudgeEdge}
-          data-nudge-edge="left"
-        >
-          <Button
-            variant="ghost"
-            iconOnly
-            className={styles.touchNudgeMove}
-            aria-label="Przesuń w lewo"
-            onClick={() => onAction("move-left")}
-          >
-            ◀
-          </Button>
-          <div className={styles.touchNudgeStretch} data-nudge-group="resize">
-            <Button
-              variant="ghost"
-              iconOnly
-              className={styles.touchNudgeStretchBtn}
-              aria-label="Wydłuż lewą krawędź"
-              onClick={() => onAction("stretch-left-out")}
-            >
-              ◂|
-            </Button>
-            <Button
-              variant="ghost"
-              iconOnly
-              className={styles.touchNudgeStretchBtn}
-              aria-label="Skróć od lewej"
-              onClick={() => onAction("stretch-left-in")}
-            >
-              |▸
-            </Button>
-          </div>
-        </div>
-      ) : null}
-      <div
-        ref={rightRef}
-        className={styles.touchNudgeEdge}
-        data-nudge-edge="right"
-      >
-        <Button
-          variant="ghost"
-          iconOnly
-          className={styles.touchNudgeMove}
-          aria-label="Przesuń w prawo"
-          onClick={() => onAction("move-right")}
-        >
-          ▶
-        </Button>
-        <div className={styles.touchNudgeStretch} data-nudge-group="resize">
-          <Button
-            variant="ghost"
-            iconOnly
-            className={styles.touchNudgeStretchBtn}
-            aria-label="Skróć od prawej"
-            onClick={() => onAction("stretch-right-in")}
-          >
-            ◂|
-          </Button>
-          <Button
-            variant="ghost"
-            iconOnly
-            className={styles.touchNudgeStretchBtn}
-            aria-label="Wydłuż prawą krawędź"
-            onClick={() => onAction("stretch-right-out")}
-          >
-            |▸
-          </Button>
-        </div>
-      </div>
+      <TimelineMapDialogs
+        draftProject={draftProject}
+        displayTicks={displayTicks}
+        mapEditTicks={mapEditTicks}
+        commitDraft={commitDraft}
+        tempoEditOpen={tempoEditOpen}
+        setTempoEditOpen={setTempoEditOpen}
+        tempoEditTitleId={tempoEditTitleId}
+        tempoDraft={tempoDraft}
+        setTempoDraft={setTempoDraft}
+        meterEditOpen={meterEditOpen}
+        setMeterEditOpen={setMeterEditOpen}
+        meterEditTitleId={meterEditTitleId}
+        meterNumDraft={meterNumDraft}
+        setMeterNumDraft={setMeterNumDraft}
+        meterDenDraft={meterDenDraft}
+        setMeterDenDraft={setMeterDenDraft}
+        keyEditOpen={keyEditOpen}
+        setKeyEditOpen={setKeyEditOpen}
+        keyEditTitleId={keyEditTitleId}
+        touchAlertOpen={touchAlertOpen}
+        setTouchAlertOpen={setTouchAlertOpen}
+      />
     </div>
   );
 }

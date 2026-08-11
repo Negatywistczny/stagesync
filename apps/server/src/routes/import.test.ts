@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createApp } from "../app.js";
 
-vi.mock("../env-settings.js", async (importOriginal) => {
+vi.mock("../system/env-settings.js", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("../system/env-settings.js")>();
   return {

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
-vi.mock("./env-settings.js", async (importOriginal) => {
+vi.mock("../system/env-settings.js", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("../system/env-settings.js")>();
   return {

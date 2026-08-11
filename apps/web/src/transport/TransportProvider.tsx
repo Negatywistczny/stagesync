@@ -1,396 +1,48 @@
+import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { type TransportPlayBody, type TransportState } from "@stagesync/shared";
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  TransportWsServerMessageSchema,
-  defaultTransportState,
-  getDisplayTicks,
-  type TempoMapProject,
-  type TransportPlayBody,
-  type TransportState,
-} from "@stagesync/shared";
-import { transportStateFromTick } from "@lib/timeline/timelineLocator.js";
-import {
-  getTransport,
   pauseTransport,
   playTransport,
   seekTransport,
   setTransportLoop,
   stopTransport,
 } from "./api.js";
-import {
-  TransportContext,
-  DEFAULT_LIVE_DESK,
-  DEFAULT_SETLIST_SNAPSHOT,
-  type LiveDeskState,
-  type SetlistSnapshotState,
-  type StageCue,
-  type WsStatus,
-} from "./transportContext.js";
+import { TransportContext } from "./transportContext.js";
 import type { TransportLoopBody } from "@stagesync/shared";
-import { wsReconnectDelayMs } from "./wsReconnect.js";
-import { fetchLiveDesk, fetchSetlist } from "@lib/shell-operator/setlistApi.js";
-import {
-  dismissStageCues,
-  formatTransportError,
-  liveDeskFromPayload,
-  noteLatencySample,
-  setlistSnapshotFromPayload,
-  shouldAcceptServerTick,
-  stageCueFromWs,
-  toTransportAnchor,
-  transportLoopForSoftClock,
-  transportWsUrl,
-  upsertStageCue,
-} from "./transportReducer.js";
-import { noteH01Raf } from "./h01PerfProbe.js";
+import { formatTransportError } from "./transportReducer.js";
+import { useTransportInterpolation } from "./useTransportInterpolation.js";
+import { useTransportSocket } from "./useTransportSocket.js";
 
 export { noteLatencySample } from "./transportReducer.js";
 
 export function TransportProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<TransportState>(defaultTransportState);
-  const [displayTicks, setDisplayTicks] = useState(0);
-  const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
-  const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [commandPending, setCommandPending] = useState(false);
   const commandPendingRef = useRef(false);
-  const [error, setError] = useState<string | null>(null);
-  const [stageCue, setStageCue] = useState<StageCue | null>(null);
-  const [stageCues, setStageCues] = useState<StageCue[]>([]);
-  const [liveDesk, setLiveDesk] = useState<LiveDeskState>(DEFAULT_LIVE_DESK);
-  const [setlistSnapshot, setSetlistSnapshot] = useState<SetlistSnapshotState>(
-    DEFAULT_SETLIST_SNAPSHOT,
-  );
 
-  const anchorRef = useRef(toTransportAnchor(defaultTransportState()));
-  const tempoMapsRef = useRef<TempoMapProject | null>(null);
-  const loopRef = useRef(
-    transportLoopForSoftClock(defaultTransportState().loop),
-  );
-  const receiptMsRef = useRef(0);
-  const lastServerTimeMsRef = useRef(-Infinity);
-  const playingRef = useRef(false);
-  const rafIdRef = useRef(0);
-  const displayTicksRef = useRef(0);
-  const wsRef = useRef<WebSocket | null>(null);
-  const latencyEmaRef = useRef(0);
-  const pendingHelloRef = useRef<{
-    displayName: string | null;
-    roles: string[];
-  } | null>(null);
+  const {
+    state,
+    displayTicks,
+    applyAnchor,
+    startRaf,
+    stopRaf,
+    setSoftClockTempoMaps,
+  } = useTransportInterpolation();
 
-  const fallbackIntervalRef = useRef<number | null>(null);
-
-  const stopRaf = useCallback(() => {
-    if (rafIdRef.current !== 0) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = 0;
-    }
-    if (fallbackIntervalRef.current !== null) {
-      clearInterval(fallbackIntervalRef.current);
-      fallbackIntervalRef.current = null;
-    }
-  }, []);
-
-  const commitDisplayTicks = useCallback((next: number): boolean => {
-    if (displayTicksRef.current === next) return false;
-    displayTicksRef.current = next;
-    setDisplayTicks(next);
-    return true;
-  }, []);
-
-  const applyAnchor = useCallback(
-    (next: TransportState, receiptMs: number, serverTimeMs?: number) => {
-      if (!shouldAcceptServerTick(serverTimeMs, lastServerTimeMsRef.current)) {
-        return;
-      }
-      if (serverTimeMs !== undefined) {
-        lastServerTimeMsRef.current = serverTimeMs;
-      }
-      const softLoop = transportLoopForSoftClock(next.loop);
-      loopRef.current = softLoop;
-      const anchor = toTransportAnchor(next, tempoMapsRef.current);
-      anchorRef.current = anchor;
-      receiptMsRef.current = receiptMs;
-      const isStartOrSeek =
-        !playingRef.current ||
-        !next.playing ||
-        Math.abs(anchor.positionTicks - anchorRef.current.positionTicks) > 100;
-      playingRef.current = next.playing;
-      setState(next);
-      if (isStartOrSeek) {
-        commitDisplayTicks(anchor.positionTicks);
-      }
-    },
-    [commitDisplayTicks],
-  );
-
-  const startRaf = useCallback(() => {
-    stopRaf();
-    // tip: H-01 — setDisplayTicks every rAF re-renders useTransport consumers (Vitest).
-    // Equality bail when integer ticks unchanged; opt-in probe: ?ss_perf=h01
-    // (docs/guides/MOBILE.md § H-01; ADR 0015). No split context / throttle without HW profile.
-    const tick = (timeMs: number) => {
-      if (!playingRef.current) return;
-      const next = getDisplayTicks(
-        anchorRef.current,
-        timeMs,
-        receiptMsRef.current,
-        true,
-        loopRef.current,
-      );
-      const committed = commitDisplayTicks(next);
-      noteH01Raf(next, committed);
-    };
-
-    const loop = (frameTime: number) => {
-      if (!playingRef.current) {
-        rafIdRef.current = 0;
-        return;
-      }
-      tick(frameTime);
-      rafIdRef.current = requestAnimationFrame(loop);
-    };
-    rafIdRef.current = requestAnimationFrame(loop);
-
-    fallbackIntervalRef.current = window.setInterval(() => {
-      if (playingRef.current) {
-        tick(performance.now());
-      }
-    }, 200);
-  }, [commitDisplayTicks, stopRaf]);
-
-  const sendHello = useCallback(() => {
-    const hello = pendingHelloRef.current;
-    const ws = wsRef.current;
-    if (!hello || !ws || ws.readyState !== WebSocket.OPEN) return;
-    const latency =
-      latencyEmaRef.current > 0 ? Math.round(latencyEmaRef.current) : null;
-    ws.send(
-      JSON.stringify({
-        type: "client_hello",
-        displayName: hello.displayName,
-        roles: hello.roles,
-        latencyMs: latency,
-      }),
-    );
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    let ws: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let helloTimer: ReturnType<typeof setInterval> | null = null;
-    let reconnectAttempt = 0;
-
-    const connect = () => {
-      if (cancelled) return;
-      stopRaf();
-      if (helloTimer !== null) {
-        clearInterval(helloTimer);
-        helloTimer = null;
-      }
-      if (ws) {
-        ws.onclose = null;
-        ws.close();
-        ws = null;
-        wsRef.current = null;
-      }
-      setWsStatus("connecting");
-      latencyEmaRef.current = 0;
-      setLatencyMs(null);
-      ws = new WebSocket(transportWsUrl(window.location));
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        if (cancelled) return;
-        reconnectAttempt = 0;
-        setWsStatus("connected");
-        sendHello();
-        // Welcome snapshot comes from the immediate WS tick (attachTransportWs).
-        // Do not HTTP getTransport here — a late REST reply can overwrite a fresh
-        // tick with an older receiptMs and jump the playhead (ADR 0002).
-        // Keep Admin presence latency fresh while connected (v4 interval).
-        helloTimer = setInterval(() => {
-          if (!cancelled) sendHello();
-        }, 3000);
-      };
-
-      ws.onmessage = (event) => {
-        if (cancelled) return;
-        let raw: unknown;
-        try {
-          raw = JSON.parse(String(event.data));
-        } catch (err) {
-          setError(formatTransportError(err, "Nieprawidłowy tick"));
-          return;
-        }
-        const parsed = TransportWsServerMessageSchema.safeParse(raw);
-        if (!parsed.success) {
-          const type =
-            raw && typeof raw === "object" && "type" in raw
-              ? (raw as { type?: unknown }).type
-              : undefined;
-          // Only surface malformed ticks; ignore unknown / non-tick frames.
-          if (type === "transport_tick") {
-            setError(formatTransportError(parsed.error, "Nieprawidłowy tick"));
-          }
-          return;
-        }
-        if (parsed.data.type === "stage_cue") {
-          const nextCue = stageCueFromWs(parsed.data);
-          setStageCues((prev) => upsertStageCue(prev, nextCue));
-          setStageCue(nextCue);
-          return;
-        }
-        if (parsed.data.type === "stage_cue_dismiss") {
-          const dismiss = parsed.data;
-          if (dismiss.clearAll) {
-            setStageCues([]);
-            setStageCue(null);
-            return;
-          }
-          if (dismiss.id) {
-            setStageCues((prev) => {
-              const { cues, latest } = dismissStageCues(prev, {
-                id: dismiss.id,
-              });
-              setStageCue(latest);
-              return cues;
-            });
-          }
-          return;
-        }
-        if (parsed.data.type === "live_desk") {
-          setLiveDesk(liveDeskFromPayload(parsed.data));
-          return;
-        }
-        if (parsed.data.type === "setlist_snapshot") {
-          setSetlistSnapshot(setlistSnapshotFromPayload(parsed.data));
-          return;
-        }
-        const msg = parsed.data;
-        if (msg.sentAtMs != null && Number.isFinite(msg.sentAtMs)) {
-          const next = noteLatencySample(latencyEmaRef.current, msg.sentAtMs);
-          latencyEmaRef.current = next;
-          setLatencyMs((prev) => (prev === next ? prev : next));
-        }
-        applyAnchor(
-          transportStateFromTick(msg),
-          performance.now(),
-          msg.serverTimeMs,
-        );
-        if (msg.playing) {
-          startRaf();
-        } else {
-          stopRaf();
-        }
-      };
-
-      ws.onclose = () => {
-        if (cancelled) return;
-        if (helloTimer !== null) {
-          clearInterval(helloTimer);
-          helloTimer = null;
-        }
-        setStageCue(null);
-        setStageCues([]);
-        setWsStatus("disconnected");
-        latencyEmaRef.current = 0;
-        setLatencyMs(null);
-        stopRaf();
-        const delay = wsReconnectDelayMs(reconnectAttempt);
-        reconnectAttempt += 1;
-        reconnectTimer = setTimeout(connect, delay);
-      };
-
-      ws.onerror = () => {
-        /* onclose handles reconnect + backoff */
-      };
-    };
-
-    /** iOS Safari freezes WS when backgrounded — reconnect immediately on return. */
-    const onVisibility = () => {
-      if (cancelled || document.visibilityState !== "visible") return;
-      const cur = wsRef.current;
-      if (cur?.readyState === WebSocket.OPEN) {
-        sendHello();
-        return;
-      }
-      if (cur?.readyState === WebSocket.CONNECTING) return;
-      if (reconnectTimer !== null) {
-        clearTimeout(reconnectTimer);
-        reconnectTimer = null;
-      }
-      reconnectAttempt = 0;
-      connect();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-
-    void (async () => {
-      try {
-        const initial = await getTransport();
-        if (cancelled) return;
-        applyAnchor(initial.state, performance.now(), initial.serverTimeMs);
-      } catch (err) {
-        if (!cancelled) {
-          setError(formatTransportError(err, "Nie udało się wczytać"));
-        }
-      }
-      try {
-        const desk = await fetchLiveDesk();
-        if (!cancelled) {
-          setLiveDesk(liveDeskFromPayload(desk));
-        }
-      } catch {
-        /* WS snapshot may still arrive */
-      }
-      try {
-        const view = await fetchSetlist();
-        if (!cancelled) {
-          setSetlistSnapshot(
-            setlistSnapshotFromPayload({
-              projectIds: view.projectIds,
-              enabled: view.enabled,
-              autoAdvance: view.autoAdvance,
-              currentIndex: view.currentIndex,
-              next: view.next,
-              sentAtMs: Date.now(),
-            }),
-          );
-        }
-      } catch {
-        /* WS snapshot may still arrive */
-      }
-      connect();
-    })();
-
-    return () => {
-      cancelled = true;
-      document.removeEventListener("visibilitychange", onVisibility);
-      stopRaf();
-      if (reconnectTimer !== null) clearTimeout(reconnectTimer);
-      if (helloTimer !== null) clearInterval(helloTimer);
-      if (ws) {
-        ws.onclose = null;
-        ws.close();
-        wsRef.current = null;
-      }
-    };
-  }, [applyAnchor, sendHello, startRaf, stopRaf]);
-
-  const announcePresence = useCallback(
-    (payload: { displayName: string | null; roles: string[] }) => {
-      pendingHelloRef.current = payload;
-      sendHello();
-    },
-    [sendHello],
-  );
+  const {
+    wsStatus,
+    latencyMs,
+    error,
+    setError,
+    stageCue,
+    stageCues,
+    liveDesk,
+    setlistSnapshot,
+    announcePresence,
+  } = useTransportSocket({
+    applyAnchor,
+    startRaf,
+    stopRaf,
+  });
 
   const runCommand = useCallback(
     async (
@@ -415,7 +67,7 @@ export function TransportProvider({ children }: { children: ReactNode }) {
         setCommandPending(false);
       }
     },
-    [applyAnchor, startRaf, stopRaf],
+    [applyAnchor, setError, startRaf, stopRaf],
   );
 
   const play = useCallback(
@@ -446,14 +98,6 @@ export function TransportProvider({ children }: { children: ReactNode }) {
     },
     [runCommand],
   );
-
-  const setSoftClockTempoMaps = useCallback((maps: TempoMapProject | null) => {
-    tempoMapsRef.current = maps;
-    anchorRef.current = {
-      ...anchorRef.current,
-      tempoMaps: maps ?? undefined,
-    };
-  }, []);
 
   const value = useMemo(
     () => ({

@@ -4,7 +4,7 @@ import {
   syntheticCountdownDisplayFromProject,
   ticksPerBar,
 } from "@stagesync/shared";
-import type { ChordStepSpan, GridCycleStep } from "./types.js";
+import type { ChordStepSpan } from "./types.js";
 
 export function mergeAkordyWithCountdownDigits(
   project: Project,

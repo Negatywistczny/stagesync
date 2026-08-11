@@ -25,7 +25,6 @@ import {
   resolveStageCueBanner,
   resolveTempoAt,
   ticksToBbt,
-  type Project,
 } from "@stagesync/shared";
 import { loadClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
 import {
@@ -35,7 +34,6 @@ import {
 import { useActiveProject } from "@lib/shell-operator/useActiveProject.js";
 import { useTransport } from "../../transport/useTransport.js";
 import { noteH01ConsumerRender } from "../../transport/h01PerfProbe.js";
-import { ConnectionIndicator } from "./ConnectionIndicator.js";
 import { ConnectionLostBanner } from "./ConnectionLostBanner.js";
 import {
   loadScoreHiddenParts,
@@ -50,7 +48,7 @@ import styles from "./ClientShell.module.css";
 import { ClientNameModal } from "./ClientNameModal.js";
 import { ClientStagePanes } from "./ClientStagePanes.js";
 import { ClientWelcome } from "./ClientWelcome.js";
-import { CLIENT_ROLES, type ClientRoleId } from "./clientRoles.js";
+import { type ClientRoleId } from "./clientRoles.js";
 
 type RoleId = ClientRoleId;
 
