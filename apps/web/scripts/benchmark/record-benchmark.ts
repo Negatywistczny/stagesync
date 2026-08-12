@@ -10,9 +10,19 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { runAudioDrivenSmartTempo } from "@stagesync/shared";
 import { analyzeAudioTempoAsync } from "../../src/lib/audio/audioTempoAnalysis.js";
+
+function atomicWriteFileSync(
+  targetPath: string,
+  data: string,
+  options?: fs.WriteFileOptions,
+) {
+  const tmpPath = `${targetPath}.tmp.${process.pid}.${Date.now()}`;
+  fs.writeFileSync(tmpPath, data, options);
+  fs.renameSync(tmpPath, targetPath);
+}
 
 const FIXTURES_DIR = path.resolve(
   process.cwd(),
