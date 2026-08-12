@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1568
+* **Liczba wszystkich plików:** 1552
 * **Liczba katalogów:** 253
-* **Data aktualizacji:** 2026-08-12T15:59:43.331Z
+* **Data aktualizacji:** 2026-08-12T16:08:07.535Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1151 |
+| Kod | 1135 |
 | Docs | 147 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 714 |
+| `.ts` | 698 |
 | `.tsx` | 251 |
 | `.md` | 125 |
 | `.png` | 94 |
@@ -40,11 +40,11 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1163) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1147) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (108) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (177) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **server/** (161) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (680) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
@@ -465,26 +465,10 @@ stagesync/
 │   │   │   │   ├── static-web.test.ts
 │   │   │   │   └── static-web.ts
 │   │   │   ├── app.ts
-│   │   │   ├── client-presence.ts
-│   │   │   ├── diagnostics-zip.ts
-│   │   │   ├── downloads.ts
-│   │   │   ├── file-logger.ts
 │   │   │   ├── index.ts
-│   │   │   ├── lifecycle.ts
-│   │   │   ├── live-desk.ts
-│   │   │   ├── log-buffer.ts
-│   │   │   ├── mdns-advertise.ts
-│   │   │   ├── mdns-registry.ts
 │   │   │   ├── near-pure-coverage.test.ts
-│   │   │   ├── network-info.ts
-│   │   │   ├── operator-pin.ts
-│   │   │   ├── path-browser.ts
 │   │   │   ├── README.md
-│   │   │   ├── safety-net.ts
-│   │   │   ├── sentry.ts
-│   │   │   ├── smoke-e2e.test.ts
-│   │   │   ├── static-web.ts
-│   │   │   └── ui-meta.ts
+│   │   │   └── smoke-e2e.test.ts
 │   │   ├── eslint.config.js
 │   │   ├── package.json
 │   │   ├── README.md

@@ -13,7 +13,7 @@ import { refreshMdnsAdvertise } from "../../system/mdns-registry.js";
 import {
   listBrowseDirectory,
   resolveBrowseStartPath,
-} from "../../path-browser.js";
+} from "../../library/path-browser.js";
 import { resolveBackupsDir } from "../../storage/restore-backup.js";
 import { sendError, handleRouteError } from "../errors.js";
 import { assertLifecycleAllowed } from "./lifecycle-auth.js";

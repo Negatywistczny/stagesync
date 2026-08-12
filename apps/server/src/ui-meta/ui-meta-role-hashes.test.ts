@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { PROTOCOL_VERSION } from "@stagesync/shared";
-import { loadUiMeta, UI_UNAVAILABLE_HASH } from "../ui-meta.js";
+import { loadUiMeta, UI_UNAVAILABLE_HASH } from "./ui-meta.js";
 
 describe("loadUiMeta role hash files", () => {
   const dirs: string[] = [];

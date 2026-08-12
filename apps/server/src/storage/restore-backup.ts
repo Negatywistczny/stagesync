@@ -13,7 +13,7 @@ import {
   resolve,
 } from "node:path";
 import { parseZipArchive } from "../system/diagnostics-zip.js";
-import { isUnderAllowedRoot } from "../path-browser.js";
+import { isUnderAllowedRoot } from "../library/path-browser.js";
 import { shadowBackup } from "./shadow-backup.js";
 
 export type RestoreBackupResult = {

@@ -45,7 +45,7 @@ import {
   resolveDevUiOrigin,
   resolveStaticDir,
 } from "./web-static/static-web.js";
-import { loadUiMeta, mountUiMetaRoutes } from "./ui-meta.js";
+import { loadUiMeta, mountUiMetaRoutes } from "./ui-meta/ui-meta.js";
 import {
   createTransportEngine,
   type TransportEngine,

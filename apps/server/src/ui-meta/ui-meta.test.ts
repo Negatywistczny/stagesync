@@ -10,7 +10,7 @@ import {
   UiManifestSchema,
 } from "@stagesync/shared";
 import { createApp } from "../app.js";
-import { loadUiMeta, UI_UNAVAILABLE_HASH } from "../ui-meta.js";
+import { loadUiMeta, UI_UNAVAILABLE_HASH } from "./ui-meta.js";
 
 describe("ui-meta / health (#692)", () => {
   let dataDir: string;
