@@ -2,7 +2,13 @@
  * Managed .env settings for Admin Ustawienia (v4 Server Settings parity, v5 keys).
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { REPO_ROOT } from "../storage/paths.js";
 import { validateHostDisplayName } from "./network-info.js";
@@ -382,11 +388,13 @@ export function writeManagedSettings(
 
   const output = nextLines.join("\n").replace(/\n+$/, "");
   mkdirSync(dirname(envPath), { recursive: true });
-  // codeql[js/file-system-race] Protected internal config/settings sync write
-  writeFileSync(envPath, output ? `${output}\n` : "", {
+  // Atomic write prevents file system race conditions (TOCTOU)
+  const tmpPath = `${envPath}.tmp.${process.pid}.${Date.now()}`;
+  writeFileSync(tmpPath, output ? `${output}\n` : "", {
     encoding: "utf8",
     mode: 0o600,
   });
+  renameSync(tmpPath, envPath);
 
   for (const [key, value] of Object.entries(normalized)) {
     const spec = SETTINGS_SCHEMA[key as SettingsKey];

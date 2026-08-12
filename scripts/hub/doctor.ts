@@ -30,23 +30,25 @@ export function findListeningProcessesOnPort(port: number): ProcessInfo[] {
 
   try {
     if (isWin) {
-      const output = execSync(`netstat -ano | findstr :${port}`, {
+      const res = spawnSync("netstat", ["-ano"], {
         encoding: "utf8",
         stdio: ["pipe", "pipe", "ignore"],
       });
-      const lines = output.trim().split("\n");
+      const lines = (res.stdout ?? "").trim().split("\n");
+      const portPattern = `:${port}`;
       for (const line of lines) {
-        if (line.includes("LISTENING")) {
+        if (line.includes(portPattern) && line.includes("LISTENING")) {
           const parts = line.trim().split(/\s+/);
           const pid = parts[parts.length - 1];
           if (pid && !list.some((p) => p.pid === pid)) {
             let name = "nieznany";
             try {
-              const taskOut = execSync(
-                `tasklist /FI "PID eq ${pid}" /FO CSV /NH`,
+              const taskRes = spawnSync(
+                "tasklist",
+                ["/FI", `PID eq ${pid}`, "/FO", "CSV", "/NH"],
                 { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] },
               );
-              const match = taskOut.match(/^"([^"]+)"/);
+              const match = (taskRes.stdout ?? "").match(/^"([^"]+)"/);
               if (match) name = match[1];
             } catch {
               // ignore
@@ -56,18 +58,23 @@ export function findListeningProcessesOnPort(port: number): ProcessInfo[] {
         }
       }
     } else {
-      const output = execSync(`lsof -nP -iTCP:${port} -sTCP:LISTEN -t`, {
-        encoding: "utf8",
-        stdio: ["pipe", "pipe", "ignore"],
-      });
-      const pids = output.trim().split("\n").filter(Boolean);
+      const res = spawnSync(
+        "lsof",
+        ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"],
+        {
+          encoding: "utf8",
+          stdio: ["pipe", "pipe", "ignore"],
+        },
+      );
+      const pids = (res.stdout ?? "").trim().split("\n").filter(Boolean);
       for (const pid of pids) {
         let name = "nieznany";
         try {
-          name = execSync(`ps -p ${pid} -o comm=`, {
+          const psRes = spawnSync("ps", ["-p", pid, "-o", "comm="], {
             encoding: "utf8",
             stdio: ["pipe", "pipe", "ignore"],
-          }).trim();
+          });
+          name = (psRes.stdout ?? "").trim() || "nieznany";
         } catch {
           // ignore
         }
@@ -88,12 +95,17 @@ export function killProcessTree(p: ProcessInfo) {
       `Zamykanie ${pc.yellow(`PID ${p.pid}`)} ${pc.dim(`(${p.name})`)} na ${pc.cyan(`:${p.port}`)}…`,
     );
     if (isWin) {
-      execSync(
-        `powershell -NoProfile -Command "Stop-Process -Id ${p.pid} -ErrorAction SilentlyContinue"`,
+      spawnSync(
+        "powershell",
+        [
+          "-NoProfile",
+          "-Command",
+          `Stop-Process -Id ${p.pid} -ErrorAction SilentlyContinue`,
+        ],
         { stdio: "inherit" },
       );
     } else {
-      execSync(`kill -15 ${p.pid}`, { stdio: "inherit" });
+      spawnSync("kill", ["-15", p.pid], { stdio: "inherit" });
     }
   } catch {
     // soft kill failed
@@ -102,9 +114,9 @@ export function killProcessTree(p: ProcessInfo) {
   if (remaining.some((r) => r.pid === p.pid)) {
     try {
       if (isWin) {
-        execSync(`taskkill /F /PID ${p.pid}`, { stdio: "inherit" });
+        spawnSync("taskkill", ["/F", "/PID", p.pid], { stdio: "inherit" });
       } else {
-        execSync(`kill -9 ${p.pid}`, { stdio: "inherit" });
+        spawnSync("kill", ["-9", p.pid], { stdio: "inherit" });
       }
     } catch {
       // ignore

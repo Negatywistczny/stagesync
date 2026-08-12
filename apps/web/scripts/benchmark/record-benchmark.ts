@@ -132,13 +132,17 @@ function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
   );
   fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
   try {
-    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
-      stdio: "ignore",
-    });
+    execFileSync(
+      "afconvert",
+      ["-f", "WAVE", "-d", "LEF32@44100", "-c", "1", mp3Path, tmpWav],
+      { stdio: "ignore" },
+    );
   } catch {
-    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
-      stdio: "ignore",
-    });
+    execFileSync(
+      "ffmpeg",
+      ["-y", "-i", mp3Path, "-ar", "44100", "-ac", "1", "-f", "f32le", tmpWav],
+      { stdio: "ignore" },
+    );
   }
   const buf = fs.readFileSync(tmpWav);
   try {
@@ -567,13 +571,12 @@ async function recordBenchmark() {
   }
 
   history.push(entry);
-  // codeql[js/file-system-race] Protected internal benchmark history snapshot write
-  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), {
+  // Atomic write prevents file system race conditions (TOCTOU)
+  atomicWriteFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), {
     encoding: "utf8",
     mode: 0o600,
   });
-  // codeql[js/file-system-race] Protected internal benchmark dataset write
-  fs.writeFileSync(DATASET_FILE, JSON.stringify(datasetOutput, null, 2), {
+  atomicWriteFileSync(DATASET_FILE, JSON.stringify(datasetOutput, null, 2), {
     encoding: "utf8",
     mode: 0o600,
   });

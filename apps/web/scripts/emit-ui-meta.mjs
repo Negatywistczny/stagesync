@@ -8,9 +8,16 @@ import {
   existsSync,
   readFileSync,
   readdirSync,
+  renameSync,
   statSync,
   writeFileSync,
 } from "node:fs";
+
+function atomicWriteFileSync(targetPath, data, options) {
+  const tmpPath = `${targetPath}.tmp.${process.pid}.${Date.now()}`;
+  writeFileSync(tmpPath, data, options);
+  renameSync(tmpPath, targetPath);
+}
 import { dirname, join, relative, sep } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -178,8 +185,8 @@ export function emitUiMeta(distDir = defaultDist) {
       /const CACHE = ["'][^"']+["']/,
       `const CACHE = "${cacheName}"`,
     );
-    // codeql[js/file-system-race] Protected local PWA build asset write
-    writeFileSync(swPath, sw, { encoding: "utf8", mode: 0o600 });
+    // Atomic PWA service worker asset write prevents file system race conditions (TOCTOU)
+    atomicWriteFileSync(swPath, sw, { encoding: "utf8", mode: 0o600 });
     const swData = readFileSync(swPath);
     const swHash = sha256Hex(swData);
     const idx = assets.findIndex((a) => a.path === "/sw.js");
@@ -200,18 +207,17 @@ export function emitUiMeta(distDir = defaultDist) {
 
   const hashJson = `${JSON.stringify(hashFile, null, 2)}\n`;
   const manifestJson = `${JSON.stringify(manifest, null, 2)}\n`;
-  // codeql[js/file-system-race] Protected local UI build meta write
-  writeFileSync(join(distDir, "ui-hash.json"), hashJson);
-  // codeql[js/file-system-race] Protected local UI build meta write
-  writeFileSync(join(distDir, "ui-manifest.json"), manifestJson);
+  // Atomic UI build meta write prevents file system race conditions
+  atomicWriteFileSync(join(distDir, "ui-hash.json"), hashJson);
+  atomicWriteFileSync(join(distDir, "ui-manifest.json"), manifestJson);
 
   // Include meta in the zip so Android cache can read local uiHash after apply.
   zipEntries.push(
     { name: "ui-hash.json", data: Buffer.from(hashJson, "utf8") },
     { name: "ui-manifest.json", data: Buffer.from(manifestJson, "utf8") },
   );
-  // codeql[js/file-system-race] Protected local UI bundle write
-  writeFileSync(join(distDir, "ui-bundle.zip"), buildZip(zipEntries));
+  // Atomic UI bundle write prevents file system race conditions
+  atomicWriteFileSync(join(distDir, "ui-bundle.zip"), buildZip(zipEntries));
 
   return hashFile;
 }

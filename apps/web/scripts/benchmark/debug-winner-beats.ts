@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { analyzeAudioTempoAsync } from "../../apps/web/src/lib/audio/audioTempoAnalysis.js";
 
 const FIXTURES_DIR = path.resolve(
@@ -15,13 +15,17 @@ function loadAudioBufferFromMp3(mp3Path: string): AudioBuffer {
   );
   fs.mkdirSync(path.dirname(tmpWav), { recursive: true });
   try {
-    execSync(`afconvert -f WAVE -d LEF32@44100 -c 1 "${mp3Path}" "${tmpWav}"`, {
-      stdio: "ignore",
-    });
+    execFileSync(
+      "afconvert",
+      ["-f", "WAVE", "-d", "LEF32@44100", "-c", "1", mp3Path, tmpWav],
+      { stdio: "ignore" },
+    );
   } catch {
-    execSync(`ffmpeg -y -i "${mp3Path}" -ar 44100 -ac 1 -f f32le "${tmpWav}"`, {
-      stdio: "ignore",
-    });
+    execFileSync(
+      "ffmpeg",
+      ["-y", "-i", mp3Path, "-ar", "44100", "-ac", "1", "-f", "f32le", tmpWav],
+      { stdio: "ignore" },
+    );
   }
   const buf = fs.readFileSync(tmpWav);
   try {
