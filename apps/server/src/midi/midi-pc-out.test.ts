@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AddressInfo } from "node:net";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ProjectSchema,
   PutProjectBodySchema,
@@ -78,12 +78,13 @@ describe("MIDI program change OUT on load", () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ projectId: created.id }),
     });
-    await new Promise((r) => setTimeout(r, 50));
 
-    expect(backend.sent).toContainEqual({
-      type: "program",
-      channel: 0,
-      program: 19,
-    });
+    await vi.waitFor(() => {
+      expect(backend.sent).toContainEqual({
+        type: "program",
+        channel: 0,
+        program: 19,
+      });
+    }, { timeout: 2000 });
   });
 });
