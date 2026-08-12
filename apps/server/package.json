@@ -16,7 +16,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@sentry/node": "^10.69.0",
+    "@sentry/node": "^10.70.0",
     "@stagesync/shared": "workspace:*",
     "bonjour-service": "^1.4.4",
     "easymidi": "^3.2.0",
@@ -34,7 +34,7 @@
     "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.8.1",
-    "tsx": "^4.23.11",
+    "tsx": "^4.23.12",
     "typescript": "7.0.2",
     "vitest": "^4.1.10"
   }
