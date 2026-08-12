@@ -104,21 +104,23 @@ Więcej informacji znajdziesz w pełnej [Dokumentacji DX](./docs/guides/DX.md).
 
 ## 📚 Dokumentacja
 
-| Dokument                                                     | Opis                                                                  |
-| :----------------------------------------------------------- | :-------------------------------------------------------------------- |
-| 🚀 **[INSTALL](./docs/guides/INSTALL.md)**                   | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw)  |
-| 🖥️ **[DESKTOP](./docs/guides/DESKTOP.md)**                   | Instalatory Tauri (`.dmg`, `.exe`), Launcher i aktualizacja           |
-| 📱 **[MOBILE](./docs/guides/MOBILE.md)**                     | Performer / Console — sideload APK, QR, Offline-First                 |
-| 🛠️ **[DX](./docs/guides/DX.md)**                             | Przewodnik deweloperski, środowisko oraz Dev Hub                      |
-| 🏗️ **[ARCHITECTURE](docs/ARCHITECTURE.md)**                  | Mapa architektura monorepo i przepływ danych SSOT                     |
-| 🗺️ **[REPO_MAP](docs/REPO_MAP.md)**                          | Automatycznie generowana mapa struktury i statystyki kodu dla LLM     |
-| 🔌 **[API](docs/api/README.md)**                             | Specyfikacja powierzchni REST API i punktów końcowych                 |
-| 💡 **[ADR](docs/adr/README.md)**                             | Dziennik decyzji architektonicznych (_Architecture Decision Records_) |
-| 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Kamienie milowe, plan rozwoju oraz bieżąca checklista                 |
-| 📜 **[CHANGELOG](CHANGELOG.md)**                             | Historia wydań                                                        |
-| 🎨 **[UI](docs/ui/README.md)**                               | Przewodnik po Design Systemie i tokenach CSS                          |
-| 🔒 **[SECURITY](.github/SECURITY.md)**                       | Polityka bezpieczeństwa i zgłaszanie podatności                       |
-| 🤝 **[CONTRIBUTING](.github/CONTRIBUTING.md)**               | Standardy commitów, obsługa PR-ów i praca na gałęziach                |
+| Dokument                                                     | Kategoria    | Opis                                                                  |
+| :----------------------------------------------------------- | :----------- | :-------------------------------------------------------------------- |
+| 🏗️ **[ARCHITECTURE](docs/architecture/ARCHITECTURE.md)**     | Architektura | Mapa architektury monorepo, zasada transportu SSOT i granice          |
+| 💡 **[ADR](docs/architecture/adr/README.md)**                | Architektura | Dziennik decyzji architektonicznych (_Architecture Decision Records_) |
+| 🔌 **[API](docs/architecture/api/README.md)**                | Architektura | Specyfikacja powierzchni REST API i punktów końcowych WebSocket       |
+| 🎨 **[UI](docs/architecture/ui/README.md)**                  | Architektura | Przewodnik po Design Systemie, komponentach i tokenach CSS            |
+| 📐 **[STANDARDS](docs/standards/STANDARDS.md)**              | Standardy    | Standardy zewnętrzne (SemVer, Conventional Commits, TSDoc)            |
+| 🧪 **[TESTING](docs/standards/TESTING.md)**                  | Standardy    | Strategia testowa, bramki CI i minimalne/zalecane progi pokrycia      |
+| 🚀 **[INSTALL](docs/guides/INSTALL.md)**                     | Podręczniki  | Produkcyjne wdrożenie Docker Compose / GHCR (PIN, Safety Net, motyw)  |
+| 🖥️ **[DESKTOP](docs/guides/DESKTOP.md)**                     | Podręczniki  | Instalatory Tauri (`.dmg`, `.exe`), Launcher i aktualizacja           |
+| 📱 **[MOBILE](docs/guides/MOBILE.md)**                       | Podręczniki  | Performer / Console — sideload APK, QR, Offline-First                 |
+| 🛠️ **[DX](docs/guides/DX.md)**                               | Podręczniki  | Przewodnik deweloperski, konfiguracja środowiska oraz Dev Hub         |
+| 🗺️ **[ROADMAP](docs/ROADMAP.md)** / **[TODO](docs/TODO.md)** | Zarządzanie  | Kamienie milowe, plan rozwoju oraz bieżąca checklista zadań           |
+| 🗺️ **[REPO_MAP](docs/REPO_MAP.md)**                          | Indeksy      | Automatycznie generowana mapa kodu źródłowego (`generate:map`)        |
+| 📜 **[CHANGELOG](CHANGELOG.md)**                             | Historia     | Historia wydań                                                        |
+| 🔒 **[SECURITY](.github/SECURITY.md)**                       | Polityka     | Polityka bezpieczeństwa i zgłaszanie podatności                       |
+| 🤝 **[CONTRIBUTING](.github/CONTRIBUTING.md)**               | Współpraca   | Standardy commitów, obsługa PR-ów i praca na gałęziach                |
 
 ## 📜 Licencja
 

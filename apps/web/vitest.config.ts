@@ -28,10 +28,9 @@ export default defineConfig({
       // Repo-root SF paths so Codecov can map monorepo files.
       reporter: ["text", ["lcov", { projectRoot: repoRoot }]],
       reportsDirectory: "./coverage",
-      // Local + Codecov `web` flag gate: lib + transport only.
-      // Shells (`src/shells/**`) → Playwright smoke, not Vitest line %.
-      // Target ≥65% lines (see codecov.yml + docs/STANDARDS.md). Thresholds
-      // stay soft here until Phase 1 fills P0 lib gaps (~62% today).
+      // Local + Codecov flags: web-core (lib + transport) and web-ui (shells).
+      // Shells (`src/shells/**`) → complemented by Playwright smoke in e2e/.
+      // Targets: web-core ≥85%, web-ui ≥50% (see codecov.yml + docs/standards/TESTING.md).
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "**/*.test.ts",
@@ -39,8 +38,6 @@ export default defineConfig({
         "**/*.module.css",
         "**/node_modules/**",
       ],
-      // Uncomment when lib+transport ≥65% on main (Phase 1):
-      // thresholds: { lines: 65, statements: 65, functions: 60, branches: 55 },
     },
   },
 });

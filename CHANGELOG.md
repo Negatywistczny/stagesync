@@ -1241,8 +1241,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 ### Dodano
 
 - **Desktop OS menu:** natywne **Plik** (Otwórz ostatnie / Zapisz / Zamknij), **Host** (status, klienci, QR z LAN URL, restart, ustawienia), **Transport** (Play/Stop/prev/next). Dialog QR z URL LAN w aplikacji.
-- **Host MIDI I/O + clock:** lista / wybór urządzeń, clock OUT zsynchronizowany z transportem SSOT (Start/Continue/Stop/SPP/Clock), metryki Admin → Host; API MIDI config. Bez MIDI w procesie Tauri ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md) / [ADR 0002](docs/adr/0002-timebase-ssot.md)).
-- **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; odtwarzanie sync do ticków serwera ([ADR 0008](docs/adr/0008-timeline-clip-editing.md), [#42](https://github.com/Negatywistczny/stagesync/issues/42)).
+- **Host MIDI I/O + clock:** lista / wybór urządzeń, clock OUT zsynchronizowany z transportem SSOT (Start/Continue/Stop/SPP/Clock), metryki Admin → Host; API MIDI config. Bez MIDI w procesie Tauri ([ADR 0010](docs/architecture/adr/0010-desktop-shell-tauri.md) / [ADR 0002](docs/architecture/adr/0002-timebase-ssot.md)).
+- **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; odtwarzanie sync do ticków serwera ([ADR 0008](docs/architecture/adr/0008-timeline-clip-editing.md), [#42](https://github.com/Negatywistczny/stagesync/issues/42)).
 
 ### Naprawiono
 
@@ -1292,7 +1292,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ**; ostatni utwór Timeline w `localStorage` + sync do menu natywnego; deep link `/admin?section=host`.
+- **Desktop ([ADR 0010](docs/architecture/adr/0010-desktop-shell-tauri.md)):** menu OS **Widok** (Admin / Timeline / Klient) + **StageSync → Zakończ**; ostatni utwór Timeline w `localStorage` + sync do menu natywnego; deep link `/admin?section=host`.
 - **Biblioteka:** domyślny wzór **Template** przy pierwszym uruchomieniu (seed [`library.template.json`](./apps/desktop/src-tauri/resources/sidecar/seed/library.template.json) + `seed-projects/`; parity z legacy v4).
 - **Admin → O aplikacji:** przycisk „Zgłoś błąd lub pomysł” (GitHub Issues).
 
@@ -1315,14 +1315,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Standalone desktop ([ADR 0010](docs/adr/0010-desktop-shell-tauri.md)):** Tauri spawnuje wbudowany Node sidecar (`stagesync-host`), czeka na `GET /api/health`, ładuje UI; shutdown przy zamknięciu okna; czytelny ekran błędu przy konflikcie portu `4000`; dev fallback przez `STAGESYNC_URL` gdy brak bundla sidecara.
+- **Standalone desktop ([ADR 0010](docs/architecture/adr/0010-desktop-shell-tauri.md)):** Tauri spawnuje wbudowany Node sidecar (`stagesync-host`), czeka na `GET /api/health`, ładuje UI; shutdown przy zamknięciu okna; czytelny ekran błędu przy konflikcie portu `4000`; dev fallback przez `STAGESYNC_URL` gdy brak bundla sidecara.
 - **Desktop sidecar packaging:** `launch/scripts/build-desktop-sidecar.mjs` — Node runtime per architektura, `pnpm deploy --prod @stagesync/server`, web `dist`, seed [`library.template.json`](./apps/desktop/src-tauri/resources/sidecar/seed/library.template.json); `bundle.externalBin` + `bundle.resources` w Tauri; `STAGESYNC_SEED_DIR` w serwerze; CI `--smoke` (health + higiena docs).
 - **β1 host / dystrybucja:** Docker Compose ([`Dockerfile`](./Dockerfile) + [`compose.yml`](./compose.yml), volume `data/`); docs [INSTALL.md](./docs/guides/INSTALL.md) / [DESKTOP.md](./docs/guides/DESKTOP.md); OCC `409` na stale `updatedAt` przy PUT projektu; shadow backup + migracja schematu volume przy starcie; ESLint ACL (web ↛ server, shared pure); API Zod `details`; CI Compose build + health smoke + `cargo check` desktop.
-- **Folder danych użytkownika:** domyślny `STAGESYNC_DATA_DIR` = `~/Documents/StageSync` (desktop/host; macOS + Windows); dev: `STAGESYNC_REPO_DEV=1` zachowuje `<repo>/data`; Docker: jawne `/app/data` bez zmian ([ADR 0012](docs/adr/0012-user-data-location.md)).
+- **Folder danych użytkownika:** domyślny `STAGESYNC_DATA_DIR` = `~/Documents/StageSync` (desktop/host; macOS + Windows); dev: `STAGESYNC_REPO_DEV=1` zachowuje `<repo>/data`; Docker: jawne `/app/data` bez zmian ([ADR 0012](docs/architecture/adr/0012-user-data-location.md)).
 - **β1 release pipeline:** `release.yml` (GHCR private, Tauri mac/win, minisign updater, GitHub Release); [`compose.prod.yml`](./compose.prod.yml) + Watchtower HTTP-only (update na żądanie, bez auto-poll).
 - **β1 aktualizacje na żądanie (ADR 0004 amendement):** `GET /api/system/update-status` + `POST /api/system/apply-update` (Watchtower trigger); Admin → Sprawdź / Aktualizuj host; [`desktopBridge.ts`](./apps/web/src/lib/client/desktopBridge.ts) + Tauri updater (minisign); Admin → Aktualizuj aplikację w shellu Tauri.
 - Pełny zestaw ikon Tauri (`icons/icon.icns`, [`icon.ico`](./apps/desktop/src-tauri/icons/icon.ico), [`32x32.png`](./apps/desktop/src-tauri/icons/32x32.png) itd.) z marki [stagesync-mark.svg](apps/web/public/brand/stagesync-mark.svg).
-- **Dokumentacja in-app vs GitHub ([ADR 0013](docs/adr/0013-in-app-vs-github-docs.md)):** Timeline — skróty `?` / `Esc` dla overlay pomocy; Admin → O aplikacji — link „Pełna instrukcja na GitHubie”, bilan hosta, `open_external_url` w Tauri; `.gitignore` artefaktów sidecar; assert higieny docs w [`build-desktop-sidecar.mjs`](./apps/desktop/scripts/build-desktop-sidecar.mjs).
+- **Dokumentacja in-app vs GitHub ([ADR 0013](docs/architecture/adr/0013-in-app-vs-github-docs.md)):** Timeline — skróty `?` / `Esc` dla overlay pomocy; Admin → O aplikacji — link „Pełna instrukcja na GitHubie”, bilan hosta, `open_external_url` w Tauri; `.gitignore` artefaktów sidecar; assert higieny docs w [`build-desktop-sidecar.mjs`](./apps/desktop/scripts/build-desktop-sidecar.mjs).
 
 ### Zmieniono
 
@@ -1438,9 +1438,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 ### Dodano
 
-- **Timeline Forma:** pencil drag (zakres taktów), pointer/Smart move + resize brzegów, Delete/Backspace + eraser; transakcyjny `gesturePreview` (commit na pointerup); no-overlap w `@stagesync/shared` (`clip-collision`); Countdown nietykalny; sekcje `startTicks >= 0` ([ADR 0008](docs/adr/0008-timeline-clip-editing.md)).
+- **Timeline Forma:** pencil drag (zakres taktów), pointer/Smart move + resize brzegów, Delete/Backspace + eraser; transakcyjny `gesturePreview` (commit na pointerup); no-overlap w `@stagesync/shared` (`clip-collision`); Countdown nietykalny; sekcje `startTicks >= 0` ([ADR 0008](docs/architecture/adr/0008-timeline-clip-editing.md)).
 - **Smart Tool** w toolbarze; strefy trim/move tylko przy Pointer/Smart — Pencil = exclusive draw.
-- **Snap:** Cmd/Ctrl = chwilowy snap off, ewaluacja `metaKey`/`ctrlKey` na każdym `pointermove` ([ADR 0007](docs/adr/0007-snap-grid.md) faza 3).
+- **Snap:** Cmd/Ctrl = chwilowy snap off, ewaluacja `metaKey`/`ctrlKey` na każdym `pointermove` ([ADR 0007](docs/architecture/adr/0007-snap-grid.md) faza 3).
 - **Schema v4:** lane’y `tekst` / `akordy` / `cue`; upgrade v3→v4; seed puste tablice.
 - **Lane Tekst MVP:** pencil click, select, Delete, inspector tekst; Client karaoke czyta linię z clipu.
 
@@ -1505,9 +1505,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin / Client:** link Timeline z wybranym id; status „Sekcja”; rola Client `drums` (Forma).
 - **Chrome shelli:** wspólny `ShellWordmark`; `ShellIconButton`, `SettingsPopover`, `ConnectionIndicator`;
   Client — jednolinijkowy nagłówek, popovery ustawień (v4-style).
-- **Snap grid (faza 1):** `quantizeTicks` w shared, domyślnie takt; ADR [0007](docs/adr/0007-snap-grid.md).
+- **Snap grid (faza 1):** `quantizeTicks` w shared, domyślnie takt; ADR [0007](docs/architecture/adr/0007-snap-grid.md).
 - **Stabilność storage/transport:** H1/H5 engine, H2–H4 library CRUD, `ProjectIdSchema` (UUID).
-- Dokumentacja: [docs/api/](docs/api/README.md) (PUT v2 + transport z map).
+- Dokumentacja: [docs/architecture/api/](docs/architecture/api/README.md) (PUT v2 + transport z map).
   tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide.
 
 ## [5.0.0-alpha.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2) - 2026-07-20
@@ -1519,12 +1519,12 @@ checklista branch protection (status checks) w CONTRIBUTING; JSDoc `@example`
 na helperach czasu / soft playhead (`@stagesync/shared`).
 
 - Tokeny statusu `--ss-color-success` / `warning` / `info`; dokumentacja
-  [docs/ui/](docs/ui/README.md) (kolory + Button 7 stanów / PWA); [docs/ROADMAP.md](docs/ROADMAP.md);
+  [docs/architecture/ui/](docs/architecture/ui/README.md) (kolory + Button 7 stanów / PWA); [docs/ROADMAP.md](docs/ROADMAP.md);
   checklista release w CONTRIBUTING; README `@stagesync/ui` i `@stagesync/shared`.
   [LICENSE](LICENSE) (MIT); [SECURITY.md](.github/SECURITY.md).
   foldery projektów), mapa pace layers, checklista ACL pod migrator / MIDI /
   audio.
-  indeks ADR + słownik statusów ([docs/adr/README.md](docs/adr/README.md)).
+  indeks ADR + słownik statusów ([docs/architecture/adr/README.md](docs/architecture/adr/README.md)).
 - Fundament gęstości UI: skala `--ss-space-1…16`, elevation
   (`surface` / `elevated`), `border-muted`, scenic scrollbary, reguła
   `[ui-density.mdc](.cursor/rules/ui-density.mdc)`; Button `iconOnly` +
@@ -1538,10 +1538,10 @@ na helperach czasu / soft playhead (`@stagesync/shared`).
 - Admin — tworzenie / usuwanie / zmiana nazwy projektu z UI (Zod body przed
   fetch; `commandPending` blokuje listę i panel).
 - Shelle UI: Admin — własny layout (chrome + sekcje + status), inventarz
-  funkcji v4 (./docs/ui/ui-shell-inventory.md)); Client /
+  funkcji v4 (./docs/architecture/ui/ui-shell-inventory.md)); Client /
   Timeline — inventarz (osobny redesign); tokeny black/amber + CSS Modules;
   `TransportProvider` nad routerem; Audio 0…N; bez git-apply
-  ([ADR 0004](docs/adr/0004-updates-docker.md)).
+  ([ADR 0004](docs/architecture/adr/0004-updates-docker.md)).
 - Klient web: panel transportu (Play / Pause / Seek), WebSocket + soft playhead
   (`getDisplayTicks` w shared, rAF z `frameTime`), Vite proxy `/api` i `/ws`,
   `Button loading` na czas komend REST.
@@ -1555,7 +1555,7 @@ na helperach czasu / soft playhead (`@stagesync/shared`).
   `POST|GET|PUT|DELETE /api/projects`) — Zod na krawędziach, seed z
   [`library.template.json`](./apps/desktop/src-tauri/resources/sidecar/seed/library.template.json), override `STAGESYNC_DATA_DIR` pod testy.
   ([CONTRIBUTING.md](.github/CONTRIBUTING.md)).
-  inventarz kontrolek = parity v4 (./docs/ui/ui-shell-inventory.md)).
+  inventarz kontrolek = parity v4 (./docs/architecture/ui/ui-shell-inventory.md)).
 
 ### Usunięto
 

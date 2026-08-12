@@ -1,7 +1,7 @@
 ---
 name: triage-verify
 description: >-
-  Verify hypotheses in docs/analysis/inspiracje *.triage.md — repro or reject,
+  Verify hypotheses in docs/standards/analysis/inspiracje *.triage.md — repro or reject,
   update row/document status tokens, promote only confirmed rows to TODO/issues.
   Use when the user runs /triage-next or asks to verify an inspiration audit triage.
 disable-model-invocation: true
@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 # Triage verify
 
-SSOT statusów: [docs/analysis/inspiracje/README.md](../../../docs/analysis/inspiracje/README.md). Nie wymyślaj synonimów tokenów.
+SSOT statusów: [docs/standards/analysis/inspiracje/README.md](../../../docs/standards/analysis/inspiracje/README.md). Nie wymyślaj synonimów tokenów.
 
 ## Wybór pliku
 
@@ -38,7 +38,7 @@ Przepływ: `hypothesis` → (`confirmed` → `fixed`) | `rejected` | `limit`.
 ## Status dokumentu
 
 Po fali: `partial` (część priorytetowych ID rozstrzygnięta) albo `closed` (wszystkie priorytetowe).  
-`superseded` tylko gdy powstanie `docs/analysis/reports/{current,milestones}/report-*.md` jako następca.
+`superseded` tylko gdy powstanie `docs/standards/analysis/reports/{current,milestones}/report-*.md` jako następca.
 
 ## Promocja do backlogu
 

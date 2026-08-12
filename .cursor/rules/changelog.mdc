@@ -32,7 +32,7 @@ Podczas tworzenia lub aktualizacji `CHANGELOG.md` KATEGORYCZNIE ZABRANIA SIĘ pr
 
 Dotyczy **całego** pliku: blockquote’ów nagłówków wersji, H3/H4 oraz bulletów. Status bramek HW / soft-gate / „carry do etapu X” zostaje w TODO / raportach — **nigdy** w CHANGELOG.
 
-**Zakaz marketingu absencji / nieshipniętego:** w CHANGELOG, release notes oraz publicznej docs operatorskiej (`INSTALL` / `DESKTOP` / `MOBILE` i podobne) opisuj **tylko to, co wyszło**. Nie reklamuj braków („bez atrap Out 3–4”, „bez OAuth”, „bez auto-election”) ani funkcji jeszcze nie w produkcie (np. HW Out 3–4, JNI local host, OAuth przed wdrożeniem). Residual / „do wprowadzenia” → wyłącznie `TODO` / `ROADMAP` / `docs/analysis/inspiracje/**` (oraz ADR przy trwałej decyzji PO) — [todo-hygiene.mdc](todo-hygiene.mdc); nie w tekście dla operatora.
+**Zakaz marketingu absencji / nieshipniętego:** w CHANGELOG, release notes oraz publicznej docs operatorskiej (`INSTALL` / `DESKTOP` / `MOBILE` i podobne) opisuj **tylko to, co wyszło**. Nie reklamuj braków („bez atrap Out 3–4”, „bez OAuth”, „bez auto-election”) ani funkcji jeszcze nie w produkcie (np. HW Out 3–4, JNI local host, OAuth przed wdrożeniem). Residual / „do wprowadzenia” → wyłącznie `TODO` / `ROADMAP` / `docs/standards/analysis/inspiracje/**` (oraz ADR przy trwałej decyzji PO) — [todo-hygiene.mdc](todo-hygiene.mdc); nie w tekście dla operatora.
 
 ## Wykluczenia (nigdy w CHANGELOG)
 
@@ -42,11 +42,11 @@ Poniższe zostają wyłącznie w `git log` / docs wewnętrznych:
 
 - Literówki / kosmetyka `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`.
 - Same literówki w URL GitHub (`github.com/<owner>/…`) w `CHANGELOG.md` / docs — bez wpisu produktowego.
-- ADR (`docs/adr/`) jako **samodzielny** wpis („dodano ADR…”, „zaakceptowano ADR…”).
+- ADR (`docs/architecture/adr/`) jako **samodzielny** wpis („dodano ADR…”, „zaakceptowano ADR…”).
 - Raporty, planowanie, audyty (`report-*.md`, `ROADMAP.md`, `TODO.md`).
 - Komentarze w kodzie, JSDoc/TSDoc.
 
-**Wyjątek (📚 Dokumentacja):** zmiana **oficjalnego podręcznika wbudowanego w aplikację** (np. Pomoc Timeline) **albo** publicznej docs instalacji / API dla operatora lub integratora (`docs/guides/INSTALL.md`, `docs/guides/DESKTOP.md`, `docs/api/`). Zwykłe `.md` repo (CONTRIBUTING, ADR, reporty, DS notes) — **wykluczone**.
+**Wyjątek (📚 Dokumentacja):** zmiana **oficjalnego podręcznika wbudowanego w aplikację** (np. Pomoc Timeline) **albo** publicznej docs instalacji / API dla operatora lub integratora (`docs/guides/INSTALL.md`, `docs/guides/DESKTOP.md`, `docs/architecture/api/`). Zwykłe `.md` repo (CONTRIBUTING, ADR, reporty, DS notes) — **wykluczone**.
 
 Korekta literówki w loginie GitHub / URL właściciela org w docs (nawet INSTALL/DESKTOP) — **bez** wpisu CHANGELOG (nawet pod 📚).
 

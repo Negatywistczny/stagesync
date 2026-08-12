@@ -79,12 +79,15 @@ describe("MIDI program change OUT on load", () => {
       body: JSON.stringify({ projectId: created.id }),
     });
 
-    await vi.waitFor(() => {
-      expect(backend.sent).toContainEqual({
-        type: "program",
-        channel: 0,
-        program: 19,
-      });
-    }, { timeout: 2000 });
+    await vi.waitFor(
+      () => {
+        expect(backend.sent).toContainEqual({
+          type: "program",
+          channel: 0,
+          program: 19,
+        });
+      },
+      { timeout: 2000 },
+    );
   });
 });

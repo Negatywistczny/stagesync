@@ -1,12 +1,12 @@
 ---
 description: UI parity — zachowanie v4, zakaz clone chrome, IA Admin/Client
-globs: apps/web/**/*.{tsx,css}, packages/ui/**/*.{tsx,css}, docs/ui/ui-shell-inventory.md, docs/adr/0003*.md, docs/adr/0011*.md
+globs: apps/web/**/*.{tsx,css}, packages/ui/**/*.{tsx,css}, docs/architecture/ui/ui-shell-inventory.md, docs/architecture/adr/0003*.md, docs/architecture/adr/0011*.md
 alwaysApply: false
 ---
 
 # StageSync v5 — Parity UI (dla agentów)
 
-Źródło prawdy: [ADR 0011](../../docs/adr/0011-ui-parity-behavior.md).
+Źródło prawdy: [ADR 0011](../../docs/architecture/adr/0011-ui-parity-behavior.md).
 
 ## Twarde zakazy
 
@@ -19,7 +19,7 @@ alwaysApply: false
    zachowania v4 **albo** jawna prośba PO). Preferuj **zostaw jak jest** / **zapytaj**
    zamiast cichej „poprawy”.
 6. **Kompletność 5.0.0:** funkcja z v4 → must najpóźniej w `5.0.0` (chyba że jawnie
-   usunięta z produktu). **Zakaz stubów** / „poza 5.0” / atrap — [ADR 0011 §1a](../../docs/adr/0011-ui-parity-behavior.md).
+   usunięta z produktu). **Zakaz stubów** / „poza 5.0” / atrap — [ADR 0011 §1a](../../docs/architecture/adr/0011-ui-parity-behavior.md).
    5.1+ tylko dla rzeczy **nie** z v4 albo „nigdy” (ADR 0004 / 0010).
 
 ## Co wolno z legacy

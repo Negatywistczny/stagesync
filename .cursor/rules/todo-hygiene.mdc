@@ -23,14 +23,14 @@ Ten plik = **jak prowadzić `docs/TODO.md`** i jak nie kłamać w docs.
 
 ## Residual / nieshipnięte (SSOT lokalizacji)
 
-Elementy **jeszcze do wprowadzenia** żyją **tylko** w `docs/TODO.md`, `docs/ROADMAP.md`, opcjonalnie `docs/analysis/inspiracje/**`, oraz w ADR gdy to trwała decyzja PO (np. „wprowadzić”). **Nie** w CHANGELOG / release notes ani w publicznej docs operatorskiej (`INSTALL` / `DESKTOP` / `MOBILE` itd.) — ani jako marketing absencji („bez X”). Hard Stop: [changelog.mdc](changelog.mdc).
+Elementy **jeszcze do wprowadzenia** żyją **tylko** w `docs/TODO.md`, `docs/ROADMAP.md`, opcjonalnie `docs/standards/analysis/inspiracje/**`, oraz w ADR gdy to trwała decyzja PO (np. „wprowadzić”). **Nie** w CHANGELOG / release notes ani w publicznej docs operatorskiej (`INSTALL` / `DESKTOP` / `MOBILE` itd.) — ani jako marketing absencji („bez X”). Hard Stop: [changelog.mdc](changelog.mdc).
 
 ## No fake claims
 
 - **Nie** oznaczaj Done / nie przenoś do CHANGELOG bez realnego kodu + testów + parity runtime (gdy dotyczy UI/transportu).
 - Przed „domknięte w docs” — **zweryfikuj dysk** (grep / read / test), nie tylko narrację w TODO/ROADMAP.
 - Bramki operatorskie (np. G1–G10 na HW) — **bez claim green** bez dowodu z hardware.
-- Stub / atrapa ≠ done ([ADR 0011 §1a](../../docs/adr/0011-ui-parity-behavior.md)).
+- Stub / atrapa ≠ done ([ADR 0011 §1a](../../docs/architecture/adr/0011-ui-parity-behavior.md)).
 
 ## Trunk-based
 
@@ -42,4 +42,4 @@ Elementy **jeszcze do wprowadzenia** żyją **tylko** w `docs/TODO.md`, `docs/RO
 
 - Do tagu **`5.0.0`**: zachowanie **v4 must** (chyba że ADR / PO jawnie usunęło z produktu).
 - Nowości v5 **nie** przesłaniają luk parytetu v4 — najpierw domykaj dług operatorski, potem 5.1+.
-- Szczegóły: [ADR 0011](../../docs/adr/0011-ui-parity-behavior.md), [ui-parity.mdc](ui-parity.mdc).
+- Szczegóły: [ADR 0011](../../docs/architecture/adr/0011-ui-parity-behavior.md), [ui-parity.mdc](ui-parity.mdc).

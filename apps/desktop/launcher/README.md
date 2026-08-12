@@ -25,10 +25,10 @@ Launcher to lekki i intuicyjny interfejs startowy (HTML/CSS/JS) ładowany bezpo�
 
 ## 🎨 Standardy
 
-Launcher działa **bez React** — czysty HTML/CSS/JS. Style korzystają z vendorowanych tokenów Design Systemu ([ADR 0014](../../../docs/adr/0014-desktop-launcher.md)). Klasy przycisków `ss-btn*` pochodzą z skopiowanego [`button.css`](./vendor/button.css).
+Launcher działa **bez React** — czysty HTML/CSS/JS. Style korzystają z vendorowanych tokenów Design Systemu ([ADR 0014](../../../docs/architecture/adr/0014-desktop-launcher.md)). Klasy przycisków `ss-btn*` pochodzą z skopiowanego [`button.css`](./vendor/button.css).
 
 ## 🔗 Powiązane
 
 - Kontener Tauri: [`apps/desktop/README.md`](../README.md)
-- Wzorzec Launcher UX: [ADR 0014](../../../docs/adr/0014-desktop-launcher.md)
-- Design System: [`docs/ui/README.md`](../../../docs/ui/README.md)
+- Wzorzec Launcher UX: [ADR 0014](../../../docs/architecture/adr/0014-desktop-launcher.md)
+- Design System: [`docs/architecture/ui/README.md`](../../../docs/architecture/ui/README.md)

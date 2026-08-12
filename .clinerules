@@ -4,10 +4,10 @@
 Specyficzne wrappery per-narzędzie:
 - **Cursor** → `.cursor/rules/constitution.mdc` (warstwa-wrapper z linkiem tutaj + SSOT pierwszeństwo)
 - **Trae / uniwersalni agenci** → `.agents/AGENTS.md` (wyspecjalizowane reguły per-zadanie: Smart Tempo DSP Benchmark)
-- **Mapa architektury + indeks ADR** → `docs/ARCHITECTURE.md`
-- **Standardy zewnętrzne** → `docs/STANDARDS.md`
+- **Mapa architektury + indeks ADR** → `docs/architecture/ARCHITECTURE.md`
+- **Standardy zewnętrzne i testowanie** → `docs/standards/STANDARDS.md` & `docs/standards/TESTING.md`
 
-Przed każdą zmianą należy sprawdzić indeks decyzji w `docs/adr/` oraz aktualne raporty w `docs/analysis/reports/`.
+Przed każdą zmianą należy sprawdzić indeks decyzji w `docs/architecture/adr/` oraz aktualne raporty w `docs/standards/analysis/reports/`.
 
 ## 🚫 Twarde Zakazy
 
@@ -48,13 +48,13 @@ Przed każdą zmianą należy sprawdzić indeks decyzji w `docs/adr/` oraz aktua
 - **Changelog (Keep a Changelog):** Wpisy tylko dla zmian widocznych dla użytkownika. Agreguj commity. Format: H3 (Dodano/Zmieniono/Naprawiono) + H4 z emoji (np. `#### ⏱️ Timeline & DAW`).
 - **TODO Hygiene:** Plik `docs/TODO.md` zawiera tylko aktywne zadania. Zakaz trzymania `[x]`.
 - **Analiza Projektowa:**
-  - Raporty: `docs/analysis/reports/report-<temat>.md` (commitowane).
-  - Notatki: `docs/analysis/working/working-<temat>.md` (ignorowane przez git).
+  - Raporty: `docs/standards/analysis/reports/report-<temat>.md` (commitowane).
+  - Notatki: `docs/standards/analysis/working/working-<temat>.md` (ignorowane przez git).
 - **Versioning:** SemVer zarządzany w root `package.json`. Tagowanie `vMAJOR.MINOR.PATCH`.
 
 ## 🛠️ Procedura Sprawdzania Przed Zmianą
 
-1. **Sprawdź ADR:** Przejrzyj `docs/adr/` pod kątem decyzji związanych z zadaniem.
+1. **Sprawdź ADR:** Przejrzyj `docs/architecture/adr/` pod kątem decyzji związanych z zadaniem.
 2. **Sprawdź TODO:** Zweryfikuj priorytety w `docs/TODO.md`.
-3. **Sprawdź Raporty:** Zapoznaj się z ostatnimi audytami w `docs/analysis/reports/`.
+3. **Sprawdź Raporty:** Zapoznaj się z ostatnimi audytami w `docs/standards/analysis/reports/`.
 4. **Zasada Parity:** Do wersji 5.0.0 zachowanie v4 jest priorytetem (chyba że ADR stanowi inaczej).

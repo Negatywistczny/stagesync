@@ -135,7 +135,7 @@ function sendMissingBundle(res: Response, filename: string): void {
     .send(
       `StageSync: brak ${filename} na hoście.\n` +
         "Zbuduj apps/web (emit-ui-meta + aggregate-role-ui) i ustaw STAGESYNC_STATIC_DIR na dist.\n" +
-        "Patrz docs/guides/MOBILE.md / docs/api/README.md.",
+        "Patrz docs/guides/MOBILE.md / docs/architecture/api/README.md.",
     );
 }
 

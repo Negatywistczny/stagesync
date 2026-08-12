@@ -17,11 +17,11 @@ Natywny interfejs startowy zaimplementowany w Kotlin (`android/`):
 
 - **Wyrywanie hostów (Discovery):** live QR (CameraX + ML Kit) + mDNS (`_stagesync._tcp`) + ręczny URL + lista ostatnich połączeń (recent).
 - **Punkt wejścia:** Po weryfikacji `/api/health` przekierowuje do `{origin}/client`.
-- **Zasady:** brak lokalnego serwera / sidecara, brak edycji Timeline / Mixer, brak sekretów w APK. Patrz [ADR 0014](../../docs/adr/0014-desktop-launcher.md) i [ADR 0016](../../docs/adr/0016-android-performer-console.md).
+- **Zasady:** brak lokalnego serwera / sidecara, brak edycji Timeline / Mixer, brak sekretów w APK. Patrz [ADR 0014](../../docs/architecture/adr/0014-desktop-launcher.md) i [ADR 0016](../../docs/architecture/adr/0016-android-performer-console.md).
 
 ## 🔧 Stack technologiczny
 
-- Kotlin + Android WebView (bez Capacitor/Cordova) — [ADR 0016](../../docs/adr/0016-android-performer-console.md)
+- Kotlin + Android WebView (bez Capacitor/Cordova) — [ADR 0016](../../docs/architecture/adr/0016-android-performer-console.md)
 - Dual wake-lock: PWA Wake Lock API + natywne `FLAG_KEEP_SCREEN_ON`
 
 ## ⚙️ Budowanie i testowanie

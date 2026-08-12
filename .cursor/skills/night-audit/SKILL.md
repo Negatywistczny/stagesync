@@ -14,7 +14,7 @@ Procedura sesji parity / tech-debt. Zakazy produktowe zostają w `.cursor/rules/
 ## Preflight
 
 1. `git status` — **nie** ruszaj niespokrewnionego WIP użytkownika.
-2. Odczytaj [docs/TODO.md](../../../docs/TODO.md) i ostatni handoff w `docs/analysis/reports/hygiene/report-*-hygiene-*.md` (jeśli jest).
+2. Odczytaj [docs/TODO.md](../../../docs/TODO.md) i ostatni handoff w `docs/standards/analysis/reports/hygiene/report-*-hygiene-*.md` (jeśli jest).
 3. Jeśli brak deadline / okna — **zapytaj** (np. do 10:00 Europe/Warsaw) zanim zaczniesz edycje.
 
 ## Off-limits (hard)
@@ -48,8 +48,8 @@ Wyzwalacze: limit użycia, deadline, użytkownik „stop”, utrata kontekstu.
 
 ### Handoff path
 
-- Kanoniczny: `docs/analysis/reports/hygiene/report-{nightshift|evening}-hygiene-YYYY-MM-DD.md`
-- Robocze notatki: tylko `docs/analysis/working/` (gitignore) — nie linkuj z zewnątrz
+- Kanoniczny: `docs/standards/analysis/reports/hygiene/report-{nightshift|evening}-hygiene-YYYY-MM-DD.md`
+- Robocze notatki: tylko `docs/standards/analysis/working/` (gitignore) — nie linkuj z zewnątrz
 
 Nazewnictwo: [docs-analysis-naming.mdc](../../rules/docs-analysis-naming.mdc).
 

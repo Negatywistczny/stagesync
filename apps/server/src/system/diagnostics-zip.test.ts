@@ -16,7 +16,10 @@ describe("diagnostics-zip", () => {
   it("builds and parses uncompressed STORE zip archive", () => {
     const entries: ZipEntry[] = [
       { name: "test.txt", data: Buffer.from("Hello StageSync!", "utf8") },
-      { name: "data/config.json", data: Buffer.from('{"key":"value"}', "utf8") },
+      {
+        name: "data/config.json",
+        data: Buffer.from('{"key":"value"}', "utf8"),
+      },
     ];
 
     const zipBuffer = buildStoreZip(entries);
@@ -31,11 +34,7 @@ describe("diagnostics-zip", () => {
   });
 
   it("throws error for corrupt/short ZIP buffer", () => {
-    expect(() => parseZipArchive(Buffer.from("short"))).toThrow(
-      /za krótkie/i,
-    );
-    expect(() => parseZipArchive(Buffer.alloc(30))).toThrow(
-      /brak EOCD/i,
-    );
+    expect(() => parseZipArchive(Buffer.from("short"))).toThrow(/za krótkie/i);
+    expect(() => parseZipArchive(Buffer.alloc(30))).toThrow(/brak EOCD/i);
   });
 });

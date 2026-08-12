@@ -7,8 +7,8 @@ alwaysApply: true
 
 ## 🗜️ Kanoniczna treść konstytucji (SSOT poza Cursor)
 → **[.clinerules](../../.clinerules)** — pełna, skonsolidowana wersja reguł dla **wszystkich narzędzi** (Cline, Cursor, Trae, ludzie). Jest to źródło prawdy.
-→ **[docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md)** — mapa architektury i indeks ADR.
-→ **[docs/STANDARDS.md](../../docs/STANDARDS.md)** — standardy zewnętrzne.
+→ **[docs/architecture/ARCHITECTURE.md](../../docs/architecture/ARCHITECTURE.md)** — mapa architektury i indeks ADR.
+→ **[docs/standards/STANDARDS.md](../../docs/standards/STANDARDS.md)** — standardy zewnętrzne.
 → **[.agents/AGENTS.md](../../.agents/AGENTS.md)** — specjalistyczne reguły per-zadanie (obecnie: Smart Tempo DSP Benchmark Gate).
 
 ## Specyficzne dla Cursor (tylko tutaj)
@@ -38,7 +38,7 @@ alwaysApply: true
 **Proces & Dokumentacja:**
 - 📜 Changelog = tylko zmiany widoczne dla użytkownika (Keep a Changelog)
 - 🧹 TODO Hygiena: `docs/TODO.md` tylko aktywne zadania
-- ✅ Przed zmianą: ADR → TODO → ostatnie raporty (`docs/analysis/reports/`)
+- ✅ Przed zmianą: ADR → TODO → ostatnie raporty (`docs/standards/analysis/reports/`)
 - 🔢 Versioning: SemVer w root `package.json`, tag `vMAJOR.MINOR.PATCH`
 - 📁 **Root:** nowe pliki/foldery w katalogu głównym — tylko po prośbie użytkownika (szczegóły: [root-layout.mdc](root-layout.mdc))
 

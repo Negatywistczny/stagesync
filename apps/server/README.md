@@ -12,7 +12,7 @@ Aplikacja `apps/server` odpowiada za logikę backendową, persystencję danych p
 ## 🚀 Główne funkcjonalności
 
 1. **Autorytet Czasu:** Rozsyła precyzyjne komunikaty synchronizacyjne w formacie ticks + PPQ (zdefiniowane w `@stagesync/shared`), eliminując rozbieżności timingowe między urządzeniami.
-2. **REST API:** Zapewnia punkty końcowe dla pobierania konfiguracji, zarządzania setlistami oraz importowania i eksportowania biblioteki utworów. Szczegóły specyfikacji API opisano w **[docs/api/README.md](../../docs/api/README.md)**.
+2. **REST API:** Zapewnia punkty końcowe dla pobierania konfiguracji, zarządzania setlistami oraz importowania i eksportowania biblioteki utworów. Szczegóły specyfikacji API opisano w **[docs/architecture/api/README.md](../../docs/architecture/api/README.md)**.
 3. **Transport LAN:** Działa całkowicie lokalnie w sieci LAN i wykorzystuje protokół mDNS do rozgłaszania obecności serwera w sieci (ułatwiając autowykrywanie na tabletach i komputerach).
 
 ## ⚙️ Budowanie i testowanie

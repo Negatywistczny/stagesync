@@ -132,7 +132,7 @@ function clearProjectContentInTickRange(
 
 /**
  * Shift every tick-positioned field (including Countdown) — axis renorm after
- * v4-style length change so CD end lands on tick 0 ([ADR 0002](../../docs/adr/0002-timebase-ssot.md)).
+ * v4-style length change so CD end lands on tick 0 ([ADR 0002](../../docs/architecture/adr/0002-timebase-ssot.md)).
  */
 function shiftAllProjectTicks(project: Project, deltaTicks: number): Project {
   if (!Number.isFinite(deltaTicks) || deltaTicks === 0) return project;
