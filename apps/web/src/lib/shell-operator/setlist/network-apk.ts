@@ -130,8 +130,7 @@ export function apkSameOriginProbeUrl(url: string): string {
 export async function probeApkAvailable(url: string): Promise<boolean> {
   const probeUrl = apkSameOriginProbeUrl(url);
   try {
-    // codeql[js/insecure-download] Same-origin HEAD probe — APK is served by the local LAN server, not downloaded from a remote HTTP host
-    const res = await fetch(probeUrl, { method: "HEAD", cache: "no-store" });
+    const res = await fetch(probeUrl, { method: "HEAD", cache: "no-store" }); // codeql[js/insecure-download] Same-origin HEAD probe — APK served by local LAN server, not a remote HTTP host
     if (res.ok) return true;
     // Some proxies strip HEAD — fall back to ranged GET size check is overkill;
     // treat non-OK as unavailable (honest empty-state).

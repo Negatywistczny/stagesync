@@ -109,14 +109,12 @@ export async function ensureBundledYtDlp(
   if (!url) return null;
   const dest = ytdlpBundledPath(dataDir);
   await mkdir(join(dataDir, "tools"), { recursive: true });
-  // codeql[js/http-to-file-access] Fixed GitHub release URL for yt-dlp bootstrap
-  const res = await fetch(url);
+  const res = await fetch(url); // codeql[js/http-to-file-access] Fixed GitHub Releases URL for yt-dlp bootstrap — not user-controlled
   if (!res.ok) {
     throw new Error(`Nie udało się pobrać yt-dlp (${res.status}).`);
   }
   const bytes = Buffer.from(await res.arrayBuffer());
-  // codeql[js/http-to-file-access] Fixed GitHub release URL for yt-dlp bootstrap
-  await writeFile(dest, bytes);
+  await writeFile(dest, bytes); // codeql[js/http-to-file-access] Fixed GitHub Releases URL for yt-dlp bootstrap — not user-controlled
   if (process.platform !== "win32") {
     await chmod(dest, 0o755);
   }

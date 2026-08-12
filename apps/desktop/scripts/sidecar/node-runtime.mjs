@@ -12,14 +12,12 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 export async function downloadFile(url, destPath) {
-  // codeql[js/http-to-file-access] Fixed Node.js dist URL for desktop sidecar bootstrap
-  const res = await fetch(url);
+  const res = await fetch(url); // codeql[js/http-to-file-access] Fixed nodejs.org/GitHub release URL for sidecar bootstrap — not user-controlled
   if (!res.ok) {
     throw new Error(`Failed to download ${url}: ${res.status} ${res.statusText}`);
   }
   const buf = Buffer.from(await res.arrayBuffer());
-  // codeql[js/http-to-file-access] Fixed Node.js dist URL for desktop sidecar bootstrap
-  await writeFile(destPath, buf);
+  await writeFile(destPath, buf); // codeql[js/http-to-file-access] Fixed nodejs.org/GitHub release URL for sidecar bootstrap — not user-controlled
 }
 
 export function resolveExtractedNodeBin(extractedRoot) {
