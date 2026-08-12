@@ -68,6 +68,12 @@
     "check-types": {
       "dependsOn": ["^build", "^check-types"]
     },
+    "check-types:tests": {
+      "dependsOn": ["^build", "^check-types:tests"]
+    },
+    "check-types:all": {
+      "dependsOn": ["^build", "^check-types:all"]
+    },
     "test": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"]

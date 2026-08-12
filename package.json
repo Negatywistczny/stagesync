@@ -11,6 +11,8 @@
     "test:coverage": "turbo run test:coverage",
     "format": "prettier --write \"**/*.{ts,tsx,md}\" \"!docs/REPO_MAP.md\"",
     "check-types": "tsc -p scripts/tsconfig.json && turbo run check-types",
+    "check-types:tests": "tsc -p scripts/tsconfig.json && turbo run check-types:tests",
+    "check-types:all": "tsc -p scripts/tsconfig.json && turbo run check-types:all",
     "sync-version": "node scripts/release/sync-version.mjs",
     "cut-release": "node scripts/release/cut-release.mjs",
     "sync:launcher-ui": "node apps/desktop/scripts/sync-launcher-ui.mjs",
