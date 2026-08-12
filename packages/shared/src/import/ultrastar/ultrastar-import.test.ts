@@ -12,6 +12,7 @@ import {
   importUltrastarText,
   parseUltrastarNoteLine,
   suggestGridBpmFromPipeAndFirstVocal,
+  tempoMapWithImportedBpm,
   ticksPerUltrastarBeat,
   ultrastarBeatToMs,
   ultrastarBeatToTicks,
@@ -551,5 +552,74 @@ E
     expect(file.melody.clips[1]!.startTicks).toBe(
       elapsedToTicks(yoMs, file.metronomeBpm, METER, DEFAULT_PPQ),
     );
+  });
+
+  describe("tempoMapWithImportedBpm", () => {
+    it("updates existing tempo event at tick 0 in place", () => {
+      const map = [
+        { id: "t0", startTicks: 0, bpm: 120 },
+        { id: "t1", startTicks: 3840, bpm: 140 },
+      ];
+      const result = tempoMapWithImportedBpm(map, 130);
+      expect(result).toEqual([
+        { id: "t0", startTicks: 0, bpm: 130 },
+        { id: "t1", startTicks: 3840, bpm: 140 },
+      ]);
+    });
+
+    it("creates a new tick 0 tempo event if map is empty", () => {
+      const result = tempoMapWithImportedBpm([], 125);
+      expect(result).toEqual([{ id: "us-tempo-0", startTicks: 0, bpm: 125 }]);
+    });
+
+    it("prepends tick 0 tempo event if map has events starting after 0", () => {
+      const map = [{ id: "t1", startTicks: 3840, bpm: 140 }];
+      const result = tempoMapWithImportedBpm(map, 115);
+      expect(result).toEqual([
+        { id: "us-tempo-0", startTicks: 0, bpm: 115 },
+        { id: "t1", startTicks: 3840, bpm: 140 },
+      ]);
+    });
+  });
+
+  describe("applyUltrastarImportToProject", () => {
+    it("merges title, artist, tekst, melody, and BPM updates into project", () => {
+      const seed = createProjectSeed("test-p");
+      const imported = importUltrastarText(
+        `#TITLE:My Song\n#ARTIST:My Band\n#BPM:480\n#GAP:1000\n: 0 4 0 La\nE`,
+      );
+      expect(imported.ok).toBe(true);
+      if (!imported.ok) return;
+
+      const updated = applyUltrastarImportToProject(seed, imported, {
+        applyBpm: true,
+      });
+      expect(updated.name).toBe("My Song");
+      expect(updated.artist).toBe("My Band");
+      expect(updated.defaultBpm).toBe(120);
+      expect(updated.tempoMap[0]!.bpm).toBe(120);
+      expect(updated.tekst.clips.length).toBeGreaterThan(0);
+      expect(updated.melody.clips.length).toBeGreaterThan(0);
+    });
+
+    it("preserves project name and artist if imported fields are empty or whitespace", () => {
+      const seed = {
+        ...createProjectSeed("test-p"),
+        name: "Original Title",
+        artist: "Original Artist",
+      };
+      const imported = importUltrastarText(
+        `#BPM:480\n#GAP:1000\n: 0 4 0 La\nE`,
+      );
+      expect(imported.ok).toBe(true);
+      if (!imported.ok) return;
+
+      const updated = applyUltrastarImportToProject(seed, imported, {
+        applyBpm: false,
+      });
+      expect(updated.name).toBe("Original Title");
+      expect(updated.artist).toBe("Original Artist");
+      expect(updated.defaultBpm).toBe(seed.defaultBpm);
+    });
   });
 });
