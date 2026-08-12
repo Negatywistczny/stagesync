@@ -50,15 +50,14 @@ export function usdbDetailUrl(id: number): string {
 }
 
 function stripTags(html: string): string {
-  // codeql[js/bad-tag-filter] Search-cell text scrape only — not an XSS sink
-  // codeql[js/incomplete-multi-character-sanitization] Nested script/style loop for USDB HTML
   let cleaned = String(html || "");
   let prev: string;
   do {
     prev = cleaned;
+    // \s* before closing > handles variants like </script > (space before >)
     cleaned = cleaned
-      .replace(/<script[\s\S]*?<\/script>/gi, "")
-      .replace(/<style[\s\S]*?<\/style>/gi, "");
+      .replace(/<script[\s\S]*?<\/script\s*>/gi, "")
+      .replace(/<style[\s\S]*?<\/style\s*>/gi, "");
   } while (cleaned !== prev);
 
   return decodeHtmlEntities(
