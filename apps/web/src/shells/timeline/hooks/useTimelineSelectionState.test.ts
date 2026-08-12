@@ -40,7 +40,6 @@ describe("useTimelineSelectionState", () => {
         assetId: "asset-1",
         startTicks: 0,
         lengthTicks: 3840,
-        startOffsetMs: 0,
       },
     ],
     assets: [],
@@ -54,6 +53,7 @@ describe("useTimelineSelectionState", () => {
     const setLoop = vi.fn();
     const setSoloBusIds = vi.fn();
     const setSoloAudioTrackIds = vi.fn();
+    const setTrackVisibility = vi.fn();
 
     const { result } = renderHook(() =>
       useTimelineSelectionState({
@@ -63,9 +63,10 @@ describe("useTimelineSelectionState", () => {
         setLocatorTicks,
         setLoop,
         snapMode: "bar",
-        displayTicks: 0,
+        displayTicks: 3840,
         setSoloBusIds,
         setSoloAudioTrackIds,
+        setTrackVisibility,
       }),
     );
 
@@ -90,6 +91,7 @@ describe("useTimelineSelectionState", () => {
     const setLoop = vi.fn();
     const setSoloBusIds = vi.fn();
     const setSoloAudioTrackIds = vi.fn();
+    const setTrackVisibility = vi.fn();
 
     const { result } = renderHook(() =>
       useTimelineSelectionState({
@@ -102,6 +104,7 @@ describe("useTimelineSelectionState", () => {
         displayTicks: 3840,
         setSoloBusIds,
         setSoloAudioTrackIds,
+        setTrackVisibility,
       }),
     );
 
@@ -120,7 +123,7 @@ describe("useTimelineSelectionState", () => {
     expect(result.current.clipboardRef.current).not.toBeNull();
 
     act(() => {
-      const pasted = result.current.pasteClipClipboard();
+      const pasted = result.current.pasteClipClipboard(3840);
       expect(pasted).toBe(true);
     });
 

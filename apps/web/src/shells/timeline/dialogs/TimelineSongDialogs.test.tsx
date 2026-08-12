@@ -2,10 +2,15 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { TimelineSongDialogs, type TimelineSongDialogsProps } from "./TimelineSongDialogs.js";
+import {
+  TimelineSongDialogs,
+  type TimelineSongDialogsProps,
+} from "./TimelineSongDialogs.js";
 import type { Project } from "@stagesync/shared";
 
-function createDefaultProps(overrides?: Partial<TimelineSongDialogsProps>): TimelineSongDialogsProps {
+function createDefaultProps(
+  overrides?: Partial<TimelineSongDialogsProps>,
+): TimelineSongDialogsProps {
   const dummyProject: Project = {
     id: "p1",
     name: "Test Song",

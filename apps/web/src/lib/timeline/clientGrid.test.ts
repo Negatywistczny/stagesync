@@ -589,7 +589,7 @@ describe("clientGrid", () => {
 
   it("mergeAkordyWithCountdownDigits synth inside CD and strips legacy", () => {
     const p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z") as any;
-    const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
+    const cd = p.forma.clips.find((c: any) => c.kind === "countdown")!;
     const inside = mergeAkordyWithCountdownDigits(p, cd.startTicks);
     expect(
       inside.some((c) => /^\d+$/.test(c.symbol) || c.id.includes("cd")),

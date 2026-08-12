@@ -60,7 +60,11 @@ describe("audioPlayback cache helpers (split)", () => {
   });
 
   it("shouldSoftStopPastSongEnd respects loopEnabled", () => {
-    const project = createProjectSeed({ name: "soft-stop" });
+    const project = createProjectSeed(
+      "p1",
+      "soft-stop",
+      "2026-07-20T12:00:00.000Z",
+    );
     const end = projectEndTicks(project);
     expect(
       shouldSoftStopPastSongEnd({

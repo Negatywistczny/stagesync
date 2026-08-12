@@ -20,7 +20,9 @@ describe("TimelineAudioFileInput", () => {
       />,
     );
 
-    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     expect(input).toBeTruthy();
 
     const file = new File(["dummy"], "song.wav", { type: "audio/wav" });

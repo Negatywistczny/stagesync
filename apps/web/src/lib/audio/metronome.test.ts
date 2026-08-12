@@ -194,11 +194,12 @@ describe("metronome", () => {
         { id: "t1", startTicks: 1920, bpm: 60 },
       ],
       meterMap: [] as {
+        id: string;
         startTicks: number;
         numerator: number;
         denominator: number;
       }[],
-      ppq: 960,
+      ppq: 960 as const,
     };
     // Caught up at beat 2 (display mid-beat @ 60 BPM region) → look-ahead beats up to 2500 ms.
     const next = advanceMetronomeClicks(
@@ -208,7 +209,7 @@ describe("metronome", () => {
         displayTicks: 2400,
         bpm: 120,
         timeSignature: TS_4_4,
-        ppq: 960,
+        ppq: 960 as const,
         tempoMaps,
       },
       2,
@@ -422,7 +423,7 @@ describe("metronome", () => {
       displayTicks: 0,
       bpm: 120,
       timeSignature: TS_4_4,
-      ppq: 960,
+      ppq: 960 as const,
     };
 
     // Frame 1: playhead at beat 0, look-ahead queues beat 0 + 5 look-ahead beats (6 total)
@@ -436,7 +437,7 @@ describe("metronome", () => {
 
     // Manual seek forward to beat 10 (displayTicks = 9600)
     // 16ms later (ctx.currentTime slightly advanced)
-    ctx.currentTime = 1.016;
+    (ctx as any).currentTime = 1.016;
     input.displayTicks = 9600;
 
     const beat2 = advanceMetronomeClicks(input, beat1, ctx);
@@ -456,7 +457,7 @@ describe("metronome", () => {
       displayTicks: 9600, // Beat 10
       bpm: 120,
       timeSignature: TS_4_4,
-      ppq: 960,
+      ppq: 960 as const,
     };
 
     const beat1 = advanceMetronomeClicks(input, 9, ctx);
@@ -464,7 +465,7 @@ describe("metronome", () => {
     const initialOscCount = oscillators.length;
 
     // Manual seek backward by 2 beats (to beat 8: displayTicks = 7680)
-    ctx.currentTime = 1.016;
+    (ctx as any).currentTime = 1.016;
     input.displayTicks = 7680;
 
     const beat2 = advanceMetronomeClicks(input, beat1, ctx);

@@ -48,7 +48,7 @@ describe("transpose / instrument pitch", () => {
   });
 
   it("Bb instrument pitch lifts C→D under C major key", () => {
-    const key = { tonic: "C", mode: "major" as const };
+    const key = { tonic: "C" as const, mode: "major" as const };
     expect(applyInstrumentPitchToChord("C", "bb", 0, key)).toBe("D");
     expect(applyInstrumentPitchToChord("F", "bb", 0, key)).toBe("G");
     expect(applyInstrumentPitchToChord("C", "concert", 0, key)).toBe("C");

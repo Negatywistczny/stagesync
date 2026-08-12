@@ -10,7 +10,7 @@ describe("MenuList", () => {
       kind: "action",
       id: "action-1",
       label: "Otwórz",
-      accelerator: "Ctrl+O",
+      shortcut: "Ctrl+O",
     },
     {
       kind: "separator",

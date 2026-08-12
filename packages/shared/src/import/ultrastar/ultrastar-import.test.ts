@@ -584,7 +584,11 @@ E
 
   describe("applyUltrastarImportToProject", () => {
     it("merges title, artist, tekst, melody, and BPM updates into project", () => {
-      const seed = createProjectSeed("test-p");
+      const seed = createProjectSeed(
+        "test-p",
+        "Song",
+        "2026-07-20T12:00:00.000Z",
+      );
       const imported = importUltrastarText(
         `#TITLE:My Song\n#ARTIST:My Band\n#BPM:480\n#GAP:1000\n: 0 4 0 La\nE`,
       );
@@ -604,7 +608,7 @@ E
 
     it("preserves project name and artist if imported fields are empty or whitespace", () => {
       const seed = {
-        ...createProjectSeed("test-p"),
+        ...createProjectSeed("test-p", "Song", "2026-07-20T12:00:00.000Z"),
         name: "Original Title",
         artist: "Original Artist",
       };

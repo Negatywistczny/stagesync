@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PPQ, ticksPerBar } from "../time-tempo/time.js";
-import { createProjectV5Seed } from "../project/project-seed.js";
+import { createProjectSeed } from "../project/project-seed.js";
 import {
   defaultSubsections4Bar,
   ensureFormaSubsections,
@@ -44,7 +44,7 @@ describe("forma-subsections", () => {
   });
 
   it("ensureFormaSubsections fills empty sections; skips Countdown + existing", () => {
-    const seed = createProjectV5Seed(
+    const seed = createProjectSeed(
       "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
       "Test",
       "2026-07-21T00:00:00.000Z",
@@ -85,7 +85,7 @@ describe("forma-subsections", () => {
   });
 
   it("ensureFormaSubsections is a no-op when nothing to fill", () => {
-    const seed = createProjectV5Seed(
+    const seed = createProjectSeed(
       "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
       "Short",
       "2026-07-21T00:00:00.000Z",
@@ -109,7 +109,7 @@ describe("forma-subsections", () => {
   });
 
   it("hasUsableFormaSubsections and subsectionMaxChunkTicks", () => {
-    const seed = createProjectV5Seed(
+    const seed = createProjectSeed(
       "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
       "M",
       "2026-07-21T00:00:00.000Z",

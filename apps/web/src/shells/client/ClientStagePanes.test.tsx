@@ -14,12 +14,36 @@ describe("ClientStagePanes", () => {
     ppq: 960,
     defaultBpm: 120,
     defaultMeter: { numerator: 4, denominator: 4 },
-    forma: { clips: [{ id: "f-1", name: "Zwrotka", startTicks: 0, lengthTicks: 3840 }] },
+    forma: {
+      clips: [
+        {
+          id: "f-1",
+          name: "Zwrotka",
+          kind: "section",
+          startTicks: 0,
+          lengthTicks: 3840,
+        },
+      ],
+    },
     tempoMap: [],
     meterMap: [],
     keyMap: [],
-    akordy: { clips: [{ id: "a-1", symbol: "C", startTicks: 0, lengthTicks: 3840 }] },
-    tekst: { clips: [{ id: "t-1", text: "Tekst", startTicks: 0, lengthTicks: 3840 }] },
+    akordy: {
+      clips: [{ id: "a-1", symbol: "C", startTicks: 0, lengthTicks: 3840 }],
+    },
+    tekst: {
+      clips: [
+        {
+          id: "t-1",
+          text: "Tekst",
+          startTicks: 0,
+          lengthTicks: 3840,
+          blocks: [
+            { id: "b1", text: "Tekst", startTicks: 0, lengthTicks: 3840 },
+          ],
+        },
+      ],
+    },
     melody: { clips: [] },
     cue: { clips: [] },
     scoreBarMap: { anchors: [] },
@@ -29,13 +53,17 @@ describe("ClientStagePanes", () => {
   };
 
   const dummyPrefs: ClientDisplayPrefs = {
-    clockFormat: "bbt",
-    karaokeRomanized: false,
-    colorProfile: "default",
-    chordsRomanized: false,
+    hybridPolishB: false,
+    literalQuality: false,
+    gridAnimations: false,
+    formNotesEdit: false,
+    sectionNamesPolish: false,
+    instrumentPitch: "concert",
+    instrumentPitchManual: 0,
   };
 
   it("renders selected roles (e.g. drums / grid) and pane sections", () => {
+    Element.prototype.scrollTo = vi.fn();
     render(
       <ClientStagePanes
         picked={["drums", "grid"]}
@@ -52,7 +80,7 @@ describe("ClientStagePanes", () => {
         setVocalTapIndex={vi.fn()}
         setActiveProject={vi.fn()}
         setDrumsNoteError={vi.fn()}
-        roleSettings={{}}
+        roleSettings={null}
         setRoleSettings={vi.fn()}
         toggleRoleSettings={vi.fn()}
         scoreZoom={1}

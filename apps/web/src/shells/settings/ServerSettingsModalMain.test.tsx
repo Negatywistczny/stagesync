@@ -24,12 +24,7 @@ describe("ServerSettingsModal", () => {
     const onClose = vi.fn();
 
     await act(async () => {
-      render(
-        <ServerSettingsModal
-          onClose={onClose}
-          initialTab="general"
-        />,
-      );
+      render(<ServerSettingsModal onClose={onClose} initialTab="general" />);
     });
 
     expect(screen.getByRole("dialog")).toBeTruthy();

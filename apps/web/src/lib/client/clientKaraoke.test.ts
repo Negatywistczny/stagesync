@@ -500,6 +500,8 @@ describe("clientKaraoke", () => {
       expect(
         mapKaraokeBlocks(
           {
+            startTicks: 0,
+            lengthTicks: 3840,
             text: "",
             blocks: undefined as unknown as TekstClip["blocks"],
           },
@@ -508,13 +510,19 @@ describe("clientKaraoke", () => {
         ),
       ).toBeUndefined();
       expect(
-        mapKaraokeBlocks({ text: "", blocks: [] }, 0, true),
+        mapKaraokeBlocks(
+          { startTicks: 0, lengthTicks: 3840, text: "", blocks: [] },
+          0,
+          true,
+        ),
       ).toBeUndefined();
     });
 
     it("mapKaraokeBlocks restores word spaces from line text when blocks are trimmed", () => {
       const tokens = mapKaraokeBlocks(
         {
+          startTicks: 0,
+          lengthTicks: 3840,
           text: "I hear the drums",
           blocks: [
             { id: "b1", text: "I", startTicks: 0, lengthTicks: BEAT },

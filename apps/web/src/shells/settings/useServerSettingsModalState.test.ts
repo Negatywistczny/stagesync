@@ -31,9 +31,11 @@ vi.mock("@lib/audio/audioOutputPrefs.js", () => ({
   applyAudioOutputSink: vi.fn().mockResolvedValue(true),
   setStoredAudioOutputDeviceId: vi.fn(),
   getStoredAudioOutputDeviceId: vi.fn().mockReturnValue("default"),
-  listAudioOutputDevices: vi.fn().mockResolvedValue([
-    { deviceId: "default", label: "Głośniki systemowe", kind: "audiooutput" },
-  ]),
+  listAudioOutputDevices: vi
+    .fn()
+    .mockResolvedValue([
+      { deviceId: "default", label: "Głośniki systemowe", kind: "audiooutput" },
+    ]),
 }));
 
 vi.mock("@lib/audio/metronome.js", () => ({
@@ -70,12 +72,11 @@ describe("useServerSettingsModalState", () => {
     act(() => {
       result.current.setDraft((d) => ({
         ...d,
-        appearance: { theme: "light", contrast: "high" },
+        appearance: { profile: "midnight" },
       }));
     });
 
-    expect(result.current.draft.appearance.theme).toBe("light");
-    expect(result.current.draft.appearance.contrast).toBe("high");
+    expect(result.current.draft.appearance.profile).toBe("midnight");
     expect(result.current.dirty).toBe(true);
   });
 

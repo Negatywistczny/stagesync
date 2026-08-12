@@ -7,10 +7,12 @@ import type { StageCueBannerItem } from "@stagesync/shared";
 describe("CueToast", () => {
   it("renders upcoming cue text and label", () => {
     const item: StageCueBannerItem = {
+      id: "cue-1",
       slot: "upcoming",
-      priority: "info",
+      priority: "normal",
       text: "Solo gitary za 2 takty",
-      remainingTicks: 1920,
+      barsUntil: 2,
+      source: "song",
     };
 
     render(

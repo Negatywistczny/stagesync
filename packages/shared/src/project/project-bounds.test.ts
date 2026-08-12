@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { emptyProjectEndTicks, projectEndTicks } from "./project-bounds.js";
-import { createProjectV5Seed } from "./project-seed.js";
+import { createProjectSeed } from "./project-seed.js";
 import { DEFAULT_PPQ } from "../time-tempo/time.js";
 
 describe("projectEndTicks", () => {
   it("returns max forma clip end for seeded project", () => {
-    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    const p = createProjectSeed("a", "Song", "2026-07-20T00:00:00.000Z");
     // Intro: 0 + 7680
     expect(projectEndTicks(p)).toBe(7680);
   });
 
   it("falls back to 2 bars when no positive forma end", () => {
-    const p = createProjectV5Seed("a", "Empty", "2026-07-20T00:00:00.000Z");
+    const p = createProjectSeed("a", "Empty", "2026-07-20T00:00:00.000Z");
     p.forma.clips = [];
     expect(projectEndTicks(p)).toBe(
       emptyProjectEndTicks({
@@ -23,7 +23,7 @@ describe("projectEndTicks", () => {
   });
 
   it("includes audio clips that extend past forma", () => {
-    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    const p = createProjectSeed("a", "Song", "2026-07-20T00:00:00.000Z");
     const trackId = p.audioTracks[0]?.id ?? "track-1";
     if (!p.audioTracks.length) {
       p.audioTracks = [{ id: trackId, name: "Audio" }];
@@ -41,22 +41,25 @@ describe("projectEndTicks", () => {
   });
 
   it("includes tekst clips that extend past forma", () => {
-    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    const p = createProjectSeed("a", "Song", "2026-07-20T00:00:00.000Z");
     p.tekst = {
       clips: [
         {
-          id: "tx-1",
-          text: "outro",
-          startTicks: 10_000,
-          lengthTicks: 5_000,
+          id: "t-1",
+          text: "hello",
+          startTicks: 0,
+          lengthTicks: 10_000,
+          blocks: [
+            { id: "b1", text: "hello", startTicks: 0, lengthTicks: 10_000 },
+          ],
         },
       ],
     };
-    expect(projectEndTicks(p)).toBe(15_000);
+    expect(projectEndTicks(p)).toBe(10_000);
   });
 
   it("includes cue and akordy clips that extend past forma", () => {
-    const p = createProjectV5Seed("a", "Song", "2026-07-20T00:00:00.000Z");
+    const p = createProjectSeed("a", "Song", "2026-07-20T00:00:00.000Z");
     p.forma.clips = [];
     p.cue = {
       clips: [
@@ -74,7 +77,7 @@ describe("projectEndTicks", () => {
       clips: [
         {
           id: "ak-1",
-          text: "C",
+          symbol: "C",
           startTicks: 2_000,
           lengthTicks: 3_000,
         },
@@ -84,7 +87,7 @@ describe("projectEndTicks", () => {
   });
 
   it("ignores countdown-only (non-positive) ends", () => {
-    const p = createProjectV5Seed("a", "CD", "2026-07-20T00:00:00.000Z");
+    const p = createProjectSeed("a", "CD", "2026-07-20T00:00:00.000Z");
     p.forma.clips = [
       {
         id: "cd",

@@ -15,12 +15,14 @@ describe("createLanePointerDownHandler", () => {
     tempoMap: [],
     meterMap: [],
     keyMap: [],
-    akordy: { clips: [{ id: "a1", symbol: "C", startTicks: 0, lengthTicks: 3840 }] },
+    akordy: {
+      clips: [{ id: "a1", symbol: "C", startTicks: 0, lengthTicks: 3840 }],
+    },
     tekst: { clips: [] },
     melody: { clips: [] },
     cue: { clips: [] },
     scoreBarMap: { anchors: [] },
-    audioTracks: [{ id: "aud1", name: "Audio 1", volumeDb: 0, pan: 0, mute: false, solo: false }],
+    audioTracks: [{ id: "aud1", name: "Audio 1", muted: false }],
     audioClips: [],
     assets: [],
   };

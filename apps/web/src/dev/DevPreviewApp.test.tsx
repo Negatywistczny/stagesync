@@ -19,7 +19,7 @@ beforeEach(() => {
         addListener: vi.fn(),
         removeListener: vi.fn(),
         dispatchEvent: vi.fn(),
-      }) as MediaQueryList,
+      }) as unknown as MediaQueryList,
   );
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 404 }));
 });

@@ -60,7 +60,10 @@ describe("useTimelineWandTool", () => {
     const { result } = renderHook(() =>
       useTimelineWandTool({
         draftRef,
-        clipSelection: { items: [{ lane: "forma", id: "sec-1" }] as any },
+        clipSelection: {
+          items: [{ lane: "forma", id: "sec-1" }],
+          primaryId: "sec-1",
+        },
         commitDraft,
         flashCanvasNotice,
         setWandMenu,
@@ -88,7 +91,10 @@ describe("useTimelineWandTool", () => {
     const { result } = renderHook(() =>
       useTimelineWandTool({
         draftRef,
-        clipSelection: { items: [{ lane: "cue", id: "cue-1" }] as any },
+        clipSelection: {
+          items: [{ lane: "cue", id: "cue-1" }],
+          primaryId: "cue-1",
+        },
         commitDraft,
         flashCanvasNotice,
         setWandMenu,

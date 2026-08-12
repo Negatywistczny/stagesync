@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { TimelineTrackRowDock, type TimelineTrackRowDockProps } from "./TimelineTrackRowDock.js";
+import {
+  TimelineTrackRowDock,
+  type TimelineTrackRowDockProps,
+} from "./TimelineTrackRowDock.js";
 import type { Project } from "@stagesync/shared";
 import styles from "../TimelineShell.module.css";
 
@@ -13,7 +16,9 @@ beforeAll(() => {
   } as unknown as typeof ResizeObserver;
 });
 
-function createDefaultProps(overrides?: Partial<TimelineTrackRowDockProps>): TimelineTrackRowDockProps {
+function createDefaultProps(
+  overrides?: Partial<TimelineTrackRowDockProps>,
+): TimelineTrackRowDockProps {
   const dummyProject: Project = {
     id: "p1",
     name: "Dock Test Song",
@@ -35,12 +40,8 @@ function createDefaultProps(overrides?: Partial<TimelineTrackRowDockProps>): Tim
       {
         id: "at1",
         name: "Drums Track",
-        order: 0,
-        volume: 1,
-        pan: 0,
         gainDb: 0,
         muted: false,
-        solo: false,
       },
     ],
     audioClips: [],
@@ -99,7 +100,9 @@ describe("TimelineTrackRowDock", () => {
 
     render(<TimelineTrackRowDock {...props} />);
 
-    const container = document.querySelector(`.${styles.dockCell}`) as HTMLElement;
+    const container = document.querySelector(
+      `.${styles.dockCell}`,
+    ) as HTMLElement;
     fireEvent.click(container);
     expect(onAudioTrackHeaderClick).toHaveBeenCalled();
 

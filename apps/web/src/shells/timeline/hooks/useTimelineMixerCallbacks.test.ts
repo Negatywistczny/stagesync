@@ -102,12 +102,12 @@ describe("useTimelineMixerCallbacks", () => {
     expect(commitDraft).toHaveBeenCalled();
 
     act(() => {
-      strip.onPanChange(0.25);
+      strip.onPanChange?.(0.25);
     });
     expect(commitDraft).toHaveBeenCalled();
 
     act(() => {
-      strip.onColorChange("#ff0000");
+      strip.onColorChange?.("#E74C3C");
     });
     expect(commitDraft).toHaveBeenCalled();
   });

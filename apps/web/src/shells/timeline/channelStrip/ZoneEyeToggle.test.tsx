@@ -8,11 +8,7 @@ describe("ZoneEyeToggle", () => {
     const onToggle = vi.fn();
 
     const { rerender } = render(
-      <ZoneEyeToggle
-        zoneLabel="Szyny"
-        visible={true}
-        onToggle={onToggle}
-      />,
+      <ZoneEyeToggle zoneLabel="Szyny" visible={true} onToggle={onToggle} />,
     );
 
     const btn = screen.getByRole("button", { name: "Ukryj strefę Szyny" });
@@ -20,13 +16,11 @@ describe("ZoneEyeToggle", () => {
     expect(onToggle).toHaveBeenCalled();
 
     rerender(
-      <ZoneEyeToggle
-        zoneLabel="Szyny"
-        visible={false}
-        onToggle={onToggle}
-      />,
+      <ZoneEyeToggle zoneLabel="Szyny" visible={false} onToggle={onToggle} />,
     );
 
-    expect(screen.getByRole("button", { name: "Pokaż strefę Szyny" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Pokaż strefę Szyny" }),
+    ).toBeTruthy();
   });
 });

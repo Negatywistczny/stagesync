@@ -137,7 +137,7 @@ describe("desktopFileMenu", () => {
     vi.mocked(libraryApi.importLibraryPack).mockResolvedValue({
       created: [{ id: "p1" }],
       format: "v5",
-    } as Awaited<ReturnType<typeof libraryApi.importLibraryPack>>);
+    } as unknown as Awaited<ReturnType<typeof libraryApi.importLibraryPack>>);
 
     const file = new File(['{"version":1,"projects":[]}'], "lib.json");
     const out = await importLibraryFile(file);
@@ -162,7 +162,7 @@ describe("desktopFileMenu", () => {
       click,
       href: "",
       download: "",
-    } as HTMLAnchorElement);
+    } as unknown as HTMLAnchorElement);
 
     await downloadLibraryExport();
     expect(createUrl).toHaveBeenCalledWith(blob);

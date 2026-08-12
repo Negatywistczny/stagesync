@@ -37,9 +37,18 @@ function createTestProject(): { project: Project; audioClip: AudioClip } {
     tekst: { clips: [] },
     melody: { clips: [] },
     scoreBarMap: { anchors: [] },
-    audioTracks: [{ id: "at1", name: "Backing Track", order: 0, volume: 1, pan: 0, muted: false, solo: false }],
+    audioTracks: [{ id: "at1", name: "Backing Track", muted: false }],
     audioClips: [audioClip],
-    assets: [{ id: "asset1", name: "backing.mp3", originalName: "backing-track.mp3", mimeType: "audio/mpeg", size: 1024, path: "/assets/backing.mp3" }],
+    assets: [
+      {
+        id: "asset1",
+        storageName: "backing.mp3",
+        originalName: "backing-track.mp3",
+        kind: "audio",
+        mimeType: "audio/mpeg",
+        sizeBytes: 1024,
+      },
+    ],
   };
 
   return { project, audioClip };

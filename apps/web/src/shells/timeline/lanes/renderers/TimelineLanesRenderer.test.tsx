@@ -13,16 +13,28 @@ describe("renderLaneContent", () => {
     ppq: 960,
     defaultBpm: 120,
     defaultMeter: { numerator: 4, denominator: 4 },
-    forma: { clips: [{ id: "f1", name: "Intro", startTicks: 0, lengthTicks: 3840 }] },
+    forma: {
+      clips: [
+        {
+          id: "f1",
+          name: "Intro",
+          kind: "section",
+          startTicks: 0,
+          lengthTicks: 3840,
+        },
+      ],
+    },
     tempoMap: [{ id: "tmp1", bpm: 120, startTicks: 0 }],
     meterMap: [],
     keyMap: [],
-    akordy: { clips: [{ id: "a1", symbol: "C", startTicks: 0, lengthTicks: 3840 }] },
+    akordy: {
+      clips: [{ id: "a1", symbol: "C", startTicks: 0, lengthTicks: 3840 }],
+    },
     tekst: { clips: [] },
     melody: { clips: [] },
     cue: { clips: [] },
     scoreBarMap: { anchors: [] },
-    audioTracks: [{ id: "aud1", name: "Audio Track", volumeDb: 0, pan: 0, mute: false, solo: false }],
+    audioTracks: [{ id: "aud1", name: "Audio Track", muted: false }],
     audioClips: [],
     assets: [],
   };
@@ -32,7 +44,10 @@ describe("renderLaneContent", () => {
     failedAudioAssetIds: [],
     gestureSession: null,
     gesturePreview: null,
-    clipSelection: { items: [{ id: "a1", lane: "akordy" as const }], primaryId: "a1" },
+    clipSelection: {
+      items: [{ id: "a1", lane: "akordy" as const }],
+      primaryId: "a1",
+    },
     primaryId: "a1",
     selectedSubsectionIdx: null,
     selectedAnchorId: null,
@@ -92,12 +107,13 @@ describe("renderLaneContent", () => {
           draftProject: dummyProject,
           tempoSegments: [
             {
-              id: "tmp1",
+              eventId: "tmp1",
+              eventStartTicks: 0,
               label: "120 BPM",
               startTicks: 0,
-              lengthTicks: 3840,
+              endTicks: 3840,
               raw: 120,
-            },
+            } as any,
           ],
         })}
       </div>,

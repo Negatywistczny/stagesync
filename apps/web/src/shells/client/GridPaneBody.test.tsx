@@ -7,20 +7,45 @@ import type { GridCycleStep } from "@lib/timeline/clientGrid.js";
 describe("GridPaneBody", () => {
   it("renders hero chord and current cycle steps", () => {
     const cycle: GridCycleStep[] = [
-      { symbol: "Am", bars: 2, active: true, isSubBar: false },
-      { symbol: "F", bars: 2, active: false, isSubBar: false },
+      {
+        symbol: "Am",
+        bars: 2,
+        active: true,
+        activeBarInStep: 1,
+        isSubBar: false,
+      },
+      {
+        symbol: "F",
+        bars: 2,
+        active: false,
+        activeBarInStep: 1,
+        isSubBar: false,
+      },
     ];
 
     const nextCycle: GridCycleStep[] = [
-      { symbol: "C", bars: 2, active: false, isSubBar: false },
-      { symbol: "G", bars: 2, active: false, isSubBar: false },
+      {
+        symbol: "C",
+        bars: 2,
+        active: false,
+        activeBarInStep: 1,
+        isSubBar: false,
+      },
+      {
+        symbol: "G",
+        bars: 2,
+        active: false,
+        activeBarInStep: 1,
+        isSubBar: false,
+      },
     ];
 
     const fmtParts = (symbol: string) => ({
-      root: symbol[0],
+      root: symbol[0] ?? "",
       quality: symbol.slice(1),
       bass: "",
       plain: symbol,
+      sup: "",
     });
 
     render(

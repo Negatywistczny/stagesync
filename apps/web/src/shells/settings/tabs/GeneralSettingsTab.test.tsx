@@ -11,7 +11,7 @@ describe("GeneralSettingsTab", () => {
 
     render(
       <GeneralSettingsTab
-        appearance={{ theme: "dark", contrast: "normal" }}
+        appearance={{ profile: "midnight" }}
         onAppearanceChange={onAppearanceChange}
         clockFormat="bbt"
         onClockFormatChange={onClockFormatChange}

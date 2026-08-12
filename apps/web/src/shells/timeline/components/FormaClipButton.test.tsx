@@ -11,7 +11,7 @@ describe("FormaClipButton", () => {
     startTicks: 0,
     lengthTicks: 3840,
     kind: "section",
-    subsections: [{ name: "Lead In", lengthTicks: 1920 }],
+    subsections: [1920],
   };
 
   it("renders clip label and responds to pointer events", () => {

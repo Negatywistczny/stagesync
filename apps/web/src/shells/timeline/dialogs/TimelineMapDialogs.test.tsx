@@ -1,10 +1,15 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { TimelineMapDialogs, type TimelineMapDialogsProps } from "./TimelineMapDialogs.js";
+import {
+  TimelineMapDialogs,
+  type TimelineMapDialogsProps,
+} from "./TimelineMapDialogs.js";
 import type { Project } from "@stagesync/shared";
 
-function createDefaultProps(overrides?: Partial<TimelineMapDialogsProps>): TimelineMapDialogsProps {
+function createDefaultProps(
+  overrides?: Partial<TimelineMapDialogsProps>,
+): TimelineMapDialogsProps {
   const dummyProject: Project = {
     id: "p1",
     name: "Map Test Song",

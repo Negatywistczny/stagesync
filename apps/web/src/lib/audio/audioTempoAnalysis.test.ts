@@ -38,7 +38,7 @@ function makeClickTrack(
     sampleRate,
     numberOfChannels: 1,
     getChannelData: () => data,
-  } as AudioBuffer;
+  } as unknown as AudioBuffer;
 }
 
 function makeLongSilentBuffer(
@@ -53,7 +53,7 @@ function makeLongSilentBuffer(
     sampleRate,
     numberOfChannels: 1,
     getChannelData: () => data,
-  } as AudioBuffer;
+  } as unknown as AudioBuffer;
 }
 
 describe("analyzeAudioTempo", () => {
@@ -72,7 +72,7 @@ describe("analyzeAudioTempo", () => {
       sampleRate: 44_100,
       numberOfChannels: 1,
       getChannelData: () => new Float32Array(0),
-    } as AudioBuffer;
+    } as unknown as AudioBuffer;
     const result = analyzeAudioTempo(buffer);
     expect(result.onsetsMs).toEqual([]);
     expect(result.beatMs).toEqual([]);

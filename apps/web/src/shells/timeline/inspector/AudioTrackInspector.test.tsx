@@ -8,12 +8,8 @@ function createTestProject(): { project: Project; audioTrack: AudioTrack } {
   const audioTrack: AudioTrack = {
     id: "at1",
     name: "Lead Vocal",
-    order: 0,
-    volume: 1,
-    pan: 0,
     gainDb: -6,
     muted: false,
-    solo: false,
   };
 
   const project: Project = {

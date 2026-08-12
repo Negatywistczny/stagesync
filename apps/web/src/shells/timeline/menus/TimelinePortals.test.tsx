@@ -2,9 +2,14 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { TimelinePortals, type TimelinePortalsProps } from "./TimelinePortals.js";
+import {
+  TimelinePortals,
+  type TimelinePortalsProps,
+} from "./TimelinePortals.js";
 
-function createDefaultProps(overrides?: Partial<TimelinePortalsProps>): TimelinePortalsProps {
+function createDefaultProps(
+  overrides?: Partial<TimelinePortalsProps>,
+): TimelinePortalsProps {
   return {
     eyeOpen: false,
     eyeMenuPos: null,

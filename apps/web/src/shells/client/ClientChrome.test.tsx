@@ -7,10 +7,13 @@ import type { ClientDisplayPrefs } from "@lib/client/clientDisplayPrefs.js";
 
 describe("ClientChrome", () => {
   const dummyPrefs: ClientDisplayPrefs = {
-    clockFormat: "bbt",
-    karaokeRomanized: false,
-    colorProfile: "default",
-    chordsRomanized: false,
+    hybridPolishB: false,
+    literalQuality: false,
+    gridAnimations: false,
+    formNotesEdit: false,
+    sectionNamesPolish: false,
+    instrumentPitch: "concert",
+    instrumentPitchManual: 0,
   };
 
   it("renders song title, connection indicator, and triggers settings toggle", () => {

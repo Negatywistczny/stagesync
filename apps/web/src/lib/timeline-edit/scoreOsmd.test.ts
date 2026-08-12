@@ -239,7 +239,7 @@ describe("scoreOsmd", () => {
           adjustToBackgroundColor: vi.fn(),
           cursorElement: cursorEl,
           iterator,
-        },
+        } as any,
       ];
 
       goToScoreBar(osmd as never, 3);
@@ -275,7 +275,7 @@ describe("scoreOsmd", () => {
           adjustToBackgroundColor: vi.fn(),
           cursorElement: document.createElement("div"),
           iterator,
-        },
+        } as any,
       ];
 
       goToScoreBar(osmd as never, 3);
@@ -298,7 +298,7 @@ describe("scoreOsmd", () => {
           adjustToBackgroundColor: vi.fn(),
           cursorElement: document.createElement("div"),
           iterator: { CurrentMeasureIndex: 1, EndReached: false },
-        },
+        } as any,
       ];
 
       goToScoreBar(osmd as never, 2);
@@ -335,7 +335,7 @@ describe("scoreOsmd", () => {
           adjustToBackgroundColor: vi.fn(),
           cursorElement: document.createElement("div"),
           Iterator: iterator,
-        },
+        } as any,
       ];
 
       goToScoreBar(osmd as never, 4);
@@ -365,7 +365,7 @@ describe("scoreOsmd", () => {
           adjustToBackgroundColor: vi.fn(),
           cursorElement: document.createElement("div"),
           iterator,
-        },
+        } as any,
       ];
 
       expect(() => goToScoreBar(osmd as never, 3)).not.toThrow();

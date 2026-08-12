@@ -47,10 +47,12 @@ describe("useTimelineAudioUpload", () => {
     assets: [
       {
         id: "asset-1",
-        name: "vocals.wav",
-        durationSeconds: 10,
-        sampleRate: 44100,
-        channelCount: 2,
+        storageName: "vocals.wav",
+        originalName: "vocals.wav",
+        kind: "audio",
+        mimeType: "audio/wav",
+        sizeBytes: 1024,
+        durationMs: 10000,
       },
     ],
   };
@@ -74,7 +76,6 @@ describe("useTimelineAudioUpload", () => {
           assetId: "asset-1",
           startTicks: 0,
           lengthTicks: 3840,
-          startOffsetMs: 0,
         },
       ],
     };

@@ -268,6 +268,7 @@ describe("setlist helpers", () => {
           projectId: "11111111-1111-4111-8111-111111111111",
           name: "A",
           durationMs: 1000,
+          estimated: false,
         },
         {
           type: "break",

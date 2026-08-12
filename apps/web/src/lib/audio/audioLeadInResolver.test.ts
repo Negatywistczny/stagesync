@@ -182,9 +182,9 @@ describe("audioLeadInResolver", () => {
       sampleRate,
       getChannelData: () => channelData,
     };
-    expect(resolveAudioLeadInDelayMs(buffer, { formatHint: "unknown" })).toBe(
-      20,
-    );
+    expect(
+      resolveAudioLeadInDelayMs(buffer as any, { formatHint: "unknown" }),
+    ).toBe(20);
   });
 
   it("scans PCM silence threshold correctly for MP3 fallback", () => {

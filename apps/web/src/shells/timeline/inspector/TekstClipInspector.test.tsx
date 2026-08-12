@@ -59,7 +59,9 @@ describe("TekstClipInspector", () => {
     );
 
     const textarea = screen.getByLabelText("Tekst linii");
-    expect((textarea as HTMLTextAreaElement).value).toBe("Ale wkoło jest wesoło");
+    expect((textarea as HTMLTextAreaElement).value).toBe(
+      "Ale wkoło jest wesoło",
+    );
 
     fireEvent.change(textarea, { target: { value: "Nowy wers piosenki" } });
     expect(commitDraft).toHaveBeenCalled();

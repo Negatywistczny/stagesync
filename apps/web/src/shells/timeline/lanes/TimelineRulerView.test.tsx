@@ -34,7 +34,9 @@ describe("TimelineRulerView", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "Widoczność ścieżek" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Widoczność ścieżek" }),
+    ).toBeTruthy();
     expect(screen.getByText("1")).toBeTruthy();
     expect(screen.getByText("2")).toBeTruthy();
 

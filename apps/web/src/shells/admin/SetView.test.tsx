@@ -1,7 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { putSetlist } from "@lib/shell-operator/setlistApi.js";
 

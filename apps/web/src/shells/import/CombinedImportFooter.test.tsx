@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { CombinedImportFooter, type CombinedImportFooterProps } from "./CombinedImportFooter.js";
+import {
+  CombinedImportFooter,
+  type CombinedImportFooterProps,
+} from "./CombinedImportFooter.js";
 
-function createDefaultProps(overrides?: Partial<CombinedImportFooterProps>): CombinedImportFooterProps {
+function createDefaultProps(
+  overrides?: Partial<CombinedImportFooterProps>,
+): CombinedImportFooterProps {
   return {
     step: "us",
     locked: false,

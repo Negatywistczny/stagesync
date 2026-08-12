@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProjectV5Seed } from "./project-seed.js";
+import { createProjectSeed } from "./project-seed.js";
 import {
   formatKeySignature,
   resolveFormaClipAt,
@@ -9,7 +9,7 @@ import {
 } from "./project-resolve.js";
 
 describe("project resolvers", () => {
-  const project = createProjectV5Seed("id", "Demo", "2026-07-20T00:00:00.000Z");
+  const project = createProjectSeed("id", "Demo", "2026-07-20T00:00:00.000Z");
 
   const withMaps = {
     ...project,

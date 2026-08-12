@@ -10,8 +10,14 @@ vi.mock("@stagesync/shared", async (importOriginal) => {
   return {
     ...actual,
     applyUgImportToProject: (p: Project) => ({ ...p, name: "Imported UG" }),
-    applyUltrastarImportToProject: (p: Project) => ({ ...p, name: "Imported US" }),
-    applyUsUgBridgeToProject: (p: Project) => ({ ...p, name: "Imported US+UG" }),
+    applyUltrastarImportToProject: (p: Project) => ({
+      ...p,
+      name: "Imported US",
+    }),
+    applyUsUgBridgeToProject: (p: Project) => ({
+      ...p,
+      name: "Imported US+UG",
+    }),
     placeContentFromForma: (p: Project) => ({ ok: true, project: p }),
   };
 });
@@ -72,10 +78,12 @@ describe("useTimelineSongImport", () => {
     );
 
     const ugResult: UgImportOk = {
+      ok: true,
+      tekst: { clips: [] },
+      akordy: { clips: [] },
+      formaMusic: { clips: [] },
       sections: [],
-      chords: [],
-      lyrics: [],
-      tempoBpm: 120,
+      barsPerLine: 1,
     };
 
     await act(async () => {

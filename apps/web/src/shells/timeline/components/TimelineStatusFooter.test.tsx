@@ -63,11 +63,11 @@ describe("TimelineStatusFooter", () => {
       />,
     );
 
-    expect(
-      screen.getByLabelText("Zoom poziomy").hasAttribute("disabled"),
-    ).toBe(true);
-    expect(
-      screen.getByLabelText("Zoom pionowy").hasAttribute("disabled"),
-    ).toBe(true);
+    expect(screen.getByLabelText("Zoom poziomy").hasAttribute("disabled")).toBe(
+      true,
+    );
+    expect(screen.getByLabelText("Zoom pionowy").hasAttribute("disabled")).toBe(
+      true,
+    );
   });
 });

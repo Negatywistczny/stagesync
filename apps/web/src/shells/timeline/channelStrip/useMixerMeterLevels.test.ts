@@ -25,7 +25,7 @@ describe("useMixerMeterLevels", () => {
 
   it("initializes master, click and tracks meter structures", () => {
     const { result } = renderHook(() =>
-      useMixerMeterLevels(["track-1"], {
+      useMixerMeterLevels(["track-1"], true, {
         playing: false,
         busIds: ["bus-1"],
         hwIds: ["hw-1"],
@@ -39,7 +39,7 @@ describe("useMixerMeterLevels", () => {
 
   it("allows clearing individual peak holds", () => {
     const { result } = renderHook(() =>
-      useMixerMeterLevels(["track-1"], {
+      useMixerMeterLevels(["track-1"], true, {
         playing: false,
         busIds: ["bus-1"],
         hwIds: ["hw-1"],

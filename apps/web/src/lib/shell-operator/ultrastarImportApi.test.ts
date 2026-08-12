@@ -58,7 +58,9 @@ describe("ultrastarImportApi", () => {
 
     const data = await searchUltrastarSongs("Hi", "A");
     expect(data.results).toHaveLength(1);
-    expect(fetchMock.mock.calls[0]![0]).toBe("/api/import/ultrastar/search");
+    expect((fetchMock.mock.calls as any[])[0][0]).toBe(
+      "/api/import/ultrastar/search",
+    );
   });
 
   it("surfaces API error message", async () => {

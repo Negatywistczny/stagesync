@@ -78,13 +78,9 @@ describe("useTimelineDockCallbacks", () => {
         setSelectedHwOutputId,
         setSoloAudioTrackIds,
         setSoloBusIds,
-        setContextMenus,
-        trackRename: null,
+        openContextMenu: vi.fn(),
         commitTrackRename: vi.fn(),
-        clearTrackHold,
-        clearBusHold,
-        clearHwHold,
-        clearMasterHold,
+        cancelTrackRename: vi.fn(),
       }),
     );
 
@@ -97,7 +93,7 @@ describe("useTimelineDockCallbacks", () => {
     expect(commitDraft).toHaveBeenCalled();
 
     act(() => {
-      strip.onPanChange(-0.5);
+      strip.onPanChange?.(-0.5);
     });
     expect(commitDraft).toHaveBeenCalled();
   });
@@ -110,13 +106,9 @@ describe("useTimelineDockCallbacks", () => {
     const setSelectedHwOutputId = vi.fn();
     const setSoloAudioTrackIds = vi.fn();
     const setSoloBusIds = vi.fn();
-    const setContextMenus = vi.fn();
+    const openContextMenu = vi.fn();
     const setTrackRename = vi.fn();
     const setLoadError = vi.fn();
-    const clearTrackHold = vi.fn();
-    const clearBusHold = vi.fn();
-    const clearHwHold = vi.fn();
-    const clearMasterHold = vi.fn();
 
     const { result } = renderHook(() =>
       useTimelineDockCallbacks({
@@ -136,13 +128,9 @@ describe("useTimelineDockCallbacks", () => {
         setSelectedHwOutputId,
         setSoloAudioTrackIds,
         setSoloBusIds,
-        setContextMenus,
-        trackRename: null,
+        openContextMenu,
         commitTrackRename: vi.fn(),
-        clearTrackHold,
-        clearBusHold,
-        clearHwHold,
-        clearMasterHold,
+        cancelTrackRename: vi.fn(),
       }),
     );
 

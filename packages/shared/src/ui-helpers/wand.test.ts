@@ -1,10 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PPQ, ticksPerBar } from "../time-tempo/time.js";
-import { createProjectV5Seed } from "../project/project-seed.js";
+import { createProjectSeed } from "../project/project-seed.js";
 import { placeContentFromForma, wandContentToForma } from "./wand.js";
 import type { Project } from "../project/schema.js";
 
 const BAR = ticksPerBar({ numerator: 4, denominator: 4 }, DEFAULT_PPQ); // 3840
+
+function makeTekstClip(
+  id: string,
+  startTicks: number,
+  lengthTicks: number,
+  text: string,
+  sourceSection?: string,
+) {
+  return {
+    id,
+    startTicks,
+    lengthTicks,
+    text,
+    ...(sourceSection ? { sourceSection } : {}),
+    blocks: [{ id: `${id}_b`, text, startTicks, lengthTicks }],
+  };
+}
 
 function barSpansFromStarts(
   starts: number[],
@@ -20,7 +37,7 @@ function sectionProject(
   lines: string[],
   opts?: { subsections?: number[] },
 ): Project {
-  let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+  let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
   const intro = p.forma.clips.find((c) => c.name === "Intro")!;
   const subsections = opts?.subsections;
   p = {
@@ -42,6 +59,14 @@ function sectionProject(
         startTicks: intro.startTicks,
         lengthTicks: BAR,
         text,
+        blocks: [
+          {
+            id: `b${i + 1}`,
+            text,
+            startTicks: intro.startTicks,
+            lengthTicks: BAR,
+          },
+        ],
       })),
     },
   };
@@ -176,7 +201,7 @@ describe("placeContentFromForma", () => {
   });
 
   it("Forma identity unchanged across modes", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     const intro0 = p.forma.clips.find((c) => c.name === "Intro")!;
     p = {
       ...p,
@@ -187,8 +212,8 @@ describe("placeContentFromForma", () => {
       },
       tekst: {
         clips: [
-          { id: "t1", startTicks: 0, lengthTicks: BAR, text: "One" },
-          { id: "t2", startTicks: 0, lengthTicks: BAR, text: "Two" },
+          makeTekstClip("t1", 0, BAR, "One"),
+          makeTekstClip("t2", 0, BAR, "Two"),
         ],
       },
       akordy: {
@@ -246,19 +271,14 @@ describe("placeContentFromForma", () => {
   });
 
   it("leaves Countdown and digit clips alone", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     const cd = p.forma.clips.find((c) => c.kind === "countdown")!;
     p = {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "vl-cd-2",
-            startTicks: cd.startTicks,
-            lengthTicks: BAR,
-            text: "2",
-          },
-          { id: "t1", startTicks: 0, lengthTicks: BAR, text: "Hello" },
+          makeTekstClip("vl-cd-2", cd.startTicks, BAR, "2"),
+          makeTekstClip("t1", 0, BAR, "Hello"),
         ],
       },
     };
@@ -271,27 +291,15 @@ describe("placeContentFromForma", () => {
   });
 
   it("scopes placement to selected Forma section ids", () => {
-    let p = withVerse(
-      createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z"),
-    );
+    let p = withVerse(createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z"));
     const intro = p.forma.clips.find((c) => c.name === "Intro")!;
     const verse = p.forma.clips.find((c) => c.name === "Verse")!;
     p = {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "ti",
-            startTicks: intro.startTicks,
-            lengthTicks: BAR,
-            text: "Intro line",
-          },
-          {
-            id: "tv",
-            startTicks: verse.startTicks + BAR,
-            lengthTicks: BAR,
-            text: "Verse line",
-          },
+          makeTekstClip("ti", intro.startTicks, BAR, "Intro line"),
+          makeTekstClip("tv", verse.startTicks + BAR, BAR, "Verse line"),
         ],
       },
     };
@@ -311,9 +319,7 @@ describe("placeContentFromForma", () => {
   });
 
   it("membership prefers sourceSection over startTicks", () => {
-    let p = withVerse(
-      createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z"),
-    );
+    let p = withVerse(createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z"));
     const intro = p.forma.clips.find((c) => c.name === "Intro")!;
     const verse = p.forma.clips.find((c) => c.name === "Verse")!;
     // Lines sit in Intro abs range but declare Verse via sourceSection
@@ -321,20 +327,8 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "t1",
-            startTicks: intro.startTicks,
-            lengthTicks: BAR,
-            text: "a",
-            sourceSection: "Verse",
-          },
-          {
-            id: "t2",
-            startTicks: intro.startTicks + 10,
-            lengthTicks: BAR,
-            text: "b",
-            sourceSection: "Verse",
-          },
+          makeTekstClip("t1", intro.startTicks, BAR, "a", "Verse"),
+          makeTekstClip("t2", intro.startTicks + 10, BAR, "b", "Verse"),
         ],
       },
     };
@@ -349,7 +343,7 @@ describe("placeContentFromForma", () => {
   });
 
   it("places Akordy across Forma without mutating Forma", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     const intro0 = p.forma.clips.find((c) => c.name === "Intro")!;
     p = {
       ...p,
@@ -377,14 +371,22 @@ describe("placeContentFromForma", () => {
   });
 
   it("fails when Forma has no music sections", () => {
-    let p = createProjectV5Seed("p", "S", "2026-07-20T12:00:00.000Z");
+    let p = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     p = {
       ...p,
       forma: {
         clips: p.forma.clips.filter((c) => c.kind === "countdown"),
       },
       tekst: {
-        clips: [{ id: "t1", startTicks: 0, lengthTicks: BAR, text: "Hi" }],
+        clips: [
+          {
+            id: "t1",
+            startTicks: 0,
+            lengthTicks: BAR,
+            text: "Hi",
+            blocks: [{ id: "b1", text: "Hi", startTicks: 0, lengthTicks: BAR }],
+          },
+        ],
       },
       akordy: {
         clips: [{ id: "a1", startTicks: 0, lengthTicks: BAR, symbol: "C" }],
@@ -402,19 +404,9 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          { id: "empty", startTicks: 0, lengthTicks: BAR, text: "  " },
-          {
-            id: "digit-pre",
-            startTicks: -BAR,
-            lengthTicks: BAR,
-            text: "2",
-          },
-          {
-            id: "vl-cd-9",
-            startTicks: 0,
-            lengthTicks: BAR,
-            text: "sung-but-cd-id",
-          },
+          makeTekstClip("empty", 0, BAR, "  "),
+          makeTekstClip("digit-pre", -BAR, BAR, "2"),
+          makeTekstClip("vl-cd-9", 0, BAR, "sung-but-cd-id"),
         ],
       },
     };
@@ -559,12 +551,12 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "t-past",
-            startTicks: verse.startTicks + verse.lengthTicks + BAR,
-            lengthTicks: BAR,
-            text: "after",
-          },
+          makeTekstClip(
+            "t-past",
+            verse.startTicks + verse.lengthTicks + BAR,
+            BAR,
+            "after",
+          ),
         ],
       },
     };
@@ -582,12 +574,7 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "t-boundary",
-            startTicks: verse.startTicks - BAR / 2,
-            lengthTicks: BAR,
-            text: "edge",
-          },
+          makeTekstClip("t-boundary", verse.startTicks - BAR / 2, BAR, "edge"),
         ],
       },
     };
@@ -647,13 +634,13 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "line-v",
-            startTicks: intro.startTicks,
-            lengthTicks: BAR,
-            text: "verse lyric",
-            sourceSection: "Verse",
-          },
+          makeTekstClip(
+            "line-v",
+            intro.startTicks,
+            BAR,
+            "verse lyric",
+            "Verse",
+          ),
         ],
       },
       akordy: {
@@ -694,12 +681,7 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "line-v",
-            startTicks: verse.startTicks + BAR,
-            lengthTicks: BAR,
-            text: "verse lyric",
-          },
+          makeTekstClip("line-v", verse.startTicks + BAR, BAR, "verse lyric"),
         ],
       },
       akordy: {
@@ -730,20 +712,14 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "l1",
-            startTicks: intro.startTicks,
-            lengthTicks: 4 * BAR,
-            text: "first",
-            sourceSection: "Intro",
-          },
-          {
-            id: "l2",
-            startTicks: intro.startTicks + 4 * BAR,
-            lengthTicks: 4 * BAR,
-            text: "second",
-            sourceSection: "Intro",
-          },
+          makeTekstClip("l1", intro.startTicks, 4 * BAR, "first", "Intro"),
+          makeTekstClip(
+            "l2",
+            intro.startTicks + 4 * BAR,
+            4 * BAR,
+            "second",
+            "Intro",
+          ),
         ],
       },
       akordy: {
@@ -789,18 +765,8 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "l1",
-            startTicks: intro.startTicks,
-            lengthTicks: BAR,
-            text: "one",
-          },
-          {
-            id: "l2",
-            startTicks: intro.startTicks + 4 * BAR,
-            lengthTicks: BAR,
-            text: "two",
-          },
+          makeTekstClip("l1", intro.startTicks, BAR, "one"),
+          makeTekstClip("l2", intro.startTicks + 4 * BAR, BAR, "two"),
         ],
       },
       akordy: {
@@ -922,13 +888,7 @@ describe("placeContentFromForma", () => {
       ...p,
       tekst: {
         clips: [
-          {
-            id: "t1",
-            startTicks: intro.startTicks,
-            lengthTicks: BAR,
-            text: "hi",
-            sourceSection: "DoesNotExist",
-          },
+          makeTekstClip("t1", intro.startTicks, BAR, "hi", "DoesNotExist"),
         ],
       },
     };
@@ -955,14 +915,7 @@ describe("placeContentFromForma", () => {
     p = {
       ...p,
       tekst: {
-        clips: [
-          {
-            id: "t-early",
-            startTicks: -2 * BAR,
-            lengthTicks: BAR,
-            text: "pre-roll lyric",
-          },
-        ],
+        clips: [makeTekstClip("t-early", -2 * BAR, BAR, "pre-roll lyric")],
       },
     };
     const result = placeContentFromForma(p, "tekst");
@@ -1011,11 +964,7 @@ describe("placeContentFromForma", () => {
   });
 
   it("fail-soft ok:false matrix without throwing", () => {
-    const emptyForma = createProjectV5Seed(
-      "p",
-      "S",
-      "2026-07-20T12:00:00.000Z",
-    );
+    const emptyForma = createProjectSeed("p", "S", "2026-07-20T12:00:00.000Z");
     const noSections = {
       ...emptyForma,
       forma: { clips: [] },

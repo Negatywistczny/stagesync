@@ -16,8 +16,8 @@ describe("epoch-shims", () => {
 
   it("tempoNodesToContentEpoch and tempoNodesToFileEpoch clone tempo nodes", () => {
     const nodes: TempoNode[] = [
-      { beatIndex: 0, timeMs: 0, bpm: 120, confidence: 1 },
-      { beatIndex: 1, timeMs: 500, bpm: 120, confidence: 0.9 },
+      { wallMs: 0, targetTick: 0 },
+      { wallMs: 500, targetTick: 960 },
     ];
     expect(tempoNodesToContentEpoch(nodes, 50)).toEqual(nodes);
     expect(tempoNodesToFileEpoch(nodes, 50)).toEqual(nodes);

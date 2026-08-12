@@ -10,7 +10,7 @@ function createTestProject(): { project: Project; cueClip: CueClip } {
     label: "Wokal wejście",
     startTicks: 0,
     lengthTicks: 1920,
-    roles: ["vocal"],
+    roles: ["karaoke"],
     priority: "normal",
   };
 
@@ -36,12 +36,11 @@ function createTestProject(): { project: Project; cueClip: CueClip } {
     assets: [
       {
         id: "asset_beep",
-        name: "beep.wav",
+        storageName: "beep.wav",
         originalName: "beep.wav",
         kind: "audio",
         mimeType: "audio/wav",
-        size: 512,
-        path: "/assets/beep.wav",
+        sizeBytes: 512,
       },
     ],
   };
