@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1554
+* **Liczba wszystkich plików:** 1557
 * **Liczba katalogów:** 253
-* **Data aktualizacji:** 2026-08-12T15:49:20.530Z
+* **Data aktualizacji:** 2026-08-12T15:50:36.517Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1137 |
+| Kod | 1140 |
 | Docs | 147 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 703 |
+| `.ts` | 706 |
 | `.tsx` | 248 |
 | `.md` | 125 |
 | `.png` | 94 |
@@ -40,11 +40,11 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1150) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1153) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (108) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (174) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **server/** (177) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
   - **web/** (670) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
@@ -415,6 +415,7 @@ stagesync/
 │   │   │   │   ├── shadow-backup.test.ts
 │   │   │   │   └── shadow-backup.ts
 │   │   │   ├── system/
+│   │   │   │   ├── diagnostics-zip.test.ts
 │   │   │   │   ├── diagnostics-zip.ts
 │   │   │   │   ├── diagnostics.test.ts
 │   │   │   │   ├── env-settings.test.ts
@@ -425,7 +426,9 @@ stagesync/
 │   │   │   │   ├── log-buffer.ts
 │   │   │   │   ├── mdns-advertise.test.ts
 │   │   │   │   ├── mdns-advertise.ts
+│   │   │   │   ├── mdns-registry.test.ts
 │   │   │   │   ├── mdns-registry.ts
+│   │   │   │   ├── network-info.test.ts
 │   │   │   │   ├── network-info.ts
 │   │   │   │   ├── sentry.test.ts
 │   │   │   │   ├── sentry.ts
