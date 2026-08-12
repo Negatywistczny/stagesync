@@ -9,3 +9,25 @@ paths-ignore:
   - '**/coverage'
   - '**/node_modules'
   - '**/.turbo'
+
+# Reguły generujące wyłącznie false positives w tym repozytorium:
+#
+# js/insecure-download — HEAD probe na localhost/LAN (network-apk.ts). Plik APK
+#   jest serwowany przez lokalny serwer StageSync, nie pobierany ze zdalnego HTTP.
+#
+# js/http-to-file-access — bootstrap narzędzi (yt-dlp z GitHub Releases, Node.js
+#   z nodejs.org) przez stały, niesterowany przez użytkownika URL. Celowy wzorzec
+#   instalacji sidecar (node-runtime.mjs, ytdlp-resolve.ts).
+#
+# js/bad-tag-filter + js/incomplete-multi-character-sanitization — funkcja
+#   stripTags() w usdb-parser.ts. Wynik jest używany wyłącznie jako tekst
+#   (metadane piosenek), nigdy nie jest wstrzykiwany do DOM jako HTML — brak wektora XSS.
+query-filters:
+  - exclude:
+      id: js/insecure-download
+  - exclude:
+      id: js/http-to-file-access
+  - exclude:
+      id: js/bad-tag-filter
+  - exclude:
+      id: js/incomplete-multi-character-sanitization
