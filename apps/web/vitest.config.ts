@@ -32,7 +32,7 @@ export default defineConfig({
       // Shells (`src/shells/**`) → Playwright smoke, not Vitest line %.
       // Target ≥65% lines (see codecov.yml + docs/STANDARDS.md). Thresholds
       // stay soft here until Phase 1 fills P0 lib gaps (~62% today).
-      include: ["src/lib/**/*.{ts,tsx}", "src/transport/**/*.{ts,tsx}"],
+      include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "**/*.test.ts",
         "**/*.test.tsx",
