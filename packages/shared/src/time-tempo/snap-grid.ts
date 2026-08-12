@@ -1,8 +1,8 @@
 /**
  * Edit snap / quantize grid for Timeline tools.
  *
- * Storage & transport remain integer ticks ([ADR 0002](../../docs/adr/0002-timebase-ssot.md)).
- * Snap is UI edit policy only ([ADR 0007](../../docs/adr/0007-snap-grid.md)).
+ * Storage & transport remain integer ticks ([ADR 0002](../../docs/architecture/adr/0002-timebase-ssot.md)).
+ * Snap is UI edit policy only ([ADR 0007](../../docs/architecture/adr/0007-snap-grid.md)).
  */
 
 import { resolveMeterAtTicks, type MeterMapEvent } from "./meter-map-bbt.js";

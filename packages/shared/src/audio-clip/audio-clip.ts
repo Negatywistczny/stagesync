@@ -1,5 +1,5 @@
 /**
- * Audio clip geometry + gain helpers ([ADR 0008](../../docs/adr/0008-timeline-clip-editing.md)).
+ * Audio clip geometry + gain helpers ([ADR 0008](../../docs/architecture/adr/0008-timeline-clip-editing.md)).
  * Pure — no Date.now() / AudioContext. Callers supply bpm/meter/ppq for ticks↔ms.
  */
 

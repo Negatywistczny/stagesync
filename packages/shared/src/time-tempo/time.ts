@@ -2,7 +2,7 @@
  * Pure time helpers for StageSync.
  *
  * Canonical engine timebase: integer ticks + fixed PPQ.
- * BBT is display/API only — see docs/adr/0002-timebase-ssot.md.
+ * BBT is display/API only — see docs/architecture/adr/0002-timebase-ssot.md.
  * Never mutate inputs — return new values only.
  *
  * Axis math always uses floorDiv + euclidMod (never raw `%` / trunc) so
@@ -262,7 +262,7 @@ export function quartersToTicks(
 
 /**
  * Legacy 4.x `startAbs` (float quarter notes) → integer ticks.
- * Single ACL rounding rule for the migrator ([ADR 0002](../../docs/adr/0002-timebase-ssot.md)).
+ * Single ACL rounding rule for the migrator ([ADR 0002](../../docs/architecture/adr/0002-timebase-ssot.md)).
  */
 export function absBeatToTicks(
   absBeat: number,

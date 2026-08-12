@@ -1,5 +1,5 @@
 /**
- * No-overlap clip geometry for Timeline lanes ([ADR 0008](../../docs/adr/0008-timeline-clip-editing.md)).
+ * No-overlap clip geometry for Timeline lanes ([ADR 0008](../../docs/architecture/adr/0008-timeline-clip-editing.md)).
  *
  * Pure functions — no DOM / clock. Countdown clips are immutable.
  * Section (content) clips never start before `contentFloorTicks` (default 0).
