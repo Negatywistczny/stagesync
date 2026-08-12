@@ -60,7 +60,7 @@ describe("AkordClipInspector", () => {
     expect(commitDraft).toHaveBeenCalled();
   });
 
-  it("handles Enter key press to blur", () => {
+  it("handles Enter key press to blur input", () => {
     const { project, akordClip } = createTestProject();
     const commitDraft = vi.fn();
 
@@ -73,7 +73,8 @@ describe("AkordClipInspector", () => {
     );
 
     const input = screen.getByLabelText("Symbol akordu");
+    const blurSpy = vi.spyOn(input, "blur");
     fireEvent.keyDown(input, { key: "Enter" });
-    expect(commitDraft).toHaveBeenCalled();
+    expect(blurSpy).toHaveBeenCalled();
   });
 });
