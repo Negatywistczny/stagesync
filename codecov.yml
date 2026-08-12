@@ -57,9 +57,8 @@ coverage:
         flags:
           - ui
 
-# Shells and CSS modules must not fail patch/project status.
+# CSS modules must not fail patch/project status.
 ignore:
-  - "apps/web/src/shells/**/*"
   - "**/*.module.css"
 
 flags:
@@ -72,10 +71,8 @@ flags:
       - apps/server/**
     carryforward: true
   web:
-    # Lib + transport only — shells ignored above / covered by Playwright.
     paths:
-      - apps/web/src/lib/**
-      - apps/web/src/transport/**
+      - apps/web/src/**
     carryforward: true
   # Wired in CI (Phase 5). Soft gate ≥70%.
   ui:
