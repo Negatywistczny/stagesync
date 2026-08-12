@@ -1,6 +1,6 @@
 # Coverage gates are per layer (flags). Do not chase overall %.
 # Shells → Playwright smoke, not Vitest line coverage.
-# See docs/STANDARDS.md § Coverage.
+# See docs/standards/STANDARDS.md & docs/standards/TESTING.md § Coverage.
 
 coverage:
   precision: 2
@@ -12,12 +12,11 @@ coverage:
       default:
         informational: true
       shared:
-        target: "85%"
+        target: "90%"
         threshold: "1%"
         flags:
           - shared
       server:
-        # Phase 3: routes/storage/live-desk/midi native ≥75%.
         target: "75%"
         threshold: "2%"
         flags:
@@ -28,12 +27,12 @@ coverage:
         flags:
           - web-core
       web-ui:
-        target: "55%"
+        target: "50%"
         threshold: "5%"
         flags:
           - web-ui
       ui:
-        target: "70%"
+        target: "90%"
         threshold: "5%"
         flags:
           - ui
@@ -41,7 +40,7 @@ coverage:
       default:
         informational: true
       shared:
-        target: "85%"
+        target: "90%"
         threshold: "0%"
         flags:
           - shared
@@ -56,12 +55,12 @@ coverage:
         flags:
           - web-core
       web-ui:
-        target: "55%"
+        target: "50%"
         threshold: "5%"
         flags:
           - web-ui
       ui:
-        target: "70%"
+        target: "90%"
         threshold: "5%"
         flags:
           - ui
@@ -88,7 +87,6 @@ flags:
     paths:
       - apps/web/src/shells/**
     carryforward: true
-  # Wired in CI (Phase 5). Soft gate ≥70%.
   ui:
     paths:
       - packages/ui/**

@@ -6,16 +6,16 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1601
+* **Liczba wszystkich plików:** 1603
 * **Liczba katalogów:** 255
-* **Data aktualizacji:** 2026-08-12T19:18:03.180Z
+* **Data aktualizacji:** 2026-08-12T19:18:25.573Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
 | Kod | 1182 |
-| Docs | 149 |
+| Docs | 151 |
 | Config | 119 |
 | Assety | 120 |
 | Inne | 31 |
@@ -26,7 +26,7 @@
 | :--- | ---: |
 | `.ts` | 722 |
 | `.tsx` | 274 |
-| `.md` | 127 |
+| `.md` | 129 |
 | `.png` | 94 |
 | `.kt` | 71 |
 | `.css` | 52 |
@@ -71,17 +71,17 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (92) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+- **docs/** (94) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
   - **architecture/** (32) — Architektura systemu, SSOT, ADR, specyfikacje API i Design System
     - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
     - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
     - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
   - **examples/** (2) — Przykładowe pliki baz danych i pakiety projektowe v5
   - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, DX)
-  - **standards/** (49) — Standardy inżynieryjne, testowanie i raporty jakościowe
-    - **analysis/** (47) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
+  - **standards/** (51) — Standardy inżynieryjne, testowanie i raporty jakościowe
+    - **analysis/** (48) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
       - **inspiracje/** (40) — Dumpy zewnętrzne + triage (nie SSOT produktu)
-      - **reports/** (4) — Raporty kanoniczne (current / milestones / hygiene)
+      - **reports/** (5) — Raporty kanoniczne (current / milestones / hygiene)
       - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
 - **packages/** (210) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
@@ -677,14 +677,15 @@ stagesync/
 │   │   │   │   ├── specyfikacje/  … (25 plików: .md ×25)
 │   │   │   │   └── README.md
 │   │   │   ├── reports/
-│   │   │   │   ├── current/  … (3 pliki)
+│   │   │   │   ├── current/  … (4 pliki)
 │   │   │   │   └── README.md
 │   │   │   ├── working/
 │   │   │   │   ├── .gitignore
 │   │   │   │   └── README.md
 │   │   │   └── README.md
 │   │   ├── README.md
-│   │   └── STANDARDS.md
+│   │   ├── STANDARDS.md
+│   │   └── TESTING.md
 │   ├── README.md
 │   ├── ROADMAP.md
 │   └── TODO.md
