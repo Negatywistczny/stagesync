@@ -107,7 +107,37 @@ export type TimelineCanvasViewportProps = {
   laneImportStartTicksRef: React.RefObject<number | null>;
   laneAudioFileRef: React.RefObject<HTMLInputElement | null>;
   draftRef: React.RefObject<Project | null>;
-  lanesRendererProps: any;
+  lanesRendererProps?: any;
+  failedAudioAssetIds?: string[];
+  gestureSession?: any;
+  gesturePreview?: any;
+  primaryId?: string | null;
+  selectedAnchorId?: string | null;
+  mapDragPreview?: any;
+  tempoSegments?: any[];
+  meterSegments?: any[];
+  keySegments?: any[];
+  tapActiveClipId?: string | null;
+  clearClipSelection?: () => void;
+  setSelectedAnchorId?: (id: string | null) => void;
+  setInspectorVisible?: (v: boolean) => void;
+  setSongMetaOpen?: (v: boolean) => void;
+  setMapSelection?: (
+    lane: any,
+    ids: string[],
+    primaryId: string | null,
+  ) => void;
+  openMapEdit?: (lane: any, ticks: number, seed?: any) => void;
+  openClipContextMenu?: (e: any, lane: any, id: string) => void;
+  focusInspectorPanel?: () => void;
+  onAudioClipPointerDown?: (e: any, lane: any, clip: any) => void;
+  onFormaClipPointerDown?: (e: any, clip: any) => void;
+  onContentClipPointerDown?: (e: any, lane: any, clip: any) => void;
+  onFormaClipPointerMove?: (e: any) => void;
+  onFormaClipPointerUp?: (e: any) => void;
+  onMapSegmentPointerDown?: (e: any, lane: any, seg: any) => void;
+  onMapSegmentPointerMove?: (e: any) => void;
+  onMapSegmentPointerUp?: (e: any) => void;
 
   closeInspectorPanel: () => void;
   clipSelection: any;
@@ -227,6 +257,32 @@ export function TimelineCanvasViewport({
   laneAudioFileRef,
   draftRef,
   lanesRendererProps,
+  failedAudioAssetIds,
+  gestureSession,
+  gesturePreview,
+  primaryId,
+  selectedAnchorId,
+  mapDragPreview,
+  tempoSegments = [],
+  meterSegments = [],
+  keySegments = [],
+  tapActiveClipId,
+  clearClipSelection,
+  setSelectedAnchorId,
+  setInspectorVisible,
+  setSongMetaOpen,
+  setMapSelection,
+  openMapEdit,
+  openClipContextMenu,
+  focusInspectorPanel,
+  onAudioClipPointerDown,
+  onFormaClipPointerDown,
+  onContentClipPointerDown,
+  onFormaClipPointerMove,
+  onFormaClipPointerUp,
+  onMapSegmentPointerDown,
+  onMapSegmentPointerMove,
+  onMapSegmentPointerUp,
   closeInspectorPanel,
   clipSelection,
   selectionLane,
@@ -251,6 +307,48 @@ export function TimelineCanvasViewport({
   displayTicks,
   projectId,
 }: TimelineCanvasViewportProps) {
+  const internalLanesRendererProps = lanesRendererProps ?? {
+    draftProject,
+    projectId,
+    failedAudioAssetIds,
+    gestureSession,
+    gesturePreview,
+    clipSelection,
+    primaryId,
+    selectedSubsectionIdx,
+    selectedAnchorId,
+    selectedMapLane,
+    selectedMapIds,
+    mapDragPreview,
+    tempoSegments,
+    meterSegments,
+    keySegments,
+    viewSpan,
+    barTicks,
+    effectiveZoomH,
+    tool,
+    tapActiveClipId,
+    commitDraft,
+    clearClipSelection,
+    clearMapSelection,
+    setSelectedAnchorId,
+    setInspectorVisible,
+    setSongMetaOpen,
+    setMapSelection,
+    openMapEdit,
+    openClipContextMenu,
+    selectLaneClip,
+    focusInspectorPanel,
+    rawTicksAtClientX,
+    onAudioClipPointerDown,
+    onFormaClipPointerDown,
+    onContentClipPointerDown,
+    onFormaClipPointerMove,
+    onFormaClipPointerUp,
+    onMapSegmentPointerDown,
+    onMapSegmentPointerMove,
+    onMapSegmentPointerUp,
+  };
   return (
     <div
       className={[styles.main, inspectorOpen ? "" : styles.mainInspectorHidden]
@@ -361,7 +459,7 @@ export function TimelineCanvasViewport({
             laneImportStartTicksRef={laneImportStartTicksRef}
             laneAudioFileRef={laneAudioFileRef}
             draftRef={draftRef}
-            lanesRendererProps={lanesRendererProps}
+            lanesRendererProps={internalLanesRendererProps}
           />
         )}
       </div>
