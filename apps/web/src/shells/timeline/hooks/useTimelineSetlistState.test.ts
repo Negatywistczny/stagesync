@@ -2,8 +2,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useTimelineSetlistState } from "./useTimelineSetlistState.js";
-import { fetchLibrary } from "@lib/shell-operator/libraryApi.js";
-import { fetchSetlist } from "@lib/shell-operator/setlistApi.js";
 
 vi.mock("@lib/shell-operator/libraryApi.js", () => ({
   fetchLibrary: vi.fn().mockResolvedValue({
