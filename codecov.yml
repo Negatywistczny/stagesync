@@ -22,12 +22,16 @@ coverage:
         threshold: "2%"
         flags:
           - server
-      web:
-        # Measured against flag paths (lib + transport), not shells.
-        target: "65%"
+      web-core:
+        target: "85%"
+        threshold: "2%"
+        flags:
+          - web-core
+      web-ui:
+        target: "55%"
         threshold: "5%"
         flags:
-          - web
+          - web-ui
       ui:
         target: "70%"
         threshold: "5%"
@@ -46,11 +50,16 @@ coverage:
         threshold: "2%"
         flags:
           - server
-      web:
-        target: "65%"
+      web-core:
+        target: "85%"
+        threshold: "2%"
+        flags:
+          - web-core
+      web-ui:
+        target: "55%"
         threshold: "5%"
         flags:
-          - web
+          - web-ui
       ui:
         target: "70%"
         threshold: "5%"
@@ -70,9 +79,14 @@ flags:
     paths:
       - apps/server/**
     carryforward: true
-  web:
+  web-core:
     paths:
-      - apps/web/src/**
+      - apps/web/src/lib/**
+      - apps/web/src/transport/**
+    carryforward: true
+  web-ui:
+    paths:
+      - apps/web/src/shells/**
     carryforward: true
   # Wired in CI (Phase 5). Soft gate ≥70%.
   ui:

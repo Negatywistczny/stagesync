@@ -135,7 +135,7 @@ jobs:
           fail_ci_if_error: true
           disable_search: true
           files: apps/web/coverage/lcov.info
-          flags: web
+          flags: web-core,web-ui
           name: web
 
       - name: Upload coverage (ui)
