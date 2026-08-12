@@ -15,12 +15,10 @@ export default defineConfig({
       reporter: ["text", ["lcov", { projectRoot: repoRoot }]],
       reportsDirectory: "./coverage",
       include: ["src/**/*.{ts,tsx}"],
-      // Bootstrap / CLI are P2 for unit coverage (smoke + migrate dry-run in CI).
       exclude: [
         "**/*.test.ts",
-        "src/index.ts",
-        "src/cli/**",
-        "src/midi/backend.ts", // types-only — no executable surface
+        "**/*.test.tsx",
+        "**/node_modules/**",
       ],
     },
   },

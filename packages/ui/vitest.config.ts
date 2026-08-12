@@ -21,7 +21,6 @@ export default defineConfig({
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/node_modules/**",
-        "src/index.ts", // pure re-export barrel — no logic to cover
       ],
     },
   },

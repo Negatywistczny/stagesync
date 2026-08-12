@@ -14,6 +14,12 @@ export default defineConfig({
       // Repo-root SF paths so Codecov can map monorepo files.
       reporter: ["text", ["lcov", { projectRoot: repoRoot }]],
       reportsDirectory: "./coverage",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/node_modules/**",
+      ],
     },
   },
 });
