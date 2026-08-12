@@ -143,4 +143,25 @@ describe("TimelineSongDialogs", () => {
     fireEvent.click(closeButtons[0]!);
     expect(setSongScreenOpen).toHaveBeenCalledWith(false);
   });
+
+  it("renders song import dialog when songImportOpen is true", () => {
+    const closeImportModals = vi.fn();
+    const props = createDefaultProps({
+      songImportOpen: true,
+      importAsNewSong: true,
+      closeImportModals,
+    });
+
+    render(
+      <MemoryRouter>
+        <TimelineSongDialogs {...props} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Importuj utwór — nowy")).toBeTruthy();
+
+    const closeBtn = screen.getAllByRole("button", { name: "Zamknij" })[0]!;
+    fireEvent.click(closeBtn);
+    expect(closeImportModals).toHaveBeenCalled();
+  });
 });

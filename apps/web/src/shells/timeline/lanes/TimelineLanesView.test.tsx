@@ -198,4 +198,25 @@ describe("TimelineLanesView", () => {
       "locator",
     );
   });
+
+  it("renders marquee box when marqueeBox prop is provided", () => {
+    const marqueeBox = { left: 10, top: 20, width: 100, height: 200 };
+    const { container } = render(
+      <TimelineLanesView {...baseProps} marqueeBox={marqueeBox} />,
+    );
+
+    const boxElem = container.querySelector("[class*='marquee']");
+    expect(boxElem).toBeTruthy();
+  });
+
+  it("triggers onAddAudioTrack when add track control is clicked", () => {
+    const onAddAudioTrack = vi.fn();
+    render(
+      <TimelineLanesView {...baseProps} onAddAudioTrack={onAddAudioTrack} />,
+    );
+
+    const addBtn = screen.getByTitle("Dodaj pustą ścieżkę audio");
+    fireEvent.click(addBtn);
+    expect(onAddAudioTrack).toHaveBeenCalled();
+  });
 });

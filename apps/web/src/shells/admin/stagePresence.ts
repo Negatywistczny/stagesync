@@ -2,6 +2,8 @@ import type {
   PresenceClient,
   SessionStageMessage,
 } from "@lib/shell-operator/setlistApi.js";
+
+export type { PresenceClient, SessionStageMessage };
 import shell from "./AdminShell.module.css";
 
 export type ClientPhase = "awaiting-data" | "awaiting-role" | "stale" | "ready";

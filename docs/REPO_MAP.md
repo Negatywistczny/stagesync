@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1610
+* **Liczba wszystkich plików:** 1622
 * **Liczba katalogów:** 255
-* **Data aktualizacji:** 2026-08-12T19:19:08.977Z
+* **Data aktualizacji:** 2026-08-12T19:55:20.799Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1189 |
+| Kod | 1201 |
 | Docs | 151 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,8 +24,8 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 722 |
-| `.tsx` | 281 |
+| `.ts` | 731 |
+| `.tsx` | 284 |
 | `.md` | 129 |
 | `.png` | 94 |
 | `.kt` | 71 |
@@ -40,18 +40,18 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1201) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1213) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (108) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
   - **server/** (161) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (734) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+  - **web/** (746) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
       - **brand/** (5) — Materiały brandingowe i logotypy StageSync
     - **scripts/** (10) — Skrypty pomocnicze builda i benchmarków webowych
       - **benchmark/** (8) — Skrypty benchmarków wydajnościowych UI/Audio
-    - **src/** (692) — Kod źródłowy UI i logiki klienta
+    - **src/** (704) — Kod źródłowy UI i logiki klienta
       - **dev/** (18) — Narzędzia i panele deweloperskie wewnątrz aplikacji
       - **lib/** (239) — Biblioteki klienta (5 kategorii — bez plików w lib root)
         - **audio/** (62) — DSP, AudioContext, tempo, waveform
@@ -59,7 +59,7 @@
         - **shell-operator/** (29) — Operatory CRUD API / aktywny projekt
         - **timeline/** (50) — Silnik renderowania timeline (bez mutacji treści)
         - **timeline-edit/** (32) — Mutacje treści klipów (akordy, cue, forma, tekst)
-      - **shells/** (411) — Powłoki Admin / Client / Timeline
+      - **shells/** (423) — Powłoki Admin / Client / Timeline
       - **transport/** (15) — Transport WS, playhead, probe wydajności
     - **test/** (9) — Testy jednostkowe i mocki aplikacji webowej
       - **benchmark/** (1) — Testy wydajnościowe struktur danych
@@ -531,15 +531,15 @@ stagesync/
 │   │   │   │   ├── timeline/  … (50 plików, 1 podkatalog; 46 plików bezpośrednio)
 │   │   │   │   └── timeline-edit/  … (32 pliki, 3 podkatalogi; 26 plików bezpośrednio)
 │   │   │   ├── shells/
-│   │   │   │   ├── admin/  … (50 plików, 5 podkatalogów; 35 plików bezpośrednio)
-│   │   │   │   ├── client/  … (39 plików, 1 podkatalog; 38 plików bezpośrednio)
+│   │   │   │   ├── admin/  … (55 plików, 5 podkatalogów; 38 plików bezpośrednio)
+│   │   │   │   ├── client/  … (42 pliki, 1 podkatalog; 41 plików bezpośrednio)
 │   │   │   │   ├── components/  … (59 plików, 1 podkatalog; 50 plików bezpośrednio)
 │   │   │   │   ├── desktop/  … (21 plików)
 │   │   │   │   ├── import/  … (39 plików, 1 podkatalog; 34 pliki bezpośrednio)
 │   │   │   │   ├── pages/  … (3 pliki)
 │   │   │   │   ├── settings/  … (25 plików, 1 podkatalog; 19 plików bezpośrednio)
 │   │   │   │   ├── shared/  … (2 pliki)
-│   │   │   │   └── timeline/  … (173 pliki, 10 podkatalogów; 13 plików bezpośrednio)
+│   │   │   │   └── timeline/  … (177 plików, 10 podkatalogów; 13 plików bezpośrednio)
 │   │   │   ├── transport/
 │   │   │   │   ├── api.test.ts
 │   │   │   │   ├── api.ts
