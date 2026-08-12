@@ -26,19 +26,21 @@ vi.mock("@lib/client/desktopBridge.js", () => ({
 }));
 
 describe("useTimelineSetlistState", () => {
+  const stableSnapshot = {
+    projectIds: ["song-1", "song-2", "song-3"],
+    enabled: true,
+    autoAdvanceEnabled: true,
+  };
+
   it("determines previous and next setlist IDs around current project", async () => {
     const reloadProject = vi.fn().mockResolvedValue(undefined);
 
-    const { result } = renderHook(() =>
+    const { result, unmount } = renderHook(() =>
       useTimelineSetlistState({
         projectId: "song-2",
         draftProjectName: "Song Two",
         songScreenOpen: true,
-        setlistSnapshot: {
-          projectIds: ["song-1", "song-2", "song-3"],
-          enabled: true,
-          autoAdvanceEnabled: true,
-        },
+        setlistSnapshot: stableSnapshot,
         reloadProject,
       }),
     );
@@ -51,5 +53,7 @@ describe("useTimelineSetlistState", () => {
     expect(result.current.nextSetlistId).toBe("song-3");
     expect(result.current.setlistEnabled).toBe(true);
     expect(result.current.autoAdvance).toBe(true);
+
+    unmount();
   });
 });
