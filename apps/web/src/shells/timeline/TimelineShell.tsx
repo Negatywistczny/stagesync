@@ -2,160 +2,104 @@ import {
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { createPortal, flushSync } from "react-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
+import { useContextMenu } from "@stagesync/ui";
+import { type SnapMode, type WandMode } from "@stagesync/shared";
 import {
-  Link,
-  useBlocker,
-  useLocation,
-  useNavigate,
-  useParams,
-} from "react-router";
-import { Button, Slider, Select, useContextMenu } from "@stagesync/ui";
-import {
-  resolveMeterAt,
-  resolveTempoAt,
-  resolveKeyAt,
-  formatKeySignature,
-  parseMeterString,
-  ticksPerBar,
-  ticksToBbt,
-  toDisplayBar,
-  applyUgImportToProject,
-  applyUltrastarImportToProject,
-  applyUsUgBridgeToProject,
-  DEFAULT_PPQ,
-  normalizeKeyTonic,
-  placeContentFromForma,
-  projectEndTicks,
-  transportHomeTicks,
-  resolveTrackColor,
-  channelModeFromChannelCount,
-  isHwOutRepatchBlockedWhilePlaying,
-  wrapDisplayTicks,
-  type FormaClip,
-  type Project,
-  type UgImportOk,
-  type UgTabMetadata,
-  type UltrastarImportOk,
-  type SnapMode,
-  type WandMode,
-} from "@stagesync/shared";
-import { yieldToUi } from "@lib/audio/audioTempoAnalysis.js";
-import {
-  buildBarMarks,
-  buildRulerBeatMarks,
-  clipStylePx,
-  computeCanvasWidthPx,
-  computeFormaViewSpan,
-  DEFAULT_PX_PER_BAR,
-  pencilFormaClick,
-  projectContentEqual,
   scrollCanvasToStart,
-  snapEditTicks,
-  snapLocatorTicks,
-  tickToPx,
   ticksFromPointer,
 } from "@lib/timeline-edit/formaCanvas.js";
 import {
-  cascadeFormaMoveIds,
-  commitGesture,
-  deleteFormaClip,
-  formaSectionCoveringTicks,
-  joinFormaAtClick,
-  previewFromSession,
-  splitFormaClipAt,
-} from "@lib/timeline-edit/formaEdit.js";
-import {
-  buildClipboardFromClips,
-  deleteClipsOnLane,
-  pasteClipboardAt,
-  pasteClipboardWithDelta,
-  selectionMaxEndTicks,
-  type TimelineClipboard,
-} from "@lib/timeline/timelineClipboard.js";
-import {
-  applySoloButtonClick,
   clearSelection,
   clearTrackSelection,
   EMPTY_CLIP_SELECTION,
-  EMPTY_TRACK_SELECTION,
-  idsOnLane,
-  isAudioSelectionLane,
-  isAudioTrackSelected,
-  isClipSelected,
-  isMarqueeClick,
-  isMultiSelectClick,
-  marqueeSelectFromHits,
-  primaryAudioTrackId,
-  primaryLane,
-  pruneTrackSelection,
-  rectsIntersect,
-  resolveMoveIds,
-  resolveMuteButtonClick,
-  selectAudioTrack,
-  selectAudioTrackRange,
-  selectAllProjectClips,
-  selectRangeTo,
   selectSingle,
-  selectionIdsAfterFormaMove,
-  setSelection,
-  toggleAudioTrackSelected,
-  toggleSelected,
   type ClipSelection,
-  type ClipSelectionLane,
   type TimelineSurface,
-  type TrackSelection,
 } from "@lib/timeline/timelineSelection.js";
-import { resolveTimelineShortcut } from "@lib/timeline/timelineKeyboardShortcuts.js";
 import {
-  isToolbarToolId,
   loadToolbarVisibleTools,
-  saveToolbarVisibleTools,
-  toggleToolbarVisibleTool,
-  TOOLBAR_ALWAYS_VISIBLE,
   type ToolbarToolId,
 } from "@lib/timeline/timelineToolbarTools.js";
-import { subsectionRanges } from "@lib/timeline-edit/formaSubsections.js";
 import {
-  deleteMapEvents,
-  insertMapEventAt,
-  isMapLaneId,
-  mapEventIds,
-  mapSnapMode,
-  moveMapEventsByDelta,
-  splitMapAt,
-  upsertKeyAt,
-  upsertMeterAt,
-  upsertTempoAt,
-  type MapLaneId,
-} from "@lib/timeline/mapLaneEdit.js";
+  renameFormaClip,
+  setCountdownBars,
+} from "@lib/timeline-edit/formaInspector.js";
 import {
-  keyMapSegments,
-  meterMapSegments,
-  segmentStylePx,
-  tempoMapSegments,
-} from "@lib/timeline/mapSegments.js";
-import { FormaClipPreview } from "./FormaClipPreview.js";
-import { TimelineHelp } from "./TimelineHelp.js";
-import { TimelineInspector } from "./TimelineInspector.js";
+  applyTimelineNudge,
+  nudgeShowsLeftEdge,
+  shouldShowTouchNudge,
+} from "@lib/timeline/timelineTouchNudge.js";
+import { useTimelineTouchGestures } from "@lib/timeline/useTimelineTouchGestures.js";
+import {
+  canRedo,
+  canUndo,
+  resetDraftHistory,
+} from "@lib/client/draftHistory.js";
+import {
+  CLOCK_DISPLAY_CHANGED_EVENT,
+  formatClockDisplay,
+  getStoredClockDisplayFormat,
+  type ClockDisplayFormat,
+} from "@lib/client/clockDisplayPrefs.js";
+import {
+  detectTimelineTier,
+  TIMELINE_COARSE_MQ,
+  TIMELINE_LANDSCAPE_PHONE_MQ,
+  TIMELINE_MOBILE_MQ,
+  timelineGesturesAllowed,
+  type TimelineTouchTier,
+} from "@lib/timeline/timelineTouchTier.js";
+import { APP_VERSION } from "@lib/client/appVersion.js";
+import { patchSetlistAutoAdvance } from "@lib/shell-operator/setlistApi.js";
+import {
+  loadSessionSnapModeFromStorage,
+  persistSessionSnapMode,
+  toolNeedsExclusiveTouchAction,
+} from "@lib/timeline/timelineGesture.js";
+import {
+  defaultTrackVisibility,
+  ensureAudioTrackVisibility,
+  type TrackVisibilityMap,
+} from "@lib/timeline/timelineTracks.js";
+import {
+  ZOOM_H_MAX as PREFS_ZOOM_H_MAX,
+  ZOOM_H_MIN as PREFS_ZOOM_H_MIN,
+} from "@lib/timeline/timelineZoomPrefs.js";
+import {
+  toggleAppFullscreen,
+  syncEditHistoryState,
+} from "@lib/client/desktopBridge.js";
+import { useAnnounceDevicePresence } from "@lib/client/useAnnounceDevicePresence.js";
+import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
+import { openPreferences } from "@lib/client/preferencesEvents.js";
+import {
+  shouldShowFullscreenControl,
+  shouldShowOperatorNav,
+} from "@lib/shell-operator/operatorSurface.js";
+import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
+import { loadTransport } from "../../transport/api.js";
+import { useTransport } from "../../transport/useTransport.js";
+import { IconFullscreen } from "../components/icons.js";
+import { ShellIconButton } from "../components/ShellIconButton.js";
+import { AppHeaderActions } from "../components/AppHeader.js";
+import {
+  SONG_IMPORT_EVENT,
+  parseSongImportDetail,
+} from "@lib/client/songImportEvents.js";
+import { getFailedAudioAssetIds } from "@lib/audio/audioPlayback.js";
+import { TimelineStatusFooter } from "./components/TimelineStatusFooter.js";
+import { TouchNudgeBar } from "./components/TouchNudgeBar.js";
 import { useTimelineModals } from "./hooks/useTimelineModals.js";
 import { useTimelineDraft } from "./hooks/useTimelineDraft.js";
 import { useTimelineZoomPan } from "./hooks/useTimelineZoomPan.js";
 import { useTimelineShortcuts } from "./hooks/useTimelineShortcuts.js";
 import { useTimelinePlayback } from "./hooks/useTimelinePlayback.js";
 import { useTimelineSelectionState } from "./hooks/useTimelineSelectionState.js";
-import { TimelineLanesView } from "./lanes/TimelineLanesView.js";
-import { TimelineStatusFooter } from "./components/TimelineStatusFooter.js";
-import { TouchNudgeBar } from "./components/TouchNudgeBar.js";
-import { TimelineSongDialogs } from "./dialogs/TimelineSongDialogs.js";
-import { TimelinePortals } from "./menus/TimelinePortals.js";
-import { TimelineMapDialogs } from "./dialogs/TimelineMapDialogs.js";
-import { useTimelineMixerState } from "./hooks/useTimelineMixerState.js";
 import { useTimelineAudioUpload } from "./hooks/useTimelineAudioUpload.js";
 import { useTimelineContextMenus } from "./hooks/useTimelineContextMenus.js";
 import { useTimelineKeyboardEvents } from "./hooks/useTimelineKeyboardEvents.js";
@@ -166,310 +110,19 @@ import { useTimelineRulerGestures } from "./hooks/useTimelineRulerGestures.js";
 import { useTimelineMapPointerHandlers } from "./hooks/useTimelineMapPointerHandlers.js";
 import { useTimelineFormaGestures } from "./hooks/useTimelineFormaGestures.js";
 import { useTimelineDockCallbacks } from "./hooks/useTimelineDockCallbacks.js";
+import { useTimelineSongImport } from "./hooks/useTimelineSongImport.js";
+import { useTimelineTrackActions } from "./hooks/useTimelineTrackActions.js";
+import { useTimelineAudioTrackInteractions } from "./hooks/useTimelineAudioTrackInteractions.js";
+import { useTimelineCanvasDerived } from "./hooks/useTimelineCanvasDerived.js";
+import { useTimelineAudioEngineSync } from "./hooks/useTimelineAudioEngineSync.js";
+import { useTimelineSetlistState } from "./hooks/useTimelineSetlistState.js";
+import { useTimelineDerivedSelection } from "./hooks/useTimelineDerivedSelection.js";
+import { useTimelineFloatingMenus } from "./hooks/useTimelineFloatingMenus.js";
+import { useTimelinePanelState } from "./hooks/useTimelinePanelState.js";
 import { TimelineHeaderContainer } from "./containers/TimelineHeaderContainer.js";
 import { TimelineDialogsContainer } from "./containers/TimelineDialogsContainer.js";
 import { TimelineCanvasViewport } from "./containers/TimelineCanvasViewport.js";
-import {
-  addFormaSubsection,
-  countdownBars,
-  deleteFormaSubsection,
-  formaSubsectionRows,
-  renameFormaClip,
-  setCountdownBars,
-  setFormaSubsectionStartBar,
-} from "@lib/timeline-edit/formaInspector.js";
-import {
-  deleteTekstClip,
-  pencilTekstClick,
-  setTekstClipStart,
-  setTekstClipText,
-} from "@lib/timeline-edit/tekstEdit.js";
-import {
-  deleteAkordyClip,
-  pencilAkordyClick,
-  commitAkordyClipSymbol,
-  setAkordyClipSymbol,
-} from "@lib/timeline-edit/akordyEdit.js";
-import {
-  deleteCueClip,
-  pencilCueClick,
-  setCueClipLabel,
-  setCueClipRoles,
-  setCueClipPriority,
-  setCueClipSample,
-  CUE_ROLES,
-} from "@lib/timeline-edit/cueEdit.js";
-import {
-  commitContentGesture,
-  contentClipCoveringTicks,
-  defaultPencilLabel,
-  joinAdjacentContentClips,
-  previewContentFromSession,
-  splitContentClipAt,
-  type ContentLaneId,
-} from "@lib/timeline-edit/contentLaneEdit.js";
-import {
-  buildAudioTrackContextMenuItems,
-  buildClipContextMenuItems,
-  buildEmptyLaneContextMenuItems,
-  clipboardMatchesEmptyLane,
-  audioTrackContextMenuLabel,
-  clipContextMenuLabel,
-  mapSegmentSelectionAriaLabel,
-  type ClipMenuLane,
-  type EmptyLaneMenuKind,
-} from "@lib/timeline/timelineContextMenus.js";
-import {
-  applyTimelineNudge,
-  nudgeShowsLeftEdge,
-  shouldShowTouchNudge,
-  type NudgeAction,
-} from "@lib/timeline/timelineTouchNudge.js";
-import { useTimelineTouchGestures } from "@lib/timeline/useTimelineTouchGestures.js";
-import {
-  anchorBarWidthTicks,
-  canEditKotwice,
-  deleteScoreAnchor,
-  insertScoreAnchor,
-  moveScoreAnchor,
-  scoreAnchors,
-  ticksFromLogicBar,
-  updateScoreAnchor,
-} from "@lib/timeline-edit/scoreBarEdit.js";
-import {
-  snapLoopRange,
-  snapMovedLoopRange,
-  ticksInLoopRegion,
-  usableLoopRange,
-  type LoopRange,
-} from "@lib/timeline/timelineLocator.js";
-import {
-  canRedo,
-  canUndo,
-  createDraftHistory,
-  pushDraftHistory,
-  redoDraft,
-  resetDraftHistory,
-  syncPresentAfterSave,
-  undoDraft,
-  type DraftHistory,
-} from "@lib/client/draftHistory.js";
-import {
-  advanceMetronomeClicks,
-  cancelScheduledMetronomeClicks,
-  getMetronomeAudioContext,
-  metronomeBeatIndex,
-  resumeMetronomeAudio,
-} from "@lib/audio/metronome.js";
-import {
-  getMetronomeOn,
-  setMetronomeOn as persistMetronomeOn,
-} from "@lib/audio/metronomePrefs.js";
-import {
-  addAudioTrack,
-  duplicateAudioTrack,
-  MAX_AUDIO_TRACKS,
-  applyDecodedAudioMeta,
-  commitAudioGesture,
-  joinAdjacentAudioClips,
-  previewAudioFromSession,
-  removeAudioTrack,
-  setAudioClipFadeMs,
-  setAudioClipGainDb,
-  setAudioClipLoop,
-  setAudioClipMuted,
-  setAudioClipTrimMs,
-  setAudioTrackColor,
-  setAudioTrackGainDb,
-  setAudioTrackIcon,
-  setAudioTrackOutput,
-  setAudioTrackPan,
-  setAudioTrackChannelMode,
-  setAudioTracksMuted,
-  setAudioTrackName,
-  setAudioBusGainDb,
-  setAudioBusMuted,
-  setAudioBusName,
-  setAudioBusOutput,
-  setAudioBusPan,
-  setAudioBusChannelMode,
-  addAudioBus,
-  removeAudioBus,
-  setMasterGainDb,
-  placeImportedAudioClipAt,
-  splitAudioClipAt,
-  toggleAudioClipMute,
-} from "@lib/audio/audioLaneEdit.js";
-import {
-  addAudioHardwareOutput,
-  canAddHardwareOutput,
-  removeAudioHardwareOutput,
-  setMasterOutputRouting,
-  updateAudioHardwareOutput,
-} from "@lib/audio/audioHwEdit.js";
-import { getAudioHwCapability } from "@lib/audio/audioHwCapability.js";
-import { ChannelStripControls, TaperGainSlider } from "./channelStrip/index.js";
-import type {
-  ChannelStripCallbacks,
-  MasterStripCallbacks,
-} from "./channelStrip/channelStripTypes.js";
-import {
-  allowAudioPlayback,
-  clearAudioBufferCache,
-  ensureAudioBuffered,
-  fireCueSampleGo,
-  getAudioPlaybackDebugState,
-  getFailedAudioAssetIds,
-  isAudioAssetDecodeFailed,
-  loadAudioBuffer,
-  restartAudioPlayback,
-  stopAudioPlayback,
-  suppressAudioPlayback,
-  syncAudioPlayback,
-} from "@lib/audio/audioPlayback.js";
-import {
-  AUDIO_LATENCY_CHANGED_EVENT,
-  getStoredLatencyCompensationMs,
-} from "@lib/audio/audioLatencyPrefs.js";
-import {
-  CLOCK_DISPLAY_CHANGED_EVENT,
-  formatClockDisplay,
-  getStoredClockDisplayFormat,
-  type ClockDisplayFormat,
-} from "@lib/client/clockDisplayPrefs.js";
-import { ticksFromSyncLeadAlongMap } from "@lib/timeline/syncLead.js";
-import {
-  hasNonCollapsedDomTextSelection,
-  isEditableKeyboardTarget,
-} from "@lib/client/isEditableKeyboardTarget.js";
-import { uploadProjectAudio } from "@lib/shell-operator/projectAssetsApi.js";
-import {
-  computeWaveformFromAudioBuffer,
-  peaksToPolylinePoints,
-} from "@lib/audio/waveformPeaks.js";
-import {
-  detectTimelineTier,
-  TIMELINE_COARSE_MQ,
-  TIMELINE_LANDSCAPE_PHONE_MQ,
-  TIMELINE_MOBILE_MQ,
-  timelineGesturesAllowed,
-  TOUCH_FULL_EDIT_MSG,
-  type TimelineTouchTier,
-} from "@lib/timeline/timelineTouchTier.js";
-import { APP_VERSION } from "@lib/client/appVersion.js";
-import { createSongWithContent } from "@lib/client/desktopFileMenu.js";
-import {
-  fetchLibrary,
-  fetchProject,
-  putProject,
-} from "@lib/shell-operator/libraryApi.js";
-import {
-  fetchSetlist,
-  patchSetlistAutoAdvance,
-} from "@lib/shell-operator/setlistApi.js";
-import {
-  contentSnapModeFromModifiers,
-  cursorForHitZone,
-  cursorForTimelineTool,
-  hitTestAudioClipZone,
-  hitTestClipZone,
-  loadSessionSnapModeFromStorage,
-  persistSessionSnapMode,
-  snapModeFromStorageKey,
-  snapModeToStorageKey,
-  isTouchPointerType,
-  toolAllowsClipHitZones,
-  toolIsPencilDraw,
-  toolNeedsExclusiveTouchAction,
-  toolUsesMarqueeGesture,
-  type ClipHitZone,
-  type FormaGesturePreview,
-  type FormaGestureSession,
-  type FormaToolId,
-} from "@lib/timeline/timelineGesture.js";
-import {
-  applyVocalTap,
-  vocalTapMarkTicks,
-  vocalTapQueue,
-} from "@lib/client/clientVocalTap.js";
-import {
-  clampBeatForProject,
-  formatStartBarBeat,
-  moveClipStartKeepLength,
-  parseStartBarBeat,
-  ticksFromDisplayBarBeat,
-} from "@lib/timeline/clipStartEdit.js";
-import {
-  audioTrackIdFromLane,
-  buildTrackList,
-  defaultTrackVisibility,
-  ensureAudioTrackVisibility,
-  isAudioLaneId,
-  isTrackVisible,
-  TRACKS,
-  type AudioLaneId,
-  type TrackVisibilityMap,
-} from "@lib/timeline/timelineTracks.js";
-import {
-  clearLaneHeightOverride,
-  DEFAULT_LANE_PX,
-  DOCK_COMPACT_MAX_PX,
-  laneHeightBase,
-  laneHeightEffective,
-  loadLaneHeights,
-  MAX_LANE_PX,
-  MIN_LANE_PX,
-  saveLaneHeights,
-  scaleLaneHeights,
-  setLaneHeightOverride,
-  type LaneHeightsMap,
-} from "@lib/timeline/timelineLaneHeights.js";
-import {
-  clampDockWidth,
-  loadDockWidth,
-  saveDockWidth,
-} from "@lib/timeline/timelineDockWidth.js";
-import {
-  clampZoomUi,
-  loadZoomPrefs,
-  saveZoomPrefs,
-  ZOOM_H_MAX as PREFS_ZOOM_H_MAX,
-  ZOOM_H_MIN as PREFS_ZOOM_H_MIN,
-  ZOOM_UI_MAX,
-  ZOOM_UI_MIN,
-} from "@lib/timeline/timelineZoomPrefs.js";
-import {
-  toggleAppFullscreen,
-  syncEditHistoryState,
-  syncNavRecentProjects,
-  syncNavTimelineProjectId,
-} from "@lib/client/desktopBridge.js";
-import { useAnnounceDevicePresence } from "@lib/client/useAnnounceDevicePresence.js";
-import {
-  DESKTOP_MENU_EVENT,
-  parseDesktopMenuDetail,
-} from "@lib/client/desktopMenuEvents.js";
-import { pushRecentTimelineProject } from "@lib/client/lastTimelineProject.js";
-import { markOperatorSession } from "@lib/shell-operator/operatorSession.js";
-import { openPreferences } from "@lib/client/preferencesEvents.js";
-import {
-  shouldShowFullscreenControl,
-  shouldShowOperatorNav,
-} from "@lib/shell-operator/operatorSurface.js";
-import { useMqMobileCompact } from "@lib/client/useMqMobileCompact.js";
-import { ShellAlertDialog } from "../components/ShellBlockingDialog.js";
-import { loadTransport } from "../../transport/api.js";
-import { useTransport } from "../../transport/useTransport.js";
-import { IconFullscreen } from "../components/icons.js";
-import { ShellIconButton } from "../components/ShellIconButton.js";
-import { AppHeaderActions } from "../components/AppHeader.js";
-import type { UsUgApplyPayload } from "../import/CombinedUsUgImportForm.js";
-import {
-  SONG_IMPORT_EVENT,
-  parseSongImportDetail,
-} from "@lib/client/songImportEvents.js";
 import styles from "./TimelineShell.module.css";
-
 import { TOOLS, type ToolId } from "./timelineToolsData.js";
 
 export function TimelineShell() {
@@ -485,23 +138,10 @@ export function TimelineShell() {
 
   const { projectId } = useParams<{ projectId: string }>();
   const lanesCoordRef = useRef<HTMLDivElement>(null);
-  const trackRowsRoRef = useRef<ResizeObserver | null>(null);
   const markerOverlayRef = useRef<HTMLDivElement>(null);
-  const eyeBtnRef = useRef<HTMLButtonElement>(null);
-  const eyeMenuRef = useRef<HTMLDivElement>(null);
-  const toolsVisBtnRef = useRef<HTMLButtonElement>(null);
-  const toolsVisMenuRef = useRef<HTMLDivElement>(null);
   const songScreenId = useId();
   const eyeMenuId = useId();
   const toolsVisMenuId = useId();
-  const [eyeMenuPos, setEyeMenuPos] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
-  const [toolsVisMenuPos, setToolsVisMenuPos] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
   const {
     state,
     displayTicks,
@@ -538,12 +178,6 @@ export function TimelineShell() {
   }, []);
 
   const [fullscreenError, setFullscreenError] = useState<string | null>(null);
-  const [libraryNames, setLibraryNames] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [setlistIds, setSetlistIds] = useState<string[]>([]);
-  const [setlistEnabled, setSetlistEnabled] = useState(false);
-  const [autoAdvance, setAutoAdvance] = useState(false);
 
   const [tool, setTool] = useState<ToolId>("pointer");
   const toolRef = useRef<ToolId>("pointer");
@@ -560,18 +194,6 @@ export function TimelineShell() {
   useEffect(() => {
     persistSessionSnapMode(snapMode);
   }, [snapMode]);
-  const [toolMenu, setToolMenu] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
-  const [wandMenu, setWandMenu] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
-  const wandMenuOpenRef = useRef(false);
-  wandMenuOpenRef.current = Boolean(wandMenu);
-  const toolMenuRef = useRef<HTMLDivElement>(null);
-  const wandMenuRef = useRef<HTMLDivElement>(null);
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const {
     helpOpen,
@@ -606,7 +228,33 @@ export function TimelineShell() {
   );
   const [touchAlertOpen, setTouchAlertOpen] = useState(false);
 
-
+  const {
+    eyeBtnRef,
+    eyeMenuRef,
+    toolsVisBtnRef,
+    toolsVisMenuRef,
+    toolMenuRef,
+    wandMenuRef,
+    eyeOpen,
+    setEyeOpen,
+    eyeMenuPos,
+    setEyeMenuPos,
+    toolsVisOpen,
+    setToolsVisOpen,
+    toolsVisMenuPos,
+    toolMenu,
+    setToolMenu,
+    wandMenu,
+    setWandMenu,
+    wandMenuOpenRef,
+    onTool,
+    openToolMenuAt,
+  } = useTimelineFloatingMenus({
+    setTool,
+    lastPointerRef,
+    isMobilePreview,
+    setTouchAlertOpen,
+  });
 
   const [primaryMapId, setPrimaryMapId] = useState<string | null>(null);
   const [trackVisibility, setTrackVisibility] = useState<TrackVisibilityMap>(
@@ -614,16 +262,30 @@ export function TimelineShell() {
   );
   const [soloAudioTrackIds, setSoloAudioTrackIds] = useState<string[]>([]);
   const [soloBusIds, setSoloBusIds] = useState<string[]>([]);
-  const [eyeOpen, setEyeOpen] = useState(false);
   const [toolbarVisibleTools, setToolbarVisibleTools] = useState<
     ToolbarToolId[]
   >(() => loadToolbarVisibleTools());
-  const [toolsVisOpen, setToolsVisOpen] = useState(false);
   const toolbarVisibleSet = useMemo(
     () => new Set<string>(toolbarVisibleTools),
     [toolbarVisibleTools],
   );
   const [locatorTicks, setLocatorTicks] = useState(0);
+  const [canvasNotice, setCanvasNotice] = useState<string | null>(null);
+  const canvasNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const flashCanvasNotice = useCallback((message: string) => {
+    if (canvasNoticeTimerRef.current) {
+      clearTimeout(canvasNoticeTimerRef.current);
+    }
+    setCanvasNotice(message);
+    canvasNoticeTimerRef.current = setTimeout(() => {
+      setCanvasNotice(null);
+      canvasNoticeTimerRef.current = null;
+    }, 3200);
+  }, []);
+
   const clipSelectionRef = useRef<ClipSelection>(EMPTY_CLIP_SELECTION);
 
   const {
@@ -672,16 +334,33 @@ export function TimelineShell() {
     },
   });
 
-  const { audioUploadPending, onUploadAudioToTrack } =
-    useTimelineAudioUpload({
-      projectId,
-      draftProject,
-      setSavedProject,
-      setDraftProject,
-      setDraftHistory,
-      setTrackVisibility,
-      setLoadError,
-    });
+  const { audioUploadPending, onUploadAudioToTrack } = useTimelineAudioUpload({
+    projectId,
+    draftProject,
+    setSavedProject,
+    setDraftProject,
+    setDraftHistory,
+    setTrackVisibility,
+    setLoadError,
+  });
+
+  const {
+    importPreviewOptions,
+    onImportUg,
+    onImportUltrastar,
+    onImportUsUgBridge,
+  } = useTimelineSongImport({
+    projectId: projectId ?? null,
+    draftProject,
+    draftRef,
+    commitDraft,
+    importAsNewSong,
+    setImportApplying,
+    closeImportModals,
+    setSongScreenOpen,
+    setSongMetaOpen,
+    flashCanvasNotice,
+  });
 
   const {
     tempoEditTitleId,
@@ -746,6 +425,36 @@ export function TimelineShell() {
     setTrackVisibility,
   });
 
+  const [timelineSurface, setTimelineSurface] =
+    useState<TimelineSurface>("timeline");
+
+  const {
+    primaryId,
+    selectionLane,
+    selectedClipId,
+    selectedClip,
+    selectedSubsectionRows,
+    selectedTekstClip,
+    selectedAkordClip,
+    selectedCueClip,
+    selectedAudioClip,
+    selectedDockAudioTrack,
+    selectedAnchor,
+    inspectorOpen,
+    meterAtPlayhead,
+    tempoAtPlayhead,
+  } = useTimelineDerivedSelection({
+    draftProject,
+    clipSelection,
+    trackSelection,
+    selectedAnchorId,
+    isMobilePreview,
+    inspectorVisible,
+    timelineSurface,
+    displayTicks,
+    state,
+  });
+
   const { applyWand } = useTimelineWandTool({
     draftRef,
     clipSelection,
@@ -754,9 +463,6 @@ export function TimelineShell() {
     setWandMenu,
     setTool,
   });
-
-  const [timelineSurface, setTimelineSurface] =
-    useState<TimelineSurface>("timeline");
   const [trackRename, setTrackRename] = useState<{
     trackId: string;
     name: string;
@@ -767,9 +473,6 @@ export function TimelineShell() {
   const laneImportStartTicksRef = useRef<number | null>(null);
   const laneAudioFileRef = useRef<HTMLInputElement>(null);
 
-  const primaryId = clipSelection.primaryId;
-  const selectionLane = primaryLane(clipSelection);
-
   // Clip focus and track header focus are mutually exclusive in the dock/inspector.
   useEffect(() => {
     if (clipSelection.items.length > 0) {
@@ -777,24 +480,12 @@ export function TimelineShell() {
       setSelectedBusId(null);
       setSelectedHwOutputId(null);
     }
-  }, [clipSelection]);
-
-  const selectedClipId = selectionLane === "forma" ? primaryId : null;
-  const selectedTekstClipId = selectionLane === "tekst" ? primaryId : null;
-  const selectedAkordClipId = selectionLane === "akordy" ? primaryId : null;
-  const selectedCueClipId = selectionLane === "cue" ? primaryId : null;
-  const selectedAudioClipId = isAudioSelectionLane(selectionLane)
-    ? primaryId
-    : null;
-  const [canvasNotice, setCanvasNotice] = useState<string | null>(null);
-  const canvasNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-
-  /** Last viewSpan.start while CD length gesture keeps tick-0 anchored. */
-  const cdSpanStartRef = useRef<number | null>(null);
-  /** After CD-length gesture ends → jump viewport to timeline start. */
-  const cdScrollToStartPendingRef = useRef(false);
+  }, [
+    clipSelection,
+    setSelectedBusId,
+    setSelectedHwOutputId,
+    setTrackSelection,
+  ]);
 
   const viewSpanRef = useRef({ start: 0, end: 0 });
   const barTicksRef = useRef(3840);
@@ -874,128 +565,43 @@ export function TimelineShell() {
     nextSetlistId: null as string | null,
   });
 
-  const selectLaneClip = useCallback((lane: ClipSelectionLane, id: string) => {
-    setClipSelection(selectSingle(id, lane));
-    if (lane !== "forma") setSelectedSubsectionIdx(null);
-    setSelectedAnchorId(null);
-    setSongMetaOpen(false);
-    setInspectorVisible(true);
-  }, []);
+  const {
+    selectLaneClip,
+    focusInspectorPanel,
+    closeMobileInspector,
+    closeInspectorPanel,
+    toggleInspectorPanel,
+    setMapSelection,
+    bindTrackRowsRef,
+  } = useTimelinePanelState({
+    touchTier,
+    setInspectorVisible,
+    setSongMetaOpen,
+    setClipSelection,
+    clearClipSelection,
+    clearMapSelection,
+    setTrackSelection,
+    setSelectedAnchorId,
+    setSelectedSubsectionIdx,
+    setSelectedMapLane,
+    setSelectedMapIds,
+    setPrimaryMapId,
+  });
 
-  /** Desktop dblclick → focus Właściwości (v4); tablet canvas double-tap stays Fit Zoom. */
-  const focusInspectorPanel = useCallback(() => {
-    if (touchTier === "mobile") return;
-    setInspectorVisible(true);
-    setSongMetaOpen(false);
-    requestAnimationFrame(() => {
-      const panel = document.querySelector<HTMLElement>(
-        'aside[aria-label="Właściwości"]',
-      );
-      if (!panel) return;
-      panel.scrollIntoView({ block: "nearest" });
-      const field = panel.querySelector<HTMLElement>(
-        "input:not([disabled]), textarea:not([disabled]), select:not([disabled])",
-      );
-      field?.focus({ preventScroll: true });
-    });
-  }, [touchTier]);
-
-  /** Esc — clear focus; on mobile preview there is no inspector sheet. */
-  const closeMobileInspector = useCallback(() => {
-    setSongMetaOpen(false);
-    clearClipSelection();
-    clearMapSelection();
-    setTrackSelection(clearTrackSelection());
-    setSelectedAnchorId(null);
-    if (touchTier === "mobile") {
-      setInspectorVisible(false);
-    }
-  }, [clearClipSelection, clearMapSelection, touchTier]);
-
-  /** Header × — hide Właściwości (same as bare I off); mobile also clears sheet focus. */
-  const closeInspectorPanel = useCallback(() => {
-    setInspectorVisible(false);
-    if (touchTier === "mobile") {
-      setSongMetaOpen(false);
-      clearClipSelection();
-      clearMapSelection();
-      setTrackSelection(clearTrackSelection());
-      setSelectedAnchorId(null);
-    }
-  }, [clearClipSelection, clearMapSelection, touchTier]);
-
-  const setMapSelection = useCallback(
-    (lane: MapLaneId, ids: string[], mapPrimaryId: string | null) => {
-      setSelectedMapLane(lane);
-      setSelectedMapIds(ids);
-      setPrimaryMapId(mapPrimaryId);
-      clearClipSelection();
-      setSelectedAnchorId(null);
-      setSongMetaOpen(false);
-      setInspectorVisible(true);
-    },
-    [clearClipSelection],
-  );
-
-  useEffect(() => {
-    if (!projectId) return;
-    void reloadProject(projectId);
-  }, [projectId, reloadProject]);
-
-  useEffect(() => {
-    if (!projectId) return;
-    const name = draftProject?.name ?? projectId;
-    const recent = pushRecentTimelineProject(projectId, name);
-    void syncNavTimelineProjectId(projectId);
-    void syncNavRecentProjects(recent);
-  }, [projectId, draftProject?.name]);
-
-  useEffect(() => {
-    if (!songScreenOpen) return;
-    void (async () => {
-      try {
-        const lib = await fetchLibrary();
-        setLibraryNames(lib.projects.map((p) => ({ id: p.id, name: p.name })));
-      } catch {
-        setLibraryNames([]);
-      }
-    })();
-  }, [songScreenOpen]);
-
-  useEffect(() => {
-    setSetlistIds(setlistSnapshot.projectIds);
-    setSetlistEnabled(setlistSnapshot.enabled);
-    setAutoAdvance(setlistSnapshot.autoAdvanceEnabled);
-  }, [setlistSnapshot]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const view = await fetchSetlist();
-        if (cancelled) return;
-        setSetlistIds(view.projectIds);
-        setSetlistEnabled(view.enabled);
-        setAutoAdvance(view.autoAdvance.enabled);
-      } catch {
-        if (!cancelled) {
-          setSetlistIds([]);
-          setSetlistEnabled(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId]);
-
-  const setlistIndex = projectId ? setlistIds.indexOf(projectId) : -1;
-  const prevSetlistId =
-    setlistEnabled && setlistIndex > 0 ? setlistIds[setlistIndex - 1] : null;
-  const nextSetlistId =
-    setlistEnabled && setlistIndex >= 0 && setlistIndex < setlistIds.length - 1
-      ? setlistIds[setlistIndex + 1]
-      : null;
+  const {
+    libraryNames,
+    setlistEnabled,
+    autoAdvance,
+    setAutoAdvance,
+    prevSetlistId,
+    nextSetlistId,
+  } = useTimelineSetlistState({
+    projectId,
+    draftProjectName: draftProject?.name,
+    songScreenOpen,
+    setlistSnapshot,
+    reloadProject,
+  });
 
   useEffect(() => {
     const syncTier = () => setTouchTier(detectTimelineTier());
@@ -1038,98 +644,6 @@ export function TimelineShell() {
     zoomMax: ZOOM_H_MAX,
   });
 
-  const toggleInspectorPanel = useCallback(() => {
-    if (touchTier === "mobile") return;
-    setInspectorVisible((v) => !v);
-  }, [touchTier]);
-
-  const bindTrackRowsRef = useCallback((node: HTMLDivElement | null) => {
-    trackRowsRoRef.current?.disconnect();
-    trackRowsRoRef.current = null;
-    if (!node) return;
-    const sync = () => {
-      node.style.setProperty("--tl-track-rows-h", `${node.clientHeight}px`);
-    };
-    sync();
-    const ro = new ResizeObserver(sync);
-    ro.observe(node);
-    trackRowsRoRef.current = ro;
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      trackRowsRoRef.current?.disconnect();
-      trackRowsRoRef.current = null;
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!eyeOpen) {
-      setEyeMenuPos(null);
-      return;
-    }
-
-    function updateEyeMenuPos() {
-      const btn = eyeBtnRef.current;
-      if (!btn) return;
-      const rect = btn.getBoundingClientRect();
-      setEyeMenuPos({ top: rect.bottom, left: rect.left });
-    }
-
-    updateEyeMenuPos();
-    window.addEventListener("resize", updateEyeMenuPos);
-    const scrollEl = document.querySelector("[data-canvas-scroll]");
-    scrollEl?.addEventListener("scroll", updateEyeMenuPos, true);
-    return () => {
-      window.removeEventListener("resize", updateEyeMenuPos);
-      scrollEl?.removeEventListener("scroll", updateEyeMenuPos, true);
-    };
-  }, [eyeOpen]);
-
-  useEffect(() => {
-    if (!eyeOpen) return;
-    function onPointerDown(e: MouseEvent) {
-      const target = e.target as Node;
-      if (eyeBtnRef.current?.contains(target)) return;
-      if (eyeMenuRef.current?.contains(target)) return;
-      setEyeOpen(false);
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [eyeOpen]);
-
-  useLayoutEffect(() => {
-    if (!toolsVisOpen) {
-      setToolsVisMenuPos(null);
-      return;
-    }
-
-    function updateToolsVisMenuPos() {
-      const btn = toolsVisBtnRef.current;
-      if (!btn) return;
-      const rect = btn.getBoundingClientRect();
-      setToolsVisMenuPos({ top: rect.bottom, left: rect.left });
-    }
-
-    updateToolsVisMenuPos();
-    window.addEventListener("resize", updateToolsVisMenuPos);
-    return () => {
-      window.removeEventListener("resize", updateToolsVisMenuPos);
-    };
-  }, [toolsVisOpen]);
-
-  useEffect(() => {
-    if (!toolsVisOpen) return;
-    function onPointerDown(e: MouseEvent) {
-      const target = e.target as Node;
-      if (toolsVisBtnRef.current?.contains(target)) return;
-      if (toolsVisMenuRef.current?.contains(target)) return;
-      setToolsVisOpen(false);
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [toolsVisOpen]);
-
   const rawTicksAtClientX = useCallback(
     (clientX: number): number | null => {
       const coordRoot = lanesCoordRef.current;
@@ -1144,6 +658,34 @@ export function TimelineShell() {
     },
     [draftRef, zoomHRef],
   );
+
+  const { openClipContextMenu, openEmptyLaneContextMenu } =
+    useTimelineContextMenus({
+      isMobilePreview,
+      setTouchAlertOpen,
+      clearMapSelection,
+      clipSelectionRef,
+      setClipSelection,
+      setSelectedSubsectionIdx,
+      setSelectedAnchorId,
+      setSongMetaOpen,
+      setInspectorVisible,
+      selectLaneClip,
+      clipboardRef,
+      rawTicksAtClientX,
+      draftRef,
+      commitDraft,
+      copyClipSelection,
+      deleteSelectedFormaClip,
+      duplicateClipSelection,
+      pasteClipClipboard,
+      focusInspectorPanel,
+      openContextMenu,
+      laneImportTrackIdRef,
+      laneImportStartTicksRef,
+      laneAudioFileRef,
+      locatorTicks,
+    });
 
   const { heldZoom, heldZoomRef } = useTimelineKeyboardEvents({
     keyHandlersRef,
@@ -1263,191 +805,38 @@ export function TimelineShell() {
     beginTouchCanvasNav,
   });
 
-  const viewSpan = useMemo(() => {
-    const clips = draftProject?.forma.clips ?? [];
-    if (gesturePreview?.kind === "countdown-length" && gesturePreview.clipId) {
-      return computeFormaViewSpan(
-        clips.map((c) =>
-          c.id === gesturePreview.clipId
-            ? {
-                ...c,
-                startTicks: gesturePreview.startTicks,
-                lengthTicks: gesturePreview.lengthTicks,
-              }
-            : c,
-        ),
-      );
-    }
-    return computeFormaViewSpan(clips);
-  }, [draftProject?.forma.clips, gesturePreview]);
-
-  const barTicks = draftProject
-    ? ticksPerBar(draftProject.defaultMeter, draftProject.ppq)
-    : ticksPerBar({ numerator: 4, denominator: 4 }, 960);
-
-  viewSpanRef.current = viewSpan;
-  barTicksRef.current = barTicks;
-
-  // Countdown length drag: scroll to timeline start so new CD bars stay visible.
-  // Length delta uses clientX→ticks (not abs tick under cursor) so drag stays stable.
-  // After release / inspector: jump to start again if needed.
-  useLayoutEffect(() => {
-    const cdGesture =
-      gestureSessionRef.current?.kind === "countdown-length" ||
-      gesturePreview?.kind === "countdown-length";
-    if (cdGesture) {
-      cdScrollToStartPendingRef.current = true;
-      cdSpanStartRef.current = viewSpan.start;
-      scrollCanvasToStart(
-        document.querySelector("[data-canvas-scroll]") as HTMLElement | null,
-      );
-      return;
-    }
-    if (cdSpanStartRef.current != null || cdScrollToStartPendingRef.current) {
-      cdSpanStartRef.current = null;
-      if (cdScrollToStartPendingRef.current) {
-        cdScrollToStartPendingRef.current = false;
-        scrollCanvasToStart(
-          document.querySelector("[data-canvas-scroll]") as HTMLElement | null,
-        );
-      }
-    }
-  }, [viewSpan.start, gesturePreview?.kind, barTicks, effectiveZoomH]);
-
-  const canvasWidthPx = useMemo(
-    () => computeCanvasWidthPx(viewSpan, barTicks, effectiveZoomH),
-    [viewSpan, barTicks, effectiveZoomH],
-  );
-
-  const barMarks = useMemo(() => {
-    if (!draftProject) return [];
-    return buildBarMarks(viewSpan, draftProject);
-  }, [draftProject, viewSpan]);
-
-  const rulerBeatMarks = useMemo(() => {
-    if (!draftProject) return [];
-    return buildRulerBeatMarks(viewSpan, draftProject, effectiveZoomH);
-  }, [draftProject, viewSpan, effectiveZoomH]);
-
-  const playheadPx = tickToPx(displayTicks, viewSpan, barTicks, effectiveZoomH);
-
-  const effectiveLocatorTicks = vocalTapMarkTicks(
-    state.playing,
-    displayTicks,
-    locatorTicks,
-  );
-  effectiveLocatorTicksRef.current = effectiveLocatorTicks;
-
-  /** v4: while Tap is active, highlight the queue line Space will mark next. */
-  const tapActiveClipId = useMemo(() => {
-    if (tool !== "tap" || !draftProject) return null;
-    const queue = vocalTapQueue(draftProject);
-    if (queue.length === 0) return null;
-    return queue[Math.min(tapLineIndex, queue.length - 1)]?.id ?? null;
-  }, [tool, draftProject, tapLineIndex]);
-  const locatorPx = tickToPx(
-    effectiveLocatorTicks,
+  const {
     viewSpan,
     barTicks,
-    effectiveZoomH,
-  );
-  const locatorMeter = draftProject
-    ? resolveMeterAt(draftProject, effectiveLocatorTicks)
-    : state.timeSignature;
-  const locatorBbt = ticksToBbt(
+    canvasWidthPx,
+    barMarks,
+    rulerBeatMarks,
+    playheadPx,
     effectiveLocatorTicks,
-    locatorMeter,
-    draftProject?.ppq ?? state.ppq,
-  );
-  const locatorLabel = `${toDisplayBar(locatorBbt.bar)}.${locatorBbt.beat}`;
-
-
-
-  const loopOn = Boolean(state.loop?.enabled);
-  const loopRange = loopDraft ?? usableLoopRange(state.loop);
-
-  const mapPreviewProject = useMemo(() => {
-    if (!draftProject || !mapDragPreview) return draftProject;
-    const { lane, moveIds, deltaTicks } = mapDragPreview;
-    if (deltaTicks === 0) return draftProject;
-    const idSet = new Set(moveIds);
-    const shift = <T extends { id: string; startTicks: number }>(
-      list: T[],
-    ): T[] =>
-      list
-        .map((e) =>
-          idSet.has(e.id) && e.startTicks > 0
-            ? { ...e, startTicks: e.startTicks + deltaTicks }
-            : e,
-        )
-        .sort((a, b) => a.startTicks - b.startTicks);
-    if (lane === "tempo") {
-      return { ...draftProject, tempoMap: shift(draftProject.tempoMap) };
-    }
-    if (lane === "metrum") {
-      return { ...draftProject, meterMap: shift(draftProject.meterMap) };
-    }
-    return {
-      ...draftProject,
-      keyMap: shift(draftProject.keyMap ?? []),
-    };
-  }, [draftProject, mapDragPreview]);
-
-  const tempoSegments = useMemo(() => {
-    if (!mapPreviewProject) return [];
-    return tempoMapSegments(mapPreviewProject, viewSpan);
-  }, [mapPreviewProject, viewSpan]);
-
-  const meterSegments = useMemo(() => {
-    if (!mapPreviewProject) return [];
-    return meterMapSegments(mapPreviewProject, viewSpan);
-  }, [mapPreviewProject, viewSpan]);
-
-  const keySegments = useMemo(() => {
-    if (!mapPreviewProject) return [];
-    return keyMapSegments(mapPreviewProject, viewSpan, formatKeySignature);
-  }, [mapPreviewProject, viewSpan]);
-
-  const selectedClip =
-    draftProject?.forma.clips.find((c) => c.id === selectedClipId) ?? null;
-  const selectedSubsectionRows =
-    draftProject && selectedClip?.kind === "section"
-      ? formaSubsectionRows(draftProject, selectedClip)
-      : [];
-  const selectedTekstClip =
-    draftProject?.tekst.clips.find((c) => c.id === selectedTekstClipId) ?? null;
-  const selectedAkordClip =
-    draftProject?.akordy.clips.find((c) => c.id === selectedAkordClipId) ??
-    null;
-  const selectedCueClip =
-    draftProject?.cue.clips.find((c) => c.id === selectedCueClipId) ?? null;
-  const selectedAudioClip =
-    draftProject && selectedAudioClipId
-      ? (draftProject.audioClips.find((c) => c.id === selectedAudioClipId) ??
-        null)
-      : null;
-  const selectedDockAudioTrack =
-    draftProject && primaryAudioTrackId(trackSelection)
-      ? (draftProject.audioTracks.find(
-          (tr) => tr.id === primaryAudioTrackId(trackSelection),
-        ) ?? null)
-      : null;
-  const selectedAnchor =
-    draftProject && selectedAnchorId
-      ? (scoreAnchors(draftProject).find((a) => a.id === selectedAnchorId) ??
-        null)
-      : null;
-
-  /** Panel visibility — bare I (not Metadane ⓘ). Hidden in Mixer; absent on mobile preview. */
-  const inspectorOpen =
-    !isMobilePreview && inspectorVisible && timelineSurface !== "mixer";
-
-  const meterAtPlayhead = draftProject
-    ? resolveMeterAt(draftProject, displayTicks)
-    : state.timeSignature;
-  const tempoAtPlayhead = draftProject
-    ? resolveTempoAt(draftProject, displayTicks)
-    : state.bpm;
+    tapActiveClipId,
+    locatorPx,
+    locatorLabel,
+    loopOn,
+    loopRange,
+    tempoSegments,
+    meterSegments,
+    keySegments,
+  } = useTimelineCanvasDerived({
+    draftProject,
+    gesturePreview,
+    gestureSessionRef,
+    effectiveZoomH,
+    displayTicks,
+    locatorTicks,
+    tool,
+    tapLineIndex,
+    state,
+    loopDraft,
+    mapDragPreview,
+    viewSpanRef,
+    barTicksRef,
+    effectiveLocatorTicksRef,
+  });
 
   const {
     metronomeOn,
@@ -1527,128 +916,20 @@ export function TimelineShell() {
     navigate,
   });
 
-  // Soft-clock AlongMap — same TempoMap math as server engine / audio (P3).
-  useEffect(() => {
-    if (!draftProject) {
-      setSoftClockTempoMaps(null);
-      return;
-    }
-    setSoftClockTempoMaps({
-      defaultBpm: draftProject.defaultBpm,
-      defaultMeter: draftProject.defaultMeter,
-      tempoMap: draftProject.tempoMap,
-      meterMap: draftProject.meterMap,
-      ppq: draftProject.ppq,
-    });
-    return () => setSoftClockTempoMaps(null);
-  }, [draftProject, setSoftClockTempoMaps]);
-
-  // WebAudio clip playback — sync to server ticks (ADR 0008 / 0002).
-  // Latency compensation is a client-only tick offset (Preferences); SSOT unchanged.
-  // Soft-clock + lead must stay inside the transport loop (exclusive end) so a
-  // clip starting on the loop end (e.g. bar 2.1 while cycling bar 1) never
-  // arms early at the wrap boundary.
-  useEffect(() => {
-    if (!projectId || !draftProject) {
-      stopAudioPlayback();
-      return;
-    }
-    if (!state.playing) {
-      // SSOT paused/stopped — clear local suppress from Pause/Stop click RTT.
-      allowAudioPlayback();
-      stopAudioPlayback();
-      return;
-    }
-    let audioTicks = displayTicks;
-    const loopRange = usableLoopRange(state.loop);
-    if (loopOn && loopRange) {
-      audioTicks = wrapDisplayTicks(audioTicks, {
-        enabled: true,
-        startTicks: loopRange.startTicks,
-        endTicks: loopRange.endTicks,
-      });
-    }
-    syncAudioPlayback(projectId, {
-      project: draftProject,
-      playing: state.playing,
-      displayTicks: audioTicks,
-      loopEnabled: loopOn,
-      soloTrackIds: soloAudioTrackIds,
-      soloBusIds,
-    });
-  }, [
+  useTimelineAudioEngineSync({
     projectId,
     draftProject,
-    state.playing,
+    setDraftProject,
+    setTrackVisibility,
+    setFailedAudioAssetIds,
+    setSoftClockTempoMaps,
+    state,
     displayTicks,
-    state.bpm,
-    state.ppq,
-    state.loop,
-    latencyCompMs,
     loopOn,
     soloAudioTrackIds,
     soloBusIds,
-  ]);
-
-  useEffect(() => {
-    return () => {
-      stopAudioPlayback();
-      if (projectId) clearAudioBufferCache(projectId);
-    };
-  }, [projectId]);
-
-  const audioAssetDecodeKey =
-    draftProject?.assets
-      .filter((a) => a.kind === "audio")
-      .map(
-        (a) => `${a.id}:${a.durationMs ?? 0}:${a.waveformPeaks?.length ?? 0}`,
-      )
-      .join("|") ?? "";
-
-  // Decode assets missing duration/peaks (on-demand waveform).
-  useEffect(() => {
-    if (!projectId || !draftProject) return;
-    let cancelled = false;
-    const missing = draftProject.assets.filter(
-      (a) =>
-        a.kind === "audio" &&
-        (a.durationMs == null || !a.waveformPeaks?.length),
-    );
-    if (!missing.length) return;
-    const snapshot = draftProject;
-    void (async () => {
-      let project = snapshot;
-      let changed = false;
-      for (const asset of missing) {
-        if (cancelled) return;
-        // Waveform meta only — do not pin full PCM into the playback cache
-        // (eager decode of every asset used to retain multi-GB of AudioBuffers).
-        const buf = await loadAudioBuffer(projectId, asset.id, undefined, {
-          cache: false,
-        });
-        if (cancelled) return;
-        setFailedAudioAssetIds(getFailedAudioAssetIds(projectId));
-        if (!buf) continue;
-        const meta = computeWaveformFromAudioBuffer(buf);
-        project = applyDecodedAudioMeta(project, asset.id, {
-          durationMs: meta.durationMs,
-          waveformPeaks: meta.peaks,
-          waveformRms: meta.rms,
-          channelCount: buf.numberOfChannels,
-        });
-        changed = true;
-      }
-      if (cancelled || !changed) return;
-      setDraftProject(project);
-      setTrackVisibility((prev) =>
-        ensureAudioTrackVisibility(prev, project.audioTracks),
-      );
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // audioAssetDecodeKey tracks which audio assets still need meta.
-  }, [projectId, audioAssetDecodeKey, draftProject]);
+    latencyCompMs,
+  });
 
   useEffect(() => {
     const canU = Boolean(draftHistory && canUndo(draftHistory));
@@ -1685,410 +966,56 @@ export function TimelineShell() {
     }
     window.addEventListener(SONG_IMPORT_EVENT, onSongImport);
     return () => window.removeEventListener(SONG_IMPORT_EVENT, onSongImport);
-  }, [draftProject]);
+  }, [draftProject, openSongImportWizard]);
 
-  const importPreviewOptions = importAsNewSong
-    ? {
-        ppq: DEFAULT_PPQ,
-        meter: { numerator: 4, denominator: 4 } as const,
-      }
-    : draftProject
-      ? {
-          ppq: draftProject.ppq,
-          meter: resolveMeterAt(draftProject, 0),
-        }
-      : {
-          ppq: DEFAULT_PPQ,
-          meter: { numerator: 4, denominator: 4 } as const,
-        };
-
-  function mergeUgIntoProject(
-    project: Project,
-    result: UgImportOk,
-    runWand: boolean,
-    metadata?: UgTabMetadata | null,
-  ): Project {
-    let next = applyUgImportToProject(project, result);
-    const title = metadata?.title?.trim();
-    const artist = metadata?.artist?.trim();
-    if (title) next = { ...next, name: title.slice(0, 200) };
-    if (artist) next = { ...next, artist: artist.slice(0, 200) };
-    if (runWand) {
-      const wand = placeContentFromForma(next, "both");
-      if (wand.ok) next = wand.project;
-    }
-    return next;
-  }
-
-  async function onImportUg(
-    result: UgImportOk,
-    runWand: boolean,
-    metadata?: UgTabMetadata | null,
-  ) {
-    if (importAsNewSong) {
-      setImportApplying(true);
-      try {
-        const name =
-          metadata?.title?.trim() ||
-          `Import UG ${new Date().toLocaleTimeString("pl")}`;
-        const saved = await createSongWithContent(name, (shell) =>
-          mergeUgIntoProject(shell, result, runWand, metadata),
-        );
-        closeImportModals();
-        setSongScreenOpen(false);
-        flashCanvasNotice(
-          runWand
-            ? `Nowy utwór „${saved.name}”: Import UG (${result.sections.length} sekcji) + Różdżka`
-            : `Nowy utwór „${saved.name}”: Import UG (${result.sections.length} sekcji)`,
-        );
-        navigate(`/timeline/${saved.id}`);
-      } catch (err) {
-        setImportApplying(false);
-        flashCanvasNotice(
-          err instanceof Error ? err.message : "Import UG nie powiódł się",
-        );
-      }
-      return;
-    }
-    if (!draftProject) return;
-    const next = mergeUgIntoProject(draftProject, result, runWand, metadata);
-    commitDraft(next);
-    flashCanvasNotice(
-      runWand
-        ? `Import UG: ${result.sections.length} sekcji + Różdżka — sprawdź Formę i Tap`
-        : `Import UG: ${result.sections.length} sekcji — Różdżka (W) gdy Formę dopracujesz`,
-    );
-    closeImportModals();
-    setSongScreenOpen(false);
-  }
-
-  async function onImportUltrastar(result: UltrastarImportOk) {
-    if (importAsNewSong) {
-      setImportApplying(true);
-      try {
-        const name =
-          result.title?.trim() ||
-          `Import UltraStar ${new Date().toLocaleTimeString("pl")}`;
-        const saved = await createSongWithContent(name, (shell) =>
-          applyUltrastarImportToProject(shell, result),
-        );
-        closeImportModals();
-        setSongScreenOpen(false);
-        setSongMetaOpen(false);
-        flashCanvasNotice(
-          `Nowy utwór „${saved.name}”: Import UltraStar (${result.syllableCount} sylab)`,
-        );
-        navigate(`/timeline/${saved.id}`);
-      } catch (err) {
-        setImportApplying(false);
-        flashCanvasNotice(
-          err instanceof Error
-            ? err.message
-            : "Import UltraStar nie powiódł się",
-        );
-      }
-      return;
-    }
-    if (!draftProject) return;
-    const next = applyUltrastarImportToProject(draftProject, result);
-    commitDraft(next);
-    flashCanvasNotice(
-      `Import UltraStar: ${result.syllableCount} sylab / ${result.tekst.clips.length} linii w draftcie — Zapisz (⌘S), aby utrwalić`,
-    );
-    closeImportModals();
-    setSongScreenOpen(false);
-    setSongMetaOpen(false);
-  }
-
-  async function onImportUsUgBridge(payload: UsUgApplyPayload) {
-    const result = payload.bridge;
-    const smartAudio = payload.smartTempoAudio;
-    const pendingFile = payload.pendingAudioFile;
-    const warn =
-      result.approximate || result.warnings.length > 0
-        ? " · sprawdź Formę / akordy"
-        : "";
-    const summary = `${result.sections.length} sekcji · ${result.akordy.clips.length} akordów · dopasowanie ${Math.round(result.alignScore * 100)}%${warn}`;
-    setImportApplying(true);
-    await yieldToUi();
-    if (importAsNewSong) {
-      try {
-        const name =
-          result.title?.trim() ||
-          `Import US+UG ${new Date().toLocaleTimeString("pl")}`;
-        let saved = await createSongWithContent(name, (shell) =>
-          applyUsUgBridgeToProject(shell, result, {
-            // Place clip only after real upload (skip synthetic local-* ids).
-            smartTempoAudio: pendingFile ? undefined : smartAudio,
-          }),
-        );
-        if (pendingFile && saved.id) {
-          saved = await uploadProjectAudio(saved.id, pendingFile, {
-            startTicks: 0,
-          });
-          const asset = saved.assets.at(-1);
-          if (asset && smartAudio) {
-            const withClip = applyUsUgBridgeToProject(saved, result, {
-              smartTempoAudio: {
-                ...smartAudio,
-                assetId: asset.id,
-              },
-            });
-            saved = await putProject(saved.id, {
-              ...withClip,
-              id: saved.id,
-              updatedAt: saved.updatedAt,
-              midiProgramId: saved.midiProgramId,
-            });
-          }
-        }
-        closeImportModals();
-        setSongScreenOpen(false);
-        setSongMetaOpen(false);
-        flashCanvasNotice(
-          `Nowy utwór „${saved.name}”: Import US+UG (${summary})`,
-        );
-        navigate(`/timeline/${saved.id}`);
-      } catch (err) {
-        setImportApplying(false);
-        flashCanvasNotice(
-          err instanceof Error ? err.message : "Import US+UG nie powiódł się",
-        );
-      }
-      return;
-    }
-    if (!draftProject) return;
-    const baseDraft = payload.serverProjectSnapshot
-      ? {
-          ...draftProject,
-          updatedAt: payload.serverProjectSnapshot.updatedAt,
-          assets: payload.serverProjectSnapshot.assets,
-          audioTracks: payload.serverProjectSnapshot.audioTracks,
-          audioClips: payload.serverProjectSnapshot.audioClips,
-        }
-      : draftProject;
-    let next = applyUsUgBridgeToProject(baseDraft, result, {
-      smartTempoAudio: smartAudio,
-    });
-    if (pendingFile && projectId) {
-      next = await uploadProjectAudio(projectId, pendingFile, {
-        startTicks: 0,
-      });
-      const asset = next.assets.at(-1);
-      if (asset && smartAudio) {
-        next = applyUsUgBridgeToProject(next, result, {
-          smartTempoAudio: { ...smartAudio, assetId: asset.id },
-        });
-      }
-    }
-    if (projectId) {
-      try {
-        next = await putProject(projectId, next);
-      } catch (err) {
-        console.warn(
-          "[TimelineShell] Auto-save on import failed, keeping draft:",
-          err,
-        );
-      }
-    }
-    commitDraft(next);
-    flashCanvasNotice(`Import US+UG: ${summary}`);
-    closeImportModals();
-    setSongScreenOpen(false);
-    setSongMetaOpen(false);
-  }
-
-
-
-  useEffect(() => {
-    if (!toolMenu) return;
-    function onPointerDown(e: PointerEvent) {
-      const el = toolMenuRef.current;
-      if (el && e.target instanceof Node && el.contains(e.target)) return;
-      setToolMenu(null);
-    }
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [toolMenu]);
-
-  useEffect(() => {
-    if (!wandMenu) return;
-    function onPointerDown(e: PointerEvent) {
-      const el = wandMenuRef.current;
-      if (el && e.target instanceof Node && el.contains(e.target)) return;
-      setWandMenu(null);
-      setTool((t) => (t === "wand" ? "pointer" : t));
-    }
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [wandMenu]);
-
-  function toggleTrack(id: string) {
-    const def = buildTrackList(draftProject?.audioTracks ?? []).find(
-      (t) => t.id === id,
-    );
-    if (def?.locked) return;
-    setTrackVisibility((prev) => ({ ...prev, [id]: !prev[id] }));
-  }
-
-  function onAddAudioTrack() {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    if (!draftProject) return;
-    if (draftProject.audioTracks.length >= MAX_AUDIO_TRACKS) {
-      setLoadError(`Limit ścieżek audio (${MAX_AUDIO_TRACKS}) osiągnięty`);
-      return;
-    }
-    const { project, trackId } = addAudioTrack(draftProject);
-    commitDraft(project);
-    setClipSelection(clearSelection());
-    setTrackSelection(selectAudioTrack(trackId));
-    setInspectorVisible(true);
-    setEyeOpen(false);
-    setTrackVisibility((prev) =>
-      ensureAudioTrackVisibility(prev, project.audioTracks),
-    );
-  }
-
-  function onRemoveAudioTrack(trackId: string) {
-    if (!draftProject) return;
-    const next = removeAudioTrack(draftProject, trackId);
-    if (next === draftProject) return;
-    commitDraft(next);
-    setClipSelection(clearSelection());
-    setTrackSelection(
-      pruneTrackSelection(
-        trackSelection,
-        new Set(next.audioTracks.map((t) => t.id)),
-      ),
-    );
-    setSoloAudioTrackIds((prev) => prev.filter((id) => id !== trackId));
-    setTrackVisibility((prev) =>
-      ensureAudioTrackVisibility(prev, next.audioTracks),
-    );
-    if (trackRename?.trackId === trackId) setTrackRename(null);
-  }
-
-  function onDuplicateAudioTrack(trackId: string) {
-    if (!draftProject) return;
-    if (draftProject.audioTracks.length >= MAX_AUDIO_TRACKS) {
-      setLoadError(`Limit ścieżek audio (${MAX_AUDIO_TRACKS}) osiągnięty`);
-      return;
-    }
-    try {
-      const result = duplicateAudioTrack(draftProject, trackId);
-      if (!result) return;
-      commitDraft(result.project);
-      setClipSelection(clearSelection());
-      setTrackSelection(selectAudioTrack(result.trackId));
-      setTrackVisibility((prev) =>
-        ensureAudioTrackVisibility(prev, result.project.audioTracks),
-      );
-    } catch (err) {
-      setLoadError(
-        err instanceof Error
-          ? err.message
-          : "Nie udało się zduplikować ścieżki",
-      );
-    }
-  }
-
-  function openTrackRename(trackId: string) {
-    const name =
-      draftProject?.audioTracks.find((t) => t.id === trackId)?.name ?? "";
-    setTrackRename({ trackId, name });
-  }
-
-  function openAudioTrackContextMenu(
-    trackId: string,
-    clientX: number,
-    clientY: number,
-  ) {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    setClipSelection(clearSelection());
-    setSelectedBusId(null);
-    setSelectedHwOutputId(null);
-    const alreadySelected = isAudioTrackSelected(trackSelection, trackId);
-    const trackCount = alreadySelected ? trackSelection.ids.length : 1;
-    if (!alreadySelected) {
-      setTrackSelection(selectAudioTrack(trackId));
-    }
-    openContextMenu({
-      x: clientX,
-      y: clientY,
-      label: audioTrackContextMenuLabel(trackCount),
-      items: buildAudioTrackContextMenuItems({
-        canDuplicate:
-          (draftProject?.audioTracks.length ?? 0) < MAX_AUDIO_TRACKS,
-        onRename: () => openTrackRename(trackId),
-        onDuplicate: () => onDuplicateAudioTrack(trackId),
-        onRemove: () => onRemoveAudioTrack(trackId),
-      }),
-    });
-  }
-
-  function commitTrackRename() {
-    if (!draftProject || !trackRename) return;
-    const next = setAudioTrackName(
+  const { onAddAudioTrack, onRemoveAudioTrack, onDuplicateAudioTrack } =
+    useTimelineTrackActions({
       draftProject,
-      trackRename.trackId,
-      trackRename.name,
-    );
-    if (next !== draftProject) commitDraft(next);
-    setTrackRename(null);
-  }
+      commitDraft,
+      setClipSelection,
+      setTrackSelection,
+      setInspectorVisible,
+      setEyeOpen,
+      setTrackVisibility,
+      setSoloAudioTrackIds,
+      setTrackRename,
+      setSelectedBusId,
+      setSelectedHwOutputId,
+      isMobilePreview,
+      setTouchAlertOpen,
+      setLoadError,
+      openContextMenu,
+    });
 
-  function cancelTrackRename() {
-    setTrackRename(null);
-  }
-
-  function onAudioTrackHeaderClick(e: React.MouseEvent, trackId: string) {
-    if ((e.target as HTMLElement).closest("button, label, input")) {
-      return;
-    }
-    setClipSelection(clearSelection());
-    setSelectedBusId(null);
-    setSelectedHwOutputId(null);
-    const orderedIds = (draftProject?.audioTracks ?? []).map((t) => t.id);
-    if (e.shiftKey) {
-      setTrackSelection(
-        selectAudioTrackRange(trackSelection, trackId, orderedIds),
-      );
-    } else if (isMultiSelectClick(e)) {
-      setTrackSelection(toggleAudioTrackSelected(trackSelection, trackId));
-    } else {
-      setTrackSelection(selectAudioTrack(trackId));
-    }
-    setInspectorVisible(true);
-  }
-
-  function onAudioTrackSoloClick(e: React.MouseEvent, trackId: string) {
-    const allIds = (draftProject?.audioTracks ?? []).map((t) => t.id);
-    setSoloAudioTrackIds((prev) =>
-      applySoloButtonClick(prev, trackId, allIds, trackSelection.ids, e),
-    );
-    setSoloBusIds([]);
-  }
-
-  function onAudioTrackMuteClick(e: React.MouseEvent, trackId: string) {
-    if (!draftProject) return;
-    const track = draftProject.audioTracks.find((t) => t.id === trackId);
-    if (!track) return;
-    const allIds = draftProject.audioTracks.map((t) => t.id);
-    const { trackIds, muted } = resolveMuteButtonClick(
-      trackId,
-      Boolean(track.muted),
-      allIds,
-      trackSelection.ids,
-      e,
-    );
-    commitDraft(setAudioTracksMuted(draftProject, trackIds, muted));
-  }
+  const {
+    toggleTrack,
+    openTrackRename,
+    commitTrackRename,
+    cancelTrackRename,
+    openAudioTrackContextMenu,
+    onAudioTrackHeaderClick,
+    onAudioTrackSoloClick,
+    onAudioTrackMuteClick,
+  } = useTimelineAudioTrackInteractions({
+    draftProject,
+    commitDraft,
+    trackSelection,
+    setTrackSelection,
+    setClipSelection,
+    setSelectedBusId,
+    setSelectedHwOutputId,
+    setInspectorVisible,
+    setSoloAudioTrackIds,
+    setSoloBusIds,
+    setTrackVisibility,
+    trackRename,
+    setTrackRename,
+    isMobilePreview,
+    setTouchAlertOpen,
+    openContextMenu,
+    onDuplicateAudioTrack,
+    onRemoveAudioTrack,
+  });
 
   const {
     busRename,
@@ -2174,56 +1101,6 @@ export function TimelineShell() {
     );
   }
 
-  function onTool(id: ToolId) {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    setToolMenu(null);
-    if (id === "wand") {
-      setTool("wand");
-      const { x, y } = lastPointerRef.current;
-      setWandMenu({
-        left: Math.max(8, x),
-        top: Math.max(8, y),
-      });
-      return;
-    }
-    setWandMenu(null);
-    setTool(id);
-  }
-
-  function flashCanvasNotice(message: string) {
-    if (canvasNoticeTimerRef.current) {
-      clearTimeout(canvasNoticeTimerRef.current);
-    }
-    setCanvasNotice(message);
-    canvasNoticeTimerRef.current = setTimeout(() => {
-      setCanvasNotice(null);
-      canvasNoticeTimerRef.current = null;
-    }, 3200);
-  }
-
-  function openToolMenuAt(clientX: number, clientY: number) {
-    const pad = 8;
-    const approxW = 220;
-    const approxH = TOOLS.length * 40 + 16;
-    let left = clientX;
-    let top = clientY;
-    if (typeof window !== "undefined") {
-      if (left + approxW > window.innerWidth - pad) {
-        left = window.innerWidth - approxW - pad;
-      }
-      if (top + approxH > window.innerHeight - pad) {
-        top = window.innerHeight - approxH - pad;
-      }
-    }
-    setToolMenu({
-      left: Math.max(pad, left),
-      top: Math.max(pad, top),
-    });
-  }
-
   keyHandlersRef.current = {
     onSave,
     onDiscard,
@@ -2255,282 +1132,6 @@ export function TimelineShell() {
   };
 
   const canvasInnerWidth = `calc(var(--tl-dock-w) + ${canvasWidthPx}px)`;
-
-  function openClipContextMenu(args: {
-    clientX: number;
-    clientY: number;
-    lane: ClipMenuLane;
-    clipId: string;
-    clipMuted?: boolean;
-    canSplit: boolean;
-    canDelete?: boolean;
-    selectionLane: Parameters<typeof selectLaneClip>[0];
-  }) {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    const {
-      clientX,
-      clientY,
-      lane,
-      clipId,
-      clipMuted,
-      canSplit,
-      canDelete = true,
-    } = args;
-    clearMapSelection();
-    const prev = clipSelectionRef.current;
-    const alreadySelected = isClipSelected(prev, clipId, args.selectionLane);
-    const onLaneIds = alreadySelected
-      ? idsOnLane(prev, args.selectionLane)
-      : [];
-    const multiIds = onLaneIds.length > 1 ? onLaneIds : null;
-    const selectionCount = multiIds?.length ?? 1;
-    flushSync(() => {
-      if (multiIds) {
-        setClipSelection(setSelection(prev.items, clipId));
-        setSelectedSubsectionIdx(null);
-        setSelectedAnchorId(null);
-        setSongMetaOpen(false);
-        setInspectorVisible(true);
-      } else {
-        selectLaneClip(args.selectionLane, clipId);
-      }
-    });
-    const board = clipboardRef.current;
-    const canPaste = Boolean(board);
-    const splitTicks = rawTicksAtClientX(clientX);
-
-    const copyThisClip = (): boolean => {
-      const draft = draftRef.current;
-      if (!draft) return false;
-      let clips: Parameters<typeof buildClipboardFromClips>[1] = [];
-      if (lane === "forma") {
-        const c = draft.forma.clips.find(
-          (x) => x.id === clipId && x.kind === "section",
-        );
-        if (c) clips = [c];
-      } else if (lane === "tekst") {
-        const c = draft.tekst.clips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      } else if (lane === "akordy") {
-        const c = draft.akordy.clips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      } else if (lane === "cue") {
-        const c = draft.cue.clips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      } else if (lane === "audio") {
-        const c = draft.audioClips.find((x) => x.id === clipId);
-        if (c) clips = [c];
-      }
-      const nextBoard = buildClipboardFromClips(args.selectionLane, clips);
-      if (!nextBoard) return false;
-      clipboardRef.current = nextBoard;
-      return true;
-    };
-
-    const deleteThisClip = () => {
-      const draft = draftRef.current;
-      if (!draft || !canDelete) return;
-      if (lane === "forma") {
-        const next = deleteFormaClip(draft, clipId);
-        if (next !== draft) commitDraft(next);
-      } else if (lane === "tekst") {
-        commitDraft(deleteTekstClip(draft, clipId));
-      } else if (lane === "akordy") {
-        commitDraft(deleteAkordyClip(draft, clipId));
-      } else if (lane === "cue") {
-        commitDraft(deleteCueClip(draft, clipId));
-      } else if (lane === "audio") {
-        const next = deleteClipsOnLane(draft, args.selectionLane, [clipId]);
-        if (next !== draft) commitDraft(next);
-      }
-      setClipSelection(clearSelection());
-    };
-
-    openContextMenu({
-      x: clientX,
-      y: clientY,
-      label: clipContextMenuLabel(selectionCount),
-      items: buildClipContextMenuItems({
-        lane,
-        canPaste,
-        canSplit: canSplit && splitTicks != null && !multiIds,
-        clipMuted,
-        onCopy: () => {
-          if (multiIds) {
-            copyClipSelection();
-            return;
-          }
-          copyThisClip();
-        },
-        onCut: () => {
-          if (multiIds) {
-            if (!copyClipSelection()) return;
-            deleteSelectedFormaClip();
-            return;
-          }
-          if (!canDelete) return;
-          if (!copyThisClip()) return;
-          deleteThisClip();
-        },
-        onPaste: () => {
-          pasteClipClipboard(locatorTicks);
-        },
-        onDuplicate: () => {
-          if (multiIds) {
-            duplicateClipSelection();
-            return;
-          }
-          if (!copyThisClip()) return;
-          const draft = draftRef.current;
-          if (!draft) return;
-          let end = 0;
-          if (lane === "forma") {
-            const c = draft.forma.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "tekst") {
-            const c = draft.tekst.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "akordy") {
-            const c = draft.akordy.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "cue") {
-            const c = draft.cue.clips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          } else if (lane === "audio") {
-            const c = draft.audioClips.find((x) => x.id === clipId);
-            if (c) end = c.startTicks + c.lengthTicks;
-          }
-          pasteClipClipboard(end);
-        },
-        onDelete: () => {
-          if (multiIds) {
-            deleteSelectedFormaClip();
-            return;
-          }
-          deleteThisClip();
-        },
-        onMuteToggle:
-          lane === "audio"
-            ? () => {
-                const draft = draftRef.current;
-                if (!draft) return;
-                const clip = draft.audioClips.find((c) => c.id === clipId);
-                if (!clip) return;
-                commitDraft(setAudioClipMuted(draft, clipId, !clip.muted));
-              }
-            : undefined,
-        onFocusInspector: () => focusInspectorPanel(),
-        onSplit:
-          canSplit && splitTicks != null && !multiIds
-            ? () => {
-                const draft = draftRef.current;
-                if (!draft) return;
-                if (lane === "forma") {
-                  const next = splitFormaClipAt(draft, clipId, splitTicks);
-                  if (next !== draft) commitDraft(next);
-                  return;
-                }
-                if (lane === "tekst" || lane === "akordy" || lane === "cue") {
-                  const next = splitContentClipAt(
-                    draft,
-                    lane,
-                    clipId,
-                    splitTicks,
-                  );
-                  if (next !== draft) commitDraft(next);
-                  return;
-                }
-                if (lane === "audio") {
-                  const next = splitAudioClipAt(draft, clipId, splitTicks);
-                  if (next !== draft) commitDraft(next);
-                }
-              }
-            : undefined,
-      }).map((item) => {
-        if (!("id" in item)) return item;
-        if (
-          !canDelete &&
-          (item.id === "cut" || item.id === "delete" || item.id === "duplicate")
-        ) {
-          return { ...item, disabled: true };
-        }
-        return item;
-      }),
-    });
-  }
-
-  function openEmptyLaneContextMenu(args: {
-    clientX: number;
-    clientY: number;
-    laneKind: EmptyLaneMenuKind;
-    audioTrackId?: string;
-  }) {
-    if (isMobilePreview) {
-      setTouchAlertOpen(true);
-      return;
-    }
-    const { clientX, clientY, laneKind, audioTrackId } = args;
-    const ticks = rawTicksAtClientX(clientX);
-    if (ticks == null) return;
-    const board = clipboardRef.current;
-    const canPaste = clipboardMatchesEmptyLane(board?.lane, laneKind);
-    openContextMenu({
-      x: clientX,
-      y: clientY,
-      label: "Menu ścieżki",
-      items: buildEmptyLaneContextMenuItems({
-        lane: laneKind,
-        canPaste,
-        onPaste: () => {
-          pasteClipClipboard(ticks);
-        },
-        onImportAudio:
-          laneKind === "audio" && audioTrackId
-            ? () => {
-                laneImportTrackIdRef.current = audioTrackId;
-                laneImportStartTicksRef.current = null;
-                laneAudioFileRef.current?.click();
-              }
-            : undefined,
-        onAddClip:
-          laneKind === "forma"
-            ? () => {
-                const draft = draftRef.current;
-                if (!draft) return;
-                const n =
-                  draft.forma.clips.filter((c) => c.kind === "section").length +
-                  1;
-                const next = pencilFormaClick(draft, ticks, `Sekcja ${n}`);
-                if (next !== draft) commitDraft(next);
-              }
-            : laneKind === "tekst"
-              ? () => {
-                  const draft = draftRef.current;
-                  if (!draft) return;
-                  const next = pencilTekstClick(draft, ticks, "…");
-                  if (next !== draft) commitDraft(next);
-                }
-              : laneKind === "akordy"
-                ? () => {
-                    const draft = draftRef.current;
-                    if (!draft) return;
-                    const next = pencilAkordyClick(draft, ticks, "C");
-                    if (next !== draft) commitDraft(next);
-                  }
-                : laneKind === "cue"
-                  ? () => {
-                      const draft = draftRef.current;
-                      if (!draft) return;
-                      const next = pencilCueClick(draft, ticks, "Cue");
-                      if (next !== draft) commitDraft(next);
-                    }
-                  : undefined,
-      }),
-    });
-  }
 
   const lanesRendererProps = {
     draftProject,

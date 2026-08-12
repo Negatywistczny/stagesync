@@ -1,5 +1,11 @@
 /* eslint-disable max-lines */
-import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type RefObject,
+} from "react";
 import type { Project, FormaClip } from "@stagesync/shared";
 import {
   toolAllowsClipHitZones,
@@ -94,7 +100,9 @@ export type UseTimelineFormaGesturesOptions = {
   setSoloAudioTrackIds: React.Dispatch<React.SetStateAction<string[]>>;
   soloHoldRef: React.MutableRefObject<string[] | null>;
   setCanvasNotice: (msg: string | null) => void;
-  canvasNoticeTimerRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+  canvasNoticeTimerRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>;
 };
 
 export function useTimelineFormaGestures({
@@ -128,8 +136,10 @@ export function useTimelineFormaGestures({
 }: UseTimelineFormaGesturesOptions) {
   const gestureSessionRef = useRef<FormaGestureSession | null>(null);
   const gesturePreviewRef = useRef<FormaGesturePreview | null>(null);
-  const [gestureSession, setGestureSession] = useState<FormaGestureSession | null>(null);
-  const [gesturePreview, setGesturePreview] = useState<FormaGesturePreview | null>(null);
+  const [gestureSession, setGestureSession] =
+    useState<FormaGestureSession | null>(null);
+  const [gesturePreview, setGesturePreview] =
+    useState<FormaGesturePreview | null>(null);
 
   const beginFormaGesture = useCallback(
     (session: FormaGestureSession, preview: FormaGesturePreview) => {
@@ -156,7 +166,11 @@ export function useTimelineFormaGestures({
 
       if (isAudioLaneId(lane)) {
         let targetAudioLane: AudioLaneId | undefined = undefined;
-        if (typeof window !== "undefined" && clientX != null && clientY != null) {
+        if (
+          typeof window !== "undefined" &&
+          clientX != null &&
+          clientY != null
+        ) {
           const elem = document.elementFromPoint(clientX, clientY);
           const laneElem = elem?.closest("[data-audio-lane]");
           if (laneElem) {
@@ -194,7 +208,8 @@ export function useTimelineFormaGestures({
         return;
       }
 
-      const n = draft.forma.clips.filter((c) => c.kind === "section").length + 1;
+      const n =
+        draft.forma.clips.filter((c) => c.kind === "section").length + 1;
       const preview = previewFromSession(
         draft,
         session,
@@ -284,7 +299,10 @@ export function useTimelineFormaGestures({
                 ...prev.items.filter(
                   (i) => i.lane !== lane && i.lane !== destLane,
                 ),
-                ...session.moveIds!.map((id: string) => ({ id, lane: destLane })),
+                ...session.moveIds!.map((id: string) => ({
+                  id,
+                  lane: destLane,
+                })),
               ],
               session.clipId,
             ),
@@ -386,7 +404,10 @@ export function useTimelineFormaGestures({
           setSelection(
             [
               ...prev.items.filter((i) => i.lane !== "forma"),
-              ...selectIds.map((id: string) => ({ id, lane: "forma" as const })),
+              ...selectIds.map((id: string) => ({
+                id,
+                lane: "forma" as const,
+              })),
             ],
             session.clipId,
           ),
@@ -549,7 +570,9 @@ export function useTimelineFormaGestures({
             : lane === "akordy"
               ? draftProject.akordy.clips
               : draftProject.cue.clips;
-        setClipSelection((prev) => selectRangeTo(prev, clip.id, lane, laneClips));
+        setClipSelection((prev) =>
+          selectRangeTo(prev, clip.id, lane, laneClips),
+        );
         setSelectedSubsectionIdx(null);
         return;
       }
@@ -710,7 +733,9 @@ export function useTimelineFormaGestures({
           lane,
           originClientX: e.clientX,
           originFadeMs:
-            fadeKind === "fade-in" ? (full.fadeInMs ?? 0) : (full.fadeOutMs ?? 0),
+            fadeKind === "fade-in"
+              ? (full.fadeInMs ?? 0)
+              : (full.fadeOutMs ?? 0),
         };
         beginFormaGesture(
           session,
@@ -777,7 +802,9 @@ export function useTimelineFormaGestures({
         const laneClips = draftProject.audioClips.filter(
           (c) => c.trackId === trackId,
         );
-        setClipSelection((prev) => selectRangeTo(prev, clip.id, lane, laneClips));
+        setClipSelection((prev) =>
+          selectRangeTo(prev, clip.id, lane, laneClips),
+        );
         return;
       }
       if (!gesturePolicy.clipDragResize) {
@@ -824,7 +851,13 @@ export function useTimelineFormaGestures({
       };
       beginFormaGesture(
         session,
-        previewAudioFromSession(draftProject, session, raw, e.metaKey, e.ctrlKey),
+        previewAudioFromSession(
+          draftProject,
+          session,
+          raw,
+          e.metaKey,
+          e.ctrlKey,
+        ),
       );
     },
     [
@@ -956,10 +989,7 @@ export function useTimelineFormaGestures({
   );
 
   const onFormaClipPointerDown = useCallback(
-    (
-      e: React.PointerEvent<HTMLButtonElement>,
-      clip: FormaClip,
-    ) => {
+    (e: React.PointerEvent<HTMLButtonElement>, clip: FormaClip) => {
       if (e.button !== 0 || !draftProject) return;
       e.preventDefault();
       e.stopPropagation();
@@ -1000,7 +1030,8 @@ export function useTimelineFormaGestures({
         if (raw == null) return;
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
         const n =
-          draftProject.forma.clips.filter((c) => c.kind === "section").length + 1;
+          draftProject.forma.clips.filter((c) => c.kind === "section").length +
+          1;
         const session: FormaGestureSession = {
           kind: "pencil-draw",
           clipId: null,
@@ -1224,7 +1255,13 @@ export function useTimelineFormaGestures({
       if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
       const raw = rawTicksAtClientX(e.clientX);
       if (raw == null) return;
-      updateFormaGesturePreview(raw, e.metaKey, e.ctrlKey, e.clientX, e.clientY);
+      updateFormaGesturePreview(
+        raw,
+        e.metaKey,
+        e.ctrlKey,
+        e.clientX,
+        e.clientY,
+      );
     },
     [rawTicksAtClientX, updateFormaGesturePreview],
   );

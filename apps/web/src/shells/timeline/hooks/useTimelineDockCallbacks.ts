@@ -57,11 +57,17 @@ export type UseTimelineDockCallbacksOptions = {
   state: { playing: boolean };
   setLoadError: (err: string | null) => void;
   onAudioTrackHeaderClick: (e: React.MouseEvent, trackId: string) => void;
-  openAudioTrackContextMenu: (trackId: string, clientX: number, clientY: number) => void;
+  openAudioTrackContextMenu: (
+    trackId: string,
+    clientX: number,
+    clientY: number,
+  ) => void;
   onAudioTrackSoloClick: (e: React.MouseEvent, trackId: string) => void;
   onAudioTrackMuteClick: (e: React.MouseEvent, trackId: string) => void;
   openTrackRename: (trackId: string) => void;
-  setTrackRename: React.Dispatch<React.SetStateAction<{ trackId: string; name: string } | null>>;
+  setTrackRename: React.Dispatch<
+    React.SetStateAction<{ trackId: string; name: string } | null>
+  >;
   commitTrackRename: () => void;
   cancelTrackRename: () => void;
   setClipSelection: React.Dispatch<React.SetStateAction<ClipSelection>>;
@@ -382,7 +388,12 @@ export function useTimelineDockCallbacks({
       setSelectedBusId(null);
       setSelectedHwOutputId(hwOutputId);
     },
-    [setClipSelection, setTrackSelection, setSelectedBusId, setSelectedHwOutputId],
+    [
+      setClipSelection,
+      setTrackSelection,
+      setSelectedBusId,
+      setSelectedHwOutputId,
+    ],
   );
 
   const onHwContextMenu = useCallback(

@@ -79,7 +79,9 @@ export type TimelineHeaderContainerProps = {
   songScreenId: string | null;
   setlistEnabled: boolean;
   autoAdvance: boolean;
-  patchSetlistAutoAdvance: (v: boolean) => Promise<{ autoAdvance: { enabled: boolean } }>;
+  patchSetlistAutoAdvance: (
+    v: boolean,
+  ) => Promise<{ autoAdvance: { enabled: boolean } }>;
   setAutoAdvance: (v: boolean) => void;
 };
 

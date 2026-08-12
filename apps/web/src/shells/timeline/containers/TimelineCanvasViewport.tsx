@@ -77,11 +77,19 @@ export type TimelineCanvasViewportProps = {
   endLaneResize: (e: React.PointerEvent<any>) => void;
   onLaneResizeDblClick: (e: React.MouseEvent<any>, trackId: string) => void;
   onAudioTrackHeaderClick: (e: React.MouseEvent<any>, trackId: string) => void;
-  openAudioTrackContextMenu: (trackId: string, clientX: number, clientY: number) => void;
+  openAudioTrackContextMenu: (
+    trackId: string,
+    clientX: number,
+    clientY: number,
+  ) => void;
   heldZoom: boolean;
   audioLaneDropId: string | null;
   setAudioLaneDropId: React.Dispatch<React.SetStateAction<string | null>>;
-  onUploadAudioToTrack: (trackId: string, file: File, opts?: any) => Promise<void>;
+  onUploadAudioToTrack: (
+    trackId: string,
+    file: File,
+    opts?: any,
+  ) => Promise<void>;
   openEmptyLaneContextMenu: (args: any) => void;
   beginMarquee: (e: React.PointerEvent<any>) => void;
   beginTouchCanvasNav: (e: React.PointerEvent<any>) => void;
@@ -245,10 +253,7 @@ export function TimelineCanvasViewport({
 }: TimelineCanvasViewportProps) {
   return (
     <div
-      className={[
-        styles.main,
-        inspectorOpen ? "" : styles.mainInspectorHidden,
-      ]
+      className={[styles.main, inspectorOpen ? "" : styles.mainInspectorHidden]
         .filter(Boolean)
         .join(" ")}
       style={{
