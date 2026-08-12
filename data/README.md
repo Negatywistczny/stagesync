@@ -16,5 +16,5 @@ Katalog `data/` służy jako lokalny magazyn danych operacyjnych w czasie dział
 
 Katalog ten jest wykorzystywany przez:
 
-1. **`apps/server`** jako domyślne miejsce zapisu projektów i logów (zgodnie z decyzjami ADR [0001-storage-layout](../docs/adr/0001-storage-layout.md) i [0012-user-data-location](../docs/adr/0012-user-data-location.md)).
+1. **`apps/server`** jako domyślne miejsce zapisu projektów i logów (zgodnie z decyzjami ADR [0001-storage-layout](../docs/architecture/adr/0001-storage-layout.md) i [0012-user-data-location](../docs/architecture/adr/0012-user-data-location.md)).
 2. **Docker Compose** jako zamontowany wolumen (`volume`), gwarantujący trwałość danych przy restartach kontenera.

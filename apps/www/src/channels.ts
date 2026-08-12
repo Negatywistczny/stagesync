@@ -33,7 +33,7 @@ const FALLBACK: SiteChannels = {
       "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/DESKTOP.md",
     mobile:
       "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/MOBILE.md",
-    api: "https://github.com/Negatywistczny/stagesync/blob/main/docs/api/README.md",
+    api: "https://github.com/Negatywistczny/stagesync/blob/main/docs/architecture/api/README.md",
     changelog:
       "https://github.com/Negatywistczny/stagesync/blob/main/CHANGELOG.md",
   },

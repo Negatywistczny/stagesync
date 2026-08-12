@@ -1,7 +1,7 @@
 # StageSync — Mobile (Performer + Console)
 
 **Dla kogo:** instalacja i użytkowanie APK Android oraz PWA na telefonie / tablecie.  
-Nazwy produktu: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](../adr/0016-android-performer-console.md)).
+Nazwy produktu: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](../architecture/adr/0016-android-performer-console.md)).
 
 **Aktualizacje:** dialog APK (Launcher / Admin / host) — nie Watchtower i nie updater Tauri. Desktop → [DESKTOP.md](./DESKTOP.md); host Docker → [INSTALL.md](./INSTALL.md).
 
@@ -15,7 +15,7 @@ Nazwy produktu: **Performer** / **Console** ([#674](https://github.com/Negatywis
 | Audio / MIDI w procesie | Brak                                                      | SSOT na hoście (LAN albo lokalny, gdy silnik w APK działa)                                  |
 | Katalog                 | `apps/performer`                                          | `apps/console`                                                                              |
 
-Performer pozostaje read-only Client-only ([ADR 0016](../adr/0016-android-performer-console.md)).
+Performer pozostaje read-only Client-only ([ADR 0016](../architecture/adr/0016-android-performer-console.md)).
 
 ## Nawigacja operatora (OperatorNav)
 
@@ -80,7 +80,7 @@ APK z hosta i Releases podpisane stałym kluczem sideload ([`packages/android-ke
 
 ## Aktualizacja APK
 
-1. **Launcher (internet):** przy starcie / `onResume` powłoka czyta `android-latest.json` z GitHub Releases. Nowszy `version` → dialog **Aktualizuj** / **Przypomnij później**. Bez auto-update w tle ([ADR 0015](../adr/0015-daw-reference-and-product-decisions.md)).
+1. **Launcher (internet):** przy starcie / `onResume` powłoka czyta `android-latest.json` z GitHub Releases. Nowszy `version` → dialog **Aktualizuj** / **Przypomnij później**. Bez auto-update w tle ([ADR 0015](../architecture/adr/0015-daw-reference-and-product-decisions.md)).
 2. **Admin → Sprawdź aktualizacje (Console):** ten sam manifest → **Pobierz APK** (URL z Releases), nie Watchtower.
 3. **Po połączeniu z hostem:** porównanie `versionName` z `GET /api/health`. Gdy host nowszy **i** APK leży pod `/downloads/stagesync-*.apk` — dialog z hosta; inaczej fallback do Releases.
 
@@ -88,7 +88,7 @@ APK z hosta i Releases podpisane stałym kluczem sideload ([`packages/android-ke
 
 ## Lokalny host na Console
 
-W launcherze Console **Uruchom lokalny host** uruchamia wbudowany serwer StageSync na urządzeniu, czeka na `GET http://127.0.0.1:4000/api/health`, potem otwiera Admin — ten sam tor co desktop ([DESKTOP.md](./DESKTOP.md), [ADR 0014](../adr/0014-desktop-launcher.md)).
+W launcherze Console **Uruchom lokalny host** uruchamia wbudowany serwer StageSync na urządzeniu, czeka na `GET http://127.0.0.1:4000/api/health`, potem otwiera Admin — ten sam tor co desktop ([DESKTOP.md](./DESKTOP.md), [ADR 0014](../architecture/adr/0014-desktop-launcher.md)).
 
 - Dane projektów: `filesDir/stagesync-data`.
 - Silnik Node w **osobnym procesie** (`:host`); awaria nie zabija launchera.
@@ -113,7 +113,7 @@ Wake Lock w przeglądarce (+ fallback) oraz `FLAG_KEEP_SCREEN_ON` w APK. Po uśp
 
 ## Operator (PIN, motyw, Safety Net, Sampler)
 
-Kontrakty hosta: [INSTALL.md](./INSTALL.md) · [ADR 0017](../adr/0017-live-show-control-contracts.md).
+Kontrakty hosta: [INSTALL.md](./INSTALL.md) · [ADR 0017](../architecture/adr/0017-live-show-control-contracts.md).
 
 - **PIN:** Console (Admin/Timeline) jak desktop; Performer — odblokowanie edycji notatek w ustawieniach Client.
 - **Motyw:** lokalna preferencja albo `STAGESYNC_THEME_DEFAULT` z hosta.
@@ -128,7 +128,7 @@ Kontrakty hosta: [INSTALL.md](./INSTALL.md) · [ADR 0017](../adr/0017-live-show-
 3. Hash roli: `uiHashPerformer` / `uiHashConsole` — powłoka porównuje tylko swój hash.
 4. **Zastosuj:** pobranie `ui-bundle-*.zip` → `ui-cache` → reload. Bez cichej instalacji APK.
 
-Szczegóły protokołu: [ADR 0016](../adr/0016-android-performer-console.md).
+Szczegóły protokołu: [ADR 0016](../architecture/adr/0016-android-performer-console.md).
 
 ## Powiadomienia systemowe
 
@@ -191,4 +191,4 @@ Opt-in: `?ss_perf=h01` albo `localStorage.setItem('stagesync_perf_h01','1')` →
 
 ### Powiązane
 
-- [DESKTOP.md](./DESKTOP.md) · [INSTALL.md](./INSTALL.md) · [ADR 0014](../adr/0014-desktop-launcher.md) · [ADR 0015](../adr/0015-daw-reference-and-product-decisions.md) · [ADR 0016](../adr/0016-android-performer-console.md)
+- [DESKTOP.md](./DESKTOP.md) · [INSTALL.md](./INSTALL.md) · [ADR 0014](../architecture/adr/0014-desktop-launcher.md) · [ADR 0015](../architecture/adr/0015-daw-reference-and-product-decisions.md) · [ADR 0016](../architecture/adr/0016-android-performer-console.md)

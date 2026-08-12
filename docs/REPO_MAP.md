@@ -6,16 +6,16 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1599
-* **Liczba katalogów:** 253
-* **Data aktualizacji:** 2026-08-12T18:43:12.093Z
+* **Liczba wszystkich plików:** 1601
+* **Liczba katalogów:** 255
+* **Data aktualizacji:** 2026-08-12T19:18:03.180Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
 | Kod | 1182 |
-| Docs | 147 |
+| Docs | 149 |
 | Config | 119 |
 | Assety | 120 |
 | Inne | 31 |
@@ -26,7 +26,7 @@
 | :--- | ---: |
 | `.ts` | 722 |
 | `.tsx` | 274 |
-| `.md` | 125 |
+| `.md` | 127 |
 | `.png` | 94 |
 | `.kt` | 71 |
 | `.css` | 52 |
@@ -71,16 +71,18 @@
   - **library/** (3) — Główny plik bazy utworów (library.json) oraz szablony projektów
   - **logs/** (1) — Buffer logów systemowych, diagnostyka i ślady wykonania
   - **projects/** (1) — Katalog projektów użytkownika z lokalnymi zasobami assets/
-- **docs/** (90) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
-  - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
-  - **analysis/** (47) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
-    - **inspiracje/** (40) — Dumpy zewnętrzne + triage (nie SSOT produktu)
-    - **reports/** (4) — Raporty kanoniczne (current / milestones / hygiene)
-    - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
-  - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
+- **docs/** (92) — Dokumentacja techniczna, specyfikacje architektoniczne i audyty
+  - **architecture/** (32) — Architektura systemu, SSOT, ADR, specyfikacje API i Design System
+    - **adr/** (20) — Architectural Decision Records (Decyzje architektoniczne)
+    - **api/** (1) — Specyfikacje interfejsów programistycznych REST i WebSocket
+    - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
   - **examples/** (2) — Przykładowe pliki baz danych i pakiety projektowe v5
-  - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)
-  - **ui/** (9) — Dokumentacja systemu designu, tokenów i komponentów UI
+  - **guides/** (5) — Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, DX)
+  - **standards/** (49) — Standardy inżynieryjne, testowanie i raporty jakościowe
+    - **analysis/** (47) — Audyty kodu, analizy wydajności, referencje DAW i specyfikacje
+      - **inspiracje/** (40) — Dumpy zewnętrzne + triage (nie SSOT produktu)
+      - **reports/** (4) — Raporty kanoniczne (current / milestones / hygiene)
+      - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
 - **packages/** (210) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
@@ -621,44 +623,41 @@ stagesync/
 │   │   └── .gitkeep
 │   └── README.md
 ├── docs/
-│   ├── adr/
-│   │   ├── 0001-storage-layout.md
-│   │   ├── 0002-timebase-ssot.md
-│   │   ├── 0003-ui-direction-booth.md
-│   │   ├── 0004-updates-docker.md
-│   │   ├── 0005-domain-axioms.md
-│   │   ├── 0006-no-json-api.md
-│   │   ├── 0007-snap-grid.md
-│   │   ├── 0008-timeline-clip-editing.md
-│   │   ├── 0009-project-schema-v3.md
-│   │   ├── 0010-desktop-shell-tauri.md
-│   │   ├── 0011-ui-parity-behavior.md
-│   │   ├── 0012-user-data-location.md
-│   │   ├── 0013-in-app-vs-github-docs.md
-│   │   ├── 0014-desktop-launcher.md
-│   │   ├── 0015-daw-reference-and-product-decisions.md
-│   │   ├── 0016-android-performer-console.md
-│   │   ├── 0017-live-show-control-contracts.md
-│   │   ├── 0018-future-audio-architecture.md
-│   │   ├── 0019-dual-engine-studio-live.md
-│   │   └── README.md
-│   ├── analysis/
-│   │   ├── inspiracje/
-│   │   │   ├── audyty-silnik/  … (5 plików: .md ×5)
-│   │   │   ├── referencje-daw/  … (9 plików: .md ×9)
-│   │   │   ├── specyfikacje/  … (25 plików: .md ×25)
+│   ├── architecture/
+│   │   ├── adr/
+│   │   │   ├── 0001-storage-layout.md
+│   │   │   ├── 0002-timebase-ssot.md
+│   │   │   ├── 0003-ui-direction-booth.md
+│   │   │   ├── 0004-updates-docker.md
+│   │   │   ├── 0005-domain-axioms.md
+│   │   │   ├── 0006-no-json-api.md
+│   │   │   ├── 0007-snap-grid.md
+│   │   │   ├── 0008-timeline-clip-editing.md
+│   │   │   ├── 0009-project-schema-v3.md
+│   │   │   ├── 0010-desktop-shell-tauri.md
+│   │   │   ├── 0011-ui-parity-behavior.md
+│   │   │   ├── 0012-user-data-location.md
+│   │   │   ├── 0013-in-app-vs-github-docs.md
+│   │   │   ├── 0014-desktop-launcher.md
+│   │   │   ├── 0015-daw-reference-and-product-decisions.md
+│   │   │   ├── 0016-android-performer-console.md
+│   │   │   ├── 0017-live-show-control-contracts.md
+│   │   │   ├── 0018-future-audio-architecture.md
+│   │   │   ├── 0019-dual-engine-studio-live.md
 │   │   │   └── README.md
-│   │   ├── reports/
-│   │   │   ├── current/
-│   │   │   │   ├── report-adr-dual-engine-vst-align.md
-│   │   │   │   ├── report-beta-gate.md
-│   │   │   │   └── report-scope-5.4.md
+│   │   ├── api/
 │   │   │   └── README.md
-│   │   ├── working/
-│   │   │   ├── .gitignore
-│   │   │   └── README.md
-│   │   └── README.md
-│   ├── api/
+│   │   ├── ui/
+│   │   │   ├── badge.md
+│   │   │   ├── button.md
+│   │   │   ├── colors.md
+│   │   │   ├── field.md
+│   │   │   ├── README.md
+│   │   │   ├── segmented.md
+│   │   │   ├── spacing.md
+│   │   │   ├── typography.md
+│   │   │   └── ui-shell-inventory.md
+│   │   ├── ARCHITECTURE.md
 │   │   └── README.md
 │   ├── examples/
 │   │   ├── v5/
@@ -670,20 +669,24 @@ stagesync/
 │   │   ├── INSTALL.md
 │   │   ├── MOBILE.md
 │   │   └── README.md
-│   ├── ui/
-│   │   ├── badge.md
-│   │   ├── button.md
-│   │   ├── colors.md
-│   │   ├── field.md
+│   ├── standards/
+│   │   ├── analysis/
+│   │   │   ├── inspiracje/
+│   │   │   │   ├── audyty-silnik/  … (5 plików: .md ×5)
+│   │   │   │   ├── referencje-daw/  … (9 plików: .md ×9)
+│   │   │   │   ├── specyfikacje/  … (25 plików: .md ×25)
+│   │   │   │   └── README.md
+│   │   │   ├── reports/
+│   │   │   │   ├── current/  … (3 pliki)
+│   │   │   │   └── README.md
+│   │   │   ├── working/
+│   │   │   │   ├── .gitignore
+│   │   │   │   └── README.md
+│   │   │   └── README.md
 │   │   ├── README.md
-│   │   ├── segmented.md
-│   │   ├── spacing.md
-│   │   ├── typography.md
-│   │   └── ui-shell-inventory.md
-│   ├── ARCHITECTURE.md
+│   │   └── STANDARDS.md
 │   ├── README.md
 │   ├── ROADMAP.md
-│   ├── STANDARDS.md
 │   └── TODO.md
 ├── packages/
 │   ├── android-keystore/

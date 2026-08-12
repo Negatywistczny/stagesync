@@ -1,7 +1,7 @@
 # StageSync — instalacja produkcyjna (Docker)
 
 Host na scenie (rack / serwer): **Docker Compose** + volume `data/`.
-Aktualizacja bez git-apply — [ADR 0004](../adr/0004-updates-docker.md).
+Aktualizacja bez git-apply — [ADR 0004](../architecture/adr/0004-updates-docker.md).
 
 **Inne powierzchnie:** desktop operatora — [DESKTOP.md](./DESKTOP.md); Android (Performer / Console) — [MOBILE.md](./MOBILE.md).
 
@@ -49,19 +49,19 @@ notatek/form. Nagłówek: `X-Stagesync-Operator-Pin` (alias `X-StageSync-PIN`).
 Status: `GET /api/system/operator-auth` → `{ required: boolean }`.
 
 Sesja **nie wygasa** podczas `PLAYING`; poza show — lock przy ukryciu karty / uśpieniu
-oraz po **15 min** bezczynności ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8a).
+oraz po **15 min** bezczynności ([ADR 0017](../architecture/adr/0017-live-show-control-contracts.md) §8a).
 
 ### Safety Net (Master / Spare)
 
 `STAGESYNC_SAFETY_ROLE=spare` wycisza MIDI OUT na tym hoście (lustro).
 **Operator-Assisted Hot Standby** — ręczny **Przejmij** w Admin → Host (bez Zero-Glitch HA).
 Po Przejmij w trakcie `PLAYING` → **PAUSE** (playhead zachowany)
-([ADR 0017](../adr/0017-live-show-control-contracts.md) §2–§3).
+([ADR 0017](../architecture/adr/0017-live-show-control-contracts.md) §2–§3).
 
 ### Panic
 
 Globalny MIDI Panic bez PIN w ustawieniach Admin (przytrzymaj ~1 s).
-Performer / Client bez globalnego Panic ([ADR 0017](../adr/0017-live-show-control-contracts.md) §8b).
+Performer / Client bez globalnego Panic ([ADR 0017](../architecture/adr/0017-live-show-control-contracts.md) §8b).
 
 ### Motyw domyślny hosta
 
@@ -79,7 +79,7 @@ Gdy urządzenie audio ma ≥ 4 kanały (layout OS Quad/5.1 lub Aggregate Device)
 Mixer listuje **HW Out**. Master domyślnie idzie na CH 1–2 (można przemapować).
 Track, bus i Cue Sampler mogą iść na HW. Przy samym stereo strefa HW Out jest ukryta.
 Zmiana wyjścia fizycznego zablokowana w trakcie Play
-([ADR 0017](../adr/0017-live-show-control-contracts.md) §7).
+([ADR 0017](../architecture/adr/0017-live-show-control-contracts.md) §7).
 Szczegóły UI Mixera: [DESKTOP.md](./DESKTOP.md).
 
 ### Cues Sampler
@@ -277,7 +277,7 @@ Bez DSN aplikacja startuje normalnie. Raporty nie zawierają domyślnie PII
 | `SENTRY_DSN`                       | —                                                         | Opcjonalny DSN Sentry dla hosta Node (brak = bez raportowania; bez PII)                                  |
 | `VITE_SENTRY_DSN`                  | —                                                         | Opcjonalny DSN Sentry dla UI (wbudowany przy `pnpm build` w `apps/web`; brak = bez raportowania)         |
 
-Wzór: [`.env.example`](../../.env.example). Decyzja: [ADR 0012](../adr/0012-user-data-location.md).
+Wzór: [`.env.example`](../../.env.example). Decyzja: [ADR 0012](../architecture/adr/0012-user-data-location.md).
 
 **Host restart/shutdown:** z `localhost` zawsze dozwolone (desktop / Tauri). Z innej maszyny w LAN —
 ustaw `STAGESYNC_HOST_TOKEN` (Admin: `localStorage.stagesync.hostToken`) albo świadomie

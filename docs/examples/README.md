@@ -16,5 +16,5 @@ Katalog `examples/` zawiera referencyjne pliki danych StageSync, służące jako
 
 ## 🔗 Powiązane
 
-- Schemat projektu v5: [ADR 0009](../adr/0009-project-schema-v3.md)
-- Specyfikacja API importu/eksportu: [docs/api/README.md](../api/README.md)
+- Schemat projektu v5: [ADR 0009](../architecture/adr/0009-project-schema-v3.md)
+- Specyfikacja API importu/eksportu: [docs/architecture/api/README.md](../architecture/api/README.md)

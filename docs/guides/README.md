@@ -15,6 +15,7 @@ Katalog `guides/` zawiera szczegółowe podręczniki wdrożeniowe i deweloperski
 
 ## 🔗 Powiązane
 
-- Architektura systemu: [ARCHITECTURE.md](../ARCHITECTURE.md)
-- Standardy deweloperskie: [STANDARDS.md](../STANDARDS.md)
+- Architektura systemu: [ARCHITECTURE.md](../architecture/ARCHITECTURE.md)
+- Decyzje architektoniczne: [adr/](../architecture/adr/README.md)
+- Standardy deweloperskie i testy: [STANDARDS.md](../standards/STANDARDS.md) · [TESTING.md](../standards/TESTING.md)
 - Konwencje współpracy: [CONTRIBUTING.md](../../.github/CONTRIBUTING.md)

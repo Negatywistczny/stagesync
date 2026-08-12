@@ -42,12 +42,12 @@ const COLLAPSE_DIR_NAMES = new Set([
 /** Prefiksy ścieżek kolapsowane w slim (cały poddrzewo → jedna linia). */
 const COLLAPSE_PATH_PREFIXES = [
     'apps/desktop/src-tauri/icons',
-    'docs/analysis/inspiracje/audyty-silnik',
-    'docs/analysis/inspiracje/referencje-daw',
-    'docs/analysis/inspiracje/specyfikacje',
-    'docs/analysis/inspiracje/www',
-    'docs/analysis/reports/milestones',
-    'docs/analysis/reports/hygiene'
+    'docs/standards/analysis/inspiracje/audyty-silnik',
+    'docs/standards/analysis/inspiracje/referencje-daw',
+    'docs/standards/analysis/inspiracje/specyfikacje',
+    'docs/standards/analysis/inspiracje/www',
+    'docs/standards/analysis/reports/milestones',
+    'docs/standards/analysis/reports/hygiene'
 ];
 
 const FOLDER_MAP = {
@@ -101,15 +101,17 @@ const FOLDER_MAP = {
     'data/logs': 'Buffer logów systemowych, diagnostyka i ślady wykonania',
     'data/projects': 'Katalog projektów użytkownika z lokalnymi zasobami assets/',
 
-    'docs/adr': 'Architectural Decision Records (Decyzje architektoniczne)',
-    'docs/analysis': 'Audyty kodu, analizy wydajności, referencje DAW i specyfikacje',
-    'docs/analysis/reports': 'Raporty kanoniczne (current / milestones / hygiene)',
-    'docs/analysis/inspiracje': 'Dumpy zewnętrzne + triage (nie SSOT produktu)',
-    'docs/analysis/working': 'Notatki robocze (gitignored treści, tylko README/.gitignore)',
-    'docs/api': 'Specyfikacje interfejsów programistycznych REST i WebSocket',
+    'docs/architecture': 'Architektura systemu, SSOT, ADR, specyfikacje API i Design System',
+    'docs/architecture/adr': 'Architectural Decision Records (Decyzje architektoniczne)',
+    'docs/architecture/api': 'Specyfikacje interfejsów programistycznych REST i WebSocket',
+    'docs/architecture/ui': 'Dokumentacja systemu designu, tokenów i komponentów UI',
+    'docs/standards': 'Standardy inżynieryjne, testowanie i raporty jakościowe',
+    'docs/standards/analysis': 'Audyty kodu, analizy wydajności, referencje DAW i specyfikacje',
+    'docs/standards/analysis/reports': 'Raporty kanoniczne (current / milestones / hygiene)',
+    'docs/standards/analysis/inspiracje': 'Dumpy zewnętrzne + triage (nie SSOT produktu)',
+    'docs/standards/analysis/working': 'Notatki robocze (gitignored treści, tylko README/.gitignore)',
     'docs/examples': 'Przykładowe pliki baz danych i pakiety projektowe v5',
-    'docs/guides': 'Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, MIGRATION)',
-    'docs/ui': 'Dokumentacja systemu designu, tokenów i komponentów UI',
+    'docs/guides': 'Podręczniki operatorskie (INSTALL, DESKTOP, MOBILE, DX)',
 
     'packages/android-keystore': 'Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)',
     'packages/eslint-config': 'Wspólne reguły ESLint dla całego repozytorium',
@@ -130,7 +132,9 @@ const FOLDER_MAP = {
 function overviewMaxDepth(fullRelPath) {
     if (fullRelPath.startsWith('apps/web/src/lib')) return 5;
     if (fullRelPath.startsWith('apps/web')) return 4;
-    if (fullRelPath.startsWith('docs/analysis')) return 3;
+    if (fullRelPath.startsWith('docs/standards/analysis')) return 4;
+    if (fullRelPath.startsWith('docs/architecture')) return 3;
+    if (fullRelPath.startsWith('docs/standards')) return 3;
     if (fullRelPath.startsWith('.cursor')) return 2;
     if (fullRelPath.startsWith('.github')) return 2;
     return 2;

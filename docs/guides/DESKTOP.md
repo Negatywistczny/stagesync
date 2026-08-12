@@ -5,8 +5,8 @@ Okno desktopowe (Admin / Timeline / Client) z wbudowanym lokalnym hostem albo po
 **Dla kogo:** operator sceny na macOS / Windows.  
 **Aktualizacje:** updater w Launcherze / Adminie (nie Watchtower). Docker host → [INSTALL.md](./INSTALL.md); Android → [MOBILE.md](./MOBILE.md).
 
-Szczegóły decyzji: [ADR 0010](../adr/0010-desktop-shell-tauri.md), [ADR 0014](../adr/0014-desktop-launcher.md).  
-Android (Performer / Console): [MOBILE.md](./MOBILE.md) · [ADR 0016](../adr/0016-android-performer-console.md). Console na tablecie może też uruchomić **lokalny host** na urządzeniu (ten sam tor health → Admin).
+Szczegóły decyzji: [ADR 0010](../architecture/adr/0010-desktop-shell-tauri.md), [ADR 0014](../architecture/adr/0014-desktop-launcher.md).  
+Android (Performer / Console): [MOBILE.md](./MOBILE.md) · [ADR 0016](../architecture/adr/0016-android-performer-console.md). Console na tablecie może też uruchomić **lokalny host** na urządzeniu (ten sam tor health → Admin).
 
 ## Start — Launcher
 
@@ -91,7 +91,7 @@ Na **macOS** menu buduje proces desktop (Tauri); na **Windows / Linux** ten sam 
 
 > **MIDI i zegar muzyczny** obsługuje wyłącznie host (serwer) — nie proces okna desktop. Status MIDI widać w Admin → Host.
 >
-> **Dane projektów** — lokalny host zapisuje w `~/Documents/StageSync` ([ADR 0012](../adr/0012-user-data-location.md)).
+> **Dane projektów** — lokalny host zapisuje w `~/Documents/StageSync` ([ADR 0012](../architecture/adr/0012-user-data-location.md)).
 > Przy pierwszym starcie aplikacja może jednorazowo skopiować dane z poprzedniej lokalizacji
 > Application Support / AppData (bez nadpisywania Dokumentów).
 > Lista ostatnich hostów Launchera zostaje w katalogu aplikacji OS.
@@ -160,7 +160,7 @@ Po połączeniu z hostem aktualizację widać też w Adminie → **O aplikacji**
 
 - **HW Out:** gdy urządzenie ma ≥ 4 kanały — strefa **HW Out** w Mixerze; **+ Dodaj**, M/ST, dual L/R, usuwanie przez PPM lub Delete/Backspace. Remap Mastera / zmiana Out zablokowane w Play.
 - **Widoczność stref:** oczko przy nagłówku Audio / Busy / HW Out / Master chowa lub pokazuje faderzy (nagłówek zostaje).
-- Kontrakty i env: [INSTALL.md](./INSTALL.md) · [ADR 0017](../adr/0017-live-show-control-contracts.md) §7.
+- Kontrakty i env: [INSTALL.md](./INSTALL.md) · [ADR 0017](../architecture/adr/0017-live-show-control-contracts.md) §7.
 
 ### Checklist smoke multi-out (operator)
 

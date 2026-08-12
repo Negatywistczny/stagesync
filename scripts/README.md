@@ -29,5 +29,6 @@ Skrypty są zintegrowane z głównym [`package.json`](../package.json) oraz laun
 ## 🔗 Powiązane dokumenty
 
 - Przewodnik deweloperski: **[docs/guides/DX.md](../docs/guides/DX.md)**
-- Architektura monorepo: **[docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)**
+- Architektura monorepo: **[docs/architecture/ARCHITECTURE.md](../docs/architecture/ARCHITECTURE.md)**
+- Standardy i testy: **[docs/standards/README.md](../docs/standards/README.md)**
 - Mapa kodu źródłowego: **[docs/REPO_MAP.md](../docs/REPO_MAP.md)**
