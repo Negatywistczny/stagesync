@@ -2,11 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ShellNotificationFields } from "./ShellNotificationFields.js";
-import {
-  readPushEnabledPreference,
-  getWebNotificationPermission,
-  requestNotificationPermission,
-} from "@lib/client/pushNotifications.js";
+import { requestNotificationPermission } from "@lib/client/pushNotifications.js";
 
 vi.mock("@lib/client/pushNotifications.js", () => ({
   readPushEnabledPreference: vi.fn().mockReturnValue(false),
