@@ -13,6 +13,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Tab selection i nożyczki:** zaznaczanie klipów zakładkami oraz narzędzie nożyczek (scissors) do podziału klipów na osi czasu.
 
+#### 🎸 Easter eggi i kultura sceniczna
+
+- **Stałe Hexspeak i strojenie:** typowane stałe szesnastkowe (`0xDEADBEEF`, `0xCAFEBABE`, `0x00C0FFEE`, `0x57A6E`), formatowanie faderu Spinal Tap (+11) oraz deskryptor strojenia 432 Hz w `@stagesync/shared`.
+- **Endpointy API:** kawiarka RFC 2324 (`/api/coffee`), rider koncertowy Van Halen (`/api/rider`) oraz gaśnica sceniczna w `POST /api/midi/panic`.
+- **Client & DevTools:** syntezatory Web Audio (*The Lick*, *Rickroll*), tęczowy Konami Code, metronom *Rushing Drummer* oraz generator roboczych tytułów utworów w modalu nowego projektu.
+
 #### 🧪 Testy i pokrycie
 
 - **Smart Tempo beat-grid:** pokrycie testami powyżej 85 % (nowe scenariusze grid, sekcje, krawędzie).
