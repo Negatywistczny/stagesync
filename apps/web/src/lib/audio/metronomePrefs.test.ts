@@ -14,6 +14,9 @@ import {
   masterClickGainLinear,
   setMetronomeOn,
   setMetronomePrefs,
+  getRushingDrummerMode,
+  setRushingDrummerMode,
+  computeRushingDrummerOffsetMs,
 } from "./metronomePrefs.js";
 
 describe("metronomePrefs", () => {
@@ -126,5 +129,21 @@ describe("metronomePrefs", () => {
     expect(clampMasterClickGainDb(Number.NaN)).toBe(FADER_GAIN_FLOOR_DB);
     expect(clampMasterClickGainDb(-999)).toBe(FADER_GAIN_FLOOR_DB);
     expect(clampMasterClickGainDb(999)).toBe(FADER_TAPER_DB_MAX);
+  });
+
+  it("manages rushing drummer mode and computes adrenaline micro-timing", () => {
+    expect(getRushingDrummerMode()).toBe(false);
+    setRushingDrummerMode(true);
+    expect(getRushingDrummerMode()).toBe(true);
+    setRushingDrummerMode(false);
+    expect(getRushingDrummerMode()).toBe(false);
+
+    // Transition bar 4 (index 3), beat 3 (index 2) rushes early into next section
+    const rushMs = computeRushingDrummerOffsetMs(3, 2);
+    expect(rushMs).toBe(-3.5);
+
+    // Steady bar 1
+    const steadyMs = computeRushingDrummerOffsetMs(0, 0);
+    expect(Math.abs(steadyMs)).toBeLessThan(2.0);
   });
 });

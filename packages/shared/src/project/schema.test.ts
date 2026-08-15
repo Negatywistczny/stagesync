@@ -25,6 +25,7 @@ import {
   StageMessageBodySchema,
   UiHashFileSchema,
   UiManifestSchema,
+  HEXSPEAK,
 } from "./schema.js";
 import {
   createProjectV2Seed,
@@ -943,15 +944,29 @@ describe("HealthResponseSchema + UI meta (#692)", () => {
     expect(
       UiHashFileSchema.parse({
         protocolVersion: PROTOCOL_VERSION,
-        uiHash: "deadbeef",
+        uiHash: HEXSPEAK.DEAD_BEEF_HASH,
       }),
-    ).toEqual({ protocolVersion: 1, uiHash: "deadbeef" });
+    ).toEqual({ protocolVersion: 1, uiHash: HEXSPEAK.DEAD_BEEF_HASH });
 
     const manifest = {
       protocolVersion: PROTOCOL_VERSION,
-      uiHash: "deadbeef",
+      uiHash: HEXSPEAK.CAFE_BABE_HASH,
       assets: [{ path: "/index.html", hash: "aa", size: 12 }],
     };
     expect(UiManifestSchema.parse(manifest)).toEqual(manifest);
+
+    // Easter egg hexspeak values parse cleanly
+    for (const hash of [
+      HEXSPEAK.BAAD_F00D_HASH,
+      HEXSPEAK.C0FFEE_HASH,
+      HEXSPEAK.STAGE_HASH,
+    ]) {
+      expect(
+        UiHashFileSchema.parse({
+          protocolVersion: PROTOCOL_VERSION,
+          uiHash: hash,
+        }).uiHash,
+      ).toBe(hash);
+    }
   });
 });

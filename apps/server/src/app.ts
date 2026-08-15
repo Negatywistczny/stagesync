@@ -34,6 +34,8 @@ import { createStageRouter } from "./routes/stage.js";
 import { createSystemRouter } from "./routes/system.js";
 import { createTransportRouter } from "./routes/transport.js";
 import { createPushRouter } from "./routes/push.js";
+import { createCoffeeRouter } from "./routes/coffee.js";
+import { createRiderRouter } from "./routes/rider.js";
 import { createPushTokenStore } from "./push/tokens.js";
 import { sendError } from "./routes/errors.js";
 import { createStores, type Stores } from "./storage/index.js";
@@ -291,6 +293,8 @@ export function createApp(options: CreateAppOptions = {}): AppBundle {
   app.use("/api/transport", createTransportRouter(transport, stores));
   app.use("/api/midi", createMidiRouter(midi));
   app.use("/api/push", createPushRouter(createPushTokenStore(dataDir)));
+  app.use("/api", createCoffeeRouter());
+  app.use("/api", createRiderRouter());
 
   // After all API routers: unknown /api/* must be JSON, never SPA HTML.
   app.use("/api", (_req, res) => {

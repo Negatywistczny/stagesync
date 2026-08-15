@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router";
 import {
+  getWorkingTitle,
   resolveFormaClipAt,
   resolveMeterAt,
   type Project,
@@ -400,7 +401,7 @@ export function AdminShell() {
         open={createPromptOpen}
         title="Nowy utwór"
         label="Nazwa projektu"
-        defaultValue="Nowy utwór"
+        defaultValue={getWorkingTitle()}
         onConfirm={confirmCreate}
         onCancel={() => setCreatePromptOpen(false)}
       />

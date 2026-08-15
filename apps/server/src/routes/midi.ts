@@ -49,10 +49,15 @@ export function createMidiRouter(midi: MidiHost): Router {
     try {
       const result = midi.panic();
       res.set("Cache-Control", "no-store");
+      res.setHeader(
+        "X-Stage-Safety",
+        "MIDI-Panic-Gasnica-Sceniczna-All-Notes-Extinguished",
+      );
       res.json({
         ok: true,
         sent: result.sent,
         channels: result.channels,
+        safetyStatus: "🧯 Hung notes extinguished safely from the stage.",
         status: MidiHostStatusSchema.parse(midi.getStatus()),
       });
     } catch (err) {

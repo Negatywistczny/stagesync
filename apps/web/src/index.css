@@ -52,3 +52,20 @@ body {
     var(--ss-color-bg);
   color: var(--ss-color-text);
 }
+
+/* Konami Code Disco Mode Easter Egg */
+body.stagesync-disco-active {
+  animation: ss-disco-glow 5s ease-in-out infinite alternate;
+}
+
+@keyframes ss-disco-glow {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(180deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}

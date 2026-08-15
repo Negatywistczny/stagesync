@@ -218,9 +218,13 @@ export function dbToFaderTaper(db: number): number {
   return 1;
 }
 
-/** Tick / readout label (`+6`, `0`, `−3`, `−∞`). */
-export function formatFaderTickLabel(db: number): string {
+/**
+ * Tick / readout label (`+6`, `0`, `−3`, `−∞`).
+ * If spinalTap mode is enabled, the maximum +6 dB headroom is formatted as "+11" ("It's one louder").
+ */
+export function formatFaderTickLabel(db: number, spinalTap = false): string {
   if (!Number.isFinite(db)) return "−∞";
+  if (spinalTap && db >= FADER_TAPER_DB_MAX) return "+11";
   if (db > 0) return `+${db}`;
   if (db === 0) return "0";
   return `−${Math.abs(db)}`;

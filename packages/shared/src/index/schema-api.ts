@@ -141,4 +141,6 @@ export {
   type PutMidiHostConfigBody,
   type MidiHostRates,
   type MidiHostStatus,
+  HEXSPEAK,
+  type HexspeakKey,
 } from "../project/schema.js";

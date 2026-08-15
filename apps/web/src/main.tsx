@@ -6,12 +6,14 @@ import {
   initAppearance,
 } from "@lib/client/appearance.js";
 import { captureWebException, initWebSentry } from "@lib/client/sentry.js";
+import { initClientEasterEggs } from "@lib/client/easter-eggs.js";
 import { AppErrorBoundary } from "./shells/components/AppErrorBoundary.js";
 import "./index.css";
 
 initWebSentry();
 initAppearance();
 bootHostThemeDefault();
+initClientEasterEggs();
 
 if ("serviceWorker" in navigator) {
   if (

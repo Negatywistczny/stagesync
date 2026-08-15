@@ -261,4 +261,16 @@ describe("peak hold latch", () => {
     expect(updatePeakHold(prev, Number.NaN)).toBe(prev);
     expect(updatePeakHold(prev, Number.NEGATIVE_INFINITY)).toBe(prev);
   });
+
+  it("formats fader tick label with standard and Spinal Tap +11 modes", () => {
+    expect(formatFaderTickLabel(6)).toBe("+6");
+    expect(formatFaderTickLabel(0)).toBe("0");
+    expect(formatFaderTickLabel(-3)).toBe("−3");
+    expect(formatFaderTickLabel(Number.NEGATIVE_INFINITY)).toBe("−∞");
+
+    // Spinal Tap Mode: +6 dB headroom shows as +11 ("It's one louder")
+    expect(formatFaderTickLabel(6, true)).toBe("+11");
+    expect(formatFaderTickLabel(0, true)).toBe("0");
+    expect(formatFaderTickLabel(-3, true)).toBe("−3");
+  });
 });

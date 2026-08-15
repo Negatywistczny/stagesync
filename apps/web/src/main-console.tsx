@@ -5,11 +5,13 @@ import {
   bootHostThemeDefault,
   initAppearance,
 } from "@lib/client/appearance.js";
+import { initClientEasterEggs } from "@lib/client/easter-eggs.js";
 import { AppErrorBoundary } from "./shells/components/AppErrorBoundary.js";
 import "./index.css";
 
 initAppearance();
 bootHostThemeDefault();
+initClientEasterEggs();
 
 if ("serviceWorker" in navigator) {
   if (

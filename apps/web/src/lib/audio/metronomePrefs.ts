@@ -12,6 +12,9 @@ export const METRONOME_TIMBRE_KEY = "stagesync.metronome.timbre";
 export const METRONOME_ON_KEY = "stagesync.metronome.on";
 /** Mixer Click strip master gain (dB); scales accent+beat sum. */
 export const METRONOME_MASTER_GAIN_DB_KEY = "stagesync.metronome.masterGainDb";
+/** Easter egg: Rushing Drummer / Natural Stage Adrenaline Mode. */
+export const METRONOME_RUSHING_DRUMMER_KEY =
+  "stagesync.metronome.rushingDrummer";
 
 export const METRONOME_PREFS_CHANGED_EVENT =
   "stagesync:metronome-prefs-changed";
@@ -199,4 +202,37 @@ export function masterClickGainLinear(prefs?: MetronomePrefs): number {
   const db = (prefs ?? getMetronomePrefs()).masterGainDb;
   if (!Number.isFinite(db)) return 0;
   return gainDbToLinear(db);
+}
+
+export function getRushingDrummerMode(): boolean {
+  if (typeof localStorage === "undefined") return false;
+  try {
+    return localStorage.getItem(METRONOME_RUSHING_DRUMMER_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function setRushingDrummerMode(enabled: boolean): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.setItem(METRONOME_RUSHING_DRUMMER_KEY, String(enabled));
+  } catch {
+    /* private mode */
+  }
+}
+
+/**
+ * Computes live stage micro-timing offset for a drummer on stage adrenaline (ms).
+ * Before chorus/drop bars (e.g. bar 4, 8), adds slight push (-2..-4 ms early).
+ */
+export function computeRushingDrummerOffsetMs(
+  barIndex: number,
+  beatIndex: number,
+): number {
+  const isTransitionBar = barIndex % 4 === 3;
+  if (isTransitionBar && beatIndex >= 2) {
+    return -3.5;
+  }
+  return Math.sin(barIndex * 1.5 + beatIndex) * 1.2;
 }

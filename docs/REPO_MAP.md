@@ -6,15 +6,15 @@
 
 ## 📊 Statystyki Repozytorium (Śledzone w Git)
 
-* **Liczba wszystkich plików:** 1622
+* **Liczba wszystkich plików:** 1634
 * **Liczba katalogów:** 255
-* **Data aktualizacji:** 2026-08-12T19:55:20.799Z
+* **Data aktualizacji:** 2026-08-15T08:28:34.967Z
 
 ### Kategorie
 
 | Kategoria | Liczba plików |
 | :--- | ---: |
-| Kod | 1201 |
+| Kod | 1213 |
 | Docs | 151 |
 | Config | 119 |
 | Assety | 120 |
@@ -24,7 +24,7 @@
 
 | Rozszerzenie | Liczba plików |
 | :--- | ---: |
-| `.ts` | 731 |
+| `.ts` | 743 |
 | `.tsx` | 284 |
 | `.md` | 129 |
 | `.png` | 94 |
@@ -40,22 +40,22 @@
 
 ## 🏛️ Przegląd Architektury
 
-- **apps/** (1213) — Aplikacje wykonawcze i powłoki klienckie w monorepo
+- **apps/** (1219) — Aplikacje wykonawcze i powłoki klienckie w monorepo
   - **console/** (97) — Android WebView shell dla interfejsu /admin (ADR 0016)
   - **desktop/** (108) — Tauri thin shell dla serwera lokalnego na desktop (ADR 0010)
   - **performer/** (71) — Android WebView shell dla interfejsu /client (ADR 0016)
-  - **server/** (161) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
-  - **web/** (746) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
+  - **server/** (165) — Główny backend Node.js — SSOT Host, Master Clock, REST/WS API
+  - **web/** (748) — Aplikacja webowa React/Vite (Admin, Client, Timeline, Mikser)
     - **e2e/** (2) — Testy integracyjne E2E (Playwright)
     - **public/** (10) — Zasoby statyczne i favicon
       - **brand/** (5) — Materiały brandingowe i logotypy StageSync
     - **scripts/** (10) — Skrypty pomocnicze builda i benchmarków webowych
       - **benchmark/** (8) — Skrypty benchmarków wydajnościowych UI/Audio
-    - **src/** (704) — Kod źródłowy UI i logiki klienta
+    - **src/** (706) — Kod źródłowy UI i logiki klienta
       - **dev/** (18) — Narzędzia i panele deweloperskie wewnątrz aplikacji
-      - **lib/** (239) — Biblioteki klienta (5 kategorii — bez plików w lib root)
+      - **lib/** (241) — Biblioteki klienta (5 kategorii — bez plików w lib root)
         - **audio/** (62) — DSP, AudioContext, tempo, waveform
-        - **client/** (66) — Preferencje, mostek desktop, i18n shell, utilities UI
+        - **client/** (68) — Preferencje, mostek desktop, i18n shell, utilities UI
         - **shell-operator/** (29) — Operatory CRUD API / aktywny projekt
         - **timeline/** (50) — Silnik renderowania timeline (bez mutacji treści)
         - **timeline-edit/** (32) — Mutacje treści klipów (akordy, cue, forma, tekst)
@@ -83,11 +83,11 @@
       - **inspiracje/** (40) — Dumpy zewnętrzne + triage (nie SSOT produktu)
       - **reports/** (5) — Raporty kanoniczne (current / milestones / hygiene)
       - **working/** (2) — Notatki robocze (gitignored treści, tylko README/.gitignore)
-- **packages/** (210) — Współdzielone pakiety wewnętrzne monorepo
+- **packages/** (216) — Współdzielone pakiety wewnętrzne monorepo
   - **android-keystore/** (2) — Keystore do sideloadu / podpisywania APK (lokalny, nie sekret produkcyjny CI)
   - **eslint-config/** (5) — Wspólne reguły ESLint dla całego repozytorium
   - **plugins/** (4)
-  - **shared/** (167) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
+  - **shared/** (173) — Logika domenowa SSOT, Zod schematy, przeliczenia czasu i akordów
   - **typescript-config/** (5) — Bazowe pliki tsconfig.json dla paczek i aplikacji
   - **ui/** (26) — Biblioteka komponentów UI (przycisk, pole, menu, badge)
 - **scripts/** (33) — Skrypty monorepo (mapa repo, release notes, lint CSS, merge-train)
@@ -352,6 +352,8 @@ stagesync/
 │   │   │   │   ├── assets-helpers.ts
 │   │   │   │   ├── assets-router-unit.test.ts
 │   │   │   │   ├── assets.ts
+│   │   │   │   ├── coffee.test.ts
+│   │   │   │   ├── coffee.ts
 │   │   │   │   ├── errors.test.ts
 │   │   │   │   ├── errors.ts
 │   │   │   │   ├── import.test.ts
@@ -364,6 +366,8 @@ stagesync/
 │   │   │   │   ├── projects.ts
 │   │   │   │   ├── push.test.ts
 │   │   │   │   ├── push.ts
+│   │   │   │   ├── rider.test.ts
+│   │   │   │   ├── rider.ts
 │   │   │   │   ├── selective-catches.test.ts
 │   │   │   │   ├── setlist-router-unit.test.ts
 │   │   │   │   ├── setlist.ts
@@ -526,7 +530,7 @@ stagesync/
 │   │   │   │   └── devSurfaceTypes.ts
 │   │   │   ├── lib/
 │   │   │   │   ├── audio/  … (62 pliki, 2 podkatalogi; 43 pliki bezpośrednio)
-│   │   │   │   ├── client/  … (66 plików, 2 podkatalogi; 60 plików bezpośrednio)
+│   │   │   │   ├── client/  … (68 plików, 2 podkatalogi; 62 pliki bezpośrednio)
 │   │   │   │   ├── shell-operator/  … (29 plików, 1 podkatalog; 23 pliki bezpośrednio)
 │   │   │   │   ├── timeline/  … (50 plików, 1 podkatalog; 46 plików bezpośrednio)
 │   │   │   │   └── timeline-edit/  … (32 pliki, 3 podkatalogi; 26 plików bezpośrednio)
@@ -744,9 +748,13 @@ stagesync/
 │   │   │   │   ├── score-bar-map.test.ts
 │   │   │   │   ├── score-bar-map.ts
 │   │   │   │   ├── transpose.test.ts
-│   │   │   │   └── transpose.ts
+│   │   │   │   ├── transpose.ts
+│   │   │   │   ├── tuning.test.ts
+│   │   │   │   └── tuning.ts
 │   │   │   ├── project/
 │   │   │   │   ├── schema/  … (4 pliki)
+│   │   │   │   ├── hexspeak.test.ts
+│   │   │   │   ├── hexspeak.ts
 │   │   │   │   ├── host-discovery.test.ts
 │   │   │   │   ├── host-discovery.ts
 │   │   │   │   ├── merge-preserve.test.ts
@@ -759,7 +767,9 @@ stagesync/
 │   │   │   │   ├── project-seed.ts
 │   │   │   │   ├── protocol-version-android.test.ts
 │   │   │   │   ├── schema.test.ts
-│   │   │   │   └── schema.ts
+│   │   │   │   ├── schema.ts
+│   │   │   │   ├── working-titles.test.ts
+│   │   │   │   └── working-titles.ts
 │   │   │   ├── smart-tempo/
 │   │   │   │   ├── backing-clip.ts
 │   │   │   │   ├── beat-grid.ts

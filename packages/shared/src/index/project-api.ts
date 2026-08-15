@@ -24,6 +24,21 @@ export {
 } from "../project/project-seed.js";
 
 export {
+  LEGENDARY_WORKING_TITLES,
+  getWorkingTitle,
+  type LegendaryWorkingTitle,
+} from "../project/working-titles.js";
+
+export {
+  CONCERT_PITCH_STANDARD_HZ,
+  CONCERT_PITCH_COSMIC_HZ,
+  TUNING_PRESETS,
+  getTuningDescriptor,
+  isCosmicTuning,
+  type TuningDescriptor,
+} from "../music/tuning.js";
+
+export {
   joinTekstBlockTexts,
   withTekstBlockWordSpaces,
 } from "../ui-helpers/tekst-block-text.js";

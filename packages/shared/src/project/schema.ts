@@ -7,3 +7,4 @@ export * from "./schema/clips.js";
 export * from "./schema/setlist.js";
 export * from "./schema/api.js";
 export * from "./schema/project.js";
+export * from "./hexspeak.js";
