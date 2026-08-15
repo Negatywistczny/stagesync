@@ -49,7 +49,7 @@ Przy kolejnym starcie aplikacja sprząta porzucony proces hosta na porcie 4000 (
 | **Console Android**               | **OperatorNav** / chipy jak web operator; na `/client` zawsze                                                                                                                                                       |
 | **Performer / muzyk `/client`**   | Brak przełącznika aplikacji                                                                                                                                                                                         |
 
-### Title bar (Windows / Linux) — [#836](https://github.com/Negatywistczny/stagesync/issues/836)
+### Title bar (Windows / Linux) — [#836](https://github.com/kacperczeczot/stagesync/issues/836)
 
 Okno bez dekoracji OS (`decorations: false`). W WebView:
 
@@ -100,7 +100,7 @@ Na **macOS** menu buduje proces desktop (Tauri); na **Windows / Linux** ten sam 
 
 ## Instalacja (gotowe instalatory)
 
-Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases):
+Pobierz instalator dla swojej platformy z [GitHub Releases](https://github.com/kacperczeczot/stagesync/releases):
 
 | Platforma | Plik                                        |
 | --------- | ------------------------------------------- |
@@ -134,7 +134,7 @@ Launcher pokazuje **status + log** z akcją **Ponów** (nie biały ekran).
 - Przy awarii hosta najpierw sprawdź **log** w Launcherze — komunikat o zajętym porcie `4000` bywa mylący, gdy prawdziwy problem to awaria hosta albo blokada Defendera.
 - Pierwsze uruchomienie na Windows może potrwać dłużej (skan Defendera) — timeout startu to ~2 min.
 
-Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy braku zależności — przeinstaluj z najnowszego [Release](https://github.com/Negatywistczny/stagesync/releases).
+Jeśli nadal pada: zamknij StageSync, w PowerShell `netstat -ano | findstr :4000` (powinno być pusto), uruchom ponownie. Przy braku zależności — przeinstaluj z najnowszego [Release](https://github.com/kacperczeczot/stagesync/releases).
 
 ## Aktualizacja aplikacji
 

@@ -397,61 +397,6 @@ export function parseSyncVersionDetail(output: string, ok: boolean): string {
   return ok ? "OK" : (firstFailureHint(output) ?? "błąd");
 }
 
-// ── Owner typo gate ─────────────────────────────────────────────────────────
-
-const GITHUB_OWNER = "Negatywistczny";
-const OWNER_TYPO = "Negatywist" + "yczny";
-
-/** Fail if the known GitHub owner typo appears outside intentional script/test mentions. */
-export function runOwnerTypoGate(): GateStep {
-  const grepped = spawnSync(
-    "git",
-    [
-      "grep",
-      "-n",
-      "-I",
-      OWNER_TYPO,
-      "--",
-      ".",
-      ":!.cursor/**",
-      ":!scripts/release/cut-release.mjs",
-      ":!scripts/release/cut-release.test.mjs",
-      ":!scripts/dev-hub.ts",
-      ":!scripts/hub/**",
-    ],
-    { cwd: rootDir, encoding: "utf8" },
-  );
-  // exit 0 = matches · 1 = none · other = error
-  if (grepped.status === 0 && (grepped.stdout ?? "").trim()) {
-    const hits = (grepped.stdout ?? "").trim().split(/\r?\n/).filter(Boolean);
-    const preview = hits.slice(0, 3).join("; ");
-    const more = hits.length > 3 ? ` (+${hits.length - 3})` : "";
-    const output = `${grepped.stdout ?? ""}${grepped.stderr ?? ""}`;
-    return {
-      id: "owner-typo",
-      label: "owner typo",
-      ok: false,
-      detail: `${hits.length}× ${OWNER_TYPO} → ${GITHUB_OWNER}: ${preview}${more}`,
-      logBody: gateLogBody(output, false),
-    };
-  }
-  if (grepped.status !== 0 && grepped.status !== 1) {
-    const output = `${grepped.stdout ?? ""}${grepped.stderr ?? ""}`;
-    return {
-      id: "owner-typo",
-      label: "owner typo",
-      ok: false,
-      detail: firstFailureHint(grepped.stderr ?? "") ?? "git grep failed",
-      logBody: gateLogBody(output, false),
-    };
-  }
-  return {
-    id: "owner-typo",
-    label: "owner typo",
-    ok: true,
-    detail: `brak „${OWNER_TYPO}"`,
-  };
-}
 
 // ── High-level gate runners ──────────────────────────────────────────────────
 
@@ -895,7 +840,6 @@ export async function runFullAudit(): Promise<boolean> {
         fail: (output) => parseSyncVersionDetail(output, false),
       },
     ),
-    runOwnerTypoGate(),
     gateStepFromCaptured("audit", "pnpm audit", "pnpm", ["audit"], {
       ok: (output) => parsePnpmAuditDetail(output, true),
       fail: (output) => parsePnpmAuditDetail(output, false),

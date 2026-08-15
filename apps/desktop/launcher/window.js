@@ -1,6 +1,6 @@
 const DOCS_INSTALL_URL =
-  "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md";
-const DOCS_ISSUES_URL = "https://github.com/Negatywistczny/stagesync/issues";
+  "https://github.com/kacperczeczot/stagesync/blob/main/docs/guides/INSTALL.md";
+const DOCS_ISSUES_URL = "https://github.com/kacperczeczot/stagesync/issues";
 
 export const isMacUa = () => /Mac|iPhone|iPad/i.test(navigator.userAgent ?? "");
 

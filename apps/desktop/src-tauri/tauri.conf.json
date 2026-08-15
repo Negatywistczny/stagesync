@@ -83,7 +83,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/Negatywistczny/stagesync/releases/latest/download/latest.json"
+        "https://github.com/kacperczeczot/stagesync/releases/latest/download/latest.json"
       ],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyQUVGNjNEMkIyODZBRjgKUldUNGFpZ3JQZmF1Y3RVK1ZVYzl3SXFBU210SHhHbDRFSVNoSFUvVUJMQ0d6bytWeGdGZ1o0bE4K"

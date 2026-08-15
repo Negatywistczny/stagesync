@@ -1,7 +1,7 @@
 # StageSync — Mobile (Performer + Console)
 
 **Dla kogo:** instalacja i użytkowanie APK Android oraz PWA na telefonie / tablecie.  
-Nazwy produktu: **Performer** / **Console** ([#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0016](../architecture/adr/0016-android-performer-console.md)).
+Nazwy produktu: **Performer** / **Console** ([#674](https://github.com/kacperczeczot/stagesync/issues/674), [ADR 0016](../architecture/adr/0016-android-performer-console.md)).
 
 **Aktualizacje:** dialog APK (Launcher / Admin / host) — nie Watchtower i nie updater Tauri. Desktop → [DESKTOP.md](./DESKTOP.md); host Docker → [INSTALL.md](./INSTALL.md).
 
@@ -84,7 +84,7 @@ APK z hosta i Releases podpisane stałym kluczem sideload ([`packages/android-ke
 2. **Admin → Sprawdź aktualizacje (Console):** ten sam manifest → **Pobierz APK** (URL z Releases), nie Watchtower.
 3. **Po połączeniu z hostem:** porównanie `versionName` z `GET /api/health`. Gdy host nowszy **i** APK leży pod `/downloads/stagesync-*.apk` — dialog z hosta; inaczej fallback do Releases.
 
-**Allowlista URL:** host sesji `{origin}/downloads/…` albo HTTPS GitHub Releases StageSync (`github.com/Negatywistczny/stagesync/…` oraz CDN GitHub). Inne URL z manifestu są odrzucane. Przed instalacją: zgodność **package name** i **certyfikatu podpisu** z zainstalowaną aplikacją.
+**Allowlista URL:** host sesji `{origin}/downloads/…` albo HTTPS GitHub Releases StageSync (`github.com/kacperczeczot/stagesync/…` oraz CDN GitHub). Inne URL z manifestu są odrzucane. Przed instalacją: zgodność **package name** i **certyfikatu podpisu** z zainstalowaną aplikacją.
 
 ## Lokalny host na Console
 
@@ -101,13 +101,13 @@ Gdy silnik nie jest w APK (`SKIP_LOCAL_HOST=1` lub uszkodzony build) — uczciwy
 
 **Android 15+ / strona 16 KB:** domyślny `prepare-local-host` używa przebudowy digidem z wyrównaniem 16 KB. Nadpisanie: `NODEJS_MOBILE_ZIP_URL=…`; eksperyment 4 KB: `ALLOW_INCOMPATIBLE_LIBNODE=1`.
 
-Używaj APK z aktualnego [Release](https://github.com/Negatywistczny/stagesync/releases) albo świeżego `build-apk.sh` (wersja zgodna z root [`package.json`](../../package.json)).
+Używaj APK z aktualnego [Release](https://github.com/kacperczeczot/stagesync/releases) albo świeżego `build-apk.sh` (wersja zgodna z root [`package.json`](../../package.json)).
 
 ## PWA
 
 `apps/web` wystawia manifest (`display: standalone`) + Service Worker. Na telefonie: Chrome → „Dodaj do ekranu głównego”; Safari (iOS) → Udostępnij → „Do ekranu początkowego”.
 
-**iOS:** brak natywnego APK / App Store — jedyna ścieżka to **Safari / PWA `/client`** ([#809](https://github.com/Negatywistczny/stagesync/issues/809)). Natywne Performer/Console = **tylko Android**.
+**iOS:** brak natywnego APK / App Store — jedyna ścieżka to **Safari / PWA `/client`** ([#809](https://github.com/kacperczeczot/stagesync/issues/809)). Natywne Performer/Console = **tylko Android**.
 
 Wake Lock w przeglądarce (+ fallback) oraz `FLAG_KEEP_SCREEN_ON` w APK. Po uśpieniu Safari Client wznawia WebSocket po powrocie do karty.
 

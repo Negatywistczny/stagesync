@@ -20,14 +20,14 @@ Aktywne scope/reporty: [`reports/current/`](./standards/analysis/reports/current
 | **5.6**          | **Studio Shell & Multi-Window**                                       | Multi-Window Tauri, sync tła, pedały HID, eksport ZAiKS CSV                                                                              | [TODO.md](./TODO.md)                                                                                                                                                                                                                                                                                             |
 | **5.7**          | **Extended Notation & Chords**                                        | Selection Filter OSMD, notacja akordów, 2-col Karaoke, Rehearsal Marks                                                                   | [TODO.md](./TODO.md)                                                                                                                                                                                                                                                                                             |
 | **5.8**          | **Advanced Timeline Editing**                                         | Insert Silence / Delete Time, Nudge, Split, Find & Replace, Collect All                                                                  | [TODO.md](./TODO.md)                                                                                                                                                                                                                                                                                             |
-| **6.0**          | **Live Suite** + Dual Engine                                          | Major: Input, Automation, Standalone VSTi; Plugin Host (Studio) + Freeze; Suite; recording; MIDI Patch Matrix; STEM (w tym split Demucs) | [ADR 0018](./architecture/adr/0018-future-audio-architecture.md) · [ADR 0019](./architecture/adr/0019-dual-engine-studio-live.md) · [#832](https://github.com/Negatywistczny/stagesync/issues/832) · [TODO.md](./TODO.md)                                                                                        |
-| **6.1**          | **Karaoke & Jukebox**                                                 | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0**                           | [#824](https://github.com/Negatywistczny/stagesync/issues/824) · [TODO.md](./TODO.md)                                                                                                                                                                                                                            |
+| **6.0**          | **Live Suite** + Dual Engine                                          | Major: Input, Automation, Standalone VSTi; Plugin Host (Studio) + Freeze; Suite; recording; MIDI Patch Matrix; STEM (w tym split Demucs) | [ADR 0018](./architecture/adr/0018-future-audio-architecture.md) · [ADR 0019](./architecture/adr/0019-dual-engine-studio-live.md) · [#832](https://github.com/kacperczeczot/stagesync/issues/832) · [TODO.md](./TODO.md)                                                                                         |
+| **6.1**          | **Karaoke & Jukebox**                                                 | Po 6.0: `/karaoke`, `/request`, Gig/Jukebox; zależność od Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0**                           | [#824](https://github.com/kacperczeczot/stagesync/issues/824) · [TODO.md](./TODO.md)                                                                                                                                                                                                                             |
 | **6.2**          | **Pre-flight & Hardware Setup**                                       | Rig Manager, MIDI Learn, Tuner `/client`, Setlist Pre-flight                                                                             | [TODO.md](./TODO.md)                                                                                                                                                                                                                                                                                             |
 | **6.3**          | **Live Show Automation & DMX**                                        | Track Delays (ms), warstwa DMX / Art-Net (UDP 30 Hz)                                                                                     | [TODO.md](./TODO.md)                                                                                                                                                                                                                                                                                             |
-| **6.4**          | **Smart Ingest ACL**                                                  | Satellite/CLI ingest + `import-bundle`; core bez scrapingu zewnętrznego                                                                  | [#840](https://github.com/Negatywistczny/stagesync/issues/840) · [TODO.md](./TODO.md)                                                                                                                                                                                                                            |
-| **7.0**          | **Integrated Notation Studio**                                        | Edycja MusicXML w drzewie + most MuseScore                                                                                               | [#837](https://github.com/Negatywistczny/stagesync/issues/837) · [TODO.md](./TODO.md)                                                                                                                                                                                                                            |
+| **6.4**          | **Smart Ingest ACL**                                                  | Satellite/CLI ingest + `import-bundle`; core bez scrapingu zewnętrznego                                                                  | [#840](https://github.com/kacperczeczot/stagesync/issues/840) · [TODO.md](./TODO.md)                                                                                                                                                                                                                             |
+| **7.0**          | **Integrated Notation Studio**                                        | Edycja MusicXML w drzewie + most MuseScore                                                                                               | [#837](https://github.com/kacperczeczot/stagesync/issues/837) · [TODO.md](./TODO.md)                                                                                                                                                                                                                             |
 | **7.1**          | **Enterprise Rig & OSC**                                              | Podgląd MIDI/OSC, OSC Matrix & Zero-Glitch HA                                                                                            | [TODO.md](./TODO.md)                                                                                                                                                                                                                                                                                             |
-| **7.2**          | **Studio Ecosystem**                                                  | Virtual Performers + Muse Sounds manager                                                                                                 | [#838](https://github.com/Negatywistczny/stagesync/issues/838) · [#839](https://github.com/Negatywistczny/stagesync/issues/839) · [TODO.md](./TODO.md)                                                                                                                                                           |
+| **7.2**          | **Studio Ecosystem**                                                  | Virtual Performers + Muse Sounds manager                                                                                                 | [#838](https://github.com/kacperczeczot/stagesync/issues/838) · [#839](https://github.com/kacperczeczot/stagesync/issues/839) · [TODO.md](./TODO.md)                                                                                                                                                             |
 | **ops residual** | Auto-election, Offline delta, OAuth, mobile GUI, G1–G10…              | Równolegle / Later — nie mylić z filarami 6.0                                                                                            | [TODO.md](./TODO.md) · [beta-gate](./standards/analysis/reports/current/report-beta-gate.md) · [Safety-Net](./standards/analysis/inspiracje/specyfikacje/Safety-Net-dla-StageSync-v5.2.triage.md) · [Mobile](./standards/analysis/inspiracje/specyfikacje/Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) |
 
 ### 5.4.0 — **Syllables** — **wydane 2026-08-02**
@@ -107,11 +107,11 @@ Hero: Pancerna Scena i produkcyjne Studio — Live Suite z bezpiecznym podziałe
 - Filary Live Suite: Input, Automation, Audio Suite, Standalone VSTi Controller, MIDI Patch Matrix, STEM / mute lead, recording + proste edit — [ADR 0018](./architecture/adr/0018-future-audio-architecture.md)
 - Sandboxowany Plugin Host (sidecar) **tylko w Studio**; wejście w Live wymaga Freeze (render ścieżek z wtyczkami → WAV)
 - Blokowanie warstw kłódką (Lock Lane w Studio; w Live edycja i tak wyłączona)
-- Lokalny STEM split (Demucs / sidecar Python) w Studio → nowe ścieżki audio; Live dostaje wyłącznie zamrożone WAV — [#832](https://github.com/Negatywistczny/stagesync/issues/832)
+- Lokalny STEM split (Demucs / sidecar Python) w Studio → nowe ścieżki audio; Live dostaje wyłącznie zamrożone WAV — [#832](https://github.com/kacperczeczot/stagesync/issues/832)
 
 ### 6.1.0 — **Karaoke & Jukebox**
 
-Hero: Ekosystem rozrywkowy w lokalnej sieci Wi-Fi — [#824](https://github.com/Negatywistczny/stagesync/issues/824).
+Hero: Ekosystem rozrywkowy w lokalnej sieci Wi-Fi — [#824](https://github.com/kacperczeczot/stagesync/issues/824).
 
 Zależności: Syllables **5.4**, Pitch **5.5**, STEM/pitch **6.0**.
 
@@ -139,7 +139,7 @@ Hero: Pełna kontrola nad światłem i czasową mikro-synchronizacją.
 
 ### 6.4.0 — **Smart Ingest ACL**
 
-Hero: Anti-Corruption Layer dla pobierania treści zewnętrznych — [#840](https://github.com/Negatywistczny/stagesync/issues/840).
+Hero: Anti-Corruption Layer dla pobierania treści zewnętrznych — [#840](https://github.com/kacperczeczot/stagesync/issues/840).
 
 - Satellite / CLI / wtyczka: YT / UG / USDB fetch + analiza poza rdzeniem
 - Rdzeń StageSync przyjmuje gotową paczkę (`import-bundle`); walidacja Zod + zapis projektu
@@ -150,7 +150,7 @@ Hero: Anti-Corruption Layer dla pobierania treści zewnętrznych — [#840](http
 Hero: Wbudowany, lekki edytor partytur nutowych MusicXML + most zewnętrzny.
 
 - Podstawowa edycja i korekta nut (Studio Notation Edit bezpośrednio w drzewie XML)
-- Most integracyjny MuseScore Studio (transport / 1-click push) — [#837](https://github.com/Negatywistczny/stagesync/issues/837)
+- Most integracyjny MuseScore Studio (transport / 1-click push) — [#837](https://github.com/kacperczeczot/stagesync/issues/837)
 
 ### 7.1.0 — **Enterprise Rig & OSC**
 
@@ -163,8 +163,8 @@ Hero: Zaawansowany podgląd sygnałów, pełna diagnostyka i redundancja.
 
 Hero: Wirtualny zespół i menedżer brzmień w Trybie Studio (po Dual Engine / Plugin Host).
 
-- Virtual Performers / Auto-Accompaniment na bazie Osi Czasu — [#838](https://github.com/Negatywistczny/stagesync/issues/838)
-- Menedżer integracji brzmień Muse Sounds — [#839](https://github.com/Negatywistczny/stagesync/issues/839)
+- Virtual Performers / Auto-Accompaniment na bazie Osi Czasu — [#838](https://github.com/kacperczeczot/stagesync/issues/838)
+- Menedżer integracji brzmień Muse Sounds — [#839](https://github.com/kacperczeczot/stagesync/issues/839)
 - Legal / ADR przed kodem (licencje zewnętrzne, Freeze pipeline)
 
 ## Zasady operacyjne

@@ -3,7 +3,7 @@ import type { LatestReleaseResult } from "./types.js";
 
 export type { LatestReleaseResult } from "./types.js";
 
-const GITHUB_REPO = "Negatywistczny/stagesync";
+const GITHUB_REPO = "kacperczeczot/stagesync";
 
 type GitHubReleaseListItem = {
   tag_name?: string;

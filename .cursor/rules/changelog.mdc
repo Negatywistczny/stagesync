@@ -1,4 +1,4 @@
-﻿---
+---
 description: Keep a Changelog PL — ludzki, zbity, bez dumpów agenta; kanoniczna struktura Unreleased z emoji ####
 globs: CHANGELOG.md
 alwaysApply: true
@@ -149,7 +149,6 @@ Dopisuj bullet pod istniejącym nagłówkiem. Jeśli go nie ma — utwórz jedn�
 - Samodzielne wpisy ADR / „Scope + plan + QA” / inventarz-first / code freeze
 - Duplikaty tego samego feature w wielu bulletach
 - Surowy `git log` / lista commitów
-- Literówka ownera GitHub: `Negatywistyczny` (kanon: **`Negatywistczny`**)
 - Marketing absencji / nieshipniętego („bez atrap…”, „bez OAuth”, HW Out 3–4 / JNI / auto-election zanim jest w produkcie) — backlog tylko w TODO/ROADMAP/inspiracje/ADR (nie tu)
 
 ## Transformacja (wzór)

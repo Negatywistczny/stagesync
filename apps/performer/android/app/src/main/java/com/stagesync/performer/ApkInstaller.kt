@@ -54,7 +54,7 @@ object ApkInstaller {
 
     /**
      * True when [apkUrl] is a host download (`/downloads/stagesync-*.apk`) or a HTTPS
-     * GitHub release asset for `Negatywistczny/stagesync`.
+     * GitHub release asset for `kacperczeczot/stagesync`.
      *
      * GitHub Releases 302 to `release-assets.githubusercontent.com` (or legacy
      * `objects.githubusercontent.com`) with a UUID path — the `.apk` name lives in
@@ -80,7 +80,7 @@ object ApkInstaller {
         if (host !in ALLOWED_RELEASE_HOSTS) return false
         if (host == "github.com") {
             if (!path.lowercase().endsWith(".apk")) return false
-            return path.contains("/Negatywistczny/stagesync/", ignoreCase = true)
+            return path.contains("/kacperczeczot/stagesync/", ignoreCase = true)
         }
         // objects / release-assets: CDN for GitHub Releases (redirect target)
         return true

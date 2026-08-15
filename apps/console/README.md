@@ -3,7 +3,7 @@
 # 📱 apps/console — Pełnoprawny Klient Android (Console)
 
 **Produkt:** pełnoprawny odpowiednik desktopu na Androidzie (Admin + Timeline + Client + lokalny host).  
-**Mapowanie:** `mobile-full` w [#674](https://github.com/Negatywistczny/stagesync/issues/674) → **Console**.  
+**Mapowanie:** `mobile-full` w [#674](https://github.com/kacperczeczot/stagesync/issues/674) → **Console**.  
 **Po połączeniu:** WebView ładuje host `{origin}/admin` z **pełnym SPA** (link „Klient" działa).
 
 ## 📁 Struktura projektu

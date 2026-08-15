@@ -8,13 +8,13 @@ import {
 describe("docsLinks", () => {
   it("points at canonical GitHub docs surfaces", () => {
     expect(DOCS_INSTALL_URL).toBe(
-      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
+      "https://github.com/kacperczeczot/stagesync/blob/main/docs/guides/INSTALL.md",
     );
     expect(DOCS_RELEASES_URL).toBe(
-      "https://github.com/Negatywistczny/stagesync/releases",
+      "https://github.com/kacperczeczot/stagesync/releases",
     );
     expect(DOCS_ISSUES_URL).toBe(
-      "https://github.com/Negatywistczny/stagesync/issues",
+      "https://github.com/kacperczeczot/stagesync/issues",
     );
   });
 });

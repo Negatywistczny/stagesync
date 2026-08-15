@@ -192,7 +192,11 @@ export function initClientEasterEggs(): void {
   const isBrowser =
     typeof window !== "undefined" &&
     typeof document !== "undefined" &&
-    !("process" in globalThis && (globalThis as { process?: { versions?: { node?: string } } }).process?.versions?.node);
+    !(
+      "process" in globalThis &&
+      (globalThis as { process?: { versions?: { node?: string } } }).process
+        ?.versions?.node
+    );
 
   if (isBrowser) {
     console.log(

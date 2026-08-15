@@ -4,7 +4,7 @@
 **Status:** `partial`  
 **Obszar:** Master/Spare · manual promote · MIDI mute · docs honesty · shared data · G-gates  
 **Data triage:** 2026-07-26  
-**Companion:** [Safety-Net-dla-StageSync-v5.2.triage.md](./Safety-Net-dla-StageSync-v5.2.triage.md) · [#437](https://github.com/Negatywistczny/stagesync/issues/437)
+**Companion:** [Safety-Net-dla-StageSync-v5.2.triage.md](./Safety-Net-dla-StageSync-v5.2.triage.md) · [#437](https://github.com/kacperczeczot/stagesync/issues/437)
 
 ## Provenance
 

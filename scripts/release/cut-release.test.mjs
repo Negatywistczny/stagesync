@@ -60,7 +60,7 @@ const sample = `# Changelog
 
 - **USDB:** bar
 
-## [5.4.7](https://github.com/Negatywistczny/stagesync/compare/v5.4.6...v5.4.7) - 2026-08-07
+## [5.4.7](https://github.com/kacperczeczot/stagesync/compare/v5.4.6...v5.4.7) - 2026-08-07
 
 ### Zmieniono
 - old
@@ -75,23 +75,12 @@ const cut = cutChangelog(sample, {
 
 assert.match(
   cut,
-  /^## \[5\.4\.8\]\(https:\/\/github\.com\/Negatywistczny\/stagesync\/compare\/v5\.4\.7\.\.\.v5\.4\.8\) - 2026-08-08$/m,
+  /^## \[5\.4\.8\]\(https:\/\/github\.com\/kacperczeczot\/stagesync\/compare\/v5\.4\.7\.\.\.v5\.4\.8\) - 2026-08-08$/m,
 );
 assert.match(cut, /## \[5\.4\.8\].*\n\n### Dodano/s);
 assert.match(cut, /- \*\*Import:\*\* foo/);
 assert.match(cut, /## \[5\.4\.7\]/);
 assert.doesNotMatch(cut, /\[Unreleased\]/);
-
-assert.throws(
-  () =>
-    cutChangelog(sample.replace("Negatywistczny", "Negatywistyczny"), {
-      prevVersion: "5.4.7",
-      nextVersion: "5.4.8",
-      date: "2026-08-08",
-      hero: null,
-    }),
-  /Negatywistyczny/,
-);
 
 assert.throws(
   () =>

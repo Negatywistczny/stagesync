@@ -11,8 +11,8 @@ class ReleaseApkUpdateCheckerTest {
         """
         {
           "version": "5.2.7",
-          "consoleUrl": "https://github.com/Negatywistczny/stagesync/releases/download/v5.2.7/StageSync-Console-v5.2.7.apk",
-          "performerUrl": "https://github.com/Negatywistczny/stagesync/releases/download/v5.2.7/StageSync-Performer-v5.2.7.apk"
+          "consoleUrl": "https://github.com/kacperczeczot/stagesync/releases/download/v5.2.7/StageSync-Console-v5.2.7.apk",
+          "performerUrl": "https://github.com/kacperczeczot/stagesync/releases/download/v5.2.7/StageSync-Performer-v5.2.7.apk"
         }
         """.trimIndent()
 
@@ -35,7 +35,7 @@ class ReleaseApkUpdateCheckerTest {
             )
         assertEquals("5.2.7", offer?.latestVersion)
         assertEquals(
-            "https://github.com/Negatywistczny/stagesync/releases/download/v5.2.7/StageSync-Performer-v5.2.7.apk",
+            "https://github.com/kacperczeczot/stagesync/releases/download/v5.2.7/StageSync-Performer-v5.2.7.apk",
             offer?.apkUrl,
         )
     }
@@ -66,7 +66,7 @@ class ReleaseApkUpdateCheckerTest {
     fun allowlistAcceptsGithubReleaseAndHostDownloads() {
         assertTrue(
             ApkInstaller.isAllowedApkUrl(
-                "https://github.com/Negatywistczny/stagesync/releases/download/v5.2.7/StageSync-Performer-v5.2.7.apk",
+                "https://github.com/kacperczeczot/stagesync/releases/download/v5.2.7/StageSync-Performer-v5.2.7.apk",
             ),
         )
         // Real GitHub Releases 302 Location: UUID path, .apk only in query Disposition.

@@ -78,7 +78,7 @@ const bulletsBlock =
     ? `\n${domainBullets.map((b) => `- ${b}`).join("\n")}\n`
     : "\n";
 
-const repo = process.env.GITHUB_REPOSITORY ?? "Negatywistczny/stagesync";
+const repo = process.env.GITHUB_REPOSITORY ?? "kacperczeczot/stagesync";
 const tag = `v${version}`;
 const base = `https://github.com/${repo}/releases/download/${tag}`;
 const dmgUrl = `${base}/StageSync_${version}_aarch64.dmg`;

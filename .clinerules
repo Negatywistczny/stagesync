@@ -18,7 +18,7 @@ Przed każdą zmianą należy sprawdzić indeks decyzji w `docs/architecture/adr
 - **Zakaz Żargonu w Changelog:** W `CHANGELOG.md` zakaz używania statusów operacyjnych typu „G1-G10”, „claim green”, „residual”.
 - **Zakaz Samodzielnych Redesignów:** Każda nietrywialna zmiana UI (kolory, IA) wymaga pisemnego uzasadnienia lub prośby PO.
 - **Zakaz Nowych Plików w Root:** Nie dodawaj plików w katalogu głównym bez zgody (poza dozwolonym toolingiem).
-- **Zakaz Literówek w Ownerze:** Kanoniczny owner GitHub to **`Negatywistczny`** (bez dodatkowego „y”).
+- **Właściciel GitHub:** Kanoniczny owner GitHub to **`kacperczeczot`**.
 
 ## 🏛️ Architektura i SSOT
 

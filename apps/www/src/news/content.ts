@@ -57,7 +57,7 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       },
     ],
     releaseUrl:
-      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.4.0",
+      "https://github.com/kacperczeczot/stagesync/releases/tag/v5.4.0",
   },
   {
     line: "5.3",
@@ -85,7 +85,7 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       },
     ],
     releaseUrl:
-      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.3.0",
+      "https://github.com/kacperczeczot/stagesync/releases/tag/v5.3.0",
   },
   {
     line: "5.2",
@@ -103,7 +103,7 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       { icon: "download", label: "Jawne aktualizacje APK i interfejsu" },
     ],
     releaseUrl:
-      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.2.0",
+      "https://github.com/kacperczeczot/stagesync/releases/tag/v5.2.0",
   },
   {
     line: "5.1",
@@ -121,7 +121,7 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       { icon: "wifi", label: "Wykrywanie StageSync w sieci" },
     ],
     releaseUrl:
-      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.1.0",
+      "https://github.com/kacperczeczot/stagesync/releases/tag/v5.1.0",
   },
   {
     line: "5.0",
@@ -139,7 +139,7 @@ export const RELEASE_SPOTLIGHTS: ReleaseSpotlight[] = [
       { icon: "laptop", label: "Desktop na Windows i Mac" },
     ],
     releaseUrl:
-      "https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0",
+      "https://github.com/kacperczeczot/stagesync/releases/tag/v5.0.0",
   },
   {
     line: "4",

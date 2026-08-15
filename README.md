@@ -8,19 +8,19 @@
 <br />
 <br />
 
-<a href="https://negatywistczny.github.io/stagesync/">
+<a href="https://kacperczeczot.github.io/stagesync/">
   <img src="apps/web/public/brand/btn-official-website.svg" alt="Oficjalna Strona WWW" height="42" /></a>
 &nbsp;&nbsp;
-<a href="https://github.com/Negatywistczny/stagesync/releases">
+<a href="https://github.com/kacperczeczot/stagesync/releases">
   <img src="apps/web/public/brand/btn-download-stagesync.svg" alt="Pobierz StageSync" height="42" /></a>
 
 <br />
 <br />
 
-[![Release](https://img.shields.io/github/v/release/Negatywistczny/stagesync?include_prereleases&color=FFB700&labelColor=18181b)](https://github.com/Negatywistczny/stagesync/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/Negatywistczny/stagesync/ci.yml?branch=main&label=CI&color=FFB700&labelColor=18181b)](https://github.com/Negatywistczny/stagesync/actions/workflows/ci.yml)
-[![Codecov](https://img.shields.io/codecov/c/github/Negatywistczny/stagesync?color=FFB700&labelColor=18181b)](https://codecov.io/gh/Negatywistczny/stagesync)
-[![Downloads](https://img.shields.io/github/downloads/Negatywistczny/stagesync/total?label=downloads&color=FFB700&labelColor=18181b)](https://github.com/Negatywistczny/stagesync/releases)
+[![Release](https://img.shields.io/github/v/release/kacperczeczot/stagesync?include_prereleases&color=FFB700&labelColor=18181b)](https://github.com/kacperczeczot/stagesync/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/kacperczeczot/stagesync/ci.yml?branch=main&label=CI&color=FFB700&labelColor=18181b)](https://github.com/kacperczeczot/stagesync/actions/workflows/ci.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/kacperczeczot/stagesync?color=FFB700&labelColor=18181b)](https://codecov.io/gh/kacperczeczot/stagesync)
+[![Downloads](https://img.shields.io/github/downloads/kacperczeczot/stagesync/total?label=downloads&color=FFB700&labelColor=18181b)](https://github.com/kacperczeczot/stagesync/releases)
 [![License](https://img.shields.io/badge/License-BUSL--1.1-FFB700?labelColor=18181b)](LICENSE)
 
 <br />
@@ -70,7 +70,7 @@
 #### 1. Sklonuj repozytorium
 
 ```bash
-git clone https://github.com/Negatywistczny/stagesync
+git clone https://github.com/kacperczeczot/stagesync
 cd stagesync
 ```
 
@@ -89,7 +89,7 @@ Więcej informacji znajdziesz w pełnej [Dokumentacji DX](./docs/guides/DX.md).
 
 ### 📦 Dla użytkowników i wdrożeń produkcyjnych
 
-- 💻 **Aplikacja Desktop (Windows / macOS):** Pobierz gotowy instalator z [GitHub Releases](https://github.com/Negatywistczny/stagesync/releases).
+- 💻 **Aplikacja Desktop (Windows / macOS):** Pobierz gotowy instalator z [GitHub Releases](https://github.com/kacperczeczot/stagesync/releases).
 - 🐳 **Serwer Dedykowany (Docker):** Zobacz [Instrukcję wdrożenia serwerowego](./docs/guides/INSTALL.md).
 
 ## 📦 Monorepo

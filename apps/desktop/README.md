@@ -7,7 +7,7 @@ Aplikacja `apps/desktop` to natywna powłoka desktopowa dla systemu macOS i Wind
 ## 📁 Struktura projektu
 
 - **`src-tauri/`** — Rdzeń aplikacji Tauri napisany w języku Rust:
-  - Definiuje okna systemowe (Windows/Linux: frameless + HTML title bar [#836](https://github.com/Negatywistczny/stagesync/issues/836); macOS: natywne dekoracje + menubar), tray, mDNS, updater.
+  - Definiuje okna systemowe (Windows/Linux: frameless + HTML title bar [#836](https://github.com/kacperczeczot/stagesync/issues/836); macOS: natywne dekoracje + menubar), tray, mDNS, updater.
   - Pakuje binarny proces sidecara (Node.js) odpowiedzialny za lokalny serwer i timing.
   - Zawiera konfigurację instalatora NSIS dla Windowsa (dedykowane grafiki, spersonalizowany instalator).
 - **[`launcher/`](./launcher/README.md)** — Lekki i intuicyjny interfejs startowy (HTML/CSS/JS) odpowiadający za:

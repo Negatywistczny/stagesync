@@ -27,9 +27,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const GITHUB_OWNER = "Negatywistczny";
+const GITHUB_OWNER = "kacperczeczot";
 const GITHUB_REPO = `${GITHUB_OWNER}/stagesync`;
-const OWNER_TYPO = "Negatywistyczny";
 
 /** Hero name for the first stable cut of a MAJOR.MINOR line (versioning.mdc). */
 export const LINE_HEROES = Object.freeze({
@@ -162,11 +161,6 @@ export function todayLocalISO(d = new Date()) {
  */
 export function cutChangelog(text, { prevVersion, nextVersion, date, hero, repo = GITHUB_REPO }) {
   const normalized = text.replace(/\r\n/g, "\n");
-  if (normalized.includes(OWNER_TYPO)) {
-    throw new Error(
-      `CHANGELOG zawiera literówkę ownera "${OWNER_TYPO}" — popraw na ${GITHUB_OWNER}`,
-    );
-  }
 
   const escapedNext = escapeRegExp(nextVersion);
   if (new RegExp(`^## \\[${escapedNext}\\]`, "m").test(normalized)) {
@@ -319,39 +313,6 @@ function preflightGit({ allowBranch, dryRun, push }) {
   }
 }
 
-function assertNoOwnerTypo() {
-  const changelog = readFileSync(resolve(ROOT, "CHANGELOG.md"), "utf8");
-  if (changelog.includes(OWNER_TYPO)) {
-    throw new Error(
-      `CHANGELOG zawiera literówkę ownera "${OWNER_TYPO}" — popraw na ${GITHUB_OWNER}`,
-    );
-  }
-
-  // git grep: ignore this script/tests (they intentionally mention the typo string)
-  const grepped = git([
-    "grep",
-    "-n",
-    "-I",
-    OWNER_TYPO,
-    "--",
-    ".",
-    ":!.cursor/**",
-    ":!scripts/release/cut-release.mjs",
-    ":!scripts/release/cut-release.test.mjs",
-    ":!scripts/dev-hub.ts",
-  ]);
-  // exit 0 = matches · 1 = none · other = error
-  if (grepped.status === 0 && grepped.stdout.trim()) {
-    throw new Error(
-      `Znaleziono literówkę ownera "${OWNER_TYPO}":\n${grepped.stdout}\nPopraw na ${GITHUB_OWNER}`,
-    );
-  }
-  if (grepped.status !== 0 && grepped.status !== 1) {
-    throw new Error(
-      `git grep (${OWNER_TYPO}) nie powiódł się: ${grepped.stderr || grepped.status}`,
-    );
-  }
-}
 
 function releaseFileList() {
   return [
@@ -422,11 +383,6 @@ async function main() {
     fail(1, `Tag ${tag} już istnieje lokalnie`);
   }
 
-  try {
-    assertNoOwnerTypo();
-  } catch (e) {
-    fail(1, e.message);
-  }
 
   let nextChangelog;
   try {
@@ -504,11 +460,6 @@ async function main() {
     log("5/8", "Pominięto smoke notes (--skip-notes)");
   }
 
-  try {
-    assertNoOwnerTypo();
-  } catch (e) {
-    fail(1, e.message);
-  }
 
   if (opts.noCommit) {
     log("6/8", "Pominięto commit/tag (--no-commit)");

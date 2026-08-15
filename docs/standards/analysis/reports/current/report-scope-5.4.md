@@ -45,7 +45,7 @@ Jeden hero **Syllables**: timed lyrics (sylaby w tickach) + **widoczny** import 
 
 ## OUT (świadome)
 
-- `/karaoke` zero-chrome, Idle/QR, Up Next — **6.1** ([#824](https://github.com/Negatywistczny/stagesync/issues/824); dawne „7.0”)
+- `/karaoke` zero-chrome, Idle/QR, Up Next — **6.1** ([#824](https://github.com/kacperczeczot/stagesync/issues/824); dawne „7.0”)
 - Pitch & FX — **5.5**
 - Live Input, Suite, automation lanes, MIDI Patch Matrix, recording — **6.0 Live Suite**
 - Cloud AI / zewnętrzne API ingestii
@@ -70,5 +70,5 @@ Cut **5.4.0** dopiero gdy operator widzi UltraStar → Karaoke. Po cutcie: scope
 ## Powiązane
 
 - [ROADMAP../../../../ROADMAP.md) · [TODO../../../../TODO.md) · [ADR 0018../../../../architecture/adr/0018-future-audio-architecture.md)
-- Epik Karaoke: [#824](https://github.com/Negatywistczny/stagesync/issues/824) (**6.1**, nie 7.0)
+- Epik Karaoke: [#824](https://github.com/kacperczeczot/stagesync/issues/824) (**6.1**, nie 7.0)
 - Triage ingestii: [Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md](../../inspiracje/specyfikacje/Architektura-Ingestii-Danych-Muzycznych-StageSync.triage.md)

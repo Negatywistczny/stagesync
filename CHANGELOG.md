@@ -5,7 +5,7 @@ Wszystkie istotne zmiany w StageSync są dokumentowane w tym pliku.
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/),
 projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
-## [5.4.12](https://github.com/Negatywistczny/stagesync/compare/v5.4.11...v5.4.12) - 2026-08-15
+## [5.4.12](https://github.com/kacperczeczot/stagesync/compare/v5.4.11...v5.4.12) - 2026-08-15
 
 ### Dodano
 
@@ -17,7 +17,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Stałe Hexspeak i strojenie:** typowane stałe szesnastkowe (`0xDEADBEEF`, `0xCAFEBABE`, `0x00C0FFEE`, `0x57A6E`), formatowanie faderu Spinal Tap (+11) oraz deskryptor strojenia 432 Hz w `@stagesync/shared`.
 - **Endpointy API:** kawiarka RFC 2324 (`/api/coffee`), rider koncertowy Van Halen (`/api/rider`) oraz gaśnica sceniczna w `POST /api/midi/panic`.
-- **Client & DevTools:** syntezatory Web Audio (*The Lick*, *Rickroll*), tęczowy Konami Code, metronom *Rushing Drummer* oraz generator roboczych tytułów utworów w modalu nowego projektu.
+- **Client & DevTools:** syntezatory Web Audio (_The Lick_, _Rickroll_), tęczowy Konami Code, metronom _Rushing Drummer_ oraz generator roboczych tytułów utworów w modalu nowego projektu.
 
 #### 🧪 Testy i pokrycie
 
@@ -84,7 +84,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **`POST /api/library/import`:** wyłącznie pakiet v5; format 4.x (`songs[]`) jest odrzucany z czytelnym błędem.
 - **Transport tick:** klient wymaga pełnej koperty `transport_tick` (bez bare `TransportState`).
 
-## [5.4.11](https://github.com/Negatywistczny/stagesync/compare/v5.4.10...v5.4.11) - 2026-08-10
+## [5.4.11](https://github.com/kacperczeczot/stagesync/compare/v5.4.10...v5.4.11) - 2026-08-10
 
 ### Naprawiono
 
@@ -93,7 +93,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Android (aktualizacja APK):** po „Pobieranie APK…” znów pojawia się systemowe potwierdzenie instalacji (Console / Performer) — wcześniej sesja `PackageInstaller` kończyła się bez odbiornika statusu.
 - **Windows (aktualizacja):** po instalacji z Launchera / Admina uruchamiana jest właściwa aplikacja StageSync — nie lokalny instalator testowy „NSIS Smoke”, który zostawał na starej wersji i ciągle pokazywał dostępność aktualizacji.
 
-## [5.4.10](https://github.com/Negatywistczny/stagesync/compare/v5.4.9...v5.4.10) - 2026-08-09
+## [5.4.10](https://github.com/kacperczeczot/stagesync/compare/v5.4.9...v5.4.10) - 2026-08-09
 
 ### Dodano
 
@@ -121,7 +121,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Klient:** na desktopie Tauri wraca pełny pasek L1 z chipami **Admin / Timeline** (wcześniej cały nagłówek znikał); w przeglądarce po wejściu z Admina/Timeline sesja operatora znów pokazuje te skoki; wysokość paska L1 (Admin / Timeline / Client) wyrównana do wspólnego kontraktu.
 
-## [5.4.9](https://github.com/Negatywistczny/stagesync/compare/v5.4.8...v5.4.9) - 2026-08-09
+## [5.4.9](https://github.com/kacperczeczot/stagesync/compare/v5.4.8...v5.4.9) - 2026-08-09
 
 ### Naprawiono
 
@@ -129,7 +129,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Android (aktualizacja APK):** pobieranie z GitHub Releases znów działa — allowlista akceptuje redirect CDN (`release-assets.githubusercontent.com`) z ścieżką UUID (nazwa `.apk` w query, nie w path).
 
-## [5.4.8](https://github.com/Negatywistczny/stagesync/compare/v5.4.7...v5.4.8) - 2026-08-08
+## [5.4.8](https://github.com/kacperczeczot/stagesync/compare/v5.4.7...v5.4.8) - 2026-08-08
 
 ### Dodano
 
@@ -156,7 +156,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Skróty klawiszowe:** dodano globalne przechwytywanie skrótów `Alt+Left` / `Alt+Right` blokujące nawigację po historii WebView, naprawiając tym samym działanie przesuwania klipów na osi czasu (Timeline) w wersji instalacyjnej (Windows).
 - **Dev:** wymuszony bind `host: "127.0.0.1"` w deweloperskim serwerze Vite.
 
-## [5.4.7](https://github.com/Negatywistczny/stagesync/compare/v5.4.6...v5.4.7) - 2026-08-07
+## [5.4.7](https://github.com/kacperczeczot/stagesync/compare/v5.4.6...v5.4.7) - 2026-08-07
 
 ### Dodano
 
@@ -180,7 +180,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Import USDB:** w kreatorze z UltraStar (także ścieżka US+UG) przy braku konta lub błędzie sesji otwiera się formularz **Konto USDB**, nie tylko komunikat o konieczności logowania.
 
-## [5.4.6](https://github.com/Negatywistczny/stagesync/compare/v5.4.5...v5.4.6) - 2026-08-07
+## [5.4.6](https://github.com/kacperczeczot/stagesync/compare/v5.4.5...v5.4.6) - 2026-08-07
 
 ### Zmieniono
 
@@ -200,7 +200,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Android (Console / Performer):** aktualizacja APK tylko z allowlisty URL (host `/downloads/stagesync-*.apk` lub GitHub Releases StageSync) oraz weryfikacja package name i certyfikatu podpisu przed otwarciem instalatora.
 - **Ustawienia hosta:** zapis zarządzanego pliku ustawień (`.env`) z uprawnieniami tylko dla właściciela (mode `0600`).
 
-## [5.4.5](https://github.com/Negatywistczny/stagesync/compare/v5.4.4...v5.4.5) - 2026-08-05
+## [5.4.5](https://github.com/kacperczeczot/stagesync/compare/v5.4.4...v5.4.5) - 2026-08-05
 
 ### Dodano
 
@@ -221,7 +221,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Smart Tempo:** diagnostyka analizy jest teraz liczona i logowana bez warunków wokół debug flag, a analiza korzysta z ujednoliconej siatki BPM i historii benchmarków dla regresji.
 
-## [5.4.4](https://github.com/Negatywistczny/stagesync/compare/v5.4.3...v5.4.4) - 2026-08-05
+## [5.4.4](https://github.com/kacperczeczot/stagesync/compare/v5.4.3...v5.4.4) - 2026-08-05
 
 ### Dodano
 
@@ -236,7 +236,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Smart Tempo:** kotwiczenie pierwszego downbeatu na transientach kick / sub-bass; siatka beatów premiuje kolce energii (dual-band); lokalny okres śledzenia mniej sztywny względem seeda — mapa tempa lepiej trzyma się żywego groove'u przy Import US+UG.
 - **Import YouTube (US+UG):** gdy konwersja MP3 albo systemowy yt-dlp zawodzi, host próbuje strumień audio, binarkę wbudowaną i świeżą z GitHub — czytelniejsze komunikaty błędów.
 
-## [5.4.3](https://github.com/Negatywistczny/stagesync/compare/v5.4.2...v5.4.3) - 2026-08-05
+## [5.4.3](https://github.com/kacperczeczot/stagesync/compare/v5.4.2...v5.4.3) - 2026-08-05
 
 ### Dodano
 
@@ -250,7 +250,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Smart Tempo:** siatka beatów silniej premiuje downbeaty i fazę względem onsetów — mapa tempa lepiej trzyma się nagrania; Import US+UG przy układzie Beat 1 / siatki bierze BPM z analizy audio, gdy jest dostępny (zamiast samego metronomu pliku).
 
-## [5.4.2](https://github.com/Negatywistczny/stagesync/compare/v5.4.1...v5.4.2) - 2026-08-04 — Smart Tempo
+## [5.4.2](https://github.com/kacperczeczot/stagesync/compare/v5.4.1...v5.4.2) - 2026-08-04 — Smart Tempo
 
 ### Dodano
 
@@ -299,7 +299,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Server:** zmienne `STAGESYNC_USDB_*` zadeklarowane w `turbo globalEnv`; przy retry sesji USDB błąd zachowuje `cause` — pełny stack w logach.
 - **Shared:** diakrytyki UltraStar normalizowane przez jawny zakres combining marks (`[\u0300-\u036f]`) zamiast `\p{M}` — kompatybilność z silnikami bez ICU (nodejs-mobile); czyszczenie ostrzeżeń ESLint blokujących CI lint.
 
-## [5.4.1](https://github.com/Negatywistczny/stagesync/compare/v5.4.0...v5.4.1) - 2026-08-03
+## [5.4.1](https://github.com/kacperczeczot/stagesync/compare/v5.4.0...v5.4.1) - 2026-08-03
 
 ### Dodano
 
@@ -342,7 +342,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Klient (Karaoke / tekst):** słowa nie sklejają się między sylabami — spacje z linii są zachowane przy podświetlaniu bloków (np. „I hear the drums”, nie „Ihearthedrums”).
 - **Klient (Akordy):** kafelki cyklu biorą akord z bieżącego clipu na playheadzie (także półtaktowe / kotwiczone przy słowach po imporcie US+UG), a szerokość kafelka jest proporcjonalna do czasu trwania — nie tylko do początku taktu.
 
-## [5.4.0](https://github.com/Negatywistczny/stagesync/compare/v5.3.8...v5.4.0) - 2026-08-02 — Syllables
+## [5.4.0](https://github.com/kacperczeczot/stagesync/compare/v5.3.8...v5.4.0) - 2026-08-02 — Syllables
 
 ### Dodano
 
@@ -358,7 +358,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Klient (Karaoke):** gdy linia ma kilka bloków czasowych, podświetlenie podąża za aktywnym fragmentem w sync z transportem; jedna cała linia jako jeden blok wygląda jak dotychczas.
 
-## [5.3.8](https://github.com/Negatywistczny/stagesync/compare/v5.3.7...v5.3.8) - 2026-08-02
+## [5.3.8](https://github.com/kacperczeczot/stagesync/compare/v5.3.7...v5.3.8) - 2026-08-02
 
 ### Dodano
 
@@ -394,7 +394,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin (desktop):** zakładki **Utwory / Set / Scena / Host** znowu wyglądają jak przyciski UI (akcent przy aktywnej sekcji) — nie jak szare przyciski systemowe.
 - **Desktop (Tauri):** wykrywanie powłoki OS menu nie psuje się w trybie deweloperskim — przycisk pełnego ekranu zostaje ukryty także przy `tauri dev`.
 
-## [5.3.7](https://github.com/Negatywistczny/stagesync/compare/v5.3.6...v5.3.7) - 2026-07-31
+## [5.3.7](https://github.com/kacperczeczot/stagesync/compare/v5.3.6...v5.3.7) - 2026-07-31
 
 ### Dodano
 
@@ -413,7 +413,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Wersja i metadane:** zaktualizowano numer wersji aplikacji i odświeżono metadane release dla kolejnego minora.
 
-## [5.3.6](https://github.com/Negatywistczny/stagesync/compare/v5.3.5...v5.3.6) - 2026-07-29
+## [5.3.6](https://github.com/kacperczeczot/stagesync/compare/v5.3.5...v5.3.6) - 2026-07-29
 
 ### Dodano
 
@@ -466,7 +466,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop (wąskie okno ≤640px):** Tauri używa tego samego chrome telefonu co Web LAN i Console (Android) — **OperatorNav**, układ jednej kolumny w Adminie i tryb odtwarzania Timeline; bez osobnego wariantu nagłówka. Menu OS i ukryty przycisk pełnego ekranu bez zmian.
 
-## [5.3.5](https://github.com/Negatywistczny/stagesync/compare/v5.3.4...v5.3.5) - 2026-07-27
+## [5.3.5](https://github.com/kacperczeczot/stagesync/compare/v5.3.4...v5.3.5) - 2026-07-27
 
 ### Naprawiono
 
@@ -479,7 +479,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin (telefon):** nagłówek mieści się w jednym wierszu bez poziomego ani pionowego przewijania; lista sekcji ma tę samą wysokość co przycisk **Ustawienia**.
 - **Chrome Admin / Timeline / Klient:** wszystkie widoczne przyciski **⚙️ Ustawienia** otwierają te same Preferencje (także w dev preview); na tablecie nagłówki zostają w jednym rzędzie, a większe 44px cele dotyku są tylko dla telefonu (≤640px), bez mieszania z zakresem tabletu.
 
-## [5.3.4](https://github.com/Negatywistczny/stagesync/compare/v5.3.3...v5.3.4) - 2026-07-27
+## [5.3.4](https://github.com/kacperczeczot/stagesync/compare/v5.3.3...v5.3.4) - 2026-07-27
 
 ### Naprawiono
 
@@ -490,7 +490,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Klient (sesja operatora):** pasek nawigacji nie nachodzi na logo StageSync; na zwykłym widoku muzyka pasek pozostaje ukryty.
 - **Nawigacja operatora:** spójne style przycisków segmentów w Admin, Timeline i Klient.
 
-## [5.3.3](https://github.com/Negatywistczny/stagesync/compare/v5.3.2...v5.3.3) - 2026-07-27
+## [5.3.3](https://github.com/kacperczeczot/stagesync/compare/v5.3.2...v5.3.3) - 2026-07-27
 
 ### Dodano
 
@@ -504,7 +504,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop / Pomoc:** menu systemowe **Odtwarzanie** zamiast angielskiego „Transport”; ta sama nazwa w Pomocy Timeline i na pasku sterowania L2.
 
-## [5.3.2](https://github.com/Negatywistczny/stagesync/compare/v5.3.1...v5.3.2) - 2026-07-27
+## [5.3.2](https://github.com/kacperczeczot/stagesync/compare/v5.3.1...v5.3.2) - 2026-07-27
 
 ### Naprawiono
 
@@ -517,7 +517,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Mobile:** wersja Console local host oraz nazwa eksportu logu lokalnego hosta.
 
-## [5.3.1](https://github.com/Negatywistczny/stagesync/compare/v5.3.0...v5.3.1) - 2026-07-27
+## [5.3.1](https://github.com/kacperczeczot/stagesync/compare/v5.3.0...v5.3.1) - 2026-07-27
 
 ### Zmieniono
 
@@ -541,7 +541,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Desktop — restart / shutdown hosta:** po restarcie z Admina lub menu OS zostajesz w sesji Admin zamiast na ekranie Launchera; wyłączenie serwera nie pokazuje już fałszywego błędu przy powrocie; zasobnik wykrywa host po restarcie poza sidecarem, a **Zatrzymaj Host** gasi osierocony proces na porcie 4000.
 - **Launcher — aktualizacja:** podczas pobierania instalatora **Pomiń tę wersję** jest nieaktywny (bez efektu najechania).
 
-## [5.3.0](https://github.com/Negatywistczny/stagesync/compare/v5.2.11...v5.3.0) - 2026-07-27 — Colors & Channels
+## [5.3.0](https://github.com/kacperczeczot/stagesync/compare/v5.2.11...v5.3.0) - 2026-07-27 — Colors & Channels
 
 ### Dodano
 
@@ -586,7 +586,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client — chrome:** ustawienia, pełny ekran i inne ikony w nagłówku mają ten sam rozmiar i wygląd `Button` co Admin / Timeline (36×36 na Desktop); większe 44×44 tylko na wąskim / PWA.
 - **Admin / Desktop — APK:** kafelki i QR „Pobierz Performer / Console” znów wykrywają APK na lokalnym hoście otwartym przez `localhost` — wcześniej sonda szła na adres LAN (cross-origin) i fałszywie pokazywała brak pliku mimo działającego `/downloads/`.
 
-## [5.2.11](https://github.com/Negatywistczny/stagesync/compare/v5.2.10...v5.2.11) - 2026-07-26
+## [5.2.11](https://github.com/kacperczeczot/stagesync/compare/v5.2.10...v5.2.11) - 2026-07-26
 
 ### Dodano
 
@@ -612,7 +612,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client — partytura:** MusicXML znów transponuje się przy zmianie stroju instrumentu (C / B♭ / E♭ / ręczna) oraz przy globalnej transpozycji zespołu z Live Desk (Admin → Scena) — jak w Grid i w v4.
 - **Client — partytura:** podświetlenie taktu idzie dalej przy powtórzeniach i drugiej volcie — kursor OSMD trafia w właściwy takt partytury, a nie „klei się” na początku volty.
 
-## [5.2.10](https://github.com/Negatywistczny/stagesync/compare/v5.2.9...v5.2.10) - 2026-07-26
+## [5.2.10](https://github.com/kacperczeczot/stagesync/compare/v5.2.9...v5.2.10) - 2026-07-26
 
 ### Dodano
 
@@ -649,7 +649,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Console / Performer (Android):** przy wpisywaniu adresu hosta klawiatura nie zasłania już pola ani przycisku Połącz — cały blok ręcznego połączenia (oraz panel wklejenia w skanie QR) zostaje nad IME.
 
-## [5.2.9](https://github.com/Negatywistczny/stagesync/compare/v5.2.8...v5.2.9) - 2026-07-26
+## [5.2.9](https://github.com/kacperczeczot/stagesync/compare/v5.2.8...v5.2.9) - 2026-07-26
 
 ### Dodano
 
@@ -664,7 +664,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Launcher:** „Wyczyść błąd” i „Pobierz logi diagnostyczne” znikają przy braku błędu hosta (CSS `hidden` nie przegrywa już z `display: flex` wiersza przycisków).
 
-## [5.2.8](https://github.com/Negatywistczny/stagesync/compare/v5.2.7...v5.2.8) - 2026-07-26
+## [5.2.8](https://github.com/kacperczeczot/stagesync/compare/v5.2.7...v5.2.8) - 2026-07-26
 
 ### Dodano
 
@@ -679,7 +679,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Admin Host — aktualizacje:** przycisk **Aktualizuj host** pojawia się tylko gdy Watchtower jest skonfigurowany; bez `STAGESYNC_UPDATER_*` widać jasną wskazówkę (Docker: [`compose.prod.yml`](./compose.prod.yml), inaczej instalator z Releases) zamiast błędu po kliknięciu.
 
-## [5.2.7](https://github.com/Negatywistczny/stagesync/compare/v5.2.6...v5.2.7) - 2026-07-26
+## [5.2.7](https://github.com/kacperczeczot/stagesync/compare/v5.2.6...v5.2.7) - 2026-07-26
 
 ### Zmieniono
 
@@ -694,7 +694,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Console (Android):** powiadomienie lokalnego hosta jest trwałe (nie da się go zrzucić gestem) — zatrzymanie tylko akcją **Zatrzymaj Host**, która bezpiecznie gasi silnik i zdejmuje foreground.
 - **Console (Android) — aktualizacje:** „Sprawdź aktualizacje” w Host nie sugeruje już Watchtower / [`compose.prod.yml`](./compose.prod.yml) ani „Desktop: pobierz instalator” — na tablecie / w APK aktualizacje to nowy APK (Releases / karta Połączenie & Sieć), także gdy mostek `StageSyncNative` nie złapie od razu.
 
-## [5.2.6](https://github.com/Negatywistczny/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
+## [5.2.6](https://github.com/kacperczeczot/stagesync/compare/v5.2.5...v5.2.6) - 2026-07-26
 
 ### Dodano
 
@@ -714,7 +714,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Admin Host (telefon):** akordeon Host nie rozpycha już pierwszej karty kosztem Logów / MIDI / O aplikacji — grupy kolumn to prawdziwe flex-y (bez `display: contents`), a otwarty panel przewija się wewnątrz. (#811)
 
-## [5.2.5](https://github.com/Negatywistczny/stagesync/compare/v5.2.4...v5.2.5) - 2026-07-26
+## [5.2.5](https://github.com/kacperczeczot/stagesync/compare/v5.2.4...v5.2.5) - 2026-07-26
 
 ### Naprawiono
 
@@ -726,7 +726,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Admin Host (telefon):** akordeon nie rozpycha już pierwszej karty na cały ekran — nagłówki Logi / MIDI / O aplikacji zostają widoczne i klikalne, a treść otwartej sekcji przewija się wewnątrz panelu.
 
-## [5.2.4](https://github.com/Negatywistczny/stagesync/compare/v5.2.3...v5.2.4) - 2026-07-26
+## [5.2.4](https://github.com/kacperczeczot/stagesync/compare/v5.2.3...v5.2.4) - 2026-07-26
 
 ### Dodano
 
@@ -759,7 +759,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **APK Android:** poprawiona instalacja paczek 5.2.4 — wcześniejszy cut podbił wersję w Gradle bez przebudowy bundla hosta, a Releases podpisywało APK innym kluczem na każdym runnerze (oraz Console zaniżało `versionCode`, a Performer wychodził bez UI).
 
-## [5.2.3](https://github.com/Negatywistczny/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
+## [5.2.3](https://github.com/kacperczeczot/stagesync/compare/v5.2.2...v5.2.3) - 2026-07-26
 
 ### Dodano
 
@@ -797,7 +797,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Client / Launcher:** etykiety komórek cyklu akordów; dekoracyjne takty Formy; Połącz przy zmianie serwera; powrót do launchera po utracie połączenia; podgląd QR i kart hostów; pole PIN operatora (#698, #703, #704, #705, #711, #725).
 - **Admin Set:** czas setlisty z uszkodzonymi / nieliczbowymi wartościami pokazuje 0:00 zamiast pustki (#753).
 
-## [5.2.2](https://github.com/Negatywistczny/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
+## [5.2.2](https://github.com/kacperczeczot/stagesync/compare/v5.2.1...v5.2.2) - 2026-07-26
 
 ### Zmieniono
 
@@ -829,7 +829,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **APK z hosta:** QR / linki Performer i Console działają na lokalnym hoście desktopu bez ręcznego kopiowania do Documents — host bierze APK z bundla / monorepo `data/downloads` (puste tylko gdy artefakt naprawdę nie jest w instalacji).
 
-## [5.2.1](https://github.com/Negatywistczny/stagesync/compare/v5.2.0...v5.2.1) - 2026-07-26
+## [5.2.1](https://github.com/kacperczeczot/stagesync/compare/v5.2.0...v5.2.1) - 2026-07-26
 
 ### Dodano
 
@@ -875,7 +875,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Motyw sceniczny:** z Korekty Sceny znika blokada motywu (wymuszenie jasnego / wysokiego kontrastu na Clientach). Clienty zostają przy lokalnych przełącznikach w ustawieniach oraz opcjonalnym domyślnym motywie hosta (`STAGESYNC_THEME_DEFAULT`).
 
-## [5.2.0](https://github.com/Negatywistczny/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Pocket Stage
+## [5.2.0](https://github.com/kacperczeczot/stagesync/compare/v5.1.3...v5.2.0) - 2026-07-25 — Pocket Stage
 
 > **Pocket Stage:** PIN operatora, Safety Net Master/Spare, Cues Sampler, Mixer bus→bus, Performer/Console Offline-First oraz domyślny motyw hosta.
 
@@ -931,7 +931,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### ⏱️ Timeline & DAW
 
 - **Ołówek:** podgląd przeciągania klipu (Forma / Tekst / Akordy / Cue) pokazuje etykietę z tym samym wyrównaniem co zapisany klip.
-- **Zaznaczenie:** menu kontekstowe klipu i ścieżki audio oraz segmenty mapy Tempo / Metrum / Tonacja ogłaszają liczbę zaznaczonych elementów; Inspector przy wielu klipach ([#675](https://github.com/Negatywistczny/stagesync/pull/675), [#676](https://github.com/Negatywistczny/stagesync/pull/676), [#687](https://github.com/Negatywistczny/stagesync/pull/687), [#690](https://github.com/Negatywistczny/stagesync/pull/690)).
+- **Zaznaczenie:** menu kontekstowe klipu i ścieżki audio oraz segmenty mapy Tempo / Metrum / Tonacja ogłaszają liczbę zaznaczonych elementów; Inspector przy wielu klipach ([#675](https://github.com/kacperczeczot/stagesync/pull/675), [#676](https://github.com/kacperczeczot/stagesync/pull/676), [#687](https://github.com/kacperczeczot/stagesync/pull/687), [#690](https://github.com/kacperczeczot/stagesync/pull/690)).
 
 #### 🎛️ Audio / MIDI / Transport
 
@@ -939,10 +939,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 
-- **Launcher:** jaśniejsze etykiety powrotu, błędu lokalnego hosta, łączenia ręcznego oraz stanu zajętości / ponowienia ([#677](https://github.com/Negatywistczny/stagesync/pull/677), [#684](https://github.com/Negatywistczny/stagesync/pull/684), [#689](https://github.com/Negatywistczny/stagesync/pull/689)).
+- **Launcher:** jaśniejsze etykiety powrotu, błędu lokalnego hosta, łączenia ręcznego oraz stanu zajętości / ponowienia ([#677](https://github.com/kacperczeczot/stagesync/pull/677), [#684](https://github.com/kacperczeczot/stagesync/pull/684), [#689](https://github.com/kacperczeczot/stagesync/pull/689)).
 - **Android:** ikona Performer / Console na ekranie głównym ma właściwy odstęp wokół znaku StageSync (bez przycinania playheada w masce launchera).
 
-## [5.1.3](https://github.com/Negatywistczny/stagesync/compare/v5.1.2...v5.1.3) - 2026-07-25
+## [5.1.3](https://github.com/kacperczeczot/stagesync/compare/v5.1.2...v5.1.3) - 2026-07-25
 
 ### Dodano
 
@@ -954,15 +954,15 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 
-- **Narzędzia / Pomoc:** odmiana „klip” w tytułach narzędzi i karcie Pomocy; przycisk i dialog „Importuj UG” ([#640](https://github.com/Negatywistczny/stagesync/pull/640), [#641](https://github.com/Negatywistczny/stagesync/pull/641), [#668](https://github.com/Negatywistczny/stagesync/pull/668), [#669](https://github.com/Negatywistczny/stagesync/pull/669)).
-- **Inspector:** polskie etykiety klipu audio (wyciszenie / gain) ([#635](https://github.com/Negatywistczny/stagesync/pull/635)).
+- **Narzędzia / Pomoc:** odmiana „klip” w tytułach narzędzi i karcie Pomocy; przycisk i dialog „Importuj UG” ([#640](https://github.com/kacperczeczot/stagesync/pull/640), [#641](https://github.com/kacperczeczot/stagesync/pull/641), [#668](https://github.com/kacperczeczot/stagesync/pull/668), [#669](https://github.com/kacperczeczot/stagesync/pull/669)).
+- **Inspector:** polskie etykiety klipu audio (wyciszenie / gain) ([#635](https://github.com/kacperczeczot/stagesync/pull/635)).
 
 #### 🖥️ App Shell & UI
 
-- **Dialogi:** potwierdzenie „Potwierdź”, alert „Rozumiem” ([#606](https://github.com/Negatywistczny/stagesync/pull/606), [#622](https://github.com/Negatywistczny/stagesync/pull/622)).
-- **Admin:** sort biblioteki „Program Change”; polskie tytuły importu UG/MusicXML ([#626](https://github.com/Negatywistczny/stagesync/pull/626), [#657](https://github.com/Negatywistczny/stagesync/pull/657)).
-- **Host:** „Telemetria MIDI”; crash fallback z widocznymi „Przejdź do Client/Admin” ([#638](https://github.com/Negatywistczny/stagesync/pull/638), [#671](https://github.com/Negatywistczny/stagesync/pull/671)).
-- **Połączenie:** tooltip wskaźnika z polskimi statusami ([#607](https://github.com/Negatywistczny/stagesync/pull/607)).
+- **Dialogi:** potwierdzenie „Potwierdź”, alert „Rozumiem” ([#606](https://github.com/kacperczeczot/stagesync/pull/606), [#622](https://github.com/kacperczeczot/stagesync/pull/622)).
+- **Admin:** sort biblioteki „Program Change”; polskie tytuły importu UG/MusicXML ([#626](https://github.com/kacperczeczot/stagesync/pull/626), [#657](https://github.com/kacperczeczot/stagesync/pull/657)).
+- **Host:** „Telemetria MIDI”; crash fallback z widocznymi „Przejdź do Client/Admin” ([#638](https://github.com/kacperczeczot/stagesync/pull/638), [#671](https://github.com/kacperczeczot/stagesync/pull/671)).
+- **Połączenie:** tooltip wskaźnika z polskimi statusami ([#607](https://github.com/kacperczeczot/stagesync/pull/607)).
 
 #### 📚 Dokumentacja
 
@@ -977,18 +977,18 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 #### ⏱️ Timeline & DAW
 
 - **Mobile — Inspector:** dolny sheet Właściwości znów jest nad paskiem transportu i statusem (Snap / zoom), zamiast chować się pod nimi.
-- **Etykiety AT:** jaśniejsze aria startu tekst/akord/cue, zaznaczanie segmentów mapy, wyłączone Zoom H/V w Mixerze, źródło Różdżki ([#646](https://github.com/Negatywistczny/stagesync/pull/646), [#647](https://github.com/Negatywistczny/stagesync/pull/647), [#655](https://github.com/Negatywistczny/stagesync/pull/655), [#672](https://github.com/Negatywistczny/stagesync/pull/672)).
+- **Etykiety AT:** jaśniejsze aria startu tekst/akord/cue, zaznaczanie segmentów mapy, wyłączone Zoom H/V w Mixerze, źródło Różdżki ([#646](https://github.com/kacperczeczot/stagesync/pull/646), [#647](https://github.com/kacperczeczot/stagesync/pull/647), [#655](https://github.com/kacperczeczot/stagesync/pull/655), [#672](https://github.com/kacperczeczot/stagesync/pull/672)).
 
 #### 🖥️ App Shell & UI
 
 - **Schowek / PPM:** zaznaczony tekst (także poza polami) znów kopiuje się Ctrl/Cmd+C i ma natywne Wytnij/Kopiuj/Wklej w menu kontekstowym; Inspect Element nadal wyłączony poza polami i zaznaczeniem; przy edycji nazwy ścieżki PPM systemowe działa w polu.
-- **Set / biblioteka / Stage / Client:** etykiety ikon Set, status biblioteki, puste Score/Karaoke, pliki projektu i Stage, format zegara, QR LAN ([#603](https://github.com/Negatywistczny/stagesync/pull/603), [#608](https://github.com/Negatywistczny/stagesync/pull/608), [#613](https://github.com/Negatywistczny/stagesync/pull/613), [#614](https://github.com/Negatywistczny/stagesync/pull/614), [#615](https://github.com/Negatywistczny/stagesync/pull/615), [#623](https://github.com/Negatywistczny/stagesync/pull/623), [#649](https://github.com/Negatywistczny/stagesync/pull/649)).
+- **Set / biblioteka / Stage / Client:** etykiety ikon Set, status biblioteki, puste Score/Karaoke, pliki projektu i Stage, format zegara, QR LAN ([#603](https://github.com/kacperczeczot/stagesync/pull/603), [#608](https://github.com/kacperczeczot/stagesync/pull/608), [#613](https://github.com/kacperczeczot/stagesync/pull/613), [#614](https://github.com/kacperczeczot/stagesync/pull/614), [#615](https://github.com/kacperczeczot/stagesync/pull/615), [#623](https://github.com/kacperczeczot/stagesync/pull/623), [#649](https://github.com/kacperczeczot/stagesync/pull/649)).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 
 - **Desktop:** lokalny host zapisuje projekty w `~/Documents/StageSync`; przy pierwszym starcie po aktualizacji kopiuje dane z poprzedniej lokalizacji aplikacji, jeśli Dokumenty są jeszcze puste (bez nadpisywania istniejących plików).
 
-## [5.1.2](https://github.com/Negatywistczny/stagesync/compare/v5.1.1...v5.1.2) - 2026-07-25
+## [5.1.2](https://github.com/kacperczeczot/stagesync/compare/v5.1.1...v5.1.2) - 2026-07-25
 
 ### Dodano
 
@@ -1000,14 +1000,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 
-- **Snap:** widoczna opcja wyłączenia to „Wyłącz” (zamiast „Off”) ([#521](https://github.com/Negatywistczny/stagesync/pull/521)).
-- **Map-edit / Inspector:** w dialogach Tempo / Metrum / Tonacja „lane” → „ścieżka”, etykieta toniki „Tonika”; pola Inspectora (PC, tonika, gain, fade) z polskimi nazwami zgodnymi z chrome ([#511](https://github.com/Negatywistczny/stagesync/pull/511), [#561](https://github.com/Negatywistczny/stagesync/pull/561)).
-- **Mixer:** tryb kanału ogłaszany jako „Tryb mono” / „Tryb stereo” ([#525](https://github.com/Negatywistczny/stagesync/pull/525)).
+- **Snap:** widoczna opcja wyłączenia to „Wyłącz” (zamiast „Off”) ([#521](https://github.com/kacperczeczot/stagesync/pull/521)).
+- **Map-edit / Inspector:** w dialogach Tempo / Metrum / Tonacja „lane” → „ścieżka”, etykieta toniki „Tonika”; pola Inspectora (PC, tonika, gain, fade) z polskimi nazwami zgodnymi z chrome ([#511](https://github.com/kacperczeczot/stagesync/pull/511), [#561](https://github.com/kacperczeczot/stagesync/pull/561)).
+- **Mixer:** tryb kanału ogłaszany jako „Tryb mono” / „Tryb stereo” ([#525](https://github.com/kacperczeczot/stagesync/pull/525)).
 
 #### 🖥️ App Shell & UI
 
-- **Client:** tytuł ustawień globalnych to „Ustawienia globalne” ([#553](https://github.com/Negatywistczny/stagesync/pull/553)).
-- **Admin / Batch PC:** jaśniejsze tytuły modalów MusicXML i Batch PC; pole startu to „Start Program Change” ([#569](https://github.com/Negatywistczny/stagesync/pull/569), [#573](https://github.com/Negatywistczny/stagesync/pull/573)).
+- **Client:** tytuł ustawień globalnych to „Ustawienia globalne” ([#553](https://github.com/kacperczeczot/stagesync/pull/553)).
+- **Admin / Batch PC:** jaśniejsze tytuły modalów MusicXML i Batch PC; pole startu to „Start Program Change” ([#569](https://github.com/kacperczeczot/stagesync/pull/569), [#573](https://github.com/kacperczeczot/stagesync/pull/573)).
 - **Admin / Host:** sekcja telemetrii to „Telemetria Midi” (bez skrótu do Ustawień); Restart / Wyłącz z pulsującym pierścieniem potwierdzenia i anulowaniem po kliknięciu poza przyciskiem.
 - **Ustawienia:** nagłówek „Zaawansowane — Ścieżki plików” bez zbędnego „▸”.
 
@@ -1015,8 +1015,8 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 
-- **Etykiety AT:** Dodaj ścieżkę, menu oka i narzędzi, zoom, picker utworu i wyglądu ścieżki, dialogi edycji mapy oraz grupy transportu / statusu mają czytelne nazwy i powiązania dla czytników ekranu; w Pomocy puste wyniki wyszukiwania są ogłaszane na żywo ([#500](https://github.com/Negatywistczny/stagesync/pull/500), [#505](https://github.com/Negatywistczny/stagesync/pull/505), [#512](https://github.com/Negatywistczny/stagesync/pull/512), [#544](https://github.com/Negatywistczny/stagesync/pull/544), [#551](https://github.com/Negatywistczny/stagesync/pull/551), [#587](https://github.com/Negatywistczny/stagesync/pull/587), [#601](https://github.com/Negatywistczny/stagesync/pull/601)).
-- **Mixer / Click:** Mute Clicka oraz stripy (wyjście stereo, balans, panorama, peak) z polskimi etykietami AT ([#497](https://github.com/Negatywistczny/stagesync/pull/497), [#513](https://github.com/Negatywistczny/stagesync/pull/513)).
+- **Etykiety AT:** Dodaj ścieżkę, menu oka i narzędzi, zoom, picker utworu i wyglądu ścieżki, dialogi edycji mapy oraz grupy transportu / statusu mają czytelne nazwy i powiązania dla czytników ekranu; w Pomocy puste wyniki wyszukiwania są ogłaszane na żywo ([#500](https://github.com/kacperczeczot/stagesync/pull/500), [#505](https://github.com/kacperczeczot/stagesync/pull/505), [#512](https://github.com/kacperczeczot/stagesync/pull/512), [#544](https://github.com/kacperczeczot/stagesync/pull/544), [#551](https://github.com/kacperczeczot/stagesync/pull/551), [#587](https://github.com/kacperczeczot/stagesync/pull/587), [#601](https://github.com/kacperczeczot/stagesync/pull/601)).
+- **Mixer / Click:** Mute Clicka oraz stripy (wyjście stereo, balans, panorama, peak) z polskimi etykietami AT ([#497](https://github.com/kacperczeczot/stagesync/pull/497), [#513](https://github.com/kacperczeczot/stagesync/pull/513)).
 - **Menu narzędzi:** skróty jako pojedyncza litera (np. I), bez prefiksu T.
 - **Audio / edycja:** split respektuje mapę tempa przy `trimIn`; resize z kolizją nie wywala UI; multi-przesuwanie trzyma klip wiodący; Gain odrzuca NaN.
 - **Akordy:** symbol w Inspectorze nie jest kanonizowany w trakcie wpisywania; normalizacja przy wyjściu z pola; niedokończony bas po ukośniku (`C#m7/`) nie psuje indeksu górnego na scenie.
@@ -1033,25 +1033,25 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 
-- **Admin:** „Zarządzaj bazą”, modale, log systemowy, Zapisz / Wyczyść setlistę i toolbar Batch PC z poprawnymi etykietami i powiązaniami ARIA ([#510](https://github.com/Negatywistczny/stagesync/pull/510), [#545](https://github.com/Negatywistczny/stagesync/pull/545), [#575](https://github.com/Negatywistczny/stagesync/pull/575), [#577](https://github.com/Negatywistczny/stagesync/pull/577), [#599](https://github.com/Negatywistczny/stagesync/pull/599)).
-- **Client:** status ładowania partytury i paneli, pusty Set oraz reset zoomu partytury ogłaszane czytnikom; wordmark z kontekstem shella ([#578](https://github.com/Negatywistczny/stagesync/pull/578), [#580](https://github.com/Negatywistczny/stagesync/pull/580), [#582](https://github.com/Negatywistczny/stagesync/pull/582), [#592](https://github.com/Negatywistczny/stagesync/pull/592), [#596](https://github.com/Negatywistczny/stagesync/pull/596)).
+- **Admin:** „Zarządzaj bazą”, modale, log systemowy, Zapisz / Wyczyść setlistę i toolbar Batch PC z poprawnymi etykietami i powiązaniami ARIA ([#510](https://github.com/kacperczeczot/stagesync/pull/510), [#545](https://github.com/kacperczeczot/stagesync/pull/545), [#575](https://github.com/kacperczeczot/stagesync/pull/575), [#577](https://github.com/kacperczeczot/stagesync/pull/577), [#599](https://github.com/kacperczeczot/stagesync/pull/599)).
+- **Client:** status ładowania partytury i paneli, pusty Set oraz reset zoomu partytury ogłaszane czytnikom; wordmark z kontekstem shella ([#578](https://github.com/kacperczeczot/stagesync/pull/578), [#580](https://github.com/kacperczeczot/stagesync/pull/580), [#582](https://github.com/kacperczeczot/stagesync/pull/582), [#592](https://github.com/kacperczeczot/stagesync/pull/592), [#596](https://github.com/kacperczeczot/stagesync/pull/596)).
 - **Client / Score:** zoom i transpozycja partytury są debounced, żeby uniknąć serii pełnych przebudów SVG podczas szybkich kliknięć.
-- **Scena:** priorytet i czas wyświetlania komunikatu oraz „Usuń komunikat” z czytelnymi etykietami ([#528](https://github.com/Negatywistczny/stagesync/pull/528), [#533](https://github.com/Negatywistczny/stagesync/pull/533)).
-- **Ustawienia / crash / dialogi:** polskie nazwy w Ustawieniach serwera; etykiety nawigacji po crashu; unikalne tytuły dialogów shella ([#506](https://github.com/Negatywistczny/stagesync/pull/506), [#508](https://github.com/Negatywistczny/stagesync/pull/508), [#538](https://github.com/Negatywistczny/stagesync/pull/538)).
-- **Desktop:** modale menu natywnego powiązane z tytułami dla AT ([#543](https://github.com/Negatywistczny/stagesync/pull/543)).
+- **Scena:** priorytet i czas wyświetlania komunikatu oraz „Usuń komunikat” z czytelnymi etykietami ([#528](https://github.com/kacperczeczot/stagesync/pull/528), [#533](https://github.com/kacperczeczot/stagesync/pull/533)).
+- **Ustawienia / crash / dialogi:** polskie nazwy w Ustawieniach serwera; etykiety nawigacji po crashu; unikalne tytuły dialogów shella ([#506](https://github.com/kacperczeczot/stagesync/pull/506), [#508](https://github.com/kacperczeczot/stagesync/pull/508), [#538](https://github.com/kacperczeczot/stagesync/pull/538)).
+- **Desktop:** modale menu natywnego powiązane z tytułami dla AT ([#543](https://github.com/kacperczeczot/stagesync/pull/543)).
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 
-- **Launcher:** pole adresu, kafelki hostów, Odśwież i lista ostatnich z etykietami AT ([#499](https://github.com/Negatywistczny/stagesync/pull/499), [#532](https://github.com/Negatywistczny/stagesync/pull/532)).
+- **Launcher:** pole adresu, kafelki hostów, Odśwież i lista ostatnich z etykietami AT ([#499](https://github.com/kacperczeczot/stagesync/pull/499), [#532](https://github.com/kacperczeczot/stagesync/pull/532)).
 
-## [5.1.1](https://github.com/Negatywistczny/stagesync/compare/v5.1.0...v5.1.1) - 2026-07-24
+## [5.1.1](https://github.com/kacperczeczot/stagesync/compare/v5.1.0...v5.1.1) - 2026-07-24
 
 ### Naprawiono
 
 #### ⏱️ Timeline & DAW
 
-- **Etykiety AT:** Solo/Mute w Mixerze oraz meta transportu i segmenty mapy Tempo / Metrum / Tonacja mają czytelne nazwy dla czytników ekranu ([#480](https://github.com/Negatywistczny/stagesync/pull/480), [#483](https://github.com/Negatywistczny/stagesync/pull/483), [#487](https://github.com/Negatywistczny/stagesync/pull/487)).
-- **Fokus rename:** po rename ścieżki myszą w docku / Mixerze nie zostaje „przyklejony” pierścień fokusu; przy Tab pierścień nadal widać ([#485](https://github.com/Negatywistczny/stagesync/pull/485)).
+- **Etykiety AT:** Solo/Mute w Mixerze oraz meta transportu i segmenty mapy Tempo / Metrum / Tonacja mają czytelne nazwy dla czytników ekranu ([#480](https://github.com/kacperczeczot/stagesync/pull/480), [#483](https://github.com/kacperczeczot/stagesync/pull/483), [#487](https://github.com/kacperczeczot/stagesync/pull/487)).
+- **Fokus rename:** po rename ścieżki myszą w docku / Mixerze nie zostaje „przyklejony” pierścień fokusu; przy Tab pierścień nadal widać ([#485](https://github.com/kacperczeczot/stagesync/pull/485)).
 
 #### 🎛️ Audio / MIDI / Transport
 
@@ -1059,12 +1059,12 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### 🖥️ App Shell & UI
 
-- **Client / Akordy:** zapis literowy w projekcie (`Cmaj7`, `Am7(b5)`, …); na scenie pryma na linii bazowej, a jakość i symbole (`Δ`, `°`, `ø`, `−`, `+`) w indeksie górnym — w kafelkach bas po ukośniku pod prymą, w Hero/nast. nadal w jednej linii ([#478](https://github.com/Negatywistczny/stagesync/issues/478)).
-- **Client / etykiety AT:** następny w setliście, obecność na Scenie, wskaźnik połączenia i dodawanie busa mają czytelne nazwy dla czytników ekranu ([#480](https://github.com/Negatywistczny/stagesync/pull/480)).
-- **Admin Set:** menu „Wczytaj szablon” w pustym secie z poprawnymi powiązaniami ARIA; Escape zamyka menu ([#491](https://github.com/Negatywistczny/stagesync/pull/491)).
-- **Dialogi:** Escape zamyka okna confirm / prompt / alert jak Anuluj ([#493](https://github.com/Negatywistczny/stagesync/pull/493)).
+- **Client / Akordy:** zapis literowy w projekcie (`Cmaj7`, `Am7(b5)`, …); na scenie pryma na linii bazowej, a jakość i symbole (`Δ`, `°`, `ø`, `−`, `+`) w indeksie górnym — w kafelkach bas po ukośniku pod prymą, w Hero/nast. nadal w jednej linii ([#478](https://github.com/kacperczeczot/stagesync/issues/478)).
+- **Client / etykiety AT:** następny w setliście, obecność na Scenie, wskaźnik połączenia i dodawanie busa mają czytelne nazwy dla czytników ekranu ([#480](https://github.com/kacperczeczot/stagesync/pull/480)).
+- **Admin Set:** menu „Wczytaj szablon” w pustym secie z poprawnymi powiązaniami ARIA; Escape zamyka menu ([#491](https://github.com/kacperczeczot/stagesync/pull/491)).
+- **Dialogi:** Escape zamyka okna confirm / prompt / alert jak Anuluj ([#493](https://github.com/kacperczeczot/stagesync/pull/493)).
 
-## [5.1.0](https://github.com/Negatywistczny/stagesync/compare/v5.0.1...v5.1.0) - 2026-07-24 — Launch & Mix
+## [5.1.0](https://github.com/kacperczeczot/stagesync/compare/v5.0.1...v5.1.0) - 2026-07-24 — Launch & Mix
 
 > **Launch & Mix:** Launcher hosta (lokalny / LAN / remote), Mixer Timeline oraz zestaw narzędzi i skrótów live-show.
 
@@ -1114,7 +1114,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop / lokalny host:** zamknięcie okna albo wyjście z aplikacji zatrzymuje wbudowany host (port nie zostaje zajęty); przy kolejnym „Uruchom lokalny host” porzucony proces jest sprzątany automatycznie.
 
-## [5.0.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0...v5.0.1) - 2026-07-23
+## [5.0.1](https://github.com/kacperczeczot/stagesync/compare/v5.0.0...v5.0.1) - 2026-07-23
 
 ### Zmieniono
 
@@ -1126,14 +1126,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 #### ⏱️ Timeline & DAW
 
-- **Kotwice XML:** bloczki synchronizacji taktów pozycjonowane na osi czasu (drag zmienia takt logiczny, bez pakowania jeden za drugim) ([#477](https://github.com/Negatywistczny/stagesync/issues/477)).
-- **Tap wokalu:** Spacja ustawia start linii Tekstu przy playheadzie (nie na zparkowanym locatorze / takcie 1); przycisk Tap przy warstwie Tekst podświetla aktywny tryb ([#479](https://github.com/Negatywistczny/stagesync/issues/479)).
+- **Kotwice XML:** bloczki synchronizacji taktów pozycjonowane na osi czasu (drag zmienia takt logiczny, bez pakowania jeden za drugim) ([#477](https://github.com/kacperczeczot/stagesync/issues/477)).
+- **Tap wokalu:** Spacja ustawia start linii Tekstu przy playheadzie (nie na zparkowanym locatorze / takcie 1); przycisk Tap przy warstwie Tekst podświetla aktywny tryb ([#479](https://github.com/kacperczeczot/stagesync/issues/479)).
 
 #### 🖥️ App Shell & UI
 
-- **Client / Akordy:** import UG respektuje złożone i polskie akordy (`Edim`, `G/A`, `G/H` → zapis `G/B`; na scenie znów `H` przy „H zamiast B”) ([#478](https://github.com/Negatywistczny/stagesync/issues/478)).
+- **Client / Akordy:** import UG respektuje złożone i polskie akordy (`Edim`, `G/A`, `G/H` → zapis `G/B`; na scenie znów `H` przy „H zamiast B”) ([#478](https://github.com/kacperczeczot/stagesync/issues/478)).
 
-## [5.0.0](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.2...v5.0.0) - 2026-07-23 — Overture
+## [5.0.0](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-beta.2...v5.0.0) - 2026-07-23 — Overture
 
 > **Overture:** pierwsze stabilne 5.0 — pełny parytet zachowania v4, odświeżony UI, Audio fade/loop, rozszerzone menu OS, partytura Client (MusicXML), Preferencje oraz Live Desk.
 
@@ -1143,35 +1143,35 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Narzędzia i nawigacja:** Tap i Zoom (+ Ctrl+Alt hold-zoom); snap (off / takt / beat / subdivision) z zapisem sesji; zoom H/V/UI z ikonami; opcjonalny wskaźnik MIDI playhead w Wygląd; start clipu w Inspectorze jako takt.beat; meta okładki (URL).
 - **Różdżka:** z powrotem w toolbarze / skrót W — rozmieszcza Tekst/Akordy wg sekcji Formy (1/2/3); zakres = zaznaczone sekcje lub clipy treści; Forma bez zmian.
-- **Tablet — nudge i gesty ([#473](https://github.com/Negatywistczny/stagesync/pull/473)):** pasek ◀▶ + 4 przyciski krawędzi (rozciąganie) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom.
+- **Tablet — nudge i gesty ([#473](https://github.com/kacperczeczot/stagesync/pull/473)):** pasek ◀▶ + 4 przyciski krawędzi (rozciąganie) dla Formy, Tekst/Akordy/Cue i Audio; pinch-zoom oraz double-tap = Fit Zoom.
 - **Mobile — inspector:** na telefonie Właściwości jako dolny sheet (Metadane / zaznaczenie) z Zamknij i tłem; desktop bez zmian układu.
-- **Inspector audio ([#428](https://github.com/Negatywistczny/stagesync/issues/428)):** kontekst Track vs Clip (fader/M/S na ścieżce; trim/fade/loop na klipie); Solo w docku; wspólny Slider w design systemie.
-- **Linijka ([#61](https://github.com/Negatywistczny/stagesync/pull/61)):** góra — takty + region pętli (klik = cycle); dół — beaty + scrub playheada.
+- **Inspector audio ([#428](https://github.com/kacperczeczot/stagesync/issues/428)):** kontekst Track vs Clip (fader/M/S na ścieżce; trim/fade/loop na klipie); Solo w docku; wspólny Slider w design systemie.
+- **Linijka ([#61](https://github.com/kacperczeczot/stagesync/pull/61)):** góra — takty + region pętli (klik = cycle); dół — beaty + scrub playheada.
 - **Forma i Cue:** kaskadowe przesuwanie późniejszych sekcji przy drag; luka Intro po Countdown; nożyczki na pustym lane; role sceniczne + priorytet Alert w Inspectorze i bannerze Client.
 - **Inspector i Undo:** dwuklik klipu Formy/treści lub segmentu mapy otwiera Właściwości; Undo przywraca zaznaczenie klipów razem z projektem; Pomoc z kartami sekcji, miniaturami i skrótami.
 
 #### 🎛️ Audio / MIDI / Transport
 
-- **Preferencje ([#432](https://github.com/Negatywistczny/stagesync/issues/432)):** modal (Cmd/Ctrl+, / menu StageSync) z zakładkami Ogólne, Audio, MIDI i Metronom; draft z **Odrzuć** / **Zapisz** (Esc i tło przywracają stan z otwarcia); wyjście audio i porty MIDI na hoście dopiero po zapisie.
+- **Preferencje ([#432](https://github.com/kacperczeczot/stagesync/issues/432)):** modal (Cmd/Ctrl+, / menu StageSync) z zakładkami Ogólne, Audio, MIDI i Metronom; draft z **Odrzuć** / **Zapisz** (Esc i tło przywracają stan z otwarcia); wyjście audio i porty MIDI na hoście dopiero po zapisie.
 - **Preferencje — Audio / MIDI Panic:** informacje silnika (sample rate, latencja sieci), kompensacja latencji wyjścia (−100…+500 ms); **MIDI Panic / Reset Controllers** na 16 kanałach hosta z potwierdzeniem „Wysłano sygnał Reset”.
 - **Live Desk:** transpozycja zespołu, kompensacja sync-lead i przełącznik edycji zdalnej — Admin Scena + Client (broadcast sesji).
-- **Audio na klipie:** fade in/out z uchwytami Smart, crossfade przy styku, region loop, kopiuj/wklej; buforowanie przed Play ze spinnerem i ostrzeżeniem przy błędzie decode ([#365](https://github.com/Negatywistczny/stagesync/issues/365)).
-- **Transport i setlista ([#358](https://github.com/Negatywistczny/stagesync/issues/358)):** pauza / stop na końcu utworu; opcjonalne auto-advance; `[` / `]` między utworami; ponowne łączenie WS z backoffiem; baner offline Client + odświeżenie projektu.
+- **Audio na klipie:** fade in/out z uchwytami Smart, crossfade przy styku, region loop, kopiuj/wklej; buforowanie przed Play ze spinnerem i ostrzeżeniem przy błędzie decode ([#365](https://github.com/kacperczeczot/stagesync/issues/365)).
+- **Transport i setlista ([#358](https://github.com/kacperczeczot/stagesync/issues/358)):** pauza / stop na końcu utworu; opcjonalne auto-advance; `[` / `]` między utworami; ponowne łączenie WS z backoffiem; baner offline Client + odświeżenie projektu.
 - **MIDI (host):** Start/Stop/Continue/SPP z wejścia; Program Change OUT przy załadowaniu projektu; Program Change IN ładuje projekt po numerze programu (SSOT serwera).
 
 #### 🖥️ App Shell & UI
 
 - **Admin Scena — Komunikaty:** lista aktywnych komunikatów z usuwaniem pojedynczym i „Wyczyść wszystkie”; bez statusu „Wysłano do wszystkich”.
-- **Client — partytura ([#465](https://github.com/Negatywistczny/stagesync/pull/465)):** MusicXML z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika; wybór partii oraz oktawa (−1/0/+1) z Live Desk.
+- **Client — partytura ([#465](https://github.com/kacperczeczot/stagesync/pull/465)):** MusicXML z synchronizacją playheada, seek po kliknięciu taktu, zoom i śledzenie wskaźnika; wybór partii oraz oktawa (−1/0/+1) z Live Desk.
 - **Client — strój, Formy i tap:** C / B♭ / E♭ / ręczna (−6…+6); polskie nazwy sekcji Formy; Karaoke/Grid z live transpozycją akordów; ↑/↓ przełącza linię kolejki (obok Spacji).
-- **Chrome ([#443](https://github.com/Negatywistczny/stagesync/issues/443)):** wspólny nagłówek Level 1 (ukrywany w Desktop); Timeline Level 2 z klastrem utworu po prawej.
+- **Chrome ([#443](https://github.com/kacperczeczot/stagesync/issues/443)):** wspólny nagłówek Level 1 (ukrywany w Desktop); Timeline Level 2 z klastrem utworu po prawej.
 - **Admin:** zwijany inspector Utwory; kopiowanie URL-i sieci Host; token lifecycle w ustawieniach; Escape czyści filtry biblioteki.
 
 #### 📦 Packaging & Desktop (Tauri / Docker)
 
-- **Menu OS ([#443](https://github.com/Negatywistczny/stagesync/issues/443), Faza D):** Edycja — Cofnij/Ponów/Usuń (z wyszarzaniem bez historii); Widok — Powiększ / Pomniejsz / Rzeczywisty rozmiar; Pomoc — Skróty; czytelniejsze błędy transportu i sąsiadów setlisty.
-- **Diagnostyka ([#351](https://github.com/Negatywistczny/stagesync/issues/351)):** rotujący log hosta, handlery crashy, eksport ZIP z Admin Host / menu Pomoc; osobny log sidecara.
-- **Instalator Windows ([#396](https://github.com/Negatywistczny/stagesync/issues/396)):** `StageSync_{version}_x64.msi` (bez `_en-US`); zwinięte notatki updatera w release; `latest.json` przy rename.
+- **Menu OS ([#443](https://github.com/kacperczeczot/stagesync/issues/443), Faza D):** Edycja — Cofnij/Ponów/Usuń (z wyszarzaniem bez historii); Widok — Powiększ / Pomniejsz / Rzeczywisty rozmiar; Pomoc — Skróty; czytelniejsze błędy transportu i sąsiadów setlisty.
+- **Diagnostyka ([#351](https://github.com/kacperczeczot/stagesync/issues/351)):** rotujący log hosta, handlery crashy, eksport ZIP z Admin Host / menu Pomoc; osobny log sidecara.
+- **Instalator Windows ([#396](https://github.com/kacperczeczot/stagesync/issues/396)):** `StageSync_{version}_x64.msi` (bez `_en-US`); zwinięte notatki updatera w release; `latest.json` przy rename.
 
 #### ⚙️ Serwer & API
 
@@ -1218,7 +1218,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Metrum i snap:** zmiana metrum od Taktu 1 przelicza przedtakt; snap do beatu odcinkowo po mapie metrum.
 - **Chrome Timeline:** przywrócony układ tools | transport | utwór; wyśrodkowany przycisk oka w docku; playhead/locator od górnej krawędzi pasa beatów; suwaki zoom w kolorze primary.
 - **Stabilność edycji:** ochrona przed nakładającymi się komendami transportu; jaśniejszy konflikt zapisu przy równoległej edycji; anulowanie pobierania przy zamknięciu pickera/uploadu; limit 64 ścieżek audio w UI.
-- **Setlista ([#363](https://github.com/Negatywistczny/stagesync/issues/363)):** `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc zgodna z kodem.
+- **Setlista ([#363](https://github.com/kacperczeczot/stagesync/issues/363)):** `[` / `]` przełączają utwór (obok Alt+←/→); Pomoc zgodna z kodem.
 
 #### 🎛️ Audio / MIDI / Transport
 
@@ -1231,7 +1231,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Admin Host — QR:** kod QR i domyślny URL używają adresu LAN (nie `localhost`), żeby telefon muzyków mógł się połączyć.
 - **Client / Komunikaty:** klipy Cue z Timeline jako `TERAZ` / `ZA N` (~5 s wcześniej) z filtrem ról i priorytetem Alert; live komunikat wygrywa slot `TERAZ`; pusty stan bez placeholdera.
 - **Client Karaoke / Grid:** aktywna linia na środku ekranu; w pauzach między frazami brak podświetlenia; karuzela Grid bez mrugnięcia na końcu przesunięcia wersów.
-- **Client:** ikony stroju jak w v4; Spacja (tap wokalu) nie przechwytuje fokusu w polach tekstowych ([#363](https://github.com/Negatywistczny/stagesync/issues/363)); suwaki stroju i skali Karaoke w kolorze primary.
+- **Client:** ikony stroju jak w v4; Spacja (tap wokalu) nie przechwytuje fokusu w polach tekstowych ([#363](https://github.com/kacperczeczot/stagesync/issues/363)); suwaki stroju i skali Karaoke w kolorze primary.
 - **Mobile:** toolbar Timeline, header Client oraz zakładki Admin zawijają się bez poziomego overflow.
 - **Preferencje / Host:** Audio / MIDI jako zakładki z podkreśleniem; metryki MIDI w jednej kolumnie; „Aktywny set” i „Auto-setlista” obok siebie na wąskim ekranie.
 - **Admin / Client:** ignorowanie przestarzałych odpowiedzi poll/refresh; cue sceniczny tylko dla pasujących ról i czyszczony po rozłączeniu WS; czytelne błędy fullscreen / restart Host.
@@ -1240,7 +1240,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop:** upuszczanie plików w WebView Tauri — import biblioteki i przeciąganie setlisty znów działają.
 
-## [5.0.0-beta.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
+## [5.0.0-beta.2](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-beta.1.1...v5.0.0-beta.2) - 2026-07-21
 
 > **β2:** ścieżki Audio 0…N, MIDI I/O na hoście, menu OS Plik / Host / Transport, Stop wracający do Countdown; aktualizacje desktop dla macOS i Windows.
 
@@ -1248,15 +1248,15 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop OS menu:** natywne **Plik** (Otwórz ostatnie / Zapisz / Zamknij), **Host** (status, klienci, QR z LAN URL, restart, ustawienia), **Transport** (Play/Stop/prev/next). Dialog QR z URL LAN w aplikacji.
 - **Host MIDI I/O + clock:** lista / wybór urządzeń, clock OUT zsynchronizowany z transportem SSOT (Start/Continue/Stop/SPP/Clock), metryki Admin → Host; API MIDI config. Bez MIDI w procesie Tauri ([ADR 0010](docs/architecture/adr/0010-desktop-shell-tauri.md) / [ADR 0002](docs/architecture/adr/0002-timebase-ssot.md)).
-- **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; odtwarzanie sync do ticków serwera ([ADR 0008](docs/architecture/adr/0008-timeline-clip-editing.md), [#42](https://github.com/Negatywistczny/stagesync/issues/42)).
+- **Audio 0…N (Timeline):** lane’y w menu oka (+ Ścieżka Audio), clipy move/trim (Pointer/Smart; bez pencil), waveform peak/RMS, gain/mute clip + fader/mute track; odtwarzanie sync do ticków serwera ([ADR 0008](docs/architecture/adr/0008-timeline-clip-editing.md), [#42](https://github.com/kacperczeczot/stagesync/issues/42)).
 
 ### Naprawiono
 
-- **Transport Stop / Countdown ([#41](https://github.com/Negatywistczny/stagesync/issues/41)):** Stop wraca na początek pre-roll (start clipu Forma Countdown), nie na tick 0 „po CD”; locator Timeline też — Play od odliczania działa bez ręcznego szukania CD.
+- **Transport Stop / Countdown ([#41](https://github.com/kacperczeczot/stagesync/issues/41)):** Stop wraca na początek pre-roll (start clipu Forma Countdown), nie na tick 0 „po CD”; locator Timeline też — Play od odliczania działa bez ręcznego szukania CD.
 - **Desktop updater:** `Could not fetch a valid release JSON` — endpoint Tauri (`…/releases/latest/download/latest.json`) 404, bo wszystkie alpha/beta były GitHub **prerelease** (API `/releases/latest` je pomija). Release `v5.0.0-beta.1.1` odznaczony; `release.yml` zawsze publikuje jako `--latest`. Poprawione URL-e właściciela repo w UI (Host, Pomoc).
 - **Desktop updater (darwin w `latest.json`):** target bundle `app` obok `dmg` — bez `app` bundler nie tworzy `.app.tar.gz`/`.sig`, więc macOS nie trafia do manifestu (zostaje Windows-only / last-writer). Sidecar health reject przy mismatch wersji.
 
-## [5.0.0-beta.1.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-beta.1...v5.0.0-beta.1.1) - 2026-07-21
+## [5.0.0-beta.1.1](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-beta.1...v5.0.0-beta.1.1) - 2026-07-21
 
 > **β1.1:** poprawka numeracji instalatora Windows dla zagnieżdżonych wersji `beta.N.M`; bez nowych funkcji produktowych.
 
@@ -1264,7 +1264,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Instalator Windows:** WiX poprawnie mapuje zagnieżdżone wersje `beta.N.M` (np. `.10101`), z zachowaniem shipped `beta.1` = `.10001`.
 
-## [5.0.0-beta.1](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.13...v5.0.0-beta.1) - 2026-07-21
+## [5.0.0-beta.1](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.13...v5.0.0-beta.1) - 2026-07-21
 
 > **β1:** pierwszy milestone dystrybucyjny — aplikacja desktop (Tauri + wbudowany host), Docker jako wariant dodatkowy oraz aktualizacje na żądanie.
 
@@ -1272,7 +1272,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Admin → aktualizacje (desktop):** Host/Watchtower nie jest już czerwonym „twardym” błędem w shellu Tauri (sidecar pomija GitHub Releases; Watchtower = Docker). `Aplikacja: undefined` — normalize rejectów Tauri (`String` / brak `.message`). Porównanie hosta używa listy Releases **z prerelease** (nie `/releases/latest`, które 404 przy samych alpha).
 
-## [5.0.0-alpha.13](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.12...v5.0.0-alpha.13) - 2026-07-21
+## [5.0.0-alpha.13](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.12...v5.0.0-alpha.13) - 2026-07-21
 
 > **α13:** hotfix — aplikacja Windows (.msi) znów startuje po instalacji.
 
@@ -1280,7 +1280,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop (Windows):** sidecar Node padał przy starcie z MSI z `EISDIR: lstat 'C:'` — Tauri `resource_dir()` zwraca ścieżki Win32 `\\?\C:\…`, a Node przy takim main module path zawodzi ([nodejs/node#62446](https://github.com/nodejs/node/issues/62446)). Shell spawnuje teraz względne `dist/index.js` + cwd bez prefiksu verbatim; assert ścieżek + self-test w [`build-desktop-sidecar.mjs`](./apps/desktop/scripts/build-desktop-sidecar.mjs).
 
-## [5.0.0-alpha.12](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.11...v5.0.0-alpha.12) - 2026-07-21
+## [5.0.0-alpha.12](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.11...v5.0.0-alpha.12) - 2026-07-21
 
 > **α12:** domknięcie — Desktop OS menu Faza A + hotfixy shella; Faza B+ → β1.
 
@@ -1292,7 +1292,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - **Desktop (Windows):** mylący komunikat „port zajęty” przy starcie — shell czyta stdout/stderr sidecara, fail-fast przy crashu hosta, dłuższy timeout (~120 s) pod pierwsze skanowanie Defendera; docs troubleshooting w [DESKTOP.md](./docs/guides/DESKTOP.md).
 
-## [5.0.0-alpha.11](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
+## [5.0.0-alpha.11](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.10...v5.0.0-alpha.11) - 2026-07-21
 
 > **α11:** desktop shell polish — menu OS Widok, wykrywanie sidecara, draft updater pipeline.
 
@@ -1315,7 +1315,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Desktop sidecar:** Tauri rozwija symlinki pnpm w bundle ([tauri#13219](https://github.com/tauri-apps/tauri/issues/13219)) — host padał z `ERR_MODULE_NOT_FOUND` (`zod` / transitive deps), a UI pokazywał mylący komunikat o zajętym porcie `4000`. [`build-desktop-sidecar.mjs`](./apps/desktop/scripts/build-desktop-sidecar.mjs) spłaszcza `node_modules` do realnych pakietów (bez `.pnpm`); assert + `--fix-app` / `--materialize-node-modules`.
 - **Marka:** wordmark w logo SVG (`stagesync-logo*.svg`) — ścieżki wektorowe zamiast `<text>` (spójny render bez zależności od fontu); większa domyślna wysokość w shellach.
 
-## [5.0.0-alpha.10](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21
+## [5.0.0-alpha.10](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.9...v5.0.0-alpha.10) - 2026-07-21
 
 > **α10:** standalone desktop (Tauri + Node sidecar) — pierwszy build β1 host.
 
@@ -1336,7 +1336,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - `PUT /api/projects/:id`: body wymaga `updatedAt` (token OCC); mismatch → 409.
 - `@stagesync/shared` package exports → `dist/` (Node runtime / Docker).
 
-## [5.0.0-alpha.9](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.8...v5.0.0-alpha.9) - 2026-07-21
+## [5.0.0-alpha.9](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.8...v5.0.0-alpha.9) - 2026-07-21
 
 > **α9:** migrator legacy v4→v5 (M1–M9) oraz domknięcie parytetu zachowania Client / Timeline / Admin.
 
@@ -1422,7 +1422,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Timeline chrome (korekta bez decyzji PO):** Odrzuć/Zapisz z powrotem jako **ikony**; metronom + follow w **center** przy transporcie; footer bez dublowania Utwór/Pozycja/Połączenie/Stan (conn-dot + zoom jak v4).
 - **Timeline sterowanie:** Ctrl/Meta+wheel (H zoom), Alt+wheel (V/H), Shift+wheel (scroll H); skróty Space / K / C / ⌘S / Z-fit / ←→ locator.
 
-## [5.0.0-alpha.8](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.7...v5.0.0-alpha.8) - 2026-07-20
+## [5.0.0-alpha.8](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.7...v5.0.0-alpha.8) - 2026-07-20
 
 ### Dodano
 
@@ -1440,7 +1440,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - Inventarz UI: odhaczone must α8; świadome delty (zoom, Host MIDI, audio tracks, Batch PC bez schematu).
 
-## [5.0.0-alpha.7](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.6...v5.0.0-alpha.7) - 2026-07-20
+## [5.0.0-alpha.7](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.6...v5.0.0-alpha.7) - 2026-07-20
 
 ### Dodano
 
@@ -1454,7 +1454,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 
 - Canonical `Project` = v4; Tap / UG / Różdżka / Scissors / Zoom pozostają disabled (cut α7).
 
-## [5.0.0-alpha.6](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.5...v5.0.0-alpha.6) - 2026-07-20
+## [5.0.0-alpha.6](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.5...v5.0.0-alpha.6) - 2026-07-20
 
 ### Dodano
 
@@ -1465,7 +1465,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - **Scena (minimal):** `POST /api/stage/message` + cue na Client przez WS.
 - **Client:** empty states `grid` / `score` (α7); toast komunikatu sceny.
 
-## [5.0.0-alpha.5](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.4...v5.0.0-alpha.5) - 2026-07-20
+## [5.0.0-alpha.5](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.4...v5.0.0-alpha.5) - 2026-07-20
 
 ### Dodano
 
@@ -1478,7 +1478,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Timeline: warstwy z-index (playhead nad clipami); eye w ruler dock (bez pustego wiersza ścieżki); menu widoczności przez portal (bez clipu scroll).
 - Timeline: przeciąganie locatora po linijce; typografia numerów taktów (`tabular-nums`, semibold).
 
-## [5.0.0-alpha.4](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.3...v5.0.0-alpha.4) - 2026-07-20
+## [5.0.0-alpha.4](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.3...v5.0.0-alpha.4) - 2026-07-20
 
 ### Dodano
 
@@ -1498,7 +1498,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Transport: clamp ujemnego elapsed przy skew zegara (M15); ignorowanie starszych ticków WS po `serverTimeMs` (M12).
 - Walidacja klienta transportu Zod przed fetch (M1); zakres beat/tick w `bbtToTicks` (M3).
 
-## [5.0.0-alpha.3](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.2...v5.0.0-alpha.3) - 2026-07-20
+## [5.0.0-alpha.3](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.2...v5.0.0-alpha.3) - 2026-07-20
 
 ### Dodano
 
@@ -1516,7 +1516,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/lang/pl/).
 - Dokumentacja: [docs/architecture/api/](docs/architecture/api/README.md) (PUT v2 + transport z map).
   tokeny `--ss-duration-fast|normal|slow`; ikony shelli przez Lucide.
 
-## [5.0.0-alpha.2](https://github.com/Negatywistczny/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2) - 2026-07-20
+## [5.0.0-alpha.2](https://github.com/kacperczeczot/stagesync/compare/v5.0.0-alpha.1...v5.0.0-alpha.2) - 2026-07-20
 
 ### Dodano
 
@@ -1567,7 +1567,7 @@ na helperach czasu / soft playhead (`@stagesync/shared`).
 
 - Float `absBeat` z `@stagesync/shared` (kanon pozycji = ticks + PPQ).
 
-## [5.0.0-alpha.1](https://github.com/Negatywistczny/stagesync/releases/tag/v5.0.0-alpha.1) - 2026-07-19
+## [5.0.0-alpha.1](https://github.com/kacperczeczot/stagesync/releases/tag/v5.0.0-alpha.1) - 2026-07-19
 
 ### Dodano
 

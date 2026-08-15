@@ -9,7 +9,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const GITHUB_REPO = "Negatywistczny/stagesync";
+const GITHUB_REPO = "kacperczeczot/stagesync";
 
 function run(cmd, args, { cwd = ROOT, stdio = "inherit" } = {}) {
   const r = spawnSync(cmd, args, {

@@ -5,7 +5,7 @@ import {
 } from "../../ui-helpers/theme-default.js";
 
 /**
- * Wire / WebSocket frame compatibility for Offline-First shells ([#692](https://github.com/Negatywistczny/stagesync/issues/692)).
+ * Wire / WebSocket frame compatibility for Offline-First shells ([#692](https://github.com/kacperczeczot/stagesync/issues/692)).
  * Bump only on breaking transport/API frame changes — not on CSS/JS UI refreshes.
  */
 export const PROTOCOL_VERSION = 1 as const;

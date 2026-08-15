@@ -251,10 +251,10 @@ describe("openExternalUrl", () => {
     vi.stubGlobal("document", { querySelector: () => null });
 
     expect(isDesktopShell()).toBe(true);
-    await openExternalUrl("https://github.com/Negatywistczny/stagesync/issues");
+    await openExternalUrl("https://github.com/kacperczeczot/stagesync/issues");
 
     expect(open).toHaveBeenCalledWith(
-      "https://github.com/Negatywistczny/stagesync/issues",
+      "https://github.com/kacperczeczot/stagesync/issues",
       "_blank",
       "noopener,noreferrer",
     );
@@ -271,11 +271,11 @@ describe("openExternalUrl", () => {
     vi.stubGlobal("document", { querySelector: () => null });
 
     await openExternalUrl(
-      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
+      "https://github.com/kacperczeczot/stagesync/blob/main/docs/guides/INSTALL.md",
     );
 
     expect(invoke).toHaveBeenCalledWith("open_external_url", {
-      url: "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
+      url: "https://github.com/kacperczeczot/stagesync/blob/main/docs/guides/INSTALL.md",
     });
     expect(open).not.toHaveBeenCalled();
   });

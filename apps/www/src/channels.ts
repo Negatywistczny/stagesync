@@ -17,25 +17,25 @@ export interface SiteChannels {
 
 const FALLBACK: SiteChannels = {
   product: "StageSync",
-  repo: "https://github.com/Negatywistczny/stagesync",
-  releases: "https://github.com/Negatywistczny/stagesync/releases",
+  repo: "https://github.com/kacperczeczot/stagesync",
+  releases: "https://github.com/kacperczeczot/stagesync/releases",
   latestReleaseApi:
-    "https://api.github.com/repos/Negatywistczny/stagesync/releases/latest",
+    "https://api.github.com/repos/kacperczeczot/stagesync/releases/latest",
   desktopUpdaterManifest:
-    "https://github.com/Negatywistczny/stagesync/releases/latest/download/latest.json",
+    "https://github.com/kacperczeczot/stagesync/releases/latest/download/latest.json",
   androidUpdaterManifest:
-    "https://github.com/Negatywistczny/stagesync/releases/latest/download/android-latest.json",
-  containerImage: "ghcr.io/negatywistczny/stagesync",
+    "https://github.com/kacperczeczot/stagesync/releases/latest/download/android-latest.json",
+  containerImage: "ghcr.io/kacperczeczot/stagesync",
   docs: {
     install:
-      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/INSTALL.md",
+      "https://github.com/kacperczeczot/stagesync/blob/main/docs/guides/INSTALL.md",
     desktop:
-      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/DESKTOP.md",
+      "https://github.com/kacperczeczot/stagesync/blob/main/docs/guides/DESKTOP.md",
     mobile:
-      "https://github.com/Negatywistczny/stagesync/blob/main/docs/guides/MOBILE.md",
-    api: "https://github.com/Negatywistczny/stagesync/blob/main/docs/architecture/api/README.md",
+      "https://github.com/kacperczeczot/stagesync/blob/main/docs/guides/MOBILE.md",
+    api: "https://github.com/kacperczeczot/stagesync/blob/main/docs/architecture/api/README.md",
     changelog:
-      "https://github.com/Negatywistczny/stagesync/blob/main/CHANGELOG.md",
+      "https://github.com/kacperczeczot/stagesync/blob/main/CHANGELOG.md",
   },
 };
 

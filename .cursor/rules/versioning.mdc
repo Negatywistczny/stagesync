@@ -1,4 +1,4 @@
-﻿---
+---
 description: StageSync versioning — v5 in this repo; legacy 4.x elsewhere
 alwaysApply: true
 ---
@@ -77,8 +77,6 @@ Nie podbijaj wersji przy zwykłych commitach — tylko gdy użytkownik prosi o r
 
 ### GitHub owner (hard stop)
 
-- Kanoniczny owner / username: **`Negatywistczny`** (bez dodatkowego `y`).
-- **Zakaz:** `Negatywistyczny` — częsta literówka przy ręcznych URL-ach compare / release / issue.
-- W CHANGELOG, release notes, docs: linki `https://github.com/Negatywistczny/stagesync/…`.
-- Fallback w skryptach: `scripts/build-release-notes.mjs` → `Negatywistczny/stagesync`.
-- Przed cutem / edycją notes: `rg 'Negatywistyczny'` — musi być pusto.
+- Kanoniczny owner / username: **`kacperczeczot`**.
+- W CHANGELOG, release notes, docs: linki `https://github.com/kacperczeczot/stagesync/…`.
+- Fallback w skryptach: `scripts/build-release-notes.mjs` → `kacperczeczot/stagesync`.

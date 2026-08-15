@@ -4,7 +4,7 @@
  */
 
 export const ANDROID_LATEST_MANIFEST_URL =
-  "https://github.com/Negatywistczny/stagesync/releases/latest/download/android-latest.json";
+  "https://github.com/kacperczeczot/stagesync/releases/latest/download/android-latest.json";
 
 export type AndroidLatestManifest = {
   version: string;

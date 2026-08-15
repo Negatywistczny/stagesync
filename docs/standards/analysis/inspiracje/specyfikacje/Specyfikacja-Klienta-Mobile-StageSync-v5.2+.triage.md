@@ -10,7 +10,7 @@
 
 ## Werdykt przydatności
 
-**Wysoka — kanoniczna macierz MOB-01…04 + zakazy (bez Capacitor-as-magic, bez audio/MIDI na tablecie Performer).** Zgodna z [#674](https://github.com/Negatywistczny/stagesync/issues/674), [ADR 0015../../../../architecture/adr/0015-daw-reference-and-product-decisions.md), [ADR 0016../../../../architecture/adr/0016-android-performer-console.md), [TODO 5.2+../../../../TODO.md). Dump ≠ claim Done; dump opisuje **tylko** pasywnego klienta (= **Performer**). **Console** = pełnoprawny odpowiednik desktopu (Admin + Timeline + Client + lokalny host docelowo) — thin-shell-only MVP **superseded**. Krytyka Mobile-for-Live: KEEP Performer/sideload/Offline-First; REVISE host = konflikt z ADR IN — nie revert bez PO.
+**Wysoka — kanoniczna macierz MOB-01…04 + zakazy (bez Capacitor-as-magic, bez audio/MIDI na tablecie Performer).** Zgodna z [#674](https://github.com/kacperczeczot/stagesync/issues/674), [ADR 0015../../../../architecture/adr/0015-daw-reference-and-product-decisions.md), [ADR 0016../../../../architecture/adr/0016-android-performer-console.md), [TODO 5.2+../../../../TODO.md). Dump ≠ claim Done; dump opisuje **tylko** pasywnego klienta (= **Performer**). **Console** = pełnoprawny odpowiednik desktopu (Admin + Timeline + Client + lokalny host docelowo) — thin-shell-only MVP **superseded**. Krytyka Mobile-for-Live: KEEP Performer/sideload/Offline-First; REVISE host = konflikt z ADR IN — nie revert bez PO.
 
 ## Epiki / tematy vs `main` (5.2.0)
 
@@ -31,7 +31,7 @@
 
 - **Confirmed (na dysku / MVP shell):** dwa APK apps, sideload endpoints, QR join/APK, dual wake-lock, role UI bundles, Offline-First gate + dialog „Zastosuj”, decyzja produktowa Console=pełny parytet + host IN, Console lokalny host (JNI/`libnode`/assets/host) w domyślnym [`build-apk.sh`](../../../../../apps/console/scripts/build-apk.sh), JVM unit tests (SemVer / QR / UiSync / LocalHostRuntime).
 - **Residual gap:** H-01 **profil HW** (sonda gotowa; bez split/throttle); #692 delta; operatorskie smoke P-HW/C-HW **bez claim green**; native MIDI na Android Console host; signed release keystore gdy CI.
-- Issue [#674](https://github.com/Negatywistczny/stagesync/issues/674) / [#692](https://github.com/Negatywistczny/stagesync/issues/692) już w TODO — **nie** duplikować bulletów z dumpu.
+- Issue [#674](https://github.com/kacperczeczot/stagesync/issues/674) / [#692](https://github.com/kacperczeczot/stagesync/issues/692) już w TODO — **nie** duplikować bulletów z dumpu.
 
 ## Następny krok eng
 

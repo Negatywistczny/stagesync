@@ -13,7 +13,7 @@ object ReleaseApkUpdateChecker {
     private val executor = Executors.newCachedThreadPool()
 
     const val MANIFEST_URL =
-        "https://github.com/Negatywistczny/stagesync/releases/latest/download/android-latest.json"
+        "https://github.com/kacperczeczot/stagesync/releases/latest/download/android-latest.json"
 
     private val versionRegex = Regex("\"version\"\\s*:\\s*\"([^\"]+)\"")
     private val consoleUrlRegex = Regex("\"consoleUrl\"\\s*:\\s*\"([^\"]+)\"")

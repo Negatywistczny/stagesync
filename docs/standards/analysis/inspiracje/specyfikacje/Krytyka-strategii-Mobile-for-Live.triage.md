@@ -4,7 +4,7 @@
 **Status:** `partial`  
 **Obszar:** Performer · Console host · sideload · Offline-First · Logic-First vs multi-out na Androidzie  
 **Data triage:** 2026-07-26  
-**Companion:** [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md](./Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) · [ADR 0016../../../../architecture/adr/0016-android-performer-console.md) · [#674](https://github.com/Negatywistczny/stagesync/issues/674)
+**Companion:** [Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md](./Specyfikacja-Klienta-Mobile-StageSync-v5.2+.triage.md) · [ADR 0016../../../../architecture/adr/0016-android-performer-console.md) · [#674](https://github.com/kacperczeczot/stagesync/issues/674)
 
 ## Werdykt przydatności
 

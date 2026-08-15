@@ -12,7 +12,7 @@
 
 services:
   stagesync:
-    image: ghcr.io/negatywistczny/stagesync:${STAGESYNC_VERSION}
+    image: ghcr.io/kacperczeczot/stagesync:${STAGESYNC_VERSION}
     ports:
       - "${PORT:-4000}:4000"
     environment:

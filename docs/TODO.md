@@ -16,7 +16,7 @@ Otwarte zadania. Plan etapów: [ROADMAP.md](./ROADMAP.md). Historia: [CHANGELOG.
 
 ## Should / Higiena
 
-- [ ] [#810](https://github.com/Negatywistczny/stagesync/issues/810) **Push / FCM / WebPush** — lokalne alerty + tokeny + kanały; FCM = opt-in `google-services.json` (ADR 0016)
+- [ ] [#810](https://github.com/kacperczeczot/stagesync/issues/810) **Push / FCM / WebPush** — lokalne alerty + tokeny + kanały; FCM = opt-in `google-services.json` (ADR 0016)
 
 ### Dekompozycja dużych plików
 
@@ -41,20 +41,20 @@ Kolejność i kryteria Done: [ROADMAP.md](./ROADMAP.md).
 
 ### Live Suite & dalej
 
-- [ ] **Live Suite + Dual Engine:** Studio vs Live ([ADR 0019](./architecture/adr/0019-dual-engine-studio-live.md)); Plugin Host + Freeze; Input, Automation, VSTi, recording, MIDI Patch Matrix, STEM/Demucs [#832](https://github.com/Negatywistczny/stagesync/issues/832) — [ADR 0018](./architecture/adr/0018-future-audio-architecture.md)
-- [ ] **Karaoke & Jukebox:** `/karaoke`, `/request`, Gig vs Jukebox — [#824](https://github.com/Negatywistczny/stagesync/issues/824)
+- [ ] **Live Suite + Dual Engine:** Studio vs Live ([ADR 0019](./architecture/adr/0019-dual-engine-studio-live.md)); Plugin Host + Freeze; Input, Automation, VSTi, recording, MIDI Patch Matrix, STEM/Demucs [#832](https://github.com/kacperczeczot/stagesync/issues/832) — [ADR 0018](./architecture/adr/0018-future-audio-architecture.md)
+- [ ] **Karaoke & Jukebox:** `/karaoke`, `/request`, Gig vs Jukebox — [#824](https://github.com/kacperczeczot/stagesync/issues/824)
 - [ ] **Pre-flight & Hardware:** Rig Manager, MIDI Learn, Tuner `/client`, Setlist Pre-flight
 - [ ] **DMX / Art-Net:** Track Delays + warstwa światła (UDP 30 Hz)
-- [ ] **Smart Ingest ACL:** satellite/CLI + `import-bundle`; core bez scrapingu — [#840](https://github.com/Negatywistczny/stagesync/issues/840)
-- [ ] **Notation Studio:** edycja MusicXML + most MuseScore — [#837](https://github.com/Negatywistczny/stagesync/issues/837)
+- [ ] **Smart Ingest ACL:** satellite/CLI + `import-bundle`; core bez scrapingu — [#840](https://github.com/kacperczeczot/stagesync/issues/840)
+- [ ] **Notation Studio:** edycja MusicXML + most MuseScore — [#837](https://github.com/kacperczeczot/stagesync/issues/837)
 - [ ] **Enterprise Rig & OSC:** podgląd MIDI/OSC, OSC Matrix & HA Master/Spare
-- [ ] **Studio Ecosystem:** Virtual Performers [#838](https://github.com/Negatywistczny/stagesync/issues/838) + Muse Sounds [#839](https://github.com/Negatywistczny/stagesync/issues/839); legal/ADR przed kodem
+- [ ] **Studio Ecosystem:** Virtual Performers [#838](https://github.com/kacperczeczot/stagesync/issues/838) + Muse Sounds [#839](https://github.com/kacperczeczot/stagesync/issues/839); legal/ADR przed kodem
 
 ### Residual ops / mobile
 
 - [ ] **Client transport H-01:** split context / throttle `displayTicks` @ 90–120 Hz — [MOBILE.md](./guides/MOBILE.md); [ADR 0015](./architecture/adr/0015-daw-reference-and-product-decisions.md)
 - [ ] **GUI mobile:** Admin / Client / Timeline pod wąskie viewporty, touch, Android WebView — [MOBILE.md](./guides/MOBILE.md); [ADR 0016](./architecture/adr/0016-android-performer-console.md)
-- [ ] [#674](https://github.com/Negatywistczny/stagesync/issues/674) **Performer + Console:** smoke P-HW/C-HW na tablecie (w tym C-HW3); bez claim HW green
-- [ ] [#692](https://github.com/Negatywistczny/stagesync/issues/692) **Offline-First UI:** delta / CacheStorage per-asset po `ui-manifest`
+- [ ] [#674](https://github.com/kacperczeczot/stagesync/issues/674) **Performer + Console:** smoke P-HW/C-HW na tablecie (w tym C-HW3); bez claim HW green
+- [ ] [#692](https://github.com/kacperczeczot/stagesync/issues/692) **Offline-First UI:** delta / CacheStorage per-asset po `ui-manifest`
 - [ ] **Safety Net:** auto-election / lease split-brain — Later ([triage](./standards/analysis/inspiracje/specyfikacje/Safety-Net-dla-StageSync-v5.2.triage.md))
 - [ ] **Parity residual (opcjonalne):** Tab (nawigacja zaznaczenia); bare **S** = nożyczki; skala czcionki / autoscroll poza Karaoke; ukrywanie sekcji Formy w roli Client
