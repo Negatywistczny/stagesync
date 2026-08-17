@@ -3735,7 +3735,7 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
 name = "stagesync-desktop"
-version = "5.4.11"
+version = "5.4.12"
 dependencies = [
  "arboard",
  "flume",
@@ -3751,7 +3751,7 @@ dependencies = [
  "tauri-plugin-updater",
  "tokio",
  "url",
- "wry 0.56.0",
+ "wry 0.56.1",
 ]
 
 [[package]]
@@ -5583,9 +5583,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.56.0"
+version = "0.56.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1730ab21a962e7ff44df17d20804572beee66d998afc7fcbc3f846a3a12dbda7"
+checksum = "375becb4aded9913f736443cf88000c6311478db69814cc06070465e4cc44c98"
 dependencies = [
  "base64 0.22.1",
  "block2",
